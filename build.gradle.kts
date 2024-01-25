@@ -1,6 +1,12 @@
+import java.nio.file.Paths
+
 var javaProjects = subprojects.filter { it.name.startsWith("lingting-") }
 var javaVersion = JavaVersion.VERSION_17
 var encoding = "UTF-8"
+
+plugins {
+    id("idea")
+}
 
 allprojects {
     group = "live.lingting.framework"
@@ -8,6 +14,7 @@ allprojects {
 
     apply {
         plugin("idea")
+        plugin("java")
     }
 
     repositories {
@@ -20,13 +27,19 @@ allprojects {
         mavenCentral()
     }
 
+    pluginManager.withPlugin("idea") {
+        idea {
+            module {
+                val path = Paths.get(project.layout.buildDirectory.get().toString(), "generated", "sources", "annotationProcessor", "java", "main")
+                excludeDirs.add(path.toFile())
+            }
+        }
+    }
+
 }
 
 configure(javaProjects) {
-    print(project.displayName)
-    apply {
-        plugin("java")
-    }
+    println(project.displayName)
 
     dependencies {
         val springBootVersion = "3.2.1";
@@ -63,5 +76,7 @@ configure(javaProjects) {
     tasks.withType<JavaCompile> {
         options.encoding = encoding
     }
+
 }
+
 
