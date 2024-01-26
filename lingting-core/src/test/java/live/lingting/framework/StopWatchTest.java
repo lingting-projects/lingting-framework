@@ -12,18 +12,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class StopWatchTest {
 
-    @Test
-    void test() {
-        StopWatch watch = new StopWatch();
-        assertFalse(watch.isRunning());
-        watch.start();
-        long nanos1 = watch.timeNanos();
-        assertTrue(nanos1 > 0);
-        watch.stop();
-        long nanos2 = watch.timeNanos();
-        assertNotEquals(nanos1, nanos2);
-        long nanos3 = watch.timeNanos();
-        assertEquals(nanos2, nanos3);
-    }
+	@Test
+	void test() {
+		StopWatch watch = new StopWatch();
+		assertFalse(watch.isRunning());
+		watch.start();
+		long nanos1 = watch.timeNanos();
+		assertTrue(nanos1 > 0);
+		watch.stop();
+		long nanos2 = watch.timeNanos();
+		assertNotEquals(nanos1, nanos2);
+		long nanos3 = watch.timeNanos();
+		assertEquals(nanos2, nanos3);
+	}
 
 }
