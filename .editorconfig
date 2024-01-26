@@ -1,0 +1,21 @@
+root = true
+
+[*.*]
+charset = utf-8
+end_of_line = lf
+
+[*.{groovy,kt,kts,xml,xsd,html,java,js,jsp,md,properties,sh,sql,txt}]
+trim_trailing_whitespace = true
+insert_final_newline = true
+ij_any_line_comment_at_first_column = false
+ij_any_block_comment_at_first_column = false
+
+[*.java]
+indent_size = 4
+indent_style = tab
+ij_any_else_on_new_line = true
+ij_any_while_on_new_line = true
+ij_any_catch_on_new_line = true
+ij_any_finally_on_new_line = true
+ij_java_class_count_to_use_import_on_demand = 999999
+ij_java_names_count_to_use_import_on_demand = 999999

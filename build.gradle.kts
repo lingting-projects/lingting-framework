@@ -1,11 +1,14 @@
 import java.nio.file.Paths
 
-var javaProjects = subprojects.filter { it.name.startsWith("lingting-") }
-var javaVersion = JavaVersion.VERSION_17
-var encoding = "UTF-8"
+val javaProjects = subprojects.filter { it.name.startsWith("lingting-") }
+val javaVersion = JavaVersion.VERSION_17
+val encoding = "UTF-8"
+val formatterVersion = "0.0.41"
 
 plugins {
     id("idea")
+    id("checkstyle")
+    id("io.spring.javaformat").version(buildString { append("0.0.41") })
 }
 
 allprojects {
@@ -26,6 +29,18 @@ allprojects {
         mavenCentral()
     }
 
+    buildscript {
+        repositories {
+            mavenLocal()
+
+            maven(url = "https://mirrors.huaweicloud.com/repository/maven/")
+            maven(url = "https://maven.aliyun.com/repository/public/")
+            maven(url = "https://maven.aliyun.com/repository/spring")
+
+            mavenCentral()
+        }
+    }
+
     pluginManager.withPlugin("idea") {
         idea {
             module {
@@ -38,11 +53,22 @@ allprojects {
 
 configure(javaProjects) {
     println(project.displayName)
+
     apply {
         plugin("java")
+        plugin("checkstyle")
+        plugin("io.spring.javaformat")
+    }
+
+    buildscript {
+        dependencies {
+            classpath("io.spring.javaformat:spring-javaformat-gradle-plugin:${formatterVersion}")
+        }
     }
 
     dependencies {
+        checkstyle("io.spring.javaformat:spring-javaformat-checkstyle:${formatterVersion}")
+
         val springBootVersion = "3.2.1"
         val mapstructVersion = "1.5.3.Final"
         val lombokVersion = "1.18.30"
@@ -79,6 +105,10 @@ configure(javaProjects) {
     tasks.withType<JavaCompile> {
         options.encoding = encoding
     }
+
+//    tasks.withType(io.spring.javaformat.gradle.tasks.CheckFormat) {
+//        exclude "package/to/exclude"
+//    }
 
 }
 
