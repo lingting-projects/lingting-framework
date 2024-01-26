@@ -14,7 +14,6 @@ allprojects {
 
     apply {
         plugin("idea")
-        plugin("java")
     }
 
     repositories {
@@ -35,32 +34,36 @@ allprojects {
             }
         }
     }
-
 }
 
 configure(javaProjects) {
     println(project.displayName)
+    apply {
+        plugin("java")
+    }
 
     dependencies {
-        val springBootVersion = "3.2.1";
+        val springBootVersion = "3.2.1"
         val mapstructVersion = "1.5.3.Final"
-        val lombokVersion = "1.18.24"
+        val lombokVersion = "1.18.30"
         val lombokMapstructBindingVersion = "0.2.0"
-        val awaitilityVersion = "4.2.0"
-        val junitVersion = "5.9.1"
 
         add("implementation", platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}"))
         add("implementation", "org.slf4j:slf4j-api")
 
-        add("compileOnly", "org.mapstruct:mapstruct:${mapstructVersion}")
-        add("compileOnly", "org.projectlombok:lombok:${lombokVersion}")
+        val compileOnlyList = listOf("org.mapstruct:mapstruct:${mapstructVersion}", "org.projectlombok:lombok:${lombokVersion}")
+        compileOnlyList.forEach {
+            add("compileOnly", it)
+            add("testCompileOnly", it)
+        }
 
-        add("annotationProcessor", "org.projectlombok:lombok:${lombokVersion}")
-        add("annotationProcessor", "org.mapstruct:mapstruct-processor:${mapstructVersion}")
-        add("annotationProcessor", "org.projectlombok:lombok-mapstruct-binding:${lombokMapstructBindingVersion}")
+        val annotationProcessorList = listOf("org.projectlombok:lombok:${lombokVersion}", "org.mapstruct:mapstruct-processor:${mapstructVersion}", "org.projectlombok:lombok-mapstruct-binding:${lombokMapstructBindingVersion}")
+        annotationProcessorList.forEach {
+            add("annotationProcessor", it)
+            add("testAnnotationProcessor", it)
+        }
 
-        add("testImplementation", "org.awaitility:awaitility:${awaitilityVersion}")
-        add("testImplementation", platform("org.junit:junit-bom:${junitVersion}"))
+        add("testImplementation", "org.awaitility:awaitility")
         add("testImplementation", "org.junit.jupiter:junit-jupiter")
     }
 

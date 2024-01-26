@@ -15,19 +15,18 @@ dependencyResolutionManagement {
     // 编写版本目录的依赖库
     versionCatalogs {
         create("libs") {
-//            val slf4jVersion = "1.7.36"
-//            val mapstructVersion = "1.5.3.Final"
-//            val lombokVersion = "1.18.24"
-//            val lombokMapstructBindingVersion = "0.2.0"
-//
-//            library("slf4j", "org.slf4j", "slf4j-api").version(slf4jVersion)
-//            library("mapstruct", "org.mapstruct", "mapstruct").version(mapstructVersion)
-//            library("mapstruct-processor", "org.mapstruct", "mapstruct-processor").version(mapstructVersion)
-//            library("lombok", "org.projectlombok", "lombok").version(lombokVersion)
-//            library("lombok_mapstruct", "org.projectlombok", "lombok-mapstruct-binding").version(lombokMapstructBindingVersion)
-//
-//            bundle("globalCompileOnly", listOf("mapstruct", "lombok"))
-//            bundle("annotationProcessor", listOf("mapstruct-processor", "lombok", "lombok_mapstruct"))
+            val mybatisVersion = "3.5.15"
+            val mybatisPlusVersion = "3.5.5"
+            val jsqlparserVersion = "4.8"
+
+            library("mybatis", "org.mybatis", "mybatis").version(mybatisVersion)
+            library("mybatisPlusAnnotation", "com.baomidou", "mybatis-plus-annotation").version(mybatisPlusVersion)
+            library("mybatisPlusExtension", "com.baomidou", "mybatis-plus-extension").version(mybatisPlusVersion)
+            library("mybatisPlusBootStarter", "com.baomidou", "mybatis-plus-boot-starter").version(mybatisPlusVersion)
+            library("mybatisPlusCore", "com.baomidou", "mybatis-plus-core").version(mybatisPlusVersion)
+            library("msqlparser", "com.github.jsqlparser", "jsqlparser").version(jsqlparserVersion)
+
+            bundle("mybatisPlus", listOf("mybatis", "mybatisPlusAnnotation", "mybatisPlusExtension", "mybatisPlusBootStarter", "mybatisPlusCore", "msqlparser"))
         }
     }
 
