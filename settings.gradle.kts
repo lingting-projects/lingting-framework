@@ -27,6 +27,9 @@ dependencyResolutionManagement {
             library("msqlparser", "com.github.jsqlparser", "jsqlparser").version(jsqlparserVersion)
 
             bundle("mybatisPlus", listOf("mybatis", "mybatisPlusAnnotation", "mybatisPlusExtension", "mybatisPlusBootStarter", "mybatisPlusCore", "msqlparser"))
+
+            val commonsNetVersion = "3.10.0"
+            library("commonsNet", "commons-net", "commons-net").version(commonsNetVersion)
         }
     }
 
@@ -37,3 +40,4 @@ rootProject.name = "lingting-framework"
 include("lingting-core")
 include("lingting-jackson")
 include("lingting-okhttp")
+include("lingting-ntp")
