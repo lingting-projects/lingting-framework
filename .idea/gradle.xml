@@ -11,6 +11,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/lingting-core" />
             <option value="$PROJECT_DIR$/lingting-jackson" />
+            <option value="$PROJECT_DIR$/lingting-okhttp" />
           </set>
         </option>
       </GradleProjectSettings>

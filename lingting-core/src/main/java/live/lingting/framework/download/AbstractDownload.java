@@ -22,10 +22,13 @@ public abstract class AbstractDownload<D extends AbstractDownload<D>> implements
 
 	protected final ThreadPoolExecutor executor;
 
+	@Getter
 	protected final String url;
 
+	@Getter
 	protected final File dir;
 
+	@Getter
 	protected final String filename;
 
 	@Getter

@@ -36,3 +36,4 @@ dependencyResolutionManagement {
 rootProject.name = "lingting-framework"
 include("lingting-core")
 include("lingting-jackson")
+include("lingting-okhttp")
