@@ -124,8 +124,12 @@ public class EnumUtils {
 			return null;
 		}
 		ClassField cf = getCf(e.getClass());
+
 		try {
-			return cf.get(e);
+			if (cf.canGet(e)) {
+				return cf.get(e);
+			}
+			return cf.visibleGet().get(e);
 		}
 		catch (Exception ex) {
 			return null;

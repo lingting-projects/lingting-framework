@@ -8,9 +8,9 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class BooleanUtils {
 
-	private static final String[] STR_TRUE = { "1", "true", "yes", "ok", "y" };
+	private static final String[] STR_TRUE = { "1", "true", "yes", "ok", "y", "t" };
 
-	private static final String[] STR_FALSE = { "0", "false", "no", "n" };
+	private static final String[] STR_FALSE = { "0", "false", "no", "n", "f" };
 
 	public static boolean isTrue(Object obj) {
 		if (obj instanceof String string) {
