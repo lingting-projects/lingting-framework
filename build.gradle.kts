@@ -59,6 +59,7 @@ configure(javaProjects) {
 
     apply {
         plugin("java")
+        plugin("java-library")
         plugin("checkstyle")
         plugin("io.spring.javaformat")
     }
