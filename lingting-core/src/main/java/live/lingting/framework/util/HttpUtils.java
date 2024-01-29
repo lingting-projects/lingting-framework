@@ -7,7 +7,7 @@ import lombok.experimental.UtilityClass;
  * @author lingting 2022/10/28 17:54
  */
 @UtilityClass
-public class HttpServletUtils {
+public class HttpUtils {
 
 	public static final String HEADER_HOST = "Host";
 
