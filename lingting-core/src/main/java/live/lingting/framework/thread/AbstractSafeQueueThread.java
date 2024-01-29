@@ -11,7 +11,7 @@ public abstract class AbstractSafeQueueThread<E> extends AbstractQueueThread<E> 
 	public void put(E e) {
 		// 已停止运行
 		if (!super.isRun()) {
-			log.debug("当前线程应该停止运行, 但是依旧在继续插入数据!");
+			log.debug("Stopped, but data is being put!");
 		}
 		doPut(e);
 	}

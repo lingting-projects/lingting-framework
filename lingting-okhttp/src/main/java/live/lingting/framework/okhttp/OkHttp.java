@@ -42,7 +42,7 @@ public record OkHttp(OkHttpClient client) {
 			throw e;
 		}
 		catch (Exception e) {
-			throw new HttpException("返回值处理异常!", e);
+			throw new HttpException("http response handler error!", e);
 		}
 	}
 

@@ -82,7 +82,8 @@ public abstract class AbstractDynamicTimer<T> extends AbstractThreadContextCompo
 
 	@Override
 	protected void shutdown() {
-		log.warn("类: {}; 线程: {}; 被中断! 剩余数据: {}", getSimpleName(), getId(), queue.size());
+		log.warn("Class: {}; ThreadId: {}; shutdown! unprocessed data size: {}", getSimpleName(), getId(),
+				queue.size());
 	}
 
 }

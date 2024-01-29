@@ -81,7 +81,7 @@ public abstract class AbstractMultiDownload<D extends AbstractMultiDownload<D>> 
 			final int index = i;
 			MultiDownloadTask<D> task = new MultiDownloadTask<>((D) this, target, step);
 			async(String.format("DOWNLOAD-%d-%s", index, filename), task::start, e -> {
-				log.error("下载异常! 线程序号: {}", index, e);
+				log.error("download! index: {}", index, e);
 				task.stop();
 			});
 			tasks.add(task);

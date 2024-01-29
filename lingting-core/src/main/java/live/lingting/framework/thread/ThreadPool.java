@@ -138,10 +138,10 @@ public class ThreadPool {
 			}
 			catch (InterruptedException e) {
 				thread.interrupt();
-				log.warn("线程池内部线程被中断!");
+				log.warn("Thread interrupted inside thread pool");
 			}
 			catch (Throwable throwable) {
-				log.error("线程池内部线程异常!", throwable);
+				log.error("Thread exception inside thread pool!", throwable);
 			}
 			finally {
 				thread.setName(oldName);

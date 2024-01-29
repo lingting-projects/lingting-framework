@@ -155,7 +155,7 @@ public abstract class AbstractQueueThread<E> extends AbstractThreadContextCompon
 			e = poll(getPollTimeout());
 		}
 		catch (InterruptedException ex) {
-			log.error("{} 类的poll线程被中断!id: {}", getClass().getSimpleName(), getId());
+			log.error("Class: {}; ThreadId: {}; poll interrupted!", getSimpleName(), getId());
 			interrupt();
 		}
 		return e;
@@ -166,7 +166,7 @@ public abstract class AbstractQueueThread<E> extends AbstractThreadContextCompon
 	 */
 	@Override
 	protected void shutdown() {
-		log.warn("{} 类 线程: {} 被关闭. 数据:{}", this.getClass().getSimpleName(), getId(), data);
+		log.warn("Class: {}; ThreadId: {}; shutdown! data: {}", getSimpleName(), getId(), data);
 	}
 
 }

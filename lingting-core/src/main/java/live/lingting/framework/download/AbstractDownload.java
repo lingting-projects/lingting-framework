@@ -58,7 +58,7 @@ public abstract class AbstractDownload<D extends AbstractDownload<D>> implements
 		if (!isFinished()) {
 			String name = "DOWNLOAD-" + filename;
 			async(name, this::doStart, e -> {
-				log.error("下载异常!", e);
+				log.error("download error!", e);
 				upsertEx(e);
 			});
 		}
@@ -134,7 +134,7 @@ public abstract class AbstractDownload<D extends AbstractDownload<D>> implements
 			ex = de;
 		}
 		else {
-			ex = new DownloadException("下载异常!", e);
+			ex = new DownloadException("download error!", e);
 		}
 	}
 

@@ -31,7 +31,7 @@ public abstract class AbstractThreadContextComponent extends Thread implements C
 
 	@Override
 	public void onApplicationStop() {
-		log.warn("{} 线程: {}; 开始关闭!", getSimpleName(), getId());
+		log.warn("Class: {}; ThreadId: {}; closing!", getSimpleName(), getId());
 		interrupt();
 	}
 
@@ -67,11 +67,11 @@ public abstract class AbstractThreadContextComponent extends Thread implements C
 	 * 线程被中断触发.
 	 */
 	protected void shutdown() {
-		log.warn("{} 类 线程: {} 被关闭.", getSimpleName(), getId());
+		log.warn("Class: {}; ThreadId: {}; shutdown!", getSimpleName(), getId());
 	}
 
 	protected void error(Exception e) {
-		log.error("{} 类 线程: {} 出现异常!", getSimpleName(), getId(), e);
+		log.error("Class: {}; ThreadId: {}; error!", getSimpleName(), getId(), e);
 	}
 
 	public void awaitTerminated() {
