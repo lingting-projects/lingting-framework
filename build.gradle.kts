@@ -44,8 +44,11 @@ allprojects {
     pluginManager.withPlugin("idea") {
         idea {
             module {
-                val path = Paths.get(project.layout.buildDirectory.get().toString(), "generated", "sources", "annotationProcessor", "java", "main")
-                excludeDirs.add(path.toFile())
+                val rootPath = Paths.get(project.layout.buildDirectory.get().toString(), "generated", "sources", "annotationProcessor", "java").toString();
+                val mainPath = Paths.get(rootPath, "main")
+                val testPath = Paths.get(rootPath, "test")
+                excludeDirs.add(mainPath.toFile())
+                excludeDirs.add(testPath.toFile())
             }
         }
     }
