@@ -110,7 +110,7 @@ public class ClassUtils {
 
 	/**
 	 * 扫描指定包下, 所有继承指定类的class
-	 * @param basePack 指定包 eg: live.lingting.component.item
+	 * @param basePack 指定包 eg: live.lingting.framework.item
 	 * @param filter 过滤指定类
 	 * @param error 获取类时发生异常处理
 	 * @return java.util.Set<java.lang.Class < T>>

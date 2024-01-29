@@ -82,17 +82,51 @@ public record ClassField(Field field, Method methodGet, Method methodSet) {
 	// region visible
 
 	/**
+	 * 是否能够获取值
+	 */
+	public boolean canGet(Object o) {
+		if (methodGet != null) {
+			return methodGet.canAccess(o);
+		}
+		if (field != null) {
+			return field.canAccess(o);
+		}
+		return false;
+	}
+
+	/**
+	 * 是否能够设置值
+	 */
+	public boolean canSet(Object o) {
+		if (methodSet == null) {
+			return false;
+		}
+		return methodSet.canAccess(o);
+	}
+
+	/**
 	 * 将方法转化为可见的
 	 * <p>
 	 * 未声明可能会调用异常. <a href="https://stackoverflow.com/a/71296829/19334734">相关回答</a>
 	 * </p>
 	 */
 	public ClassField visible() {
+		return visibleSet().visibleGet();
+	}
+
+	public ClassField visibleGet() {
 		if (field != null && !field.trySetAccessible()) {
 			field.setAccessible(true);
 		}
 		if (methodGet != null && !methodGet.trySetAccessible()) {
 			methodGet.setAccessible(true);
+		}
+		return this;
+	}
+
+	public ClassField visibleSet() {
+		if (field != null && !field.trySetAccessible()) {
+			field.setAccessible(true);
 		}
 		if (methodSet != null && !methodSet.trySetAccessible()) {
 			methodSet.setAccessible(true);
