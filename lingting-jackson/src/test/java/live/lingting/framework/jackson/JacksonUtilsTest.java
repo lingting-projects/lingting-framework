@@ -23,7 +23,6 @@ class JacksonUtilsTest {
 		assertTrue(StringUtils.hasText(toJson(null)));
 		Entity entity = new Entity("f1", "f2");
 		String json = toJson(entity);
-		assertTrue(StringUtils.isJson(json));
 		JsonNode node = toNode(json);
 		assertEquals("f1", node.get("f1").asText());
 		Entity obj = toObj(json, Entity.class);

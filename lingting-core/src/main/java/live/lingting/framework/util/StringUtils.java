@@ -32,37 +32,6 @@ public class StringUtils {
 		return false;
 	}
 
-	/**
-	 * 指定字符串是否为 json 字符串
-	 * @param str 字符串
-	 * @return boolean
-	 */
-	public static boolean isJson(String str) {
-		if (!hasText(str)) {
-			return false;
-		}
-		if (str.startsWith("{")) {
-			return str.endsWith("}");
-		}
-		if (str.startsWith("[")) {
-			return str.endsWith("]");
-		}
-		return false;
-	}
-
-	/**
-	 * 指定字符串是否为 xml 字符串
-	 * @param str 字符串
-	 * @return boolean
-	 */
-	public static boolean isXml(String str) {
-		if (hasText(str) && str.startsWith("<")) {
-			return str.endsWith(">");
-		}
-
-		return false;
-	}
-
 	public static String join(Iterable<?> iterable, String delimiter) {
 		if (iterable == null) {
 			return null;
