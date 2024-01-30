@@ -4,12 +4,13 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
+        <option name="testRunner" value="PLATFORM" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleHome" value="" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/lingting-core" />
+            <option value="$PROJECT_DIR$/lingting-dingtalk" />
             <option value="$PROJECT_DIR$/lingting-jackson" />
             <option value="$PROJECT_DIR$/lingting-ntp" />
             <option value="$PROJECT_DIR$/lingting-okhttp" />
