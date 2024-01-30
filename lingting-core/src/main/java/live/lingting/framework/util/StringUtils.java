@@ -12,6 +12,16 @@ import java.util.Iterator;
 @UtilityClass
 public class StringUtils {
 
+	public static final String BOM_UTF8 = "\uFEFF";
+
+	public static final String BOM_UTF16B = "\uFEFF";
+
+	public static final String BOM_UTF16S = "\uFFFE";
+
+	public static final String BOM_UTF32B = "\u0000FEFF";
+
+	public static final String BOM_UTF32S = "\uFFFFE0000";
+
 	/**
 	 * 指定字符串是否存在可见字符
 	 * @param str 字符串
@@ -196,6 +206,14 @@ public class StringUtils {
 	 */
 	public static String append(String prefix, int count, String str) {
 		return prefix + str.repeat(Math.max(0, count));
+	}
+
+	public static String cleanBom(String string) {
+		return string.replace(BOM_UTF32S, "")
+			.replace(BOM_UTF32B, "")
+			.replace(BOM_UTF16S, "")
+			.replace(BOM_UTF16B, "")
+			.replace(BOM_UTF8, "");
 	}
 
 }

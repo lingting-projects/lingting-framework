@@ -157,7 +157,8 @@ public class StreamUtils {
 			throws IOException {
 		readLine(in, size, (index, bytes) -> {
 			String string = new String(bytes, charset);
-			consumer.accept(index, string);
+			String clean = StringUtils.cleanBom(string);
+			consumer.accept(index, clean);
 		});
 	}
 
