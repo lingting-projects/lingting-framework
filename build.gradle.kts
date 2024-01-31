@@ -9,7 +9,7 @@ val formatterVersion = "0.0.41"
 plugins {
     id("idea")
     id("checkstyle")
-    id("io.spring.javaformat").version(buildString { append("0.0.41") })
+    alias(libs.plugins.springFormat)
 }
 
 allprojects {
@@ -59,19 +59,10 @@ configure(javaProjects) {
     apply {
         plugin("java")
         plugin("java-library")
-        plugin("checkstyle")
-        plugin("io.spring.javaformat")
-    }
-
-    buildscript {
-        dependencies {
-            classpath("io.spring.javaformat:spring-javaformat-gradle-plugin:${formatterVersion}")
-        }
+        plugin(catalogLibs.plugins.springFormat.get().pluginId)
     }
 
     dependencies {
-        checkstyle("io.spring.javaformat:spring-javaformat-checkstyle:${formatterVersion}")
-
         add("implementation", platform(catalogLibs.springBootDependencies))
         add("implementation", platform(catalogLibs.grpcDependencies))
 

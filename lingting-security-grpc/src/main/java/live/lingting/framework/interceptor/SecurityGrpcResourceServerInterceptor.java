@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterceptor implements Sequence {
 
-
 	private final Metadata.Key<String> authorizationKey;
 
 	private final SecurityResourceService service;
@@ -33,9 +32,8 @@ public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterce
 
 	private final SecurityGrpcExceptionHandler exceptionHandler;
 
-	public SecurityGrpcResourceServerInterceptor(Metadata.Key<String> authorizationKey,
-												 SecurityResourceService service, SecurityAuthorize authorize,
-												 SecurityGrpcExceptionHandler exceptionHandler) {
+	public SecurityGrpcResourceServerInterceptor(Metadata.Key<String> authorizationKey, SecurityResourceService service,
+			SecurityAuthorize authorize, SecurityGrpcExceptionHandler exceptionHandler) {
 		this.authorizationKey = authorizationKey;
 		this.service = service;
 		this.authorize = authorize;
@@ -44,7 +42,7 @@ public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterce
 
 	@Override
 	public <S, R> ServerCall.Listener<S> interceptCall(ServerCall<S, R> call, Metadata headers,
-													   ServerCallHandler<S, R> next) {
+			ServerCallHandler<S, R> next) {
 		handlerScope(headers);
 
 		MethodDescriptor<S, R> descriptor = call.getMethodDescriptor();

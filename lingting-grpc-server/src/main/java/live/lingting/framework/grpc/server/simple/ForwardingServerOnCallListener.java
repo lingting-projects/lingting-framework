@@ -8,7 +8,7 @@ import io.grpc.ServerCall;
  */
 @SuppressWarnings("java:S2176")
 public class ForwardingServerOnCallListener<S>
-	extends ForwardingServerCallListener.SimpleForwardingServerCallListener<S> {
+		extends ForwardingServerCallListener.SimpleForwardingServerCallListener<S> {
 
 	protected ForwardingServerOnCallListener(ServerCall.Listener<S> delegate) {
 		super(delegate);

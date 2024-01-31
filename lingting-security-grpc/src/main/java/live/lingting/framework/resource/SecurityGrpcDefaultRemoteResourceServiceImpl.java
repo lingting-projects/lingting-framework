@@ -27,7 +27,7 @@ public class SecurityGrpcDefaultRemoteResourceServiceImpl implements SecurityRes
 	protected final SecurityGrpcConvert convert;
 
 	public SecurityGrpcDefaultRemoteResourceServiceImpl(SecurityProperties properties,
-														SecurityGrpcProperties grpcProperties, GrpcClientProvide provide, SecurityGrpcConvert convert) {
+			SecurityGrpcProperties grpcProperties, GrpcClientProvide provide, SecurityGrpcConvert convert) {
 		SecurityProperties.Authorization authorization = properties.getAuthorization();
 		channel = provide.builder(authorization.getRemoteHost())
 			.provide()

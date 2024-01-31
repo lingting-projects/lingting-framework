@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 public class SecurityGrpcAuthorizationEndpoint
-	extends SecurityGrpcAuthorizationServiceGrpc.SecurityGrpcAuthorizationServiceImplBase {
+		extends SecurityGrpcAuthorizationServiceGrpc.SecurityGrpcAuthorizationServiceImplBase {
 
 	private final SecurityAuthorizationService service;
 
@@ -40,7 +40,7 @@ public class SecurityGrpcAuthorizationEndpoint
 	@Override
 	@Authorize(anyone = true)
 	public void password(SecurityGrpcAuthorization.AuthorizationPasswordPO po,
-						 StreamObserver<SecurityGrpcAuthorization.AuthorizationVO> observer) {
+			StreamObserver<SecurityGrpcAuthorization.AuthorizationVO> observer) {
 		String username = po.getUsername();
 		String rawPassword = po.getPassword();
 		String password = securityPassword.decodeFront(rawPassword);

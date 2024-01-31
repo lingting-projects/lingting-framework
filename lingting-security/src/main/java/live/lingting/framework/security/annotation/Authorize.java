@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  *
  * @author lingting 2023-03-29 20:38
  */
-@Target({ElementType.METHOD, ElementType.TYPE})
+@Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented

@@ -57,7 +57,7 @@ public class SecurityScope {
 	 */
 	public boolean isLogin() {
 		return StringUtils.hasText(getToken()) && StringUtils.hasText(getUserId()) && getIsSystem() != null
-			   && getIsEnabled() != null;
+				&& getIsEnabled() != null;
 	}
 
 }

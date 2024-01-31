@@ -12,18 +12,21 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
-    // 编写版本目录的依赖库
+    val mybatisVersion = "3.5.15"
+    val mybatisPlusVersion = "3.5.5"
+    val jSqlParserVersion = "4.8"
+    val springBootVersion = "3.2.1"
+    val grpcVersion = "1.61.0"
+
+    val mapstructVersion = "1.5.3.Final"
+    val lombokVersion = "1.18.30"
+    val lombokMapstructBindingVersion = "0.2.0"
+    val formatterVersion = "0.0.41"
+
     versionCatalogs {
         create("libs") {
-            val mybatisVersion = "3.5.15"
-            val mybatisPlusVersion = "3.5.5"
-            val jSqlParserVersion = "4.8"
-            val springBootVersion = "3.2.1"
-            val grpcVersion = "1.61.0"
-
-            val mapstructVersion = "1.5.3.Final"
-            val lombokVersion = "1.18.30"
-            val lombokMapstructBindingVersion = "0.2.0"
+            version("formatterVersion", formatterVersion)
+            library("springFormatter", "io.spring.javaformat", "spring-javaformat-checkstyle").version(formatterVersion)
 
             library("springBootDependencies", "org.springframework.boot", "spring-boot-dependencies").version(springBootVersion)
             library("grpcDependencies", "io.grpc", "grpc-bom").version(grpcVersion)
@@ -51,6 +54,8 @@ dependencyResolutionManagement {
 
             bundle("compile", listOf("mapstruct", "lombok"))
             bundle("annotation", listOf("mapstructProcessor", "lombok", "lombokMapstruct"))
+
+            plugin("springFormat", "io.spring.javaformat").version(formatterVersion)
         }
     }
 

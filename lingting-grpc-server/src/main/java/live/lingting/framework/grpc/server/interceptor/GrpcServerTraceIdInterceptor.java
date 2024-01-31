@@ -38,7 +38,7 @@ public class GrpcServerTraceIdInterceptor implements ServerInterceptor, Sequence
 
 	@Override
 	public <S, R> ServerCall.Listener<S> interceptCall(ServerCall<S, R> call, Metadata headers,
-													   ServerCallHandler<S, R> next) {
+			ServerCallHandler<S, R> next) {
 		String traceId = traceId(headers);
 		MdcUtils.fillTraceId(traceId);
 		try {

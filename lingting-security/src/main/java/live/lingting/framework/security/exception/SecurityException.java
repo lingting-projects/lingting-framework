@@ -22,7 +22,7 @@ public abstract class SecurityException extends RuntimeException {
 	}
 
 	protected SecurityException(String message, Throwable cause, boolean enableSuppression,
-								boolean writableStackTrace) {
+			boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
 	}
 
