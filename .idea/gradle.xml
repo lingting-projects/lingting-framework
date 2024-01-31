@@ -12,9 +12,13 @@
             <option value="$PROJECT_DIR$/lingting-core" />
             <option value="$PROJECT_DIR$/lingting-datascope" />
             <option value="$PROJECT_DIR$/lingting-dingtalk" />
+            <option value="$PROJECT_DIR$/lingting-grpc-client" />
+            <option value="$PROJECT_DIR$/lingting-grpc-server" />
             <option value="$PROJECT_DIR$/lingting-jackson" />
             <option value="$PROJECT_DIR$/lingting-ntp" />
             <option value="$PROJECT_DIR$/lingting-okhttp" />
+            <option value="$PROJECT_DIR$/lingting-security" />
+            <option value="$PROJECT_DIR$/lingting-security-grpc" />
           </set>
         </option>
       </GradleProjectSettings>

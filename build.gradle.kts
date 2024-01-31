@@ -74,11 +74,14 @@ configure(javaProjects) {
         checkstyle("io.spring.javaformat:spring-javaformat-checkstyle:${formatterVersion}")
 
         val springBootVersion = "3.2.1"
+        val grpcVersion = "1.61.0"
+
         val mapstructVersion = "1.5.3.Final"
         val lombokVersion = "1.18.30"
         val lombokMapstructBindingVersion = "0.2.0"
 
         add("implementation", platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}"))
+        add("implementation", platform("io.grpc:grpc-bom:${grpcVersion}"))
         add("implementation", "org.slf4j:slf4j-api")
 
         val compileOnlyList = listOf("org.mapstruct:mapstruct:${mapstructVersion}", "org.projectlombok:lombok:${lombokVersion}")
@@ -109,10 +112,6 @@ configure(javaProjects) {
     tasks.withType<JavaCompile> {
         options.encoding = encoding
     }
-
-//    tasks.withType(io.spring.javaformat.gradle.tasks.CheckFormat) {
-//        exclude "package/to/exclude"
-//    }
 
 }
 

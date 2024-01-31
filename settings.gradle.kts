@@ -30,6 +30,9 @@ dependencyResolutionManagement {
 
             val commonsNetVersion = "3.10.0"
             library("commonsNet", "commons-net", "commons-net").version(commonsNetVersion)
+
+            val securityProtobufVersion = "17_2023.12.18-SNAPSHOT"
+            library("securityProtobuf", "live.lingting.protobuf", "protobuf-java").version(securityProtobufVersion)
         }
     }
 
@@ -43,3 +46,7 @@ include("lingting-okhttp")
 include("lingting-ntp")
 include("lingting-dingtalk")
 include("lingting-datascope")
+include("lingting-grpc-client")
+include("lingting-grpc-server")
+include("lingting-security")
+include("lingting-security-grpc")
