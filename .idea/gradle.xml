@@ -11,6 +11,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/lingting-core" />
             <option value="$PROJECT_DIR$/lingting-datascope" />
+            <option value="$PROJECT_DIR$/lingting-dependencies" />
             <option value="$PROJECT_DIR$/lingting-dingtalk" />
             <option value="$PROJECT_DIR$/lingting-grpc-client" />
             <option value="$PROJECT_DIR$/lingting-grpc-server" />

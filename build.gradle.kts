@@ -1,6 +1,7 @@
 import java.nio.file.Paths
 
-val javaProjects = subprojects.filter { it.name.startsWith("lingting-") }
+val catalogLibs = libs
+val javaProjects = subprojects.filter { it.name.startsWith("lingting-") && !it.name.endsWith("dependencies") }
 val javaVersion = JavaVersion.VERSION_17
 val encoding = "UTF-8"
 val formatterVersion = "0.0.41"
@@ -55,8 +56,6 @@ allprojects {
 }
 
 configure(javaProjects) {
-    println(project.displayName)
-
     apply {
         plugin("java")
         plugin("java-library")
@@ -73,28 +72,15 @@ configure(javaProjects) {
     dependencies {
         checkstyle("io.spring.javaformat:spring-javaformat-checkstyle:${formatterVersion}")
 
-        val springBootVersion = "3.2.1"
-        val grpcVersion = "1.61.0"
+        add("implementation", platform(catalogLibs.springBootDependencies))
+        add("implementation", platform(catalogLibs.grpcDependencies))
 
-        val mapstructVersion = "1.5.3.Final"
-        val lombokVersion = "1.18.30"
-        val lombokMapstructBindingVersion = "0.2.0"
-
-        add("implementation", platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}"))
-        add("implementation", platform("io.grpc:grpc-bom:${grpcVersion}"))
         add("implementation", "org.slf4j:slf4j-api")
 
-        val compileOnlyList = listOf("org.mapstruct:mapstruct:${mapstructVersion}", "org.projectlombok:lombok:${lombokVersion}")
-        compileOnlyList.forEach {
-            add("compileOnly", it)
-            add("testCompileOnly", it)
-        }
-
-        val annotationProcessorList = listOf("org.projectlombok:lombok:${lombokVersion}", "org.mapstruct:mapstruct-processor:${mapstructVersion}", "org.projectlombok:lombok-mapstruct-binding:${lombokMapstructBindingVersion}")
-        annotationProcessorList.forEach {
-            add("annotationProcessor", it)
-            add("testAnnotationProcessor", it)
-        }
+        add("compileOnly", catalogLibs.bundles.compile)
+        add("testCompileOnly", catalogLibs.bundles.compile)
+        add("annotationProcessor", catalogLibs.bundles.annotation)
+        add("testAnnotationProcessor", catalogLibs.bundles.annotation)
 
         add("testImplementation", "org.awaitility:awaitility")
         add("testImplementation", "org.junit.jupiter:junit-jupiter")
@@ -114,5 +100,3 @@ configure(javaProjects) {
     }
 
 }
-
-
