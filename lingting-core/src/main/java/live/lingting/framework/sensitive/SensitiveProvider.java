@@ -1,16 +1,19 @@
 package live.lingting.framework.sensitive;
 
+import live.lingting.framework.Sequence;
+
 /**
  * @author lingting 2024-01-26 18:16
  */
-public interface SensitiveProvider {
+public interface SensitiveProvider extends Sequence {
 
 	SensitiveSerializer find(Sensitive sensitive);
 
 	/**
-	 * 排序, 值越小 优先级越高
+	 * 升序排序用
 	 */
-	default int order() {
+	@Override
+	default int getSequence() {
 		return Integer.MAX_VALUE;
 	}
 

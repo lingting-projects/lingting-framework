@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.ser.ContextualSerializer;
+import live.lingting.framework.Sequence;
 import live.lingting.framework.sensitive.Sensitive;
 import live.lingting.framework.sensitive.SensitiveProvider;
 import live.lingting.framework.sensitive.SensitiveSerializer;
@@ -86,14 +87,11 @@ public class SensitiveDefaultSerializer extends JsonSerializer<Object>
 	protected List<SensitiveProvider> providers() {
 		try {
 			ServiceLoader<SensitiveProvider> loader = ServiceLoader.load(SensitiveProvider.class);
-			return loader.stream().map(ServiceLoader.Provider::get).filter(Objects::nonNull).sorted((o1, o2) -> {
-				int r1 = o1.order();
-				int r2 = o2.order();
-				if (r1 == r2) {
-					return 0;
-				}
-				return r1 > r2 ? -1 : 1;
-			}).toList();
+			return loader.stream()
+				.map(ServiceLoader.Provider::get)
+				.filter(Objects::nonNull)
+				.sorted(Sequence.INSTANCE_ASC)
+				.toList();
 		}
 		catch (ServiceConfigurationError e) {
 			return Collections.emptyList();
