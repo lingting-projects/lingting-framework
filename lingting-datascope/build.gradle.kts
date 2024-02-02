@@ -1,5 +1,5 @@
 dependencies {
     implementation(project(":lingting-core"))
 
-    implementation(libs.jSqlParser)
+    api(libs.jSqlParser)
 }

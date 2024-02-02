@@ -1,8 +1,11 @@
 dependencies {
-    implementation("jakarta.servlet:jakarta.servlet-api")
-    implementation("com.fasterxml.jackson.core:jackson-annotations")
-    implementation(libs.mybatisPlusAnnotation)
+    api("jakarta.servlet:jakarta.servlet-api")
 
+    compileOnly(libs.mybatisPlusAnnotation)
+    compileOnly("com.fasterxml.jackson.core:jackson-annotations")
     compileOnly("org.springframework:spring-core")
+
+    testImplementation(libs.mybatisPlusAnnotation)
+    testImplementation("com.fasterxml.jackson.core:jackson-annotations")
     testImplementation("org.springframework:spring-core")
 }
