@@ -177,6 +177,7 @@ configure(javaProjects) {
 
         add("implementation", "org.slf4j:slf4j-api")
 
+        add("implementation", catalogLibs.bundles.implementation)
         add("compileOnly", catalogLibs.bundles.compile)
         add("testCompileOnly", catalogLibs.bundles.compile)
         add("annotationProcessor", catalogLibs.bundles.annotation)

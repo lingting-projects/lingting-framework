@@ -52,7 +52,8 @@ dependencyResolutionManagement {
             val securityProtobufVersion = "17_2023.12.18-SNAPSHOT"
             library("securityProtobuf", "live.lingting.protobuf", "protobuf-java").version(securityProtobufVersion)
 
-            bundle("compile", listOf("mapstruct", "lombok"))
+            bundle("implementation", listOf("mapstruct"));
+            bundle("compile", listOf("lombok"))
             bundle("annotation", listOf("mapstructProcessor", "lombok", "lombokMapstruct"))
 
             plugin("springFormat", "io.spring.javaformat").version(formatterVersion)

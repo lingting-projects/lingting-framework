@@ -4,5 +4,5 @@ dependencies {
     implementation(libs.mybatisPlusAnnotation)
 
     compileOnly("org.springframework:spring-core")
-    testCompileOnly("org.springframework:spring-core")
+    testImplementation("org.springframework:spring-core")
 }
