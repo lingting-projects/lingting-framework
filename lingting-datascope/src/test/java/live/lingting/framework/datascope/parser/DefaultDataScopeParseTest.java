@@ -56,7 +56,7 @@ class DefaultDataScopeParseTest {
 	DataPermissionHandler dataPermissionHandler = new DefaultDataPermissionHandler(
 			Collections.singletonList(tenantDataScope));
 
-	DataScopeParser dataScopeSqlProcessor = new DefaultDataScopeParse();
+	DataScopeParser dataScopeSqlProcessor = new DefaultDataScopeParser();
 
 	@Test
 	void delete() {

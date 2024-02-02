@@ -38,7 +38,7 @@ import java.util.Objects;
 /**
  * @author lingting 2024-01-19 16:01
  */
-public class DefaultDataScopeParse extends DataScopeParser {
+public class DefaultDataScopeParser extends DataScopeParser {
 
 	@Override
 	protected void insert(Insert insert, int index, String sql) {
