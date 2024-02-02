@@ -1,3 +1,4 @@
+import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 import java.net.URI
 import java.nio.file.Paths
 
@@ -16,6 +17,7 @@ val javaProjects = subprojects.filter { it.name.startsWith("lingting-") && !depe
 val javaVersion = JavaVersion.VERSION_17
 // 字符集
 val encoding = "UTF-8"
+val ideaLanguageLevel = IdeaLanguageLevel(javaVersion);
 // 仅打包jar, 不打包源文件jar和文档jar
 val onlyJar = isSnapshot
 // spring java formatter 版本
@@ -28,6 +30,13 @@ plugins {
     id("maven-publish")
     id("signing")
     alias(libs.plugins.springFormat)
+}
+
+idea {
+    project {
+        languageLevel = ideaLanguageLevel
+        targetBytecodeVersion = javaVersion
+    }
 }
 
 allprojects {
@@ -78,15 +87,24 @@ allprojects {
         }
     }
 
-    pluginManager.withPlugin("idea") {
-        idea {
-            module {
-                val rootPath = Paths.get(project.layout.buildDirectory.get().toString(), "generated", "sources", "annotationProcessor", "java").toString();
-                val mainPath = Paths.get(rootPath, "main")
-                val testPath = Paths.get(rootPath, "test")
-                excludeDirs.add(mainPath.toFile())
-                excludeDirs.add(testPath.toFile())
-            }
+    idea {
+        module {
+            val rootPath = Paths.get(project.layout.buildDirectory.get().toString(), "generated", "sources", "annotationProcessor", "java").toString();
+            val mainPath = Paths.get(rootPath, "main")
+            val testPath = Paths.get(rootPath, "test")
+            excludeDirs.add(mainPath.toFile())
+            excludeDirs.add(testPath.toFile())
+            languageLevel = ideaLanguageLevel
+            targetBytecodeVersion = javaVersion
+
+            excludeDirs.add(File(rootDir, "src"))
+            excludeDirs.add(File(rootDir, "src/main"))
+            excludeDirs.add(File(rootDir, "src/main/java"))
+            excludeDirs.add(File(rootDir, "src/main/resources"))
+            excludeDirs.add(File(rootDir, "src"))
+            excludeDirs.add(File(rootDir, "src/test"))
+            excludeDirs.add(File(rootDir, "src/test/java"))
+            excludeDirs.add(File(rootDir, "src/test/resources"))
         }
     }
 
