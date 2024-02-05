@@ -1,5 +1,6 @@
 dependencies {
-    api("jakarta.servlet:jakarta.servlet-api")
+    api("jakarta.annotation:jakarta.annotation-api")
+    compileOnly("jakarta.servlet:jakarta.servlet-api")
 
     compileOnly(libs.mybatisPlusAnnotation)
     compileOnly("com.fasterxml.jackson.core:jackson-annotations")
