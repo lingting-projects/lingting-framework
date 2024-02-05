@@ -1,5 +1,7 @@
 package live.lingting.framework.domain;
 
+import live.lingting.framework.util.AnnotationUtils;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
@@ -47,7 +49,7 @@ public record ClassField(Field field, Method methodGet, Method methodSet) {
 	}
 
 	<T extends Annotation> T getAnnotation(AccessibleObject object, Class<T> a) {
-		return object == null ? null : object.getAnnotation(a);
+		return object == null ? null : AnnotationUtils.findAnnotation(object, a);
 	}
 
 	/**
