@@ -44,7 +44,7 @@ dependencyResolutionManagement {
             library("mybatisPlusCore", "com.baomidou", "mybatis-plus-core").version(mybatisPlusVersion)
             library("jSqlParser", "com.github.jsqlparser", "jsqlparser").version(jSqlParserVersion)
 
-            bundle("mybatisPlus", listOf("mybatis", "mybatisPlusAnnotation", "mybatisPlusExtension", "mybatisPlusBootStarter", "mybatisPlusCore", "jSqlParser"))
+            bundle("mybatisPlus", listOf("mybatis", "mybatisPlusAnnotation", "mybatisPlusExtension", "mybatisPlusCore"))
 
             val commonsNetVersion = "3.10.0"
             library("commonsNet", "commons-net", "commons-net").version(commonsNetVersion)
@@ -75,3 +75,4 @@ include("lingting-grpc-server")
 include("lingting-security")
 include("lingting-security-grpc")
 include("lingting-dependencies")
+include("lingting-mybatis")
