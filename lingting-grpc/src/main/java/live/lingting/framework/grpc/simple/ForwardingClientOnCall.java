@@ -1,4 +1,4 @@
-package live.lingting.framework.grpc.client.simple;
+package live.lingting.framework.grpc.simple;
 
 import io.grpc.ClientCall;
 import io.grpc.ForwardingClientCall;

@@ -6,7 +6,7 @@ import io.grpc.ClientCall;
 import io.grpc.ClientInterceptor;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
-import live.lingting.framework.grpc.client.simple.ForwardingClientOnCall;
+import live.lingting.framework.grpc.simple.ForwardingClientOnCall;
 import live.lingting.framework.properties.SecurityGrpcProperties;
 import live.lingting.framework.resource.SecurityTokenHolder;
 import live.lingting.framework.security.domain.SecurityToken;
@@ -14,7 +14,7 @@ import live.lingting.framework.security.domain.SecurityToken;
 /**
  * @author lingting 2023-12-18 16:37
  */
-@SuppressWarnings("java:S110")
+@SuppressWarnings({ "java:S110", "java:S1854" })
 public class SecurityGrpcRemoteResourceClientInterceptor implements ClientInterceptor {
 
 	private final Metadata.Key<String> authorizationKey;
@@ -29,9 +29,9 @@ public class SecurityGrpcRemoteResourceClientInterceptor implements ClientInterc
 		return new ForwardingClientOnCall<>(call) {
 			@Override
 			public void onStartBefore(Listener<R> responseListener, Metadata headers) {
-				SecurityToken token = SecurityTokenHolder.get();
-				if (token != null && token.isAvailable()) {
-					headers.put(authorizationKey, token.getRaw());
+				SecurityToken securityToken = SecurityTokenHolder.get();
+				if (securityToken != null && securityToken.isAvailable()) {
+					headers.put(authorizationKey, securityToken.getRaw());
 				}
 			}
 		};

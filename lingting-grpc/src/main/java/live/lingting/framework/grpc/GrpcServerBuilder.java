@@ -1,9 +1,9 @@
-package live.lingting.framework.grpc.server;
+package live.lingting.framework.grpc;
 
 import io.grpc.BindableService;
 import io.grpc.ServerBuilder;
 import io.grpc.ServerInterceptor;
-import live.lingting.framework.grpc.server.properties.GrpcServerProperties;
+import live.lingting.framework.grpc.properties.GrpcServerProperties;
 
 import java.util.ArrayList;
 import java.util.Collection;

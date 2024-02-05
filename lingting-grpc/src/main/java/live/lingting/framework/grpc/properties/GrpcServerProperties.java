@@ -1,4 +1,4 @@
-package live.lingting.framework.grpc.server.properties;
+package live.lingting.framework.grpc.properties;
 
 import live.lingting.framework.util.MdcUtils;
 import lombok.Data;

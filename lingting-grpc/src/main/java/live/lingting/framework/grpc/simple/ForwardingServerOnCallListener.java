@@ -1,4 +1,4 @@
-package live.lingting.framework.grpc.server.simple;
+package live.lingting.framework.grpc.simple;
 
 import io.grpc.ForwardingServerCallListener;
 import io.grpc.ServerCall;

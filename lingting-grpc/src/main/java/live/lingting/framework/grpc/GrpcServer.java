@@ -1,4 +1,4 @@
-package live.lingting.framework.grpc.server;
+package live.lingting.framework.grpc;
 
 import io.grpc.BindableService;
 import io.grpc.MethodDescriptor;
@@ -10,7 +10,7 @@ import io.grpc.ServerServiceDefinition;
 import io.grpc.ServiceDescriptor;
 import live.lingting.framework.Sequence;
 import live.lingting.framework.context.ContextComponent;
-import live.lingting.framework.grpc.server.interceptor.AbstractServerInterceptor;
+import live.lingting.framework.grpc.interceptor.AbstractServerInterceptor;
 import live.lingting.framework.util.ClassUtils;
 import live.lingting.framework.util.ThreadUtils;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package live.lingting.framework.grpc.client.interceptor;
+package live.lingting.framework.grpc.interceptor;
 
 import io.grpc.CallOptions;
 import io.grpc.Channel;
@@ -7,14 +7,12 @@ import io.grpc.ClientInterceptor;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import live.lingting.framework.Sequence;
-import live.lingting.framework.grpc.client.properties.GrpcClientProperties;
-import live.lingting.framework.grpc.client.simple.ForwardingClientOnCall;
+import live.lingting.framework.grpc.properties.GrpcClientProperties;
+import live.lingting.framework.grpc.simple.ForwardingClientOnCall;
 import live.lingting.framework.util.MdcUtils;
 import live.lingting.framework.util.StringUtils;
 
 /**
- * 在服务器端，按照拦截器注册的顺序从后到前执行，先执行后面的拦截器，再执行前面的拦截器。
- *
  * @author lingting 2023-04-13 13:23
  */
 @SuppressWarnings("java:S110")

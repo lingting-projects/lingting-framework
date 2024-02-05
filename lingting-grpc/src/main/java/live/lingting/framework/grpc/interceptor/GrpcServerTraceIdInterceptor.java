@@ -1,11 +1,11 @@
-package live.lingting.framework.grpc.server.interceptor;
+package live.lingting.framework.grpc.interceptor;
 
 import io.grpc.Metadata;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import live.lingting.framework.Sequence;
-import live.lingting.framework.grpc.server.properties.GrpcServerProperties;
+import live.lingting.framework.grpc.properties.GrpcServerProperties;
 import live.lingting.framework.util.MdcUtils;
 import live.lingting.framework.util.StringUtils;
 

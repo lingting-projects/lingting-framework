@@ -4,7 +4,7 @@ import com.google.protobuf.Empty;
 import io.grpc.ManagedChannel;
 import live.lingting.framework.context.ContextComponent;
 import live.lingting.framework.convert.SecurityGrpcConvert;
-import live.lingting.framework.grpc.client.GrpcClientProvide;
+import live.lingting.framework.grpc.GrpcClientProvide;
 import live.lingting.framework.interceptor.SecurityGrpcRemoteResourceClientInterceptor;
 import live.lingting.framework.properties.SecurityGrpcProperties;
 import live.lingting.framework.security.domain.AuthorizationVO;

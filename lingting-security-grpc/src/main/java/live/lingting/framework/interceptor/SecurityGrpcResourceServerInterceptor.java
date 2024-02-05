@@ -7,7 +7,7 @@ import io.grpc.ServerCallHandler;
 import io.grpc.Status;
 import live.lingting.framework.Sequence;
 import live.lingting.framework.exception.SecurityGrpcExceptionHandler;
-import live.lingting.framework.grpc.server.interceptor.AbstractServerInterceptor;
+import live.lingting.framework.grpc.interceptor.AbstractServerInterceptor;
 import live.lingting.framework.security.annotation.Authorize;
 import live.lingting.framework.security.authorize.SecurityAuthorize;
 import live.lingting.framework.security.domain.SecurityScope;

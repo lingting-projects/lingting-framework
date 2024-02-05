@@ -1,4 +1,4 @@
-package live.lingting.framework.grpc.client;
+package live.lingting.framework.grpc;
 
 import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
@@ -7,7 +7,7 @@ import io.grpc.stub.AbstractAsyncStub;
 import io.grpc.stub.AbstractBlockingStub;
 import io.grpc.stub.AbstractFutureStub;
 import io.grpc.stub.AbstractStub;
-import live.lingting.framework.grpc.client.properties.GrpcClientProperties;
+import live.lingting.framework.grpc.properties.GrpcClientProperties;
 import live.lingting.framework.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 

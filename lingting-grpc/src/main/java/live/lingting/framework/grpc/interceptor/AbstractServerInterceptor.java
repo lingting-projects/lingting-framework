@@ -1,7 +1,7 @@
-package live.lingting.framework.grpc.server.interceptor;
+package live.lingting.framework.grpc.interceptor;
 
 import io.grpc.ServerInterceptor;
-import live.lingting.framework.grpc.server.GrpcServer;
+import live.lingting.framework.grpc.GrpcServer;
 import lombok.Setter;
 
 /**
