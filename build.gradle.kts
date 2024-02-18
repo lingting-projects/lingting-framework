@@ -20,22 +20,24 @@ val encoding = "UTF-8"
 val ideaLanguageLevel = IdeaLanguageLevel(javaVersion);
 // 仅打包jar, 不打包源文件jar和文档jar
 val onlyJar = isSnapshot
-// spring java formatter 版本
-val formatterVersion = "0.0.41"
 
 plugins {
     id("idea")
     id("java")
-    id("checkstyle")
     id("maven-publish")
     id("signing")
-    alias(libs.plugins.springFormat)
 }
 
 idea {
     project {
         languageLevel = ideaLanguageLevel
         targetBytecodeVersion = javaVersion
+    }
+}
+
+buildscript {
+    dependencies {
+        classpath(libs.springFormatterClasspath)
     }
 }
 
@@ -74,7 +76,6 @@ allprojects {
 
         mavenCentral()
     }
-
     buildscript {
         repositories {
             mavenLocal()
@@ -186,7 +187,7 @@ allprojects {
 
 configure(javaProjects) {
     apply {
-        plugin(catalogLibs.plugins.springFormat.get().pluginId)
+        plugin("io.spring.javaformat")
     }
 
     dependencies {

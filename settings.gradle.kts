@@ -7,7 +7,6 @@ pluginManagement {
         maven(url = "https://maven.aliyun.com/repository/spring")
 
         mavenCentral()
-        google()
     }
 }
 
@@ -15,27 +14,27 @@ dependencyResolutionManagement {
     val mybatisVersion = "3.5.15"
     val mybatisPlusVersion = "3.5.5"
     val jSqlParserVersion = "4.8"
-    val springBootVersion = "3.2.1"
     val grpcVersion = "1.61.0"
-
-    val mapstructVersion = "1.5.3.Final"
-    val lombokVersion = "1.18.30"
-    val lombokMapstructBindingVersion = "0.2.0"
-    val formatterVersion = "0.0.41"
 
     versionCatalogs {
         create("libs") {
-            version("formatterVersion", formatterVersion)
-            library("springFormatter", "io.spring.javaformat", "spring-javaformat-checkstyle").version(formatterVersion)
+            version("springBootVersion", "3.2.1")
+            version("formatterVersion", "0.0.41")
+            version("mapstructVersion", "1.5.3.Final")
+            version("lombokVersion", "1.18.30")
+            version("lombokMapstructBindingVersion", "0.2.0")
 
-            library("springBootDependencies", "org.springframework.boot", "spring-boot-dependencies").version(springBootVersion)
+            library("springBootClasspath", "org.springframework.boot", "spring-boot-gradle-plugin").versionRef("springBootVersion")
+            library("springFormatterClasspath", "io.spring.javaformat", "spring-javaformat-gradle-plugin").versionRef("formatterVersion")
+
+            library("springBootDependencies", "org.springframework.boot", "spring-boot-dependencies").versionRef("springBootVersion")
             library("grpcDependencies", "io.grpc", "grpc-bom").version(grpcVersion)
 
-            library("mapstruct", "org.mapstruct", "mapstruct").version(mapstructVersion)
-            library("lombok", "org.projectlombok", "lombok").version(lombokVersion)
+            library("mapstruct", "org.mapstruct", "mapstruct").versionRef("mapstructVersion")
+            library("lombok", "org.projectlombok", "lombok").versionRef("lombokVersion")
 
-            library("mapstructProcessor", "org.mapstruct", "mapstruct-processor").version(mapstructVersion)
-            library("lombokMapstruct", "org.projectlombok", "lombok-mapstruct-binding").version(lombokMapstructBindingVersion)
+            library("mapstructProcessor", "org.mapstruct", "mapstruct-processor").versionRef("mapstructVersion")
+            library("lombokMapstruct", "org.projectlombok", "lombok-mapstruct-binding").versionRef("lombokMapstructBindingVersion")
 
             library("mybatis", "org.mybatis", "mybatis").version(mybatisVersion)
             library("mybatisPlusAnnotation", "com.baomidou", "mybatis-plus-annotation").version(mybatisPlusVersion)
@@ -55,8 +54,6 @@ dependencyResolutionManagement {
             bundle("implementation", listOf("mapstruct"));
             bundle("compile", listOf("lombok"))
             bundle("annotation", listOf("mapstructProcessor", "lombok", "lombokMapstruct"))
-
-            plugin("springFormat", "io.spring.javaformat").version(formatterVersion)
         }
     }
 
