@@ -6,7 +6,6 @@ import live.lingting.framework.context.ContextComponent;
 import live.lingting.framework.convert.SecurityGrpcConvert;
 import live.lingting.framework.grpc.GrpcClientProvide;
 import live.lingting.framework.interceptor.SecurityGrpcRemoteResourceClientInterceptor;
-import live.lingting.framework.properties.SecurityGrpcProperties;
 import live.lingting.framework.security.domain.AuthorizationVO;
 import live.lingting.framework.security.domain.SecurityScope;
 import live.lingting.framework.security.domain.SecurityToken;
@@ -27,12 +26,10 @@ public class SecurityGrpcDefaultRemoteResourceServiceImpl implements SecurityRes
 	protected final SecurityGrpcConvert convert;
 
 	public SecurityGrpcDefaultRemoteResourceServiceImpl(SecurityProperties properties,
-			SecurityGrpcProperties grpcProperties, GrpcClientProvide provide, SecurityGrpcConvert convert) {
+			SecurityGrpcRemoteResourceClientInterceptor interceptor, GrpcClientProvide provide,
+			SecurityGrpcConvert convert) {
 		SecurityProperties.Authorization authorization = properties.getAuthorization();
-		channel = provide.builder(authorization.getRemoteHost())
-			.provide()
-			.interceptor(new SecurityGrpcRemoteResourceClientInterceptor(grpcProperties))
-			.build();
+		channel = provide.builder(authorization.getRemoteHost()).provide().interceptor(interceptor).build();
 		blocking = provide.stub(channel, SecurityGrpcAuthorizationServiceGrpc::newBlockingStub);
 		this.convert = convert;
 	}

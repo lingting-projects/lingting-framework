@@ -14,7 +14,7 @@ import live.lingting.framework.security.domain.SecurityToken;
 /**
  * @author lingting 2023-12-18 16:37
  */
-@SuppressWarnings({ "java:S110", "java:S1854" })
+@SuppressWarnings({ "java:S110" })
 public class SecurityGrpcRemoteResourceClientInterceptor implements ClientInterceptor {
 
 	private final Metadata.Key<String> authorizationKey;
