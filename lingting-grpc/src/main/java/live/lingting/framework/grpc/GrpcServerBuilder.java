@@ -55,6 +55,9 @@ public class GrpcServerBuilder {
 
 	public GrpcServerBuilder properties(GrpcServerProperties properties) {
 		this.properties = properties;
+		if (properties.getPort() != null) {
+			port(properties.getPort());
+		}
 		return this;
 	}
 
