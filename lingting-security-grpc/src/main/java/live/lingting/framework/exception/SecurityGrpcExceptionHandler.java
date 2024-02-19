@@ -1,5 +1,6 @@
 package live.lingting.framework.exception;
 
+import io.grpc.MethodDescriptor;
 import io.grpc.Status;
 import live.lingting.framework.security.exception.AuthorizationException;
 import live.lingting.framework.security.exception.PermissionsException;
@@ -16,24 +17,24 @@ public class SecurityGrpcExceptionHandler {
 	/**
 	 * 鉴权异常
 	 */
-	public Status handlerAuthorizationException(AuthorizationException e) {
-		log.error("Authorization error! {}", e.getMessage());
+	public Status handlerAuthorizationException(MethodDescriptor<?, ?> descriptor, AuthorizationException e) {
+		log.error("Authorization error! {}. {}", descriptor.getFullMethodName(), e.getMessage());
 		return Status.UNAUTHENTICATED.withCause(e);
 	}
 
 	/**
 	 * 权限异常
 	 */
-	public Status handlerPermissionsException(PermissionsException e) {
-		log.error("Permissions error! {}", e.getMessage());
+	public Status handlerPermissionsException(MethodDescriptor<?, ?> descriptor, PermissionsException e) {
+		log.error("Permissions error! {}. {}", descriptor.getFullMethodName(), e.getMessage());
 		return Status.PERMISSION_DENIED.withCause(e);
 	}
 
 	/**
 	 * 其他异常
 	 */
-	public Status handlerOther(Exception e) {
-		log.error("Authorize valid error!", e);
+	public Status handlerOther(MethodDescriptor<?, ?> descriptor, Exception e) {
+		log.error("Authorize valid error! {}.", descriptor.getFullMethodName(), e);
 		return Status.ABORTED.withCause(e);
 	}
 

@@ -6,7 +6,7 @@ package live.lingting.framework.security.exception;
 public abstract class SecurityException extends RuntimeException {
 
 	protected SecurityException() {
-		super();
+		super("");
 	}
 
 	protected SecurityException(String message) {
@@ -18,7 +18,7 @@ public abstract class SecurityException extends RuntimeException {
 	}
 
 	protected SecurityException(Throwable cause) {
-		super(cause);
+		super("", cause);
 	}
 
 	protected SecurityException(String message, Throwable cause, boolean enableSuppression,

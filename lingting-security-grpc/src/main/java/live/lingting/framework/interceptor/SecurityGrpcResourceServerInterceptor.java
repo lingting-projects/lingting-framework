@@ -54,13 +54,13 @@ public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterce
 				this.authorize.valid(annotation);
 			}
 			catch (AuthorizationException e) {
-				status = exceptionHandler.handlerAuthorizationException(e);
+				status = exceptionHandler.handlerAuthorizationException(descriptor, e);
 			}
 			catch (PermissionsException e) {
-				status = exceptionHandler.handlerPermissionsException(e);
+				status = exceptionHandler.handlerPermissionsException(descriptor, e);
 			}
 			catch (Exception e) {
-				status = exceptionHandler.handlerOther(e);
+				status = exceptionHandler.handlerOther(descriptor, e);
 			}
 
 			// 权限校验异常! 关闭
