@@ -217,6 +217,7 @@ configure(javaProjects) {
 
     tasks.withType<JavaCompile> {
         options.encoding = encoding
+        options.compilerArgs.add("-parameters")
     }
 
     tasks.withType<Javadoc> {
