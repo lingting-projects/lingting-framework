@@ -12,7 +12,6 @@ public interface ColumnFunction<T> extends SFunction<T, String> {
 
 	/**
 	 * 快捷的创建一个 ColumnFunction
-	 *
 	 * @param columnString 实际的 column
 	 * @return ColumnFunction
 	 */

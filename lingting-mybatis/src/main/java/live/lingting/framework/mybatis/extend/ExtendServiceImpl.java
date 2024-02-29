@@ -55,7 +55,6 @@ public abstract class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements
 
 	/**
 	 * 获取mapperStatementId
-	 *
 	 * @param sqlMethod 方法名
 	 * @return 命名id
 	 * @since 3.4.0
@@ -82,11 +81,10 @@ public abstract class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements
 
 	/**
 	 * 执行批量操作
-	 *
-	 * @param list      数据集合
+	 * @param list 数据集合
 	 * @param batchSize 批量大小
-	 * @param consumer  执行方法
-	 * @param <E>       泛型
+	 * @param consumer 执行方法
+	 * @param <E> 泛型
 	 * @return 操作结果
 	 * @since 3.3.1
 	 */

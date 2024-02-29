@@ -5,6 +5,8 @@ import live.lingting.framework.util.IpUtils;
 import live.lingting.framework.util.ThreadUtils;
 import live.lingting.framework.value.CycleValue;
 import live.lingting.framework.value.StepValue;
+import live.lingting.framework.value.cycle.StepCycleValue;
+import live.lingting.framework.value.step.LongStepValue;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +52,7 @@ public class NtpFactory {
 	private static final String[] HOSTS = { TIME_WINDOWS, TIME_NIST, TIME_APPLE, TIME_ASIA, CN_NTP, NTP_NTSC,
 			CN_POOL, };
 
-	public static final StepValue<Long> STEP_INIT = StepValue.simple(1, null, 10L);
+	public static final StepValue<Long> STEP_INIT = new LongStepValue(1, null, Long.valueOf(10));
 
 	public static final NtpFactory INSTANCE = new NtpFactory();
 
@@ -73,7 +75,7 @@ public class NtpFactory {
 	}
 
 	public Ntp create(Collection<String> hosts) throws InterruptedException {
-		CycleValue<Long> cycle = CycleValue.step(STEP_INIT);
+		CycleValue<Long> cycle = new StepCycleValue<>(STEP_INIT);
 		for (String host : hosts) {
 			if (blockHosts.contains(host)) {
 				log.debug("[{}] is block host! skip", host);

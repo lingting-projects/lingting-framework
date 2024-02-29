@@ -81,7 +81,7 @@ class OkHttpDownloadTest {
 	void multi() throws IOException, InterruptedException, NoSuchAlgorithmException {
 		OkHttpDownload download = OkHttpDownload.multi(url)
 			.filename(String.format("%d.%s.m.pom", System.currentTimeMillis(), RandomUtils.nextHex(3)))
-			.maxShardSize(520)
+			.maxShardSize(50)
 			.build();
 
 		assertFalse(download.isStart());

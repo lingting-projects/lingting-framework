@@ -50,7 +50,6 @@ public class LambdaAliasQueryWrapperX<T> extends LambdaQueryWrapperX<T> {
 	/**
 	 * 获取查询带别名的查询字段 暂时没有想到好的方法进行查询字段注入 本来的想法是 自定义注入 SqlFragment 但是目前 mybatis-plus 的
 	 * TableInfo 解析在 xml 解析之后进行，导致 include 标签被提前替换， 先在 wrapper 中做简单处理吧
-	 *
 	 * @return String allAliasSqlSelect
 	 */
 	public String getAllAliasSqlSelect() {
@@ -75,7 +74,6 @@ public class LambdaAliasQueryWrapperX<T> extends LambdaQueryWrapperX<T> {
 
 	/**
 	 * 查询条件构造时添加上表别名
-	 *
 	 * @param column 字段Lambda
 	 * @return 表别名.字段名，如：t.id
 	 */

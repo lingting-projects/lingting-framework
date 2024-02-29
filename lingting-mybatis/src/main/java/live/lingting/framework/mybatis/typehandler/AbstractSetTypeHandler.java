@@ -13,7 +13,6 @@ public abstract class AbstractSetTypeHandler<T> extends AbstractJacksonTypeHandl
 
 	/**
 	 * 取出数据转化异常时 使用
-	 *
 	 * @return 实体类对象
 	 */
 	@Override
@@ -23,7 +22,6 @@ public abstract class AbstractSetTypeHandler<T> extends AbstractJacksonTypeHandl
 
 	/**
 	 * 存储数据异常时 使用
-	 *
 	 * @return 存储数据
 	 */
 	@Override

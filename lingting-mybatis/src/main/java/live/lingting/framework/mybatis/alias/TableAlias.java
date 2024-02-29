@@ -23,7 +23,6 @@ public @interface TableAlias {
 
 	/**
 	 * 当前实体对应的表别名
-	 *
 	 * @return String 表别名
 	 */
 	String value();

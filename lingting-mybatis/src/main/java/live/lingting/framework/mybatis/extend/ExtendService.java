@@ -39,7 +39,6 @@ public interface ExtendService<T> {
 
 	/**
 	 * 插入一条记录（选择字段，策略插入）
-	 *
 	 * @param entity 实体对象
 	 */
 	default boolean save(T entity) {
@@ -48,7 +47,6 @@ public interface ExtendService<T> {
 
 	/**
 	 * 插入（批量）
-	 *
 	 * @param entityList 实体对象集合
 	 */
 	default boolean saveBatch(Collection<T> entityList) {
@@ -57,15 +55,13 @@ public interface ExtendService<T> {
 
 	/**
 	 * 插入（批量）
-	 *
 	 * @param entityList 实体对象集合
-	 * @param batchSize  插入批次数量
+	 * @param batchSize 插入批次数量
 	 */
 	boolean saveBatch(Collection<T> entityList, int batchSize);
 
 	/**
 	 * 根据 ID 删除
-	 *
 	 * @param id 主键ID
 	 */
 	default boolean removeById(Serializable id) {
@@ -74,7 +70,6 @@ public interface ExtendService<T> {
 
 	/**
 	 * 删除（根据ID 批量删除）
-	 *
 	 * @param idList 主键ID列表
 	 */
 	default boolean removeByIds(Collection<? extends Serializable> idList) {
@@ -86,7 +81,6 @@ public interface ExtendService<T> {
 
 	/**
 	 * 根据 ID 选择修改
-	 *
 	 * @param entity 实体对象
 	 */
 	default boolean updateById(T entity) {
@@ -95,7 +89,6 @@ public interface ExtendService<T> {
 
 	/**
 	 * 根据ID 批量更新
-	 *
 	 * @param entityList 实体对象集合
 	 */
 	default boolean updateBatchById(Collection<T> entityList) {
@@ -104,9 +97,8 @@ public interface ExtendService<T> {
 
 	/**
 	 * 根据ID 批量更新
-	 *
 	 * @param entityList 实体对象集合
-	 * @param batchSize  更新批次数量
+	 * @param batchSize 更新批次数量
 	 */
 	boolean updateBatchById(Collection<T> entityList, int batchSize);
 
@@ -120,7 +112,6 @@ public interface ExtendService<T> {
 
 	/**
 	 * 根据 ID 查询
-	 *
 	 * @param id 主键ID
 	 */
 	default T getById(Serializable id) {
@@ -129,7 +120,6 @@ public interface ExtendService<T> {
 
 	/**
 	 * 查询（根据ID 批量查询）
-	 *
 	 * @param idList 主键ID列表
 	 */
 	default List<T> listByIds(Collection<? extends Serializable> idList) {
@@ -145,14 +135,12 @@ public interface ExtendService<T> {
 
 	/**
 	 * 获取对应 entity 的 BaseMapper
-	 *
 	 * @return BaseMapper
 	 */
 	ExtendMapper<T> getBaseMapper();
 
 	/**
 	 * 获取 entity 的 class
-	 *
 	 * @return {@link Class<T>}
 	 */
 	Class<T> getEntityClass();
@@ -169,8 +157,7 @@ public interface ExtendService<T> {
 
 	/**
 	 * 开启事务
-	 *
-	 * @param runnable  在事务中运行
+	 * @param runnable 在事务中运行
 	 * @param predicate 消费异常, 返回true表示回滚事务
 	 */
 	default void useTransactional(ThrowingRunnable runnable, Predicate<Throwable> predicate) {
@@ -210,7 +197,6 @@ public interface ExtendService<T> {
 
 	/**
 	 * 保存降级, 在保存失败时执行降级方法
-	 *
 	 * @param t 保存的数据
 	 */
 	default void saveFallback(T t) {
@@ -219,8 +205,7 @@ public interface ExtendService<T> {
 
 	/**
 	 * 保存降级, 在保存失败时执行降级方法
-	 *
-	 * @param t        保存的数据
+	 * @param t 保存的数据
 	 * @param fallback 自定义降级处理
 	 */
 	default void saveFallback(T t, Function<Exception, RuntimeException> fallback) {
@@ -229,7 +214,6 @@ public interface ExtendService<T> {
 
 	/**
 	 * 更新降级, 在更新失败时执行降级方法
-	 *
 	 * @param t 更新的数据
 	 */
 	default void updateFallback(T t) {
@@ -238,8 +222,7 @@ public interface ExtendService<T> {
 
 	/**
 	 * 更新降级, 在更新失败时执行降级方法
-	 *
-	 * @param t        更新的数据
+	 * @param t 更新的数据
 	 * @param fallback 自定义降级处理
 	 */
 	default void updateFallback(T t, Function<Exception, RuntimeException> fallback) {

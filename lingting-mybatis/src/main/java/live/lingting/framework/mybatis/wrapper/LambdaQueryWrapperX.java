@@ -79,7 +79,6 @@ public class LambdaQueryWrapperX<T> extends AbstractLambdaWrapper<T, LambdaQuery
 
 	/**
 	 * SELECT 部分 SQL 设置
-	 *
 	 * @param columns 查询字段
 	 */
 	@SafeVarargs
@@ -116,7 +115,6 @@ public class LambdaQueryWrapperX<T> extends AbstractLambdaWrapper<T, LambdaQuery
 	 * <p>
 	 * 例5: 只要主键字段 -> select(i -&gt; false)
 	 * </p>
-	 *
 	 * @param predicate 过滤方式
 	 * @return this
 	 */
@@ -161,7 +159,6 @@ public class LambdaQueryWrapperX<T> extends AbstractLambdaWrapper<T, LambdaQuery
 
 	/**
 	 * 当前条件只是否非null，且不为空
-	 *
 	 * @param obj 值
 	 * @return boolean 不为空返回true
 	 */

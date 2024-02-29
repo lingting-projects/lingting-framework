@@ -64,7 +64,6 @@ public abstract class AbstractJacksonTypeHandler<T> extends BaseTypeHandler<T> {
 
 	/**
 	 * 从数据库取出的数据转化为对象
-	 *
 	 * @param json 数据库存储数据
 	 * @return 实体类对象
 	 */
@@ -72,7 +71,6 @@ public abstract class AbstractJacksonTypeHandler<T> extends BaseTypeHandler<T> {
 
 	/**
 	 * 将实体类对象转化为数据库存储数据
-	 *
 	 * @param t 实体类对象
 	 * @return 数据库存储数据
 	 */
@@ -82,14 +80,12 @@ public abstract class AbstractJacksonTypeHandler<T> extends BaseTypeHandler<T> {
 
 	/**
 	 * 取出数据转化异常时 使用
-	 *
 	 * @return 实体类对象
 	 */
 	protected abstract T defaultValue();
 
 	/**
 	 * 存储数据异常时 使用
-	 *
 	 * @return 存储数据
 	 */
 	protected abstract String defaultJson();

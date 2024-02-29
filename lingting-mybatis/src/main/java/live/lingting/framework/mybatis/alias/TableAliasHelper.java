@@ -34,7 +34,6 @@ public final class TableAliasHelper {
 
 	/**
 	 * 带别名的查询字段sql
-	 *
 	 * @param clazz 实体类class
 	 * @return sql片段
 	 */
@@ -60,7 +59,6 @@ public final class TableAliasHelper {
 
 	/**
 	 * 获取实体类对应别名
-	 *
 	 * @param clazz 实体类
 	 * @return 表别名
 	 */
