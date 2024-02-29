@@ -1,12 +1,10 @@
 package live.lingting.framework.value;
 
-import live.lingting.framework.function.InterruptedRunnable;
 import live.lingting.framework.lock.JavaReentrantLock;
 import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.util.ValueUtils;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Collection;
 import java.util.Map;
@@ -20,14 +18,10 @@ import java.util.function.UnaryOperator;
  */
 public class WaitValue<T> {
 
-	@Getter
 	protected final JavaReentrantLock lock = new JavaReentrantLock();
 
 	@Getter
 	protected T value;
-
-	@Setter
-	protected InterruptedRunnable sleepRunnable = () -> lock.await(1, TimeUnit.HOURS);
 
 	public static <T> WaitValue<T> of() {
 		return new WaitValue<>();
@@ -72,14 +66,14 @@ public class WaitValue<T> {
 				return false;
 			}
 
-			if (v instanceof Collection<?> collection) {
-				return !CollectionUtils.isEmpty(collection);
+			if (v instanceof Collection) {
+				return !CollectionUtils.isEmpty((Collection<?>) v);
 			}
-			else if (v instanceof Map<?, ?> map) {
-				return !CollectionUtils.isEmpty(map);
+			else if (v instanceof Map) {
+				return !CollectionUtils.isEmpty((Map<?, ?>) v);
 			}
-			else if (v instanceof String string) {
-				return StringUtils.hasText(string);
+			else if (v instanceof String) {
+				return StringUtils.hasText((CharSequence) v);
 			}
 
 			return true;
@@ -89,7 +83,7 @@ public class WaitValue<T> {
 	public T wait(Predicate<T> predicate) throws InterruptedException {
 		lock.lockInterruptibly();
 		try {
-			return ValueUtils.await(() -> value, predicate, sleepRunnable);
+			return ValueUtils.await(() -> value, predicate, () -> lock.await(1, TimeUnit.HOURS));
 		}
 		finally {
 			lock.unlock();

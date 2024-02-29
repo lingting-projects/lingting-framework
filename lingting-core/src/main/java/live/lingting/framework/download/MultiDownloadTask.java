@@ -29,13 +29,13 @@ public class MultiDownloadTask<D extends AbstractMultiDownload<D>> {
 		long maxShardSize = download.getMaxShardSize();
 		while (!finished) {
 			Long next = next();
-			if (next == null || next < 0 || next >= size) {
+			if (next == null || next < 0) {
 				stop();
 				return;
 			}
 
 			// 起始值
-			long start = next;
+			long start = next - maxShardSize;
 			// 结束值
 			long end = Math.min(start + maxShardSize, size);
 			tryDownload(start, end);

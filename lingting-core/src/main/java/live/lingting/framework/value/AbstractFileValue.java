@@ -62,7 +62,7 @@ public abstract class AbstractFileValue<T> {
 			return Optional.ofNullable(value);
 		}
 		catch (Exception e) {
-			log.error("resolve file context error! file: {}", file.getAbsolutePath(), e);
+			log.error("解析文件内容异常! 文件: {}", file.getAbsolutePath(), e);
 			return Optional.empty();
 		}
 	}
