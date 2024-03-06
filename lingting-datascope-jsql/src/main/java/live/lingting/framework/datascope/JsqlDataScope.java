@@ -8,7 +8,7 @@ import net.sf.jsqlparser.schema.Column;
  * @author Hccake 2020/9/28
  * @version 1.0
  */
-public interface DataScope {
+public interface JsqlDataScope {
 
 	/**
 	 * 数据所对应的资源

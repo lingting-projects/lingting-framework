@@ -1,6 +1,6 @@
 package live.lingting.framework.datascope.parser;
 
-import live.lingting.framework.datascope.DataScope;
+import live.lingting.framework.datascope.JsqlDataScope;
 import live.lingting.framework.datascope.exception.DataScopeException;
 import live.lingting.framework.datascope.holder.DataScopeHolder;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -21,7 +21,7 @@ public abstract class DataScopeParser {
 
 	protected final Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
 
-	public String parser(String sql, List<DataScope> scopes, boolean isMulti) {
+	public String parser(String sql, List<JsqlDataScope> scopes, boolean isMulti) {
 		try {
 			DataScopeHolder.push(scopes);
 			Statements statements = parser(sql, isMulti);
@@ -46,11 +46,11 @@ public abstract class DataScopeParser {
 		}
 	}
 
-	public String parserSingle(String sql, List<DataScope> scopes) {
+	public String parserSingle(String sql, List<JsqlDataScope> scopes) {
 		return parser(sql, scopes, false);
 	}
 
-	public String parserMulti(String sql, List<DataScope> scopes) {
+	public String parserMulti(String sql, List<JsqlDataScope> scopes) {
 		return parser(sql, scopes, true);
 	}
 

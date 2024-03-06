@@ -1,6 +1,6 @@
 package live.lingting.framework.datascope.parser;
 
-import live.lingting.framework.datascope.DataScope;
+import live.lingting.framework.datascope.JsqlDataScope;
 import live.lingting.framework.datascope.holder.DataScopeHolder;
 import live.lingting.framework.datascope.holder.DataScopeMatchNumHolder;
 import live.lingting.framework.datascope.util.SqlParseUtils;
@@ -287,7 +287,7 @@ public class DefaultDataScopeParser extends DataScopeParser {
 			String tableName = SqlParseUtils.getTableName(table.getName());
 
 			// 进行 dataScope 的表名匹配
-			List<DataScope> matchDataScopes = DataScopeHolder.peek()
+			List<JsqlDataScope> matchDataScopes = DataScopeHolder.peek()
 				.stream()
 				.filter(x -> x.includes(tableName))
 				.toList();

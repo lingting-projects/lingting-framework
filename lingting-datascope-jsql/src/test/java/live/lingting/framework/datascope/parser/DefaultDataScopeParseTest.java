@@ -1,6 +1,6 @@
 package live.lingting.framework.datascope.parser;
 
-import live.lingting.framework.datascope.DataScope;
+import live.lingting.framework.datascope.JsqlDataScope;
 import live.lingting.framework.datascope.handler.DataPermissionHandler;
 import live.lingting.framework.datascope.handler.DefaultDataPermissionHandler;
 import live.lingting.framework.datascope.util.SqlParseUtils;
@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class DefaultDataScopeParseTest {
 
-	static class TenantDataScope implements DataScope {
+	static class TenantDataScope implements JsqlDataScope {
 
 		final String columnName = "tenant_id";
 
@@ -51,7 +51,7 @@ class DefaultDataScopeParseTest {
 
 	}
 
-	DataScope tenantDataScope = new DefaultDataScopeParseTest.TenantDataScope();
+	JsqlDataScope tenantDataScope = new DefaultDataScopeParseTest.TenantDataScope();
 
 	DataPermissionHandler dataPermissionHandler = new DefaultDataPermissionHandler(
 			Collections.singletonList(tenantDataScope));

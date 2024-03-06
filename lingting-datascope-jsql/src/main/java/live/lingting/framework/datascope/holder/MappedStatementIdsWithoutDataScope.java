@@ -1,6 +1,6 @@
 package live.lingting.framework.datascope.holder;
 
-import live.lingting.framework.datascope.DataScope;
+import live.lingting.framework.datascope.JsqlDataScope;
 
 import java.util.HashSet;
 import java.util.List;
@@ -20,16 +20,16 @@ public final class MappedStatementIdsWithoutDataScope {
 	/**
 	 * key: DataScope class，value: 该 DataScope 不需要处理的 mappedStatementId 集合
 	 */
-	private static final Map<Class<? extends DataScope>, HashSet<String>> WITHOUT_MAPPED_STATEMENT_ID_MAP = new ConcurrentHashMap<>();
+	private static final Map<Class<? extends JsqlDataScope>, HashSet<String>> WITHOUT_MAPPED_STATEMENT_ID_MAP = new ConcurrentHashMap<>();
 
 	/**
 	 * 给所有的 DataScope 对应的忽略列表添加对应的 mappedStatementId
 	 * @param dataScopeList 数据范围集合
 	 * @param mappedStatementId mappedStatementId
 	 */
-	public static void addToWithoutSet(List<DataScope> dataScopeList, String mappedStatementId) {
-		for (DataScope dataScope : dataScopeList) {
-			Class<? extends DataScope> dataScopeClass = dataScope.getClass();
+	public static void addToWithoutSet(List<JsqlDataScope> dataScopeList, String mappedStatementId) {
+		for (JsqlDataScope dataScope : dataScopeList) {
+			Class<? extends JsqlDataScope> dataScopeClass = dataScope.getClass();
 			HashSet<String> set = WITHOUT_MAPPED_STATEMENT_ID_MAP.computeIfAbsent(dataScopeClass,
 					key -> new HashSet<>());
 			set.add(mappedStatementId);
@@ -42,9 +42,9 @@ public final class MappedStatementIdsWithoutDataScope {
 	 * @param mappedStatementId mappedStatementId
 	 * @return 忽略控制返回 true
 	 */
-	public static boolean onAllWithoutSet(List<DataScope> dataScopeList, String mappedStatementId) {
-		for (DataScope dataScope : dataScopeList) {
-			Class<? extends DataScope> dataScopeClass = dataScope.getClass();
+	public static boolean onAllWithoutSet(List<JsqlDataScope> dataScopeList, String mappedStatementId) {
+		for (JsqlDataScope dataScope : dataScopeList) {
+			Class<? extends JsqlDataScope> dataScopeClass = dataScope.getClass();
 			HashSet<String> set = WITHOUT_MAPPED_STATEMENT_ID_MAP.computeIfAbsent(dataScopeClass,
 					key -> new HashSet<>());
 			if (!set.contains(mappedStatementId)) {

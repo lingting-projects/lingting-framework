@@ -1,6 +1,6 @@
 package live.lingting.framework.datascope.handler;
 
-import live.lingting.framework.datascope.DataScope;
+import live.lingting.framework.datascope.JsqlDataScope;
 
 import java.util.List;
 
@@ -16,14 +16,14 @@ public interface DataPermissionHandler {
 	 * 系统配置的所有的数据范围
 	 * @return 数据范围集合
 	 */
-	List<DataScope> dataScopes();
+	List<JsqlDataScope> dataScopes();
 
 	/**
 	 * 根据权限注解过滤后的数据范围集合
 	 * @param mappedStatementId Mapper方法ID
 	 * @return 数据范围集合
 	 */
-	List<DataScope> filterDataScopes(String mappedStatementId);
+	List<JsqlDataScope> filterDataScopes(String mappedStatementId);
 
 	/**
 	 * 是否忽略权限控制，用于及早的忽略控制，例如管理员直接放行，而不必等到DataScope中再进行过滤处理，提升效率
@@ -31,6 +31,6 @@ public interface DataPermissionHandler {
 	 * @param dataScopeList 当前应用的 dataScope 集合
 	 * @param mappedStatementId Mapper方法ID
 	 */
-	boolean ignorePermissionControl(List<DataScope> dataScopeList, String mappedStatementId);
+	boolean ignorePermissionControl(List<JsqlDataScope> dataScopeList, String mappedStatementId);
 
 }

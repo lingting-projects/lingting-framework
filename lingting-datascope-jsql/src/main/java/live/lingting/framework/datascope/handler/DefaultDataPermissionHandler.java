@@ -1,6 +1,6 @@
 package live.lingting.framework.datascope.handler;
 
-import live.lingting.framework.datascope.DataScope;
+import live.lingting.framework.datascope.JsqlDataScope;
 import live.lingting.framework.datascope.holder.DataPermissionRuleHolder;
 import live.lingting.framework.datascope.holder.MappedStatementIdsWithoutDataScope;
 import lombok.RequiredArgsConstructor;
@@ -20,14 +20,14 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class DefaultDataPermissionHandler implements DataPermissionHandler {
 
-	private final List<DataScope> dataScopes;
+	private final List<JsqlDataScope> dataScopes;
 
 	/**
 	 * 系统配置的所有的数据范围
 	 * @return 数据范围集合
 	 */
 	@Override
-	public List<DataScope> dataScopes() {
+	public List<JsqlDataScope> dataScopes() {
 		return dataScopes;
 	}
 
@@ -37,7 +37,7 @@ public class DefaultDataPermissionHandler implements DataPermissionHandler {
 	 * @return 数据范围集合
 	 */
 	@Override
-	public List<DataScope> filterDataScopes(String mappedStatementId) {
+	public List<JsqlDataScope> filterDataScopes(String mappedStatementId) {
 		if (this.dataScopes == null || this.dataScopes.isEmpty()) {
 			return new ArrayList<>();
 		}
@@ -57,7 +57,7 @@ public class DefaultDataPermissionHandler implements DataPermissionHandler {
 	 * @return always false
 	 */
 	@Override
-	public boolean ignorePermissionControl(List<DataScope> dataScopeList, String mappedStatementId) {
+	public boolean ignorePermissionControl(List<JsqlDataScope> dataScopeList, String mappedStatementId) {
 		return MappedStatementIdsWithoutDataScope.onAllWithoutSet(dataScopeList, mappedStatementId);
 	}
 
@@ -66,7 +66,7 @@ public class DefaultDataPermissionHandler implements DataPermissionHandler {
 	 * @param dataPermissionRule 数据权限规则
 	 * @return List<DataScope>
 	 */
-	protected List<DataScope> filterDataScopes(DataPermissionRule dataPermissionRule) {
+	protected List<JsqlDataScope> filterDataScopes(DataPermissionRule dataPermissionRule) {
 		if (dataPermissionRule == null) {
 			return dataScopes;
 		}
