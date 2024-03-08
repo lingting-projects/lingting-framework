@@ -20,9 +20,9 @@ import java.util.List;
 @Accessors(chain = true)
 public class PaginationParams {
 
-	private Long page;
+	private long page = 1;
 
-	private Long size;
+	private long size = 10;
 
 	private List<Sort> sorts;
 
@@ -33,16 +33,16 @@ public class PaginationParams {
 		return (getPage() - 1) * getSize();
 	}
 
-	public Long getPage() {
-		if (page == null || page < 1) {
-			page = 1L;
+	public long getPage() {
+		if (page < 1) {
+			page = 1;
 		}
 		return page;
 	}
 
-	public Long getSize() {
-		if (size == null || size < 1) {
-			size = 10L;
+	public long getSize() {
+		if (size < 1) {
+			size = 10;
 		}
 		return size;
 	}

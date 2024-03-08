@@ -195,7 +195,7 @@ public class ElasticsearchApi<T> {
 		List<SortOptions> sorts = ofLimitSort(params.getSorts());
 
 		int from = (int) params.start();
-		int size = params.getSize().intValue();
+		int size = (int) params.getSize();
 
 		HitsMetadata<T> hitsMetadata = search(builder -> builder.size(size).from(from).sort(sorts), queries);
 
@@ -424,7 +424,7 @@ public class ElasticsearchApi<T> {
 			// 返回匹配的所有文档数量
 			.trackTotalHits(TrackHits.of(th -> th.enabled(true))))
 			.index(index)
-			.size(params.getSize().intValue())
+			.size((int) params.getSize())
 			.query(query);
 
 		SearchResponse<T> search = client.search(builder.build(), cls);

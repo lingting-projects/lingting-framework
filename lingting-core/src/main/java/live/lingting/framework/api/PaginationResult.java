@@ -19,7 +19,7 @@ import java.util.List;
 @Accessors(chain = true)
 public class PaginationResult<T> {
 
-	private Long total = 0L;
+	private long total = 0;
 
 	private List<T> records = Collections.emptyList();
 

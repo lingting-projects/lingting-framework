@@ -23,14 +23,14 @@ public class ScrollResult<T, C> {
 
 	private C cursor;
 
-	private Long total;
+	private long total = 0;
 
 	public static <T, C> ScrollResult<T, C> of(List<T> collection, C cursor) {
-		return new ScrollResult<>(collection, cursor, (long) collection.size());
+		return new ScrollResult<>(collection, cursor, collection.size());
 	}
 
 	public static <T, C> ScrollResult<T, C> empty() {
-		return new ScrollResult<>(Collections.emptyList(), null, 0L);
+		return new ScrollResult<>(Collections.emptyList(), null, 0);
 	}
 
 }
