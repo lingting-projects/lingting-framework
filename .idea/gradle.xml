@@ -13,6 +13,7 @@
             <option value="$PROJECT_DIR$/lingting-datascope-jsql" />
             <option value="$PROJECT_DIR$/lingting-dependencies" />
             <option value="$PROJECT_DIR$/lingting-dingtalk" />
+            <option value="$PROJECT_DIR$/lingting-elasticsearch" />
             <option value="$PROJECT_DIR$/lingting-grpc" />
             <option value="$PROJECT_DIR$/lingting-jackson" />
             <option value="$PROJECT_DIR$/lingting-mybatis" />

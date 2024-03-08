@@ -15,6 +15,9 @@ dependencyResolutionManagement {
     val mybatisPlusVersion = "3.5.5"
     val jSqlParserVersion = "4.8"
     val grpcVersion = "1.61.0"
+    val elasticVersion = "8.12.2"
+    val commonsNetVersion = "3.10.0"
+    val securityProtobufVersion = "17_2023.12.18-SNAPSHOT"
 
     versionCatalogs {
         create("libs") {
@@ -42,13 +45,13 @@ dependencyResolutionManagement {
             library("mybatisPlusBootStarter", "com.baomidou", "mybatis-plus-boot-starter").version(mybatisPlusVersion)
             library("mybatisPlusCore", "com.baomidou", "mybatis-plus-core").version(mybatisPlusVersion)
             library("jSqlParser", "com.github.jsqlparser", "jsqlparser").version(jSqlParserVersion)
-
             bundle("mybatisPlus", listOf("mybatis", "mybatisPlusAnnotation", "mybatisPlusExtension", "mybatisPlusCore"))
 
-            val commonsNetVersion = "3.10.0"
-            library("commonsNet", "commons-net", "commons-net").version(commonsNetVersion)
+            library("elasticsearch", "co.elastic.clients", "elasticsearch-java").version(elasticVersion)
+            library("elasticsearchClient", "org.elasticsearch.client", "elasticsearch-rest-client").version(elasticVersion)
+            bundle("elasticsearch", listOf("elasticsearch", "elasticsearchClient"));
 
-            val securityProtobufVersion = "17_2023.12.18-SNAPSHOT"
+            library("commonsNet", "commons-net", "commons-net").version(commonsNetVersion)
             library("securityProtobuf", "live.lingting.protobuf", "protobuf-java").version(securityProtobufVersion)
 
             bundle("implementation", listOf("mapstruct"));
@@ -61,14 +64,8 @@ dependencyResolutionManagement {
 
 
 rootProject.name = "lingting-framework"
-include("lingting-core")
-include("lingting-jackson")
-include("lingting-okhttp")
-include("lingting-ntp")
-include("lingting-dingtalk")
-include("lingting-datascope-jsql")
-include("lingting-grpc")
-include("lingting-security")
-include("lingting-security-grpc")
-include("lingting-dependencies")
-include("lingting-mybatis")
+
+// 遍历rootDir, 获取符合条件的文件夹名称,  使用代码 include 所有文件夹
+rootDir.listFiles()?.filter { it.isDirectory && it.name.startsWith("lingting-") }?.forEach {
+    include(it.name)
+}
