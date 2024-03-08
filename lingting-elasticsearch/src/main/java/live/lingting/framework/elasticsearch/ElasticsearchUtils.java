@@ -41,6 +41,12 @@ public class ElasticsearchUtils {
 	}
 
 	public static String index(Class<?> cls) {
+		Document document = AnnotationUtils.findAnnotation(cls, Document.class);
+		// 使用注解指定的
+		if (document != null && StringUtils.hasText(document.index())) {
+			return document.index();
+		}
+		// 没有指定, 使用下划线的
 		String name = cls.getSimpleName();
 		return StringUtils.humpToUnderscore(name);
 	}
