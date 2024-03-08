@@ -40,10 +40,10 @@ public class LambdaAliasQueryWrapperX<T> extends LambdaQueryWrapperX<T> {
 	 * 不建议直接 new 该实例，使用 Wrappers.lambdaQuery(...)
 	 */
 	LambdaAliasQueryWrapperX(T entity, Class<T> entityClass, SharedString sqlSelect, AtomicInteger paramNameSeq,
-							 Map<String, Object> paramNameValuePairs, MergeSegments mergeSegments, SharedString lastSql,
-							 SharedString sqlComment, SharedString sqlFirst) {
+			Map<String, Object> paramNameValuePairs, MergeSegments mergeSegments, SharedString lastSql,
+			SharedString sqlComment, SharedString sqlFirst) {
 		super(entity, entityClass, sqlSelect, paramNameSeq, paramNameValuePairs, mergeSegments, lastSql, sqlComment,
-			sqlFirst);
+				sqlFirst);
 		this.tableAlias = TableAliasHelper.tableAlias(getEntityClass());
 	}
 
@@ -68,8 +68,8 @@ public class LambdaAliasQueryWrapperX<T> extends LambdaQueryWrapperX<T> {
 	@Override
 	protected LambdaAliasQueryWrapperX<T> instance() {
 		return new LambdaAliasQueryWrapperX<>(getEntity(), getEntityClass(), null, paramNameSeq, paramNameValuePairs,
-			new MergeSegments(), SharedString.emptyString(), SharedString.emptyString(),
-			SharedString.emptyString());
+				new MergeSegments(), SharedString.emptyString(), SharedString.emptyString(),
+				SharedString.emptyString());
 	}
 
 	/**

@@ -52,10 +52,10 @@ public class EnumTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> {
 		for (E e : type.getEnumConstants()) {
 			Object value = EnumUtils.getValue(e);
 			if (
-				// 值匹配
-				Objects.equals(val, value)
-				// 字符串值匹配
-				|| (value != null && value.toString().equals(val))) {
+			// 值匹配
+			Objects.equals(val, value)
+					// 字符串值匹配
+					|| (value != null && value.toString().equals(val))) {
 				return e;
 			}
 		}

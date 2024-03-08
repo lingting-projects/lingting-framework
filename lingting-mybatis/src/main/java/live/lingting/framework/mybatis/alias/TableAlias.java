@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
  * @see LambdaAliasQueryWrapperX
  * @see TableAliasHelper
  */
-@Target({ElementType.TYPE})
+@Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface TableAlias {

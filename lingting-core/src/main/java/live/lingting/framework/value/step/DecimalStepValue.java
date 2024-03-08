@@ -38,7 +38,7 @@ public class DecimalStepValue extends AbstractConcurrentStepValue<BigDecimal> {
 	public DecimalStepValue(BigDecimal start, BigDecimal step, BigInteger maxIndex, BigDecimal maxValue) {
 		if (start == null || step == null) {
 			throw new IllegalArgumentException(
-				String.format("Invalid start value[%s] or step value[%s].", start, step));
+					String.format("Invalid start value[%s] or step value[%s].", start, step));
 		}
 		this.start = start;
 		this.step = step;

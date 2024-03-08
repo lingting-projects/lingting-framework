@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * @version 1.0
  */
 public class LambdaQueryWrapperX<T> extends AbstractLambdaWrapper<T, LambdaQueryWrapperX<T>>
-	implements Query<LambdaQueryWrapperX<T>, T, SFunction<T, ?>> {
+		implements Query<LambdaQueryWrapperX<T>, T, SFunction<T, ?>> {
 
 	/**
 	 * 查询字段
@@ -64,8 +64,8 @@ public class LambdaQueryWrapperX<T> extends AbstractLambdaWrapper<T, LambdaQuery
 	 */
 	@SuppressWarnings("java:S107")
 	LambdaQueryWrapperX(T entity, Class<T> entityClass, SharedString sqlSelect, AtomicInteger paramNameSeq,
-						Map<String, Object> paramNameValuePairs, MergeSegments mergeSegments, SharedString lastSql,
-						SharedString sqlComment, SharedString sqlFirst) {
+			Map<String, Object> paramNameValuePairs, MergeSegments mergeSegments, SharedString lastSql,
+			SharedString sqlComment, SharedString sqlFirst) {
 		super.setEntity(entity);
 		super.setEntityClass(entityClass);
 		this.paramNameSeq = paramNameSeq;
@@ -145,8 +145,8 @@ public class LambdaQueryWrapperX<T> extends AbstractLambdaWrapper<T, LambdaQuery
 	@Override
 	protected LambdaQueryWrapperX<T> instance() {
 		return new LambdaQueryWrapperX<>(getEntity(), getEntityClass(), null, paramNameSeq, paramNameValuePairs,
-			new MergeSegments(), SharedString.emptyString(), SharedString.emptyString(),
-			SharedString.emptyString());
+				new MergeSegments(), SharedString.emptyString(), SharedString.emptyString(),
+				SharedString.emptyString());
 	}
 
 	@Override

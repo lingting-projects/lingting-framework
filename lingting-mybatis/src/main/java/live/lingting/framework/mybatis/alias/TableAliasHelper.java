@@ -68,7 +68,7 @@ public final class TableAliasHelper {
 			TableAlias annotation = AnnotationUtils.findAnnotation(clazz, TableAlias.class);
 			if (annotation == null) {
 				throw new TableAliasNotFoundException(
-					"[tableAliasSelectSql] No TableAlias annotations found in class: " + clazz);
+						"[tableAliasSelectSql] No TableAlias annotations found in class: " + clazz);
 			}
 			tableAlias = annotation.value();
 			TABLE_ALIAS_CACHE.put(clazz, tableAlias);
