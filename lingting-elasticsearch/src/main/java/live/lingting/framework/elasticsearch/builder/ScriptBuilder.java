@@ -3,13 +3,13 @@ package live.lingting.framework.elasticsearch.builder;
 import co.elastic.clients.elasticsearch._types.InlineScript;
 import co.elastic.clients.elasticsearch._types.Script;
 import co.elastic.clients.json.JsonData;
-import live.lingting.framework.elasticsearch.ElasticSearchFunction;
+import live.lingting.framework.elasticsearch.ElasticsearchFunction;
 import live.lingting.framework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static live.lingting.framework.elasticsearch.ElasticSearchUtils.fieldName;
+import static live.lingting.framework.elasticsearch.ElasticsearchUtils.fieldName;
 
 /**
  * @author lingting 2024-03-06 19:27
@@ -27,7 +27,7 @@ public class ScriptBuilder<T> {
 	private String lang = "painless";
 
 	// region params
-	public <R> ScriptBuilder<T> put(ElasticSearchFunction<T, R> func, R value) {
+	public <R> ScriptBuilder<T> put(ElasticsearchFunction<T, R> func, R value) {
 		String field = fieldName(func);
 		return put(field, value);
 	}
@@ -84,7 +84,7 @@ public class ScriptBuilder<T> {
 		return append(script);
 	}
 
-	public <R> ScriptBuilder<T> set(ElasticSearchFunction<T, R> func, R value) {
+	public <R> ScriptBuilder<T> set(ElasticsearchFunction<T, R> func, R value) {
 		String field = fieldName(func);
 		return set(field, value);
 	}

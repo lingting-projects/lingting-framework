@@ -13,7 +13,7 @@ public class ElasticsearchProperties {
 	/**
 	 * 重试配置
 	 */
-	private Retry retry = new Retry();
+	protected Retry retry = new Retry();
 
 	@Data
 	public static class Retry {
@@ -48,7 +48,7 @@ public class ElasticsearchProperties {
 	/**
 	 * 滚动查询配置
 	 */
-	private Scroll scroll = new Scroll();
+	protected Scroll scroll = new Scroll();
 
 	@Data
 	public static class Scroll {

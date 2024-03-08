@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;
 
-import static live.lingting.framework.elasticsearch.ElasticSearchUtils.isVersionConflictException;
+import static live.lingting.framework.elasticsearch.ElasticsearchUtils.isVersionConflictException;
 
 /**
  * @author lingting 2023-12-19 14:19

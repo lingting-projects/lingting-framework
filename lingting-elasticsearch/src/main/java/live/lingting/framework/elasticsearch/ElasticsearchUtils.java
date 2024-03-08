@@ -3,6 +3,8 @@ package live.lingting.framework.elasticsearch;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.json.JsonData;
 import live.lingting.framework.domain.ClassField;
+import live.lingting.framework.elasticsearch.annotation.Document;
+import live.lingting.framework.util.AnnotationUtils;
 import live.lingting.framework.util.ClassUtils;
 import live.lingting.framework.util.StringUtils;
 import lombok.experimental.UtilityClass;
@@ -25,13 +27,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @UtilityClass
 @SuppressWarnings({ "unchecked", "java:S3011" })
-public class ElasticSearchUtils {
+public class ElasticsearchUtils {
 
-	private static final Map<Class<? extends ElasticSearchFunction>, SerializedLambda> EF_LAMBDA_CACHE = new ConcurrentHashMap<>();
+	private static final Map<Class<? extends ElasticsearchFunction>, SerializedLambda> EF_LAMBDA_CACHE = new ConcurrentHashMap<>();
 
-	private static final Map<Class<? extends ElasticSearchFunction>, Class<?>> CLS_LAMBDA_CACHE = new ConcurrentHashMap<>();
+	private static final Map<Class<? extends ElasticsearchFunction>, Class<?>> CLS_LAMBDA_CACHE = new ConcurrentHashMap<>();
 
-	private static final Map<Class<? extends ElasticSearchFunction>, Field> FIELD_LAMBDA_CACHE = new ConcurrentHashMap<>();
+	private static final Map<Class<? extends ElasticsearchFunction>, Field> FIELD_LAMBDA_CACHE = new ConcurrentHashMap<>();
 
 	public static <T> Class<T> getEntityClass(Class<?> cls) {
 		List<Class<?>> list = ClassUtils.classArguments(cls);
@@ -43,17 +45,17 @@ public class ElasticSearchUtils {
 		return StringUtils.humpToUnderscore(name);
 	}
 
-	static <T, R> SerializedLambda resolveByReflection(ElasticSearchFunction<T, R> function)
+	static <T, R> SerializedLambda resolveByReflection(ElasticsearchFunction<T, R> function)
 			throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-		Class<? extends ElasticSearchFunction> fClass = function.getClass();
+		Class<? extends ElasticsearchFunction> fClass = function.getClass();
 		Method method = fClass.getDeclaredMethod("writeReplace");
 		method.setAccessible(true);
 		return (SerializedLambda) method.invoke(function);
 
 	}
 
-	public static <T, R> SerializedLambda resolve(ElasticSearchFunction<T, R> function) {
-		Class<? extends ElasticSearchFunction> fClass = function.getClass();
+	public static <T, R> SerializedLambda resolve(ElasticsearchFunction<T, R> function) {
+		Class<? extends ElasticsearchFunction> fClass = function.getClass();
 		return EF_LAMBDA_CACHE.computeIfAbsent(fClass, k -> {
 			try {
 				return resolveByReflection(function);
@@ -65,8 +67,8 @@ public class ElasticSearchUtils {
 		});
 	}
 
-	public static <T, R> Class<T> resolveClass(ElasticSearchFunction<T, R> function) {
-		Class<? extends ElasticSearchFunction> fClass = function.getClass();
+	public static <T, R> Class<T> resolveClass(ElasticsearchFunction<T, R> function) {
+		Class<? extends ElasticsearchFunction> fClass = function.getClass();
 		return (Class<T>) CLS_LAMBDA_CACHE.computeIfAbsent(fClass, k -> {
 			try {
 				SerializedLambda lambda = resolve(function);
@@ -82,8 +84,8 @@ public class ElasticSearchUtils {
 		});
 	}
 
-	public static <T, R> Field resolveField(ElasticSearchFunction<T, R> function) {
-		Class<? extends ElasticSearchFunction> fClass = function.getClass();
+	public static <T, R> Field resolveField(ElasticsearchFunction<T, R> function) {
+		Class<? extends ElasticsearchFunction> fClass = function.getClass();
 		return FIELD_LAMBDA_CACHE.computeIfAbsent(fClass, k -> {
 			try {
 				SerializedLambda lambda = resolve(function);
@@ -141,7 +143,7 @@ public class ElasticSearchUtils {
 		return object instanceof FieldValue fv ? fv : FieldValue.of(JsonData.of(object));
 	}
 
-	public static String fieldName(ElasticSearchFunction<?, ?> func) {
+	public static String fieldName(ElasticsearchFunction<?, ?> func) {
 		Field field = resolveField(func);
 		return field.getName();
 	}

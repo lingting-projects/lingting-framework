@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
-import static live.lingting.framework.elasticsearch.ElasticSearchUtils.fieldValue;
+import static live.lingting.framework.elasticsearch.ElasticsearchUtils.fieldValue;
 
 /**
  * @author lingting 2024-03-06 17:33
