@@ -5,8 +5,10 @@ import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.core.toolkit.ReflectionKit;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import jakarta.annotation.Resource;
+import live.lingting.framework.function.ThrowingSupplier;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
@@ -15,6 +17,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 
 import java.util.Collection;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 /**
  * 以前继承 com.baomidou.mybatisplus.extension.service.impl.ServiceImpl 的实现类，现在继承本类
@@ -90,6 +93,27 @@ public abstract class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements
 	 */
 	protected <E> boolean executeBatch(Collection<E> list, int batchSize, BiConsumer<SqlSession, E> consumer) {
 		return useTransactional(() -> SqlHelper.executeBatch(sessionFactory, this.log, list, batchSize, consumer));
+	}
+
+	@Override
+	@SneakyThrows
+	public <R> R useTransactional(ThrowingSupplier<R> supplier, Predicate<Throwable> predicate) {
+		SqlSession session = sessionFactory.openSession(false);
+		try {
+			R r = supplier.get();
+			session.commit();
+			return r;
+		}
+		catch (Exception e) {
+			// 回滚
+			if (predicate.test(e)) {
+				session.rollback();
+			}
+			throw e;
+		}
+		finally {
+			session.close();
+		}
 	}
 
 }

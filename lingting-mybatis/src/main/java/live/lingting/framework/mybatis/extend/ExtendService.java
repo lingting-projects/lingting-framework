@@ -156,7 +156,7 @@ public interface ExtendService<T> {
 	}
 
 	/**
-	 * 开启事务
+	 * 开启事务. 如果执行异常, 不论是否回滚. 异常均会抛出
 	 * @param runnable 在事务中运行
 	 * @param predicate 消费异常, 返回true表示回滚事务
 	 */
