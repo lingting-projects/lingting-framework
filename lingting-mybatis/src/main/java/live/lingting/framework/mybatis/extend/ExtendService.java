@@ -1,8 +1,6 @@
 package live.lingting.framework.mybatis.extend;
 
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import live.lingting.framework.api.ApiResultCode;
 import live.lingting.framework.api.PaginationParams;
 import live.lingting.framework.exception.BizException;
@@ -33,17 +31,13 @@ public interface ExtendService<T> {
 	 */
 	int DEFAULT_INSERT_BATCH_SIZE = 5000;
 
-	default Page<T> toIpage(PaginationParams params) {
-		return getBaseMapper().toIpage(params);
-	}
+	Page<T> toIpage(PaginationParams params);
 
 	/**
 	 * 插入一条记录（选择字段，策略插入）
 	 * @param entity 实体对象
 	 */
-	default boolean save(T entity) {
-		return SqlHelper.retBool(getBaseMapper().insert(entity));
-	}
+	boolean save(T entity);
 
 	/**
 	 * 插入（批量）
@@ -64,28 +58,19 @@ public interface ExtendService<T> {
 	 * 根据 ID 删除
 	 * @param id 主键ID
 	 */
-	default boolean removeById(Serializable id) {
-		return SqlHelper.retBool(getBaseMapper().deleteById(id));
-	}
+	boolean removeById(Serializable id);
 
 	/**
 	 * 删除（根据ID 批量删除）
 	 * @param idList 主键ID列表
 	 */
-	default boolean removeByIds(Collection<? extends Serializable> idList) {
-		if (CollectionUtils.isEmpty(idList)) {
-			return false;
-		}
-		return SqlHelper.retBool(getBaseMapper().deleteBatchIds(idList));
-	}
+	boolean removeByIds(Collection<? extends Serializable> idList);
 
 	/**
 	 * 根据 ID 选择修改
 	 * @param entity 实体对象
 	 */
-	default boolean updateById(T entity) {
-		return SqlHelper.retBool(getBaseMapper().updateById(entity));
-	}
+	boolean updateById(T entity);
 
 	/**
 	 * 根据ID 批量更新
@@ -114,30 +99,18 @@ public interface ExtendService<T> {
 	 * 根据 ID 查询
 	 * @param id 主键ID
 	 */
-	default T getById(Serializable id) {
-		return getBaseMapper().selectById(id);
-	}
+	T getById(Serializable id);
 
 	/**
 	 * 查询（根据ID 批量查询）
 	 * @param idList 主键ID列表
 	 */
-	default List<T> listByIds(Collection<? extends Serializable> idList) {
-		return getBaseMapper().selectBatchIds(idList);
-	}
+	List<T> listByIds(Collection<? extends Serializable> idList);
 
 	/**
 	 * 查询所有
 	 */
-	default List<T> list() {
-		return getBaseMapper().selectList(null);
-	}
-
-	/**
-	 * 获取对应 entity 的 BaseMapper
-	 * @return BaseMapper
-	 */
-	ExtendMapper<T> getBaseMapper();
+	List<T> list();
 
 	/**
 	 * 获取 entity 的 class
