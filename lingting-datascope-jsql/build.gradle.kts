@@ -1,5 +1,5 @@
 dependencies {
     implementation(project(":lingting-core"))
 
-    api(libs.jSqlParser)
+    api("com.github.jsqlparser", "jsqlparser", libs.versions.jSqlParser.get())
 }
