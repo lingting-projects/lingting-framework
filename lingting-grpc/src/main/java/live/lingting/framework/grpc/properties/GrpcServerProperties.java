@@ -3,7 +3,7 @@ package live.lingting.framework.grpc.properties;
 import live.lingting.framework.util.MdcUtils;
 import lombok.Data;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 /**
  * @author lingting 2023-04-06 15:18
@@ -17,14 +17,8 @@ public class GrpcServerProperties {
 
 	private long messageSize = 524288;
 
-	/**
-	 * 单位: 毫秒
-	 */
-	private long keepAliveTime = TimeUnit.HOURS.toMillis(2);
+	private Duration keepAliveTime = Duration.ofMinutes(30);
 
-	/**
-	 * 单位: 毫秒
-	 */
-	private long keepAliveTimeout = TimeUnit.SECONDS.toMillis(20);
+	private Duration keepAliveTimeout = Duration.ofSeconds(2);
 
 }

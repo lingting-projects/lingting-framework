@@ -78,8 +78,8 @@ public class GrpcServerBuilder {
 		if (properties != null) {
 			// 单个消息最大大小
 			builder.maxInboundMessageSize((int) properties.getMessageSize())
-				.keepAliveTime(properties.getKeepAliveTime(), TimeUnit.MILLISECONDS)
-				.keepAliveTimeout(properties.getKeepAliveTimeout(), TimeUnit.MILLISECONDS);
+				.keepAliveTime(properties.getKeepAliveTime().toMillis(), TimeUnit.MILLISECONDS)
+				.keepAliveTimeout(properties.getKeepAliveTimeout().toMillis(), TimeUnit.MILLISECONDS);
 		}
 		return new GrpcServer(builder, interceptors, services);
 	}

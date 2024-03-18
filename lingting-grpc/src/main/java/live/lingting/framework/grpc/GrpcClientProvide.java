@@ -79,8 +79,8 @@ public class GrpcClientProvide {
 	public void useProperties(ManagedChannelBuilder<?> builder, GrpcClientProperties properties) {
 		// 开启心跳
 		if (properties.isEnableKeepAlive()) {
-			builder.keepAliveTime(properties.getKeepAliveTime(), TimeUnit.MILLISECONDS)
-				.keepAliveTimeout(properties.getKeepAliveTimeout(), TimeUnit.MILLISECONDS);
+			builder.keepAliveTime(properties.getKeepAliveTime().toMillis(), TimeUnit.MILLISECONDS)
+				.keepAliveTimeout(properties.getKeepAliveTimeout().toMillis(), TimeUnit.MILLISECONDS);
 		}
 
 		// 使用明文
@@ -95,7 +95,7 @@ public class GrpcClientProvide {
 
 		// ssl配置
 		if (!properties.isUsePlaintext() && properties.isDisableSsl()
-				&& builder instanceof NettyChannelBuilder nettyChannelBuilder) {
+			&& builder instanceof NettyChannelBuilder nettyChannelBuilder) {
 			SslContextBuilder sslContextBuilder = GrpcSslContexts.forClient()
 				.trustManager(InsecureTrustManagerFactory.INSTANCE);
 			nettyChannelBuilder.sslContext(sslContextBuilder.build());
