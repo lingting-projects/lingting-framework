@@ -95,7 +95,7 @@ public class GrpcClientProvide {
 
 		// ssl配置
 		if (!properties.isUsePlaintext() && properties.isDisableSsl()
-			&& builder instanceof NettyChannelBuilder nettyChannelBuilder) {
+				&& builder instanceof NettyChannelBuilder nettyChannelBuilder) {
 			SslContextBuilder sslContextBuilder = GrpcSslContexts.forClient()
 				.trustManager(InsecureTrustManagerFactory.INSTANCE);
 			nettyChannelBuilder.sslContext(sslContextBuilder.build());

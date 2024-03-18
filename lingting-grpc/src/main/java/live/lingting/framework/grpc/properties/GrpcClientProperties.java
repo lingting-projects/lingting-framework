@@ -27,6 +27,7 @@ public class GrpcClientProperties {
 	private boolean enableRetry = true;
 
 	private boolean enableKeepAlive = true;
+
 	private Duration keepAliveTime = Duration.ofMinutes(30);
 
 	private Duration keepAliveTimeout = Duration.ofSeconds(2);

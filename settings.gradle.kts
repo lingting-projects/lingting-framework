@@ -18,6 +18,7 @@ dependencyResolutionManagement {
     val elasticVersion = "8.12.2"
     val commonsNetVersion = "3.10.0"
     val securityProtobufVersion = "17_2023.12.18-SNAPSHOT"
+    val polarisVersion = "1.15.0"
 
     versionCatalogs {
         create("libs") {
@@ -27,6 +28,7 @@ dependencyResolutionManagement {
             version("lombok", "1.18.30")
             version("lombokMapstructBinding", "0.2.0")
             version("jSqlParser", jSqlParserVersion)
+            version("polarisVersion", polarisVersion)
 
             library("springBootClasspath", "org.springframework.boot", "spring-boot-gradle-plugin").versionRef("springBoot")
             library("springFormatterClasspath", "io.spring.javaformat", "spring-javaformat-gradle-plugin").versionRef("formatter")
