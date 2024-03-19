@@ -73,6 +73,7 @@ public final class PolarisGrpcServerBuilder extends ServerBuilder<PolarisGrpcSer
 
 	/**
 	 * Static factory for creating a new PolarisGrpcServerBuilder.
+	 *
 	 * @param port the port to listen on
 	 * @return PolarisGrpcServerBuilder
 	 */
@@ -83,6 +84,7 @@ public final class PolarisGrpcServerBuilder extends ServerBuilder<PolarisGrpcSer
 
 	/**
 	 * PolarisGrpcServerBuilder Constructor.
+	 *
 	 * @param builder ServerBuilder
 	 */
 	public PolarisGrpcServerBuilder(ServerBuilder<?> builder) {
@@ -91,6 +93,7 @@ public final class PolarisGrpcServerBuilder extends ServerBuilder<PolarisGrpcSer
 
 	/**
 	 * Set polaris SDK Context
+	 *
 	 * @param context polaris sdk core object
 	 * @return PolarisGrpcServerBuilder
 	 */
@@ -101,6 +104,7 @@ public final class PolarisGrpcServerBuilder extends ServerBuilder<PolarisGrpcSer
 
 	/**
 	 * Set grpc service name.
+	 *
 	 * @param applicationName grpc server name
 	 * @return PolarisGrpcServerBuilder
 	 */
@@ -111,6 +115,7 @@ public final class PolarisGrpcServerBuilder extends ServerBuilder<PolarisGrpcSer
 
 	/**
 	 * Namespace registered by grpc service.
+	 *
 	 * @param namespace polaris namespace
 	 * @return PolarisGrpcServerBuilder
 	 */
@@ -121,6 +126,7 @@ public final class PolarisGrpcServerBuilder extends ServerBuilder<PolarisGrpcSer
 
 	/**
 	 * Set metadata.
+	 *
 	 * @param metadata metadata
 	 * @return PolarisGrpcServerBuilder
 	 */
@@ -131,6 +137,7 @@ public final class PolarisGrpcServerBuilder extends ServerBuilder<PolarisGrpcSer
 
 	/**
 	 * set instance weight
+	 *
 	 * @param weight
 	 * @return PolarisGrpcServerBuilder
 	 */
@@ -146,6 +153,7 @@ public final class PolarisGrpcServerBuilder extends ServerBuilder<PolarisGrpcSer
 
 	/**
 	 * Set the heartbeat report time by default 5 seconds.
+	 *
 	 * @param heartbeatInterval Time in seconds
 	 * @return PolarisGrpcServerBuilder
 	 */
@@ -156,6 +164,7 @@ public final class PolarisGrpcServerBuilder extends ServerBuilder<PolarisGrpcSer
 
 	/**
 	 * Set the local host.
+	 *
 	 * @param host host
 	 * @return PolarisGrpcServerBuilder
 	 */
@@ -166,6 +175,7 @@ public final class PolarisGrpcServerBuilder extends ServerBuilder<PolarisGrpcSer
 
 	/**
 	 * Set the token.
+	 *
 	 * @param token token
 	 * @return PolarisGrpcServerBuilder
 	 */
@@ -246,7 +256,7 @@ public final class PolarisGrpcServerBuilder extends ServerBuilder<PolarisGrpcSer
 
 	@Override
 	public PolarisGrpcServerBuilder useTransportSecurity(InputStream certChain, InputStream privateKey) {
-		super.useTransportSecurity(certChain, privateKey);
+		builder.useTransportSecurity(certChain, privateKey);
 		return this;
 	}
 
@@ -319,6 +329,7 @@ public final class PolarisGrpcServerBuilder extends ServerBuilder<PolarisGrpcSer
 	/**
 	 * 延迟注册, 用户可以通过设置 {@link DelayRegister} 来延迟 gRPC-server 注册到 polaris 对外提供服务的时间 默认支持策略 -
 	 * {@link live.lingting.polaris.grpc.server.impl.WaitDelayRegister} 等待一段时间在进行注册
+	 *
 	 * @param delayRegister {@link DelayRegister}
 	 * @return {@link PolarisGrpcServerBuilder}
 	 */
@@ -329,6 +340,7 @@ public final class PolarisGrpcServerBuilder extends ServerBuilder<PolarisGrpcSer
 
 	/**
 	 * 优雅下线的最大等待时间，如果到了一定时间还没有结束，则直接强制关闭，默认 Duration.ofSeconds(30)
+	 *
 	 * @param maxWaitDuration {@link Duration}
 	 * @return {@link PolarisGrpcServerBuilder}
 	 */
