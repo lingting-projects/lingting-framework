@@ -7,6 +7,7 @@ import live.lingting.framework.security.exception.PermissionsException;
 import live.lingting.framework.security.resource.SecurityHolder;
 import live.lingting.framework.util.ArrayUtils;
 import live.lingting.framework.util.CollectionUtils;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Collection;
@@ -15,8 +16,11 @@ import java.util.function.Predicate;
 /**
  * @author lingting 2023-03-29 20:45
  */
+@Getter
 @RequiredArgsConstructor
 public class SecurityAuthorize {
+
+	private final int order;
 
 	/**
 	 * 校验当前权限数据是否满足指定注解的要求

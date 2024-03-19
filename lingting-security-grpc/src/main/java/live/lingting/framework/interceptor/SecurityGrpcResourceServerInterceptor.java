@@ -114,7 +114,7 @@ public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterce
 
 	@Override
 	public int getSequence() {
-		return Integer.MIN_VALUE;
+		return authorize.getOrder();
 	}
 
 }

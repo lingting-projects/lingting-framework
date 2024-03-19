@@ -62,7 +62,7 @@ class SecurityGrpcTest {
 		GrpcServerProperties serverProperties = new GrpcServerProperties();
 		SecurityGrpcProperties properties = new SecurityGrpcProperties();
 		SecurityDefaultResourceServiceImpl resourceService = new SecurityDefaultResourceServiceImpl(store);
-		SecurityAuthorize authorize = new SecurityAuthorize();
+		SecurityAuthorize authorize = new SecurityAuthorize(0);
 		server = new GrpcServerBuilder().port(0)
 			.properties(serverProperties)
 			.service(endpoint)
