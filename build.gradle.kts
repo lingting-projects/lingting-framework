@@ -1,6 +1,5 @@
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 import java.net.URI
-import java.nio.file.Paths
 
 val projectGroup = "live.lingting.framework"
 val projectVersion = "2024.01.24-SNAPSHOT"
@@ -90,22 +89,10 @@ allprojects {
 
     idea {
         module {
-            val rootPath = Paths.get(project.layout.buildDirectory.get().toString(), "generated", "sources", "annotationProcessor", "java").toString();
-            val mainPath = Paths.get(rootPath, "main")
-            val testPath = Paths.get(rootPath, "test")
-            excludeDirs.add(mainPath.toFile())
-            excludeDirs.add(testPath.toFile())
             languageLevel = ideaLanguageLevel
             targetBytecodeVersion = javaVersion
 
             excludeDirs.add(File(rootDir, "src"))
-            excludeDirs.add(File(rootDir, "src/main"))
-            excludeDirs.add(File(rootDir, "src/main/java"))
-            excludeDirs.add(File(rootDir, "src/main/resources"))
-            excludeDirs.add(File(rootDir, "src"))
-            excludeDirs.add(File(rootDir, "src/test"))
-            excludeDirs.add(File(rootDir, "src/test/java"))
-            excludeDirs.add(File(rootDir, "src/test/resources"))
         }
     }
 
