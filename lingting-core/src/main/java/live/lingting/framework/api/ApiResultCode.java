@@ -31,15 +31,11 @@ public enum ApiResultCode implements ResultCode {
 	 */
 	REPEAT_ERROR(409, "Repeat error!"),
 	/**
-	 * 系统异常
+	 * 服务异常
 	 */
-	SERVER_ERROR(500, "System Error"),
+	SERVER_ERROR(500, "Server Error!"),
 
 	// region 202200
-	/**
-	 * 空指针异常
-	 */
-	SERVER_NLP_ERROR(2022000000, "NPE"),
 	/**
 	 * 参数类型转换异常
 	 */
