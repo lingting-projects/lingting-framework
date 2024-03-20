@@ -145,7 +145,7 @@ public class ThreadPool {
 			}
 			finally {
 				thread.setName(oldName);
-				MdcUtils.remoteTraceId();
+				MdcUtils.removeTraceId();
 			}
 		});
 	}

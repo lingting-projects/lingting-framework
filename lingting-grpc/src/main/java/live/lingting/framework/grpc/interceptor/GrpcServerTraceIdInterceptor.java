@@ -47,7 +47,7 @@ public class GrpcServerTraceIdInterceptor implements ServerInterceptor, Sequence
 			return next.startCall(call, headers);
 		}
 		finally {
-			MdcUtils.remoteTraceId();
+			MdcUtils.removeTraceId();
 		}
 	}
 

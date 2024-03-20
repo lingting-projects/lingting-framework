@@ -13,8 +13,6 @@ public class MdcUtils {
 
 	public static final String TRACE_ID = "traceId";
 
-	public static final String HEADER_TRACE_ID = "X-Trace-Id";
-
 	public static String traceId() {
 		return UUID.randomUUID().toString().replace("-", "");
 	}
@@ -33,7 +31,7 @@ public class MdcUtils {
 		MDC.put(TRACE_ID, traceId);
 	}
 
-	public static void remoteTraceId() {
+	public static void removeTraceId() {
 		MDC.remove(TRACE_ID);
 	}
 
