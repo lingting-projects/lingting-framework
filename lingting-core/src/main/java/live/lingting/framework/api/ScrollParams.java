@@ -16,12 +16,8 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class ScrollParams<T> {
 
-	private long size = 10;
+	private Long size = 10L;
 
 	private T cursor;
-
-	public long getSize() {
-		return size < 1 ? 10 : size;
-	}
 
 }

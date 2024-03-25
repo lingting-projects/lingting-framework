@@ -422,10 +422,13 @@ public class ElasticsearchApi<T> {
 		Query query = merge(queries);
 		SearchRequest.Builder builder = operator.apply(new SearchRequest.Builder().scroll(scrollTime)
 			// 返回匹配的所有文档数量
-			.trackTotalHits(TrackHits.of(th -> th.enabled(true))))
-			.index(index)
-			.size((int) params.getSize())
-			.query(query);
+			.trackTotalHits(TrackHits.of(th -> th.enabled(true)))).index(index).query(query)
+
+		;
+
+		if (params.getSize() != null) {
+			builder.size(params.getSize().intValue());
+		}
 
 		SearchResponse<T> search = client.search(builder.build(), cls);
 		List<T> collect = search.hits().hits().stream().map(Hit::source).filter(Objects::nonNull).toList();
