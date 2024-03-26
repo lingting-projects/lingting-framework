@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author lingting 2023-12-14 16:28
  */
 @Slf4j
+@SuppressWarnings("java:S1172")
 public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterceptor implements Sequence {
 
 	private final Metadata.Key<String> authorizationKey;
@@ -47,8 +48,8 @@ public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterce
 
 		MethodDescriptor<S, R> descriptor = call.getMethodDescriptor();
 
-		if (allowAuthority(descriptor)) {
-			Authorize annotation = getAuthorize(descriptor);
+		if (allowAuthority(headers, descriptor)) {
+			Authorize annotation = getAuthorize(headers, descriptor);
 			Status status = null;
 			try {
 				this.authorize.valid(annotation);
@@ -99,7 +100,7 @@ public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterce
 		return SecurityToken.ofDelimiter(raw, " ");
 	}
 
-	protected Authorize getAuthorize(MethodDescriptor<?, ?> descriptor) {
+	protected Authorize getAuthorize(Metadata metadata, MethodDescriptor<?, ?> descriptor) {
 		Authorize methodAuthorize = server.findMethod(descriptor).getAnnotation(Authorize.class);
 		if (methodAuthorize != null) {
 			return methodAuthorize;
@@ -107,8 +108,7 @@ public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterce
 		return server.findClass(descriptor).getAnnotation(Authorize.class);
 	}
 
-	@SuppressWarnings("java:S1172")
-	protected boolean allowAuthority(MethodDescriptor<?, ?> descriptor) {
+	protected boolean allowAuthority(Metadata metadata, MethodDescriptor<?, ?> descriptor) {
 		return true;
 	}
 
