@@ -7,7 +7,8 @@ import co.elastic.clients.transport.ElasticsearchTransport;
 import live.lingting.framework.elasticsearch.composer.QueryComposer;
 import live.lingting.framework.elasticsearch.datascope.DefaultElasticsearchDataPermissionHandler;
 import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataScope;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import org.elasticsearch.client.RestClient;
 import org.junit.jupiter.api.BeforeEach;
@@ -90,7 +91,8 @@ class ElasticsearchApiTest {
 		assertEquals("Default", byQuery.space.get("name"));
 	}
 
-	@Data
+	@Getter
+	@Setter
 	static class Entity {
 
 		private String id;

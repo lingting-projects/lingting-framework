@@ -3,7 +3,6 @@ package live.lingting.framework.dingtalk;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import live.lingting.framework.dingtalk.message.DingTalkActionCardMessage;
 import live.lingting.framework.jackson.JacksonUtils;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -36,7 +35,8 @@ public class DingTalkParams {
 		return JacksonUtils.toJson(this);
 	}
 
-	@Data
+	@Getter
+	@Setter
 	@Accessors(chain = true)
 	public static class Text {
 
@@ -44,7 +44,8 @@ public class DingTalkParams {
 
 	}
 
-	@Data
+	@Getter
+	@Setter
 	@Accessors(chain = true)
 	public static class Markdown {
 
@@ -54,7 +55,8 @@ public class DingTalkParams {
 
 	}
 
-	@Data
+	@Getter
+	@Setter
 	@Accessors(chain = true)
 	public static class Link {
 
@@ -68,7 +70,8 @@ public class DingTalkParams {
 
 	}
 
-	@Data
+	@Getter
+	@Setter
 	@Accessors(chain = true)
 	public static class ActionCard {
 
@@ -88,7 +91,8 @@ public class DingTalkParams {
 
 	}
 
-	@Data
+	@Getter
+	@Setter
 	@Accessors(chain = true)
 	public static class At {
 

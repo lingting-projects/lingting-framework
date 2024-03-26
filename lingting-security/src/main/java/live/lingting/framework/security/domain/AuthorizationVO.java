@@ -1,6 +1,7 @@
 package live.lingting.framework.security.domain;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Map;
 import java.util.Set;
@@ -8,7 +9,8 @@ import java.util.Set;
 /**
  * @author lingting 2023-03-30 13:54
  */
-@Data
+@Getter
+@Setter
 public class AuthorizationVO {
 
 	private String token;

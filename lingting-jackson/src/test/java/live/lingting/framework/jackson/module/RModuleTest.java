@@ -3,7 +3,8 @@ package live.lingting.framework.jackson.module;
 import com.fasterxml.jackson.core.type.TypeReference;
 import live.lingting.framework.api.R;
 import live.lingting.framework.jackson.JacksonUtils;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -40,7 +41,8 @@ class RModuleTest {
 		Assertions.assertNull(o3.data());
 	}
 
-	@Data
+	@Getter
+	@Setter
 	@Accessors(chain = true)
 	static class REntity {
 

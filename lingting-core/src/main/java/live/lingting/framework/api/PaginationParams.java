@@ -1,7 +1,6 @@
 package live.lingting.framework.api;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -54,7 +53,8 @@ public class PaginationParams {
 		return sorts;
 	}
 
-	@Data
+	@Getter
+	@Setter
 	@NoArgsConstructor
 	@AllArgsConstructor
 	@Accessors(chain = true)

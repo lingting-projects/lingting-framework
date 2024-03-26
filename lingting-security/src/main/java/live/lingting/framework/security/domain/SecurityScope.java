@@ -1,7 +1,8 @@
 package live.lingting.framework.security.domain;
 
 import live.lingting.framework.util.StringUtils;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Map;
 import java.util.Set;
@@ -9,7 +10,8 @@ import java.util.Set;
 /**
  * @author lingting 2023-03-29 20:25
  */
-@Data
+@Getter
+@Setter
 public class SecurityScope {
 
 	private String token;

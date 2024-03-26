@@ -3,8 +3,9 @@ package live.lingting.framework.jackson;
 import com.fasterxml.jackson.databind.JsonNode;
 import live.lingting.framework.util.StringUtils;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.junit.jupiter.api.Test;
 
 import static live.lingting.framework.jackson.JacksonUtils.toJson;
@@ -30,7 +31,8 @@ class JacksonUtilsTest {
 		assertEquals("f2", obj.f2);
 	}
 
-	@Data
+	@Getter
+	@Setter
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class Entity {

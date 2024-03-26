@@ -37,23 +37,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class NtpFactory {
 
-	private static final String[] HOSTS = {
-		"time.windows.com",
-		"time.nist.gov",
-		"time.apple.com",
-		"time.asia.apple.com",
-		"cn.ntp.org.cn",
-		"ntp.ntsc.ac.cn",
-		"cn.pool.ntp.org",
-		"ntp.aliyun.com",
-		"ntp1.aliyun.com",
-		"ntp2.aliyun.com",
-		"ntp3.aliyun.com",
-		"ntp4.aliyun.com",
-		"ntp5.aliyun.com",
-		"ntp6.aliyun.com",
-		"ntp7.aliyun.com",
-	};
+	private static final String[] HOSTS = {"time.windows.com", "time.nist.gov", "time.apple.com",
+		"time.asia.apple.com", "cn.ntp.org.cn", "ntp.ntsc.ac.cn", "cn.pool.ntp.org", "ntp.aliyun.com",
+		"ntp1.aliyun.com", "ntp2.aliyun.com", "ntp3.aliyun.com", "ntp4.aliyun.com", "ntp5.aliyun.com",
+		"ntp6.aliyun.com", "ntp7.aliyun.com",};
 
 	public static final StepValue<Long> STEP_INIT = new LongStepValue(1, null, Long.valueOf(10));
 

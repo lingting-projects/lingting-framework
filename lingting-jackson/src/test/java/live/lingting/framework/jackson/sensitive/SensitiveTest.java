@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.sensitive.Sensitive;
 import live.lingting.framework.sensitive.SensitiveType;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,7 +31,8 @@ class SensitiveTest {
 		assertEquals("*", node.get("spi").asText());
 	}
 
-	@Data
+	@Getter
+	@Setter
 	static class SensitiveTestEntity {
 
 		@Sensitive(SensitiveType.ALL)

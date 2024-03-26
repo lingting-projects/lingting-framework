@@ -1,13 +1,15 @@
 package live.lingting.framework.elasticsearch;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Duration;
 
 /**
  * @author lingting 2024-03-06 16:43
  */
-@Data
+@Getter
+@Setter
 public class ElasticsearchProperties {
 
 	/**
@@ -15,7 +17,8 @@ public class ElasticsearchProperties {
 	 */
 	protected Retry retry = new Retry();
 
-	@Data
+	@Getter
+	@Setter
 	public static class Retry {
 
 		private boolean enabled = false;
@@ -50,7 +53,8 @@ public class ElasticsearchProperties {
 	 */
 	protected Scroll scroll = new Scroll();
 
-	@Data
+	@Getter
+	@Setter
 	public static class Scroll {
 
 		/**

@@ -1,14 +1,16 @@
 package live.lingting.framework.grpc.properties;
 
 import live.lingting.framework.util.MdcUtils;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Duration;
 
 /**
  * @author lingting 2023-04-06 15:18
  */
-@Data
+@Getter
+@Setter
 public class GrpcClientProperties {
 
 	private String host;
