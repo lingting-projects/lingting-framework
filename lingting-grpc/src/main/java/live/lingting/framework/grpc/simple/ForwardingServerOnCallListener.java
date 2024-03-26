@@ -1,17 +1,30 @@
 package live.lingting.framework.grpc.simple;
 
 import io.grpc.ForwardingServerCallListener;
+import io.grpc.Metadata;
 import io.grpc.ServerCall;
+import io.grpc.ServerCallHandler;
 
 /**
  * @author lingting 2023-12-18 19:10
  */
-@SuppressWarnings("java:S2176")
-public class ForwardingServerOnCallListener<S>
-		extends ForwardingServerCallListener.SimpleForwardingServerCallListener<S> {
+
+public class ForwardingServerOnCallListener<S> extends ForwardingServerCallListener<S> {
+
+	private final ServerCall.Listener<S> delegate;
+
+	protected <R> ForwardingServerOnCallListener(ServerCall<S, R> call, Metadata headers,
+			ServerCallHandler<S, R> next) {
+		this(next.startCall(call, headers));
+	}
 
 	protected ForwardingServerOnCallListener(ServerCall.Listener<S> delegate) {
-		super(delegate);
+		this.delegate = delegate;
+	}
+
+	@Override
+	protected ServerCall.Listener<S> delegate() {
+		return delegate;
 	}
 
 	@Override
