@@ -88,8 +88,12 @@ public enum ApiResultCode implements ResultCode {
 	 * 数据处理异常! 请确认数据填写正确且不存在重复数据
 	 */
 	DB_CONSTRAINT_VIOLATION_ERROR(2022000013, "Data constraint violation error!"),
-
+	/**
+	 * 未找到目标
+	 */
+	NOT_FOUND(2022000014, "Not found!"),
 	// endregion
+
 	;
 
 	private final Integer code;
