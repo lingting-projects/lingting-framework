@@ -119,15 +119,14 @@ public class GrpcServer implements ContextComponent {
 	@SneakyThrows
 	public void onApplicationStart() {
 		server.start();
-		log.debug("grpc server port: {}", server.getPort());
+		log.info("grpc server started. port: {}", server.getPort());
 		ThreadUtils.execute("GrpcServer", server::awaitTermination);
 	}
 
 	@Override
 	public void onApplicationStop() {
-		log.debug("grpc service starts to shutdown!");
-		server.shutdownNow();
-		log.warn("grpc service shutdown!");
+		log.warn("shutdown grpc server!");
+		server.shutdown();
 	}
 
 }
