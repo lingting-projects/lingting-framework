@@ -29,8 +29,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ServiceLoader;
-import java.util.stream.Collectors;
 
 /**
  * Service discovery class
@@ -54,8 +54,6 @@ public class PolarisNameResolver extends NameResolver {
 	private ServiceChangeWatcher watcher;
 
 	private final SDKContext context;
-
-	private Listener2 listener;
 
 	private ServiceKey sourceService;
 
@@ -83,7 +81,6 @@ public class PolarisNameResolver extends NameResolver {
 
 	@Override
 	public void start(Listener2 listener) {
-		this.listener = listener;
 		doResolve(listener);
 		doWatch(listener);
 	}
@@ -123,10 +120,12 @@ public class PolarisNameResolver extends NameResolver {
 
 	private void notifyListener(Listener2 listener, InstancesResponse response) {
 		ServiceInstances serviceInstances = response.toServiceInstances();
-		List<EquivalentAddressGroup> equivalentAddressGroups = serviceInstances.getInstances()
-			.stream()
-			.map(this::buildEquivalentAddressGroup)
-			.collect(Collectors.toList());
+		List<EquivalentAddressGroup> equivalentAddressGroups = new ArrayList<>();
+		for (Instance instance : serviceInstances.getInstances()) {
+			if (Objects.equals("grpc", instance.getProtocol())) {
+				equivalentAddressGroups.add(buildEquivalentAddressGroup(instance));
+			}
+		}
 
 		Attributes.Builder builder = Attributes.newBuilder();
 
