@@ -4,16 +4,12 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
-import io.grpc.Status;
 import live.lingting.framework.Sequence;
-import live.lingting.framework.exception.SecurityGrpcExceptionHandler;
 import live.lingting.framework.grpc.interceptor.AbstractServerInterceptor;
 import live.lingting.framework.security.annotation.Authorize;
 import live.lingting.framework.security.authorize.SecurityAuthorize;
 import live.lingting.framework.security.domain.SecurityScope;
 import live.lingting.framework.security.domain.SecurityToken;
-import live.lingting.framework.security.exception.AuthorizationException;
-import live.lingting.framework.security.exception.PermissionsException;
 import live.lingting.framework.security.resource.SecurityResourceService;
 import live.lingting.framework.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -31,14 +27,11 @@ public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterce
 
 	private final SecurityAuthorize authorize;
 
-	private final SecurityGrpcExceptionHandler exceptionHandler;
-
 	public SecurityGrpcResourceServerInterceptor(Metadata.Key<String> authorizationKey, SecurityResourceService service,
-			SecurityAuthorize authorize, SecurityGrpcExceptionHandler exceptionHandler) {
+			SecurityAuthorize authorize) {
 		this.authorizationKey = authorizationKey;
 		this.service = service;
 		this.authorize = authorize;
-		this.exceptionHandler = exceptionHandler;
 	}
 
 	@Override
@@ -50,27 +43,7 @@ public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterce
 
 		if (allowAuthority(headers, descriptor)) {
 			Authorize annotation = getAuthorize(headers, descriptor);
-			Status status = null;
-			try {
-				this.authorize.valid(annotation);
-			}
-			catch (AuthorizationException e) {
-				status = exceptionHandler.handlerAuthorizationException(descriptor, e);
-			}
-			catch (PermissionsException e) {
-				status = exceptionHandler.handlerPermissionsException(descriptor, e);
-			}
-			catch (Exception e) {
-				status = exceptionHandler.handlerOther(descriptor, e);
-			}
-
-			// 权限校验异常! 关闭
-			if (status != null) {
-				call.close(status, headers);
-				return new ServerCall.Listener<>() {
-				};
-			}
-
+			authorize.valid(annotation);
 		}
 
 		return next.startCall(call, headers);

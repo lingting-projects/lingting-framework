@@ -191,6 +191,7 @@ configure(javaProjects) {
 
         add("testImplementation", "org.awaitility:awaitility")
         add("testImplementation", "org.junit.jupiter:junit-jupiter")
+        add("testImplementation", "ch.qos.logback:logback-classic")
     }
 
     configure<JavaPluginExtension> {

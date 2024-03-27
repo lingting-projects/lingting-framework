@@ -5,11 +5,13 @@ import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;
 import live.lingting.framework.endpoint.SecurityGrpcAuthorizationEndpoint;
-import live.lingting.framework.exception.SecurityGrpcExceptionHandler;
+import live.lingting.framework.exception.SecurityGrpcExceptionInstance;
 import live.lingting.framework.grpc.GrpcClientProvide;
 import live.lingting.framework.grpc.GrpcServer;
 import live.lingting.framework.grpc.GrpcServerBuilder;
+import live.lingting.framework.grpc.exception.GrpcExceptionProcessor;
 import live.lingting.framework.grpc.interceptor.GrpcClientTraceIdInterceptor;
+import live.lingting.framework.grpc.interceptor.GrpcServerExceptionInterceptor;
 import live.lingting.framework.grpc.interceptor.GrpcServerTraceIdInterceptor;
 import live.lingting.framework.grpc.properties.GrpcClientProperties;
 import live.lingting.framework.grpc.properties.GrpcServerProperties;
@@ -63,12 +65,15 @@ class SecurityGrpcTest {
 		SecurityGrpcProperties properties = new SecurityGrpcProperties();
 		SecurityDefaultResourceServiceImpl resourceService = new SecurityDefaultResourceServiceImpl(store);
 		SecurityAuthorize authorize = new SecurityAuthorize(0);
+		SecurityGrpcExceptionInstance securityGrpcExceptionInstance = new SecurityGrpcExceptionInstance();
+		GrpcExceptionProcessor processor = new GrpcExceptionProcessor(List.of(securityGrpcExceptionInstance));
 		server = new GrpcServerBuilder().port(0)
 			.properties(serverProperties)
 			.service(endpoint)
+			.interceptor(new GrpcServerExceptionInterceptor(serverProperties, processor))
 			.interceptor(new GrpcServerTraceIdInterceptor(serverProperties))
 			.interceptor(new SecurityGrpcResourceServerInterceptor(properties.authorizationKey(), resourceService,
-					authorize, new SecurityGrpcExceptionHandler()))
+					authorize))
 			.build();
 		server.onApplicationStart();
 		ValueUtils.awaitTrue(() -> server.isRunning());

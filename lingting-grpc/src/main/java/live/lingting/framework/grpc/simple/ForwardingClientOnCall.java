@@ -30,21 +30,21 @@ public class ForwardingClientOnCall<S, R> extends ForwardingClientCall<S, R> {
 	@Override
 	public void start(Listener<R> responseListener, Metadata headers) {
 		onStartBefore(responseListener, headers);
-		delegate.start(responseListener, headers);
+		super.start(responseListener, headers);
 		onStartAfter(responseListener, headers);
 	}
 
 	@Override
 	public void sendMessage(S message) {
 		onSendMessageBefore(message);
-		delegate.sendMessage(message);
+		super.sendMessage(message);
 		onSendMessageAfter(message);
 	}
 
 	@Override
 	public void halfClose() {
 		onHalfCloseBefore();
-		delegate.halfClose();
+		super.halfClose();
 		onHalfCloseAfter();
 	}
 

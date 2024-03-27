@@ -87,7 +87,7 @@ public class SecurityAuthorize {
 				// 未登录让前端登录
 				throw new AuthorizationException();
 			}
-			// 权限不足
+			// 状态异常
 			return scope.enabled();
 		});
 	}

@@ -15,12 +15,16 @@ public class GrpcServerProperties {
 
 	private Integer port;
 
-	private String traceIdKey = MdcUtils.TRACE_ID;
-
 	private long messageSize = 524288;
 
 	private Duration keepAliveTime = Duration.ofMinutes(30);
 
 	private Duration keepAliveTimeout = Duration.ofSeconds(2);
+
+	private String traceIdKey = MdcUtils.TRACE_ID;
+
+	private int traceOrder = Integer.MIN_VALUE + 100;
+
+	private int exceptionHandlerOrder = Integer.MIN_VALUE + 200;
 
 }

@@ -19,6 +19,8 @@ public class GrpcClientProperties {
 
 	private String traceIdKey = MdcUtils.TRACE_ID;
 
+	private int traceOrder = Integer.MIN_VALUE + 100;
+
 	private boolean usePlaintext = false;
 
 	/**

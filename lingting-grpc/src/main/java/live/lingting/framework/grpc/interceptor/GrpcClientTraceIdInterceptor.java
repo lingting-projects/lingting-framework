@@ -18,9 +18,12 @@ import live.lingting.framework.util.StringUtils;
 @SuppressWarnings("java:S110")
 public class GrpcClientTraceIdInterceptor implements ClientInterceptor, Sequence {
 
+	private final GrpcClientProperties properties;
+
 	private final Metadata.Key<String> traceIdKey;
 
 	public GrpcClientTraceIdInterceptor(GrpcClientProperties properties) {
+		this.properties = properties;
 		this.traceIdKey = Metadata.Key.of(properties.getTraceIdKey(), Metadata.ASCII_STRING_MARSHALLER);
 	}
 
@@ -48,7 +51,7 @@ public class GrpcClientTraceIdInterceptor implements ClientInterceptor, Sequence
 
 	@Override
 	public int getSequence() {
-		return Integer.MIN_VALUE;
+		return properties.getTraceOrder();
 	}
 
 }
