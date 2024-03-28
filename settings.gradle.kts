@@ -1,15 +1,3 @@
-pluginManagement {
-    repositories {
-        mavenLocal()
-
-        maven(url = "https://mirrors.huaweicloud.com/repository/maven/")
-        maven(url = "https://maven.aliyun.com/repository/public/")
-        maven(url = "https://maven.aliyun.com/repository/spring")
-
-        mavenCentral()
-    }
-}
-
 dependencyResolutionManagement {
     val mybatisVersion = "3.5.14"
     val mybatisPlusVersion = "3.5.5"

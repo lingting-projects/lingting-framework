@@ -66,27 +66,6 @@ allprojects {
         }
     }
 
-    repositories {
-        mavenLocal()
-
-        maven(url = "https://mirrors.huaweicloud.com/repository/maven/")
-        maven(url = "https://maven.aliyun.com/repository/public/")
-        maven(url = "https://maven.aliyun.com/repository/spring")
-
-        mavenCentral()
-    }
-    buildscript {
-        repositories {
-            mavenLocal()
-
-            maven(url = "https://mirrors.huaweicloud.com/repository/maven/")
-            maven(url = "https://maven.aliyun.com/repository/public/")
-            maven(url = "https://maven.aliyun.com/repository/spring")
-
-            mavenCentral()
-        }
-    }
-
     idea {
         module {
             languageLevel = ideaLanguageLevel
