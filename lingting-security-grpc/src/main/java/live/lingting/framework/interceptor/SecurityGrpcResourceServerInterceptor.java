@@ -58,7 +58,7 @@ public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterce
 
 		try {
 			SecurityScope scope = service.resolve(token);
-			service.setScope(scope);
+			service.putScope(scope);
 		}
 		catch (Exception e) {
 			log.error("resolve token error! token: {}", token, e);

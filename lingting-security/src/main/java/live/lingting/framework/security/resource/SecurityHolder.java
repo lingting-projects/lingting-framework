@@ -1,6 +1,7 @@
 package live.lingting.framework.security.resource;
 
 import live.lingting.framework.security.domain.SecurityScope;
+import live.lingting.framework.thread.StackThreadLocal;
 import lombok.experimental.UtilityClass;
 
 import java.util.Collections;
@@ -13,14 +14,14 @@ import java.util.Set;
 @UtilityClass
 public class SecurityHolder {
 
-	static final ThreadLocal<SecurityScope> SCOPE_THREAD_LOCAL = new ThreadLocal<>();
+	static final StackThreadLocal<SecurityScope> LOCAL = new StackThreadLocal<>();
 
-	public static void set(SecurityScope scope) {
-		SCOPE_THREAD_LOCAL.set(scope);
+	public static void put(SecurityScope scope) {
+		LOCAL.put(scope);
 	}
 
-	public static void clear() {
-		SCOPE_THREAD_LOCAL.remove();
+	public static void pop() {
+		LOCAL.pop();
 	}
 
 	public static SecurityScope get() {
@@ -32,7 +33,7 @@ public class SecurityHolder {
 	}
 
 	public static SecurityScope scope() {
-		return SCOPE_THREAD_LOCAL.get();
+		return LOCAL.get();
 	}
 
 	public static Optional<SecurityScope> scopeOption() {

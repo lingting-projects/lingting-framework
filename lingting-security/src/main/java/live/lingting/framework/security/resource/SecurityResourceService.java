@@ -12,12 +12,12 @@ public interface SecurityResourceService {
 
 	SecurityScope resolve(SecurityToken token);
 
-	default void setScope(SecurityScope scope) {
-		SecurityHolder.set(scope);
+	default void putScope(SecurityScope scope) {
+		SecurityHolder.put(scope);
 	}
 
-	default void removeScope() {
-		SecurityHolder.clear();
+	default void popScope() {
+		SecurityHolder.pop();
 	}
 
 }
