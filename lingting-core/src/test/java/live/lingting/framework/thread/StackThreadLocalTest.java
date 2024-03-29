@@ -37,6 +37,9 @@ class StackThreadLocalTest {
 		assertEquals(id, local.pop());
 		assertNull(local.get());
 		assertNull(local.pop());
+		local.put(null);
+		assertNull(local.get());
+		assertNull(local.pop());
 	}
 
 }
