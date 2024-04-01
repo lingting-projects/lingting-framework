@@ -8,7 +8,6 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import live.lingting.framework.grpc.simple.ForwardingClientOnCall;
 import live.lingting.framework.properties.SecurityGrpcProperties;
-import live.lingting.framework.resource.SecurityTokenHolder;
 import live.lingting.framework.security.domain.SecurityToken;
 
 /**
@@ -29,7 +28,7 @@ public class SecurityGrpcRemoteResourceClientInterceptor implements ClientInterc
 		return new ForwardingClientOnCall<>(call) {
 			@Override
 			public void onStartBefore(Listener<R> responseListener, Metadata headers) {
-				SecurityToken securityToken = SecurityTokenHolder.get();
+				SecurityToken securityToken = SecurityGrpcRemoteContent.get();
 				if (securityToken != null && securityToken.isAvailable()) {
 					headers.put(authorizationKey, securityToken.getRaw());
 				}

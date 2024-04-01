@@ -5,6 +5,7 @@ import io.grpc.ManagedChannel;
 import live.lingting.framework.context.ContextComponent;
 import live.lingting.framework.convert.SecurityGrpcConvert;
 import live.lingting.framework.grpc.GrpcClientProvide;
+import live.lingting.framework.interceptor.SecurityGrpcRemoteContent;
 import live.lingting.framework.interceptor.SecurityGrpcRemoteResourceClientInterceptor;
 import live.lingting.framework.security.domain.AuthorizationVO;
 import live.lingting.framework.security.domain.SecurityScope;
@@ -37,13 +38,13 @@ public class SecurityGrpcDefaultRemoteResourceServiceImpl implements SecurityRes
 	@Override
 	public SecurityScope resolve(SecurityToken token) {
 		try {
-			SecurityTokenHolder.set(token);
+			SecurityGrpcRemoteContent.put(token);
 			SecurityGrpcAuthorization.AuthorizationVO authorizationVO = blocking.resolve(Empty.getDefaultInstance());
 			AuthorizationVO vo = convert.toJava(authorizationVO);
 			return convert.voToScope(vo);
 		}
 		finally {
-			SecurityTokenHolder.remove();
+			SecurityGrpcRemoteContent.pop();
 		}
 	}
 

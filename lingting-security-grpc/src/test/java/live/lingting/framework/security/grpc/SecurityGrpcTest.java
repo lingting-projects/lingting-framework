@@ -15,10 +15,10 @@ import live.lingting.framework.grpc.interceptor.GrpcServerExceptionInterceptor;
 import live.lingting.framework.grpc.interceptor.GrpcServerTraceIdInterceptor;
 import live.lingting.framework.grpc.properties.GrpcClientProperties;
 import live.lingting.framework.grpc.properties.GrpcServerProperties;
+import live.lingting.framework.interceptor.SecurityGrpcRemoteContent;
 import live.lingting.framework.interceptor.SecurityGrpcRemoteResourceClientInterceptor;
 import live.lingting.framework.interceptor.SecurityGrpcResourceServerInterceptor;
 import live.lingting.framework.properties.SecurityGrpcProperties;
-import live.lingting.framework.resource.SecurityTokenHolder;
 import live.lingting.framework.security.authorize.SecurityAuthorize;
 import live.lingting.framework.security.domain.SecurityToken;
 import live.lingting.framework.security.grpc.authorization.AuthorizationServiceImpl;
@@ -60,7 +60,7 @@ class SecurityGrpcTest {
 		convert = new SecurityGrpcExpandConvert();
 
 		SecurityGrpcAuthorizationEndpoint endpoint = new SecurityGrpcAuthorizationEndpoint(authorizationService, store,
-				password, convert);
+			password, convert);
 		GrpcServerProperties serverProperties = new GrpcServerProperties();
 		SecurityGrpcProperties properties = new SecurityGrpcProperties();
 		SecurityDefaultResourceServiceImpl resourceService = new SecurityDefaultResourceServiceImpl(store);
@@ -73,7 +73,7 @@ class SecurityGrpcTest {
 			.interceptor(new GrpcServerExceptionInterceptor(serverProperties, processor))
 			.interceptor(new GrpcServerTraceIdInterceptor(serverProperties))
 			.interceptor(new SecurityGrpcResourceServerInterceptor(properties.authorizationKey(), resourceService,
-					authorize))
+				authorize))
 			.build();
 		server.onApplicationStart();
 		ValueUtils.awaitTrue(() -> server.isRunning());
@@ -109,7 +109,7 @@ class SecurityGrpcTest {
 		// 无token解析
 		assertThrowsExactly(StatusRuntimeException.class, () -> blocking.resolve(Empty.getDefaultInstance()));
 		// token解析
-		SecurityTokenHolder.set(SecurityToken.ofDelimiter(admin.getToken(), " "));
+		SecurityGrpcRemoteContent.put(SecurityToken.ofDelimiter(admin.getToken(), " "));
 		try {
 			SecurityGrpcAuthorization.AuthorizationVO resolveGrpcAdmin = blocking.resolve(Empty.getDefaultInstance());
 			ExpandAuthorizationVO resolveAdmin = convert.voExpand(convert.toJava(resolveGrpcAdmin));
@@ -127,7 +127,7 @@ class SecurityGrpcTest {
 			assertThrowsExactly(StatusRuntimeException.class, () -> blocking.resolve(Empty.getDefaultInstance()));
 		}
 		finally {
-			SecurityTokenHolder.remove();
+			SecurityGrpcRemoteContent.pop();
 		}
 	}
 
