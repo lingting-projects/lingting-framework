@@ -1,5 +1,6 @@
 package live.lingting.framework.thread;
 
+import java.time.Duration;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -29,8 +30,8 @@ public abstract class AbstractBlockingQueueThread<T> extends AbstractQueueThread
 	}
 
 	@Override
-	protected T poll(long time) throws InterruptedException {
-		return queue.poll(time, TimeUnit.MILLISECONDS);
+	protected T poll(Duration timeout) throws InterruptedException {
+		return queue.poll(timeout.toMillis(), TimeUnit.MILLISECONDS);
 	}
 
 }

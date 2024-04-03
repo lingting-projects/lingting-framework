@@ -60,7 +60,7 @@ class SecurityGrpcTest {
 		convert = new SecurityGrpcExpandConvert();
 
 		SecurityGrpcAuthorizationEndpoint endpoint = new SecurityGrpcAuthorizationEndpoint(authorizationService, store,
-			password, convert);
+				password, convert);
 		GrpcServerProperties serverProperties = new GrpcServerProperties();
 		SecurityGrpcProperties properties = new SecurityGrpcProperties();
 		SecurityDefaultResourceServiceImpl resourceService = new SecurityDefaultResourceServiceImpl(store);
@@ -73,7 +73,7 @@ class SecurityGrpcTest {
 			.interceptor(new GrpcServerExceptionInterceptor(serverProperties, processor))
 			.interceptor(new GrpcServerTraceIdInterceptor(serverProperties))
 			.interceptor(new SecurityGrpcResourceServerInterceptor(properties.authorizationKey(), resourceService,
-				authorize))
+					authorize))
 			.build();
 		server.onApplicationStart();
 		ValueUtils.awaitTrue(() -> server.isRunning());

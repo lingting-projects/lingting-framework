@@ -2,6 +2,7 @@ package live.lingting.framework.thread;
 
 import live.lingting.framework.lock.JavaReentrantLock;
 
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +24,7 @@ public abstract class AbstractDynamicTimer<T> extends AbstractThreadContextCompo
 	 * @param t 对象
 	 * @return 具体处理该对象还要多久, 单位: 毫秒
 	 */
-	protected abstract long sleepTime(T t);
+	protected abstract Duration sleepTime(T t);
 
 	public void put(T t) {
 		if (t == null) {
@@ -60,11 +61,12 @@ public abstract class AbstractDynamicTimer<T> extends AbstractThreadContextCompo
 				return;
 			}
 
-			long sleepTime = sleepTime(t);
+			Duration duration = sleepTime(t);
+			long millis = duration.toMillis();
 			// 需要休眠
-			if (sleepTime > 0) {
+			if (millis > 0) {
 				// 如果是被唤醒
-				if (lock.await(sleepTime, TimeUnit.MILLISECONDS)) {
+				if (lock.await(millis, TimeUnit.MILLISECONDS)) {
 					replay(t);
 					return;
 				}

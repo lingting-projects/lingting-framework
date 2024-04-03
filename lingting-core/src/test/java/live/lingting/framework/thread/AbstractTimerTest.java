@@ -4,7 +4,7 @@ import live.lingting.framework.context.ContextHolder;
 import live.lingting.framework.util.ValueUtils;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,9 +22,9 @@ class AbstractTimerTest {
 		AbstractTimer timer = new AbstractTimer() {
 
 			@Override
-			public long getTimeout() {
+			public Duration getTimeout() {
 				// 设置30分钟的执行间隔
-				return TimeUnit.MINUTES.toMillis(30);
+				return Duration.ofMinutes(30);
 			}
 
 			@Override

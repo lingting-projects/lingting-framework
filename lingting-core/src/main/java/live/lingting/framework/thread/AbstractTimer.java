@@ -2,6 +2,7 @@ package live.lingting.framework.thread;
 
 import live.lingting.framework.lock.JavaReentrantLock;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -14,8 +15,8 @@ public abstract class AbstractTimer extends AbstractThreadContextComponent {
 	/**
 	 * 获取超时时间, 单位: 毫秒
 	 */
-	public long getTimeout() {
-		return TimeUnit.SECONDS.toMillis(30);
+	public Duration getTimeout() {
+		return Duration.ofSeconds(30);
 	}
 
 	/**
@@ -30,7 +31,8 @@ public abstract class AbstractTimer extends AbstractThreadContextComponent {
 			process();
 		}
 		finally {
-			lock.await(getTimeout(), TimeUnit.MILLISECONDS);
+			Duration duration = getTimeout();
+			lock.await(duration.toMillis(), TimeUnit.MILLISECONDS);
 			lock.unlock();
 		}
 	}

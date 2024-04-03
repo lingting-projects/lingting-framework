@@ -116,10 +116,9 @@ public abstract class AbstractMultiDownload<D extends AbstractMultiDownload<D>> 
 
 	/**
 	 * 把指定范围的文件流写入到输出流
-	 *
 	 * @param output 输出流
-	 * @param start  索引起始
-	 * @param end    索引结束
+	 * @param start 索引起始
+	 * @param end 索引结束
 	 */
 	protected abstract void write(OutputStream output, long start, long end) throws IOException;
 

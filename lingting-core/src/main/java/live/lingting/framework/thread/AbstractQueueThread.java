@@ -3,6 +3,7 @@ package live.lingting.framework.thread;
 import live.lingting.framework.StopWatch;
 import live.lingting.framework.util.CollectionUtils;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,17 +17,17 @@ public abstract class AbstractQueueThread<E> extends AbstractThreadContextCompon
 	/**
 	 * 默认缓存数据数量
 	 */
-	protected static final int DEFAULT_BATCH_SIZE = 500;
+	public static final int DEFAULT_BATCH_SIZE = 500;
 
 	/**
-	 * 默认等待时长 30秒；单位 毫秒
+	 * 默认等待时长 30秒
 	 */
-	protected static final long DEFAULT_BATCH_TIMEOUT_MS = 30 * 1000L;
+	public static final Duration DEFAULT_BATCH_TIMEOUT = Duration.ofSeconds(30);
 
 	/**
 	 * 默认获取数据时的超时时间
 	 */
-	protected static final long POLL_TIMEOUT_MS = 5 * 1000L;
+	public static final Duration POLL_TIMEOUT = Duration.ofSeconds(5);
 
 	protected final List<E> data = new ArrayList<>(getBatchSize());
 
@@ -42,16 +43,16 @@ public abstract class AbstractQueueThread<E> extends AbstractThreadContextCompon
 	 * 用于子类自定义等待时长
 	 * @return 返回时长，单位毫秒
 	 */
-	public long getBatchTimeout() {
-		return DEFAULT_BATCH_TIMEOUT_MS;
+	public Duration getBatchTimeout() {
+		return DEFAULT_BATCH_TIMEOUT;
 	}
 
 	/**
 	 * 用于子类自定义 获取数据的超时时间
 	 * @return 返回时长，单位毫秒
 	 */
-	public long getPollTimeout() {
-		return POLL_TIMEOUT_MS;
+	public Duration getPollTimeout() {
+		return POLL_TIMEOUT;
 	}
 
 	/**
@@ -68,11 +69,11 @@ public abstract class AbstractQueueThread<E> extends AbstractThreadContextCompon
 
 	/**
 	 * 从队列中取值
-	 * @param time 等待时长, 单位 毫秒
+	 * @param timeout 等待时长
 	 * @return E
 	 * @throws InterruptedException 线程中断
 	 */
-	protected abstract E poll(long time) throws InterruptedException;
+	protected abstract E poll(Duration timeout) throws InterruptedException;
 
 	/**
 	 * 处理单个接收的数据
@@ -146,13 +147,14 @@ public abstract class AbstractQueueThread<E> extends AbstractThreadContextCompon
 	 * 已有数据且超过设定的等待时间
 	 */
 	protected boolean isTimeout(StopWatch watch) {
-		return !CollectionUtils.isEmpty(data) && watch.timeMillis() >= getBatchTimeout();
+		return !CollectionUtils.isEmpty(data) && watch.timeMillis() >= getBatchTimeout().toMillis();
 	}
 
 	public E poll() {
 		E e = null;
 		try {
-			e = poll(getPollTimeout());
+			Duration duration = getPollTimeout();
+			e = poll(duration);
 		}
 		catch (InterruptedException ex) {
 			log.error("Class: {}; ThreadId: {}; poll interrupted!", getSimpleName(), getId());
