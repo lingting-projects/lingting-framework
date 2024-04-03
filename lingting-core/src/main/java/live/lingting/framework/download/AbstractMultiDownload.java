@@ -78,7 +78,7 @@ public abstract class AbstractMultiDownload<D extends AbstractMultiDownload<D>> 
 			tasks.add(task);
 		}
 
-		ValueUtils.await(() -> {
+		ValueUtils.awaitTrue(() -> {
 			long finishedTask = 0;
 			long currentFinishedShard = 0;
 
@@ -93,12 +93,10 @@ public abstract class AbstractMultiDownload<D extends AbstractMultiDownload<D>> 
 				}
 				// 更新已下载完成分片数
 				currentFinishedShard += task.getCount();
-				// 如果发生异常, 中断
 			}
 			finishedShard = currentFinishedShard;
-
-			return tasks.size() - finishedTask;
-		}, i -> i < 1);
+			return tasks.size() == finishedTask;
+		});
 		finished = true;
 	}
 
@@ -118,9 +116,10 @@ public abstract class AbstractMultiDownload<D extends AbstractMultiDownload<D>> 
 
 	/**
 	 * 把指定范围的文件流写入到输出流
+	 *
 	 * @param output 输出流
-	 * @param start 索引起始
-	 * @param end 索引结束
+	 * @param start  索引起始
+	 * @param end    索引结束
 	 */
 	protected abstract void write(OutputStream output, long start, long end) throws IOException;
 

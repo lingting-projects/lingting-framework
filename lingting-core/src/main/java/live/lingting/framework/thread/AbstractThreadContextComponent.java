@@ -75,7 +75,9 @@ public abstract class AbstractThreadContextComponent extends Thread implements C
 	}
 
 	public void awaitTerminated() {
+		log.debug("wait thread terminated.");
 		ValueUtils.await(this::getState, State.TERMINATED::equals);
+		log.debug("thread terminated.");
 	}
 
 }
