@@ -5,11 +5,13 @@ import live.lingting.framework.security.domain.SecurityScope;
 import live.lingting.framework.security.exception.AuthorizationException;
 import live.lingting.framework.security.exception.PermissionsException;
 import live.lingting.framework.security.resource.SecurityHolder;
+import live.lingting.framework.util.AnnotationUtils;
 import live.lingting.framework.util.ArrayUtils;
 import live.lingting.framework.util.CollectionUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.function.Predicate;
 
@@ -21,6 +23,21 @@ import java.util.function.Predicate;
 public class SecurityAuthorize {
 
 	private final int order;
+
+	public Authorize findAuthorize(Class<?> cls, Method method) {
+		if (method != null) {
+			Authorize authorize = AnnotationUtils.findAnnotation(method, Authorize.class);
+			if (authorize != null) {
+				return authorize;
+			}
+		}
+		return AnnotationUtils.findAnnotation(cls, Authorize.class);
+	}
+
+	public void valid(Class<?> cls, Method method) throws AuthorizationException {
+		Authorize authorize = findAuthorize(cls, method);
+		valid(authorize);
+	}
 
 	/**
 	 * 校验当前权限数据是否满足指定注解的要求

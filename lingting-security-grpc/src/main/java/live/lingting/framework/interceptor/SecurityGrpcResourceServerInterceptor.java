@@ -1,18 +1,20 @@
 package live.lingting.framework.interceptor;
 
+import io.grpc.BindableService;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import live.lingting.framework.Sequence;
 import live.lingting.framework.grpc.interceptor.AbstractServerInterceptor;
-import live.lingting.framework.security.annotation.Authorize;
 import live.lingting.framework.security.authorize.SecurityAuthorize;
 import live.lingting.framework.security.domain.SecurityScope;
 import live.lingting.framework.security.domain.SecurityToken;
 import live.lingting.framework.security.resource.SecurityResourceService;
 import live.lingting.framework.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
+
+import java.lang.reflect.Method;
 
 /**
  * @author lingting 2023-12-14 16:28
@@ -43,14 +45,19 @@ public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterce
 			MethodDescriptor<S, R> descriptor = call.getMethodDescriptor();
 
 			if (allowAuthority(headers, descriptor)) {
-				Authorize annotation = getAuthorize(headers, descriptor);
-				authorize.valid(annotation);
+				validAuthority(descriptor);
 			}
 			return next.startCall(call, headers);
 		}
 		finally {
 			service.popScope();
 		}
+	}
+
+	protected <S, R> void validAuthority(MethodDescriptor<S, R> descriptor) {
+		Class<? extends BindableService> cls = server.findClass(descriptor);
+		Method method = server.findMethod(descriptor);
+		authorize.valid(cls, method);
 	}
 
 	protected SecurityScope getScope(Metadata metadata) {
@@ -75,14 +82,6 @@ public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterce
 			return SecurityToken.EMPTY;
 		}
 		return SecurityToken.ofDelimiter(raw, " ");
-	}
-
-	protected Authorize getAuthorize(Metadata metadata, MethodDescriptor<?, ?> descriptor) {
-		Authorize methodAuthorize = server.findMethod(descriptor).getAnnotation(Authorize.class);
-		if (methodAuthorize != null) {
-			return methodAuthorize;
-		}
-		return server.findClass(descriptor).getAnnotation(Authorize.class);
 	}
 
 	protected boolean allowAuthority(Metadata metadata, MethodDescriptor<?, ?> descriptor) {
