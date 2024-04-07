@@ -26,19 +26,20 @@ public class SecurityAuthorize {
 	 * 校验当前权限数据是否满足指定注解的要求
 	 */
 	public void valid(Authorize authorize) throws PermissionsException {
-		// 未配置, 要求登录
-		if (authorize == null) {
-			validLogin();
-			return;
-		}
+		boolean allowAnyone = authorize != null && authorize.anyone();
 
 		// 允许匿名, 直接执行
-		if (authorize.anyone()) {
+		if (allowAnyone) {
 			return;
 		}
 
-		// 非匿名
+		// 非匿名, 要求登录
 		validLogin();
+
+		// 未配置, 已通过登录交易, 结束
+		if (authorize == null) {
+			return;
+		}
 
 		// 要求系统
 		if (authorize.onlySystem()) {

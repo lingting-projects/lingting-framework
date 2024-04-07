@@ -37,31 +37,35 @@ public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterce
 	@Override
 	public <S, R> ServerCall.Listener<S> interceptCall(ServerCall<S, R> call, Metadata headers,
 			ServerCallHandler<S, R> next) {
-		handlerScope(headers);
+		SecurityScope scope = getScope(headers);
+		service.putScope(scope);
+		try {
+			MethodDescriptor<S, R> descriptor = call.getMethodDescriptor();
 
-		MethodDescriptor<S, R> descriptor = call.getMethodDescriptor();
-
-		if (allowAuthority(headers, descriptor)) {
-			Authorize annotation = getAuthorize(headers, descriptor);
-			authorize.valid(annotation);
+			if (allowAuthority(headers, descriptor)) {
+				Authorize annotation = getAuthorize(headers, descriptor);
+				authorize.valid(annotation);
+			}
+			return next.startCall(call, headers);
 		}
-
-		return next.startCall(call, headers);
+		finally {
+			service.popScope();
+		}
 	}
 
-	protected void handlerScope(Metadata metadata) {
+	protected SecurityScope getScope(Metadata metadata) {
 		SecurityToken token = getToken(metadata);
 		// token有效, 设置上下文
 		if (!token.isAvailable()) {
-			return;
+			return null;
 		}
 
 		try {
-			SecurityScope scope = service.resolve(token);
-			service.putScope(scope);
+			return service.resolve(token);
 		}
 		catch (Exception e) {
 			log.error("resolve token error! token: {}", token, e);
+			return null;
 		}
 	}
 
