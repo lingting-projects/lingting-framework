@@ -7,24 +7,15 @@ import java.util.Stack;
  */
 public class StackThreadLocal<T> {
 
-	protected final ThreadLocal<Stack<T>> local = new ThreadLocal<>();
-
-	protected Stack<T> getStack() {
-		Stack<T> stack = local.get();
-		if (stack == null) {
-			stack = new Stack<>();
-			local.set(stack);
-		}
-		return stack;
-	}
+	protected final ThreadLocal<Stack<T>> local = ThreadLocal.withInitial(Stack::new);
 
 	public void put(T t) {
-		Stack<T> stack = getStack();
+		Stack<T> stack = local.get();
 		stack.push(t);
 	}
 
 	public T get() {
-		Stack<T> stack = getStack();
+		Stack<T> stack = local.get();
 		if (stack.empty()) {
 			return null;
 		}
@@ -32,15 +23,11 @@ public class StackThreadLocal<T> {
 	}
 
 	public T pop() {
-		Stack<T> stack = getStack();
+		Stack<T> stack = local.get();
 		if (stack.empty()) {
 			return null;
 		}
-		T pop = stack.pop();
-		if (stack.empty()) {
-			local.remove();
-		}
-		return pop;
+		return stack.pop();
 	}
 
 }
