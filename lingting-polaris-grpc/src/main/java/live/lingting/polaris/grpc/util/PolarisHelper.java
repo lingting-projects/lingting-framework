@@ -30,27 +30,26 @@ public class PolarisHelper {
 	 * {@link PolarisLabelsInject#modifyRoute(Set)}} 或者
 	 * {@link PolarisLabelsInject#modifyRateLimit(Set)} 注入本次流量的标签信息
 	 */
-	private static final PolarisLabelsInject LABELS_INJECT;
+	private static PolarisLabelsInject inject;
 
 	static {
 		ServiceLoader<PolarisLabelsInject> serviceLoader = ServiceLoader.load(PolarisLabelsInject.class);
 		Iterator<PolarisLabelsInject> iterator = serviceLoader.iterator();
-		LABELS_INJECT = Optional.ofNullable(iterator.hasNext() ? iterator.next() : null)
-			.orElse(new PolarisLabelsInject() {
-				@Override
-				public Set<RouteArgument> modifyRoute(Set<RouteArgument> arguments) {
-					return arguments;
-				}
+		inject = Optional.ofNullable(iterator.hasNext() ? iterator.next() : null).orElse(new PolarisLabelsInject() {
+			@Override
+			public Set<RouteArgument> modifyRoute(Set<RouteArgument> arguments) {
+				return arguments;
+			}
 
-				@Override
-				public Set<Argument> modifyRateLimit(Set<Argument> arguments) {
-					return arguments;
-				}
-			});
+			@Override
+			public Set<Argument> modifyRateLimit(Set<Argument> arguments) {
+				return arguments;
+			}
+		});
 	}
 
 	public static PolarisLabelsInject getLabelsInject() {
-		return LABELS_INJECT;
+		return inject;
 	}
 
 	/**
@@ -58,7 +57,7 @@ public class PolarisHelper {
 	 * @param inject {@link PolarisLabelsInject}
 	 */
 	public static void setLabelsInject(PolarisLabelsInject inject) {
-		LABELS_INJECT = inject;
+		PolarisHelper.inject = inject;
 	}
 
 	public static ClientInterceptor buildMetadataClientInterceptor() {
