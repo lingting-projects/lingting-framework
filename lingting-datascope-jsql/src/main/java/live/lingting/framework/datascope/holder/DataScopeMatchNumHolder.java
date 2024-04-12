@@ -1,5 +1,7 @@
 package live.lingting.framework.datascope.holder;
 
+import lombok.experimental.UtilityClass;
+
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Optional;
@@ -10,10 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author hccake
  */
+@UtilityClass
 public final class DataScopeMatchNumHolder {
-
-	private DataScopeMatchNumHolder() {
-	}
 
 	private static final ThreadLocal<Deque<AtomicInteger>> matchNumTreadLocal = new ThreadLocal<>();
 

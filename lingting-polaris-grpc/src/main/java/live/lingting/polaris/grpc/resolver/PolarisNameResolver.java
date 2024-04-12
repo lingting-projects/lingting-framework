@@ -51,13 +51,13 @@ public class PolarisNameResolver extends NameResolver {
 
 	private final URI targetUri;
 
-	private ServiceChangeWatcher watcher;
-
 	private final SDKContext context;
 
-	private ServiceKey sourceService;
-
 	private final List<ResolverInterceptor> interceptors = new ArrayList<>();
+
+	private ServiceChangeWatcher watcher;
+
+	private ServiceKey sourceService;
 
 	public PolarisNameResolver(URI targetUri, SDKContext context, ConsumerAPI consumerAPI) {
 		this.targetUri = targetUri;
@@ -150,6 +150,16 @@ public class PolarisNameResolver extends NameResolver {
 		}
 	}
 
+	private EquivalentAddressGroup buildEquivalentAddressGroup(Instance instance) {
+		InetSocketAddress address = new InetSocketAddress(instance.getHost(), instance.getPort());
+		Attributes attributes = Attributes.newBuilder()
+			.set(Common.INSTANCE_KEY, instance)
+			.set(Common.TARGET_NAMESPACE_KEY, namespace)
+			.set(Common.TARGET_SERVICE_KEY, service)
+			.build();
+		return new EquivalentAddressGroup(address, attributes);
+	}
+
 	private class ServiceChangeWatcher implements ServiceListener {
 
 		private final Listener2 listener;
@@ -163,16 +173,6 @@ public class PolarisNameResolver extends NameResolver {
 			doResolve(listener);
 		}
 
-	}
-
-	private EquivalentAddressGroup buildEquivalentAddressGroup(Instance instance) {
-		InetSocketAddress address = new InetSocketAddress(instance.getHost(), instance.getPort());
-		Attributes attributes = Attributes.newBuilder()
-			.set(Common.INSTANCE_KEY, instance)
-			.set(Common.TARGET_NAMESPACE_KEY, namespace)
-			.set(Common.TARGET_SERVICE_KEY, service)
-			.build();
-		return new EquivalentAddressGroup(address, attributes);
 	}
 
 }

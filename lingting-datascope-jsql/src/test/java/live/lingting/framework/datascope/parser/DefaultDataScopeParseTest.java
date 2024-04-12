@@ -24,33 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class DefaultDataScopeParseTest {
 
-	static class TenantDataScope implements JsqlDataScope {
-
-		final String columnName = "tenant_id";
-
-		private static final Set<String> TABLE_NAMES = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-		static {
-			TABLE_NAMES.addAll(Arrays.asList("entity", "entity1", "entity2", "entity3", "t1", "t2"));
-		}
-
-		@Override
-		public String getResource() {
-			return "tenant";
-		}
-
-		@Override
-		public boolean includes(String tableName) {
-			return TABLE_NAMES.contains(tableName);
-		}
-
-		@Override
-		public Expression getExpression(String tableName, Alias tableAlias) {
-			Column column = SqlParseUtils.getAliasColumn(tableName, tableAlias, columnName);
-			return new EqualsTo(column, new LongValue("1"));
-		}
-
-	}
-
 	JsqlDataScope tenantDataScope = new DefaultDataScopeParseTest.TenantDataScope();
 
 	DataPermissionHandler dataPermissionHandler = new DefaultDataPermissionHandler(
@@ -365,6 +338,34 @@ class DefaultDataScopeParseTest {
 	void assertSql(String sql, String targetSql) {
 		String parsedSql = dataScopeSqlProcessor.parserSingle(sql, dataPermissionHandler.dataScopes());
 		assertEquals(targetSql, parsedSql);
+	}
+
+	static class TenantDataScope implements JsqlDataScope {
+
+		private static final Set<String> TABLE_NAMES = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+
+		static {
+			TABLE_NAMES.addAll(Arrays.asList("entity", "entity1", "entity2", "entity3", "t1", "t2"));
+		}
+
+		final String columnName = "tenant_id";
+
+		@Override
+		public String getResource() {
+			return "tenant";
+		}
+
+		@Override
+		public boolean includes(String tableName) {
+			return TABLE_NAMES.contains(tableName);
+		}
+
+		@Override
+		public Expression getExpression(String tableName, Alias tableAlias) {
+			Column column = SqlParseUtils.getAliasColumn(tableName, tableAlias, columnName);
+			return new EqualsTo(column, new LongValue("1"));
+		}
+
 	}
 
 }

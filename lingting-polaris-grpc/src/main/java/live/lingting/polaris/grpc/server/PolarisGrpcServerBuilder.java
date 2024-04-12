@@ -38,6 +38,12 @@ public final class PolarisGrpcServerBuilder extends ServerBuilder<PolarisGrpcSer
 
 	private static final int DEFAULT_TTL = 5;
 
+	private final ServerBuilder<?> builder;
+
+	private final List<PolarisServerInterceptor> polarisInterceptors = new ArrayList<>();
+
+	private final List<ServerInterceptor> interceptors = new ArrayList<>();
+
 	private String applicationName;
 
 	private String namespace;
@@ -63,13 +69,15 @@ public final class PolarisGrpcServerBuilder extends ServerBuilder<PolarisGrpcSer
 	 */
 	private Duration maxWaitDuration = Duration.ofSeconds(30);
 
-	private final ServerBuilder<?> builder;
-
-	private final List<PolarisServerInterceptor> polarisInterceptors = new ArrayList<>();
-
-	private final List<ServerInterceptor> interceptors = new ArrayList<>();
-
 	private SDKContext context;
+
+	/**
+	 * PolarisGrpcServerBuilder Constructor.
+	 * @param builder ServerBuilder
+	 */
+	public PolarisGrpcServerBuilder(ServerBuilder<?> builder) {
+		this.builder = builder;
+	}
 
 	/**
 	 * Static factory for creating a new PolarisGrpcServerBuilder.
@@ -79,14 +87,6 @@ public final class PolarisGrpcServerBuilder extends ServerBuilder<PolarisGrpcSer
 	public static PolarisGrpcServerBuilder forPort(int port) {
 		ServerBuilder<?> builder = ServerBuilder.forPort(port);
 		return new PolarisGrpcServerBuilder(builder);
-	}
-
-	/**
-	 * PolarisGrpcServerBuilder Constructor.
-	 * @param builder ServerBuilder
-	 */
-	public PolarisGrpcServerBuilder(ServerBuilder<?> builder) {
-		this.builder = builder;
 	}
 
 	/**
@@ -223,8 +223,8 @@ public final class PolarisGrpcServerBuilder extends ServerBuilder<PolarisGrpcSer
 
 	@Override
 	public PolarisGrpcServerBuilder intercept(ServerInterceptor interceptor) {
-		if (interceptor instanceof PolarisServerInterceptor) {
-			this.polarisInterceptors.add((PolarisServerInterceptor) interceptor);
+		if (interceptor instanceof PolarisServerInterceptor polarisServerInterceptor) {
+			this.polarisInterceptors.add(polarisServerInterceptor);
 		}
 		else {
 			this.interceptors.add(interceptor);

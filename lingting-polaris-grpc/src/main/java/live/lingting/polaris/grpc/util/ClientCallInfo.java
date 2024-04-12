@@ -28,6 +28,10 @@ public class ClientCallInfo {
 		this.targetService = targetService;
 	}
 
+	public static ClientCallInfoBuilder builder() {
+		return new ClientCallInfoBuilder();
+	}
+
 	public String getMethod() {
 		return method;
 	}
@@ -46,10 +50,6 @@ public class ClientCallInfo {
 
 	public String getTargetService() {
 		return targetService;
-	}
-
-	public static ClientCallInfoBuilder builder() {
-		return new ClientCallInfoBuilder();
 	}
 
 	public static final class ClientCallInfoBuilder {

@@ -52,10 +52,24 @@ public class PolarisLoadBalancer extends LoadBalancer {
 
 	private final Map<String, Tuple<EquivalentAddressGroup, PolarisSubChannel>> subChannels = new ConcurrentHashMap<>();
 
-	private final Function<EquivalentAddressGroup, Tuple<EquivalentAddressGroup, PolarisSubChannel>> function = new Function<EquivalentAddressGroup, Tuple<EquivalentAddressGroup, PolarisSubChannel>>() {
-		@Override
-		public Tuple<EquivalentAddressGroup, PolarisSubChannel> apply(EquivalentAddressGroup addressGroup) {
+	private final Predicate<ConnectivityState> predicate = state -> {
+		if (state == READY) {
+			return true;
+		}
 
+		return state != currentState.get();
+	};
+
+	private ServiceKey sourceService;
+
+	private final Function<EquivalentAddressGroup, Tuple<EquivalentAddressGroup, PolarisSubChannel>> function;
+
+	public PolarisLoadBalancer(final SDKContext context, final Helper helper) {
+		this.context = context;
+		this.consumerAPI = DiscoveryAPIFactory.createConsumerAPIByContext(context);
+		this.routerAPI = RouterAPIFactory.createRouterAPIByContext(context);
+		this.helper = Preconditions.checkNotNull(helper);
+		this.function = addressGroup -> {
 			Attributes newAttributes = addressGroup.getAttributes()
 				.toBuilder()
 				.set(GrpcHelper.STATE_INFO, new GrpcHelper.Ref<>(ConnectivityStateInfo.forNonError(IDLE)))
@@ -69,24 +83,7 @@ public class PolarisLoadBalancer extends LoadBalancer {
 
 			PolarisSubChannel channel = new PolarisSubChannel(subChannel, newAttributes.get(Common.INSTANCE_KEY));
 			return new Tuple<>(addressGroup, channel);
-		}
-	};
-
-	private final Predicate<ConnectivityState> predicate = (state) -> {
-		if (state == READY) {
-			return true;
-		}
-
-		return state != currentState.get();
-	};
-
-	private ServiceKey sourceService;
-
-	public PolarisLoadBalancer(final SDKContext context, final Helper helper) {
-		this.context = context;
-		this.consumerAPI = DiscoveryAPIFactory.createConsumerAPIByContext(context);
-		this.routerAPI = RouterAPIFactory.createRouterAPIByContext(context);
-		this.helper = Preconditions.checkNotNull(helper);
+		};
 	}
 
 	@Override
@@ -101,9 +98,8 @@ public class PolarisLoadBalancer extends LoadBalancer {
 			return;
 		}
 
-		Map<String, EquivalentAddressGroup> serversMap = servers.stream().collect(HashMap::new, (m, e) -> {
-			m.put(buildKey(e), e);
-		}, HashMap::putAll);
+		Map<String, EquivalentAddressGroup> serversMap = servers.stream()
+			.collect(HashMap::new, (m, e) -> m.put(buildKey(e), e), HashMap::putAll);
 		Set<String> removed = GrpcHelper.setsDifference(subChannels.keySet(), serversMap.keySet());
 
 		synchronized (subChannels) {
@@ -150,10 +146,9 @@ public class PolarisLoadBalancer extends LoadBalancer {
 			subChannel.requestConnection();
 		}
 		GrpcHelper.Ref<ConnectivityStateInfo> subChannelStateRef = GrpcHelper.getSubChannelStateInfoRef(subChannel);
-		if (subChannelStateRef.getValue().getState().equals(TRANSIENT_FAILURE)) {
-			if (stateInfo.getState().equals(CONNECTING) || stateInfo.getState().equals(IDLE)) {
-				return;
-			}
+		if (subChannelStateRef.getValue().getState().equals(TRANSIENT_FAILURE)
+				&& (stateInfo.getState().equals(CONNECTING) || stateInfo.getState().equals(IDLE))) {
+			return;
 		}
 		subChannelStateRef.setValue(stateInfo);
 		updateBalancingState();
@@ -193,7 +188,7 @@ public class PolarisLoadBalancer extends LoadBalancer {
 
 	@Override
 	public void shutdown() {
-
+		//
 	}
 
 	private String buildKey(EquivalentAddressGroup group) {

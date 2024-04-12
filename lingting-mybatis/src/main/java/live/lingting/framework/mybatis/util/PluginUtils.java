@@ -15,6 +15,7 @@
  */
 package live.lingting.framework.mybatis.util;
 
+import lombok.experimental.UtilityClass;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
@@ -37,10 +38,8 @@ import java.util.Map;
  * @author TaoYu , hubin
  * @since 2017-06-20
  */
-public abstract class PluginUtils {
-
-	private PluginUtils() {
-	}
+@UtilityClass
+public final class PluginUtils {
 
 	public static final String DELEGATE_BOUNDSQL_SQL = "delegate.boundSql.sql";
 

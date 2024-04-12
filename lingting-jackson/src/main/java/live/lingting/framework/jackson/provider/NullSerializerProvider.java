@@ -39,8 +39,6 @@ public class NullSerializerProvider extends DefaultSerializerProvider {
 	 */
 	private static final JsonSerializer<Object> nullStringJsonSerializer = new NullStringJsonSerializer();
 
-	public static final NullSerializerProvider INSTANCE = new NullSerializerProvider();
-
 	public NullSerializerProvider() {
 		super();
 	}

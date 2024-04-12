@@ -154,9 +154,12 @@ allprojects {
 configure(javaProjects) {
     apply {
         plugin("io.spring.javaformat")
+        plugin("checkstyle")
     }
 
     dependencies {
+        add("checkstyle", catalogLibs.springFormatterCheckstyle)
+
         add("implementation", platform(catalogLibs.springBootDependencies))
         add("implementation", platform(catalogLibs.grpcDependencies))
 

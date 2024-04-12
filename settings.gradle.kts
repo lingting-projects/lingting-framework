@@ -20,6 +20,7 @@ dependencyResolutionManagement {
 
             library("springBootClasspath", "org.springframework.boot", "spring-boot-gradle-plugin").versionRef("springBoot")
             library("springFormatterClasspath", "io.spring.javaformat", "spring-javaformat-gradle-plugin").versionRef("formatter")
+            library("springFormatterCheckstyle", "io.spring.javaformat", "spring-javaformat-checkstyle").versionRef("formatter")
 
             library("springBootDependencies", "org.springframework.boot", "spring-boot-dependencies").versionRef("springBoot")
             library("grpcDependencies", "io.grpc", "grpc-bom").version(grpcVersion)

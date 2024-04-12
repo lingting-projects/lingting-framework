@@ -12,6 +12,8 @@ import java.util.Map;
  */
 public class HttpUrlBuilder {
 
+	private final Map<String, List<String>> params = new HashMap<>();
+
 	private String scheme = "https";
 
 	private String host;
@@ -19,8 +21,6 @@ public class HttpUrlBuilder {
 	private Integer port;
 
 	private String uri;
-
-	private final Map<String, List<String>> params = new HashMap<>();
 
 	public static HttpUrlBuilder builder() {
 		return new HttpUrlBuilder();

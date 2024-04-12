@@ -21,8 +21,6 @@ public class CommandResult {
 
 	protected File stdErr;
 
-	private Charset charset;
-
 	@Getter
 	protected LocalDateTime startTime;
 
@@ -32,6 +30,8 @@ public class CommandResult {
 	protected String strOutput = null;
 
 	protected String strError = null;
+
+	private Charset charset;
 
 	public static CommandResult of(File stdOut, File stdErr, LocalDateTime startTime, LocalDateTime endTime,
 			Charset charset) {

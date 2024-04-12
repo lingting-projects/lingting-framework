@@ -14,6 +14,10 @@ public class ResolverContext {
 
 	private ServiceKey sourceService;
 
+	public static ResolverContextBuilder builder() {
+		return new ResolverContextBuilder();
+	}
+
 	public URI getTargetUri() {
 		return targetUri;
 	}
@@ -24,10 +28,6 @@ public class ResolverContext {
 
 	public ServiceKey getSourceService() {
 		return sourceService;
-	}
-
-	public static ResolverContextBuilder builder() {
-		return new ResolverContextBuilder();
 	}
 
 	public static final class ResolverContextBuilder {

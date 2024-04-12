@@ -1,6 +1,7 @@
 package live.lingting.framework.datascope.holder;
 
 import live.lingting.framework.datascope.JsqlDataScope;
+import lombok.experimental.UtilityClass;
 
 import java.util.HashSet;
 import java.util.List;
@@ -12,10 +13,8 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author hccake
  */
+@UtilityClass
 public final class MappedStatementIdsWithoutDataScope {
-
-	private MappedStatementIdsWithoutDataScope() {
-	}
 
 	/**
 	 * key: DataScope class，value: 该 DataScope 不需要处理的 mappedStatementId 集合

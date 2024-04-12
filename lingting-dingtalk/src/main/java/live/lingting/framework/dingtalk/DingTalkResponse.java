@@ -18,13 +18,6 @@ public class DingTalkResponse {
 
 	public static final Long SUCCESS_CODE = 0L;
 
-	public static DingTalkResponse of(String res) {
-		DingTalkResponse value = JacksonUtils.toObj(res, DingTalkResponse.class);
-		value.setResponse(res);
-		value.setSuccess(SUCCESS_CODE.equals(value.code));
-		return value;
-	}
-
 	@JsonProperty("errcode")
 	private Long code;
 
@@ -43,6 +36,13 @@ public class DingTalkResponse {
 	 * 是否发送成功
 	 */
 	private boolean success;
+
+	public static DingTalkResponse of(String res) {
+		DingTalkResponse value = JacksonUtils.toObj(res, DingTalkResponse.class);
+		value.setResponse(res);
+		value.setSuccess(SUCCESS_CODE.equals(value.code));
+		return value;
+	}
 
 	@Override
 	public String toString() {

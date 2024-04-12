@@ -19,27 +19,25 @@ import java.util.Map;
 /**
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
+@SuppressWarnings({ "java:S3077", "java:S1874" })
 public class PolarisSubChannel extends Subchannel implements Instance {
+
+	private static final String NLP_MESSAGE = "instance";
 
 	private final Subchannel channel;
 
 	private volatile Instance instance;
 
 	PolarisSubChannel(Instance instance) {
-		Preconditions.checkNotNull(instance, "instance");
+		Preconditions.checkNotNull(instance, NLP_MESSAGE);
 		this.channel = null;
 		this.instance = instance;
 	}
 
 	public PolarisSubChannel(Subchannel channel, Instance instance) {
 		Preconditions.checkNotNull(channel, "channel");
-		Preconditions.checkNotNull(instance, "instance");
+		Preconditions.checkNotNull(instance, NLP_MESSAGE);
 		this.channel = channel;
-		this.instance = instance;
-	}
-
-	public void setInstance(Instance instance) {
-		Preconditions.checkNotNull(instance, "instance");
 		this.instance = instance;
 	}
 
@@ -49,6 +47,11 @@ public class PolarisSubChannel extends Subchannel implements Instance {
 
 	public Instance getInstance() {
 		return instance;
+	}
+
+	public void setInstance(Instance instance) {
+		Preconditions.checkNotNull(instance, NLP_MESSAGE);
+		this.instance = instance;
 	}
 
 	@Override
@@ -208,8 +211,7 @@ public class PolarisSubChannel extends Subchannel implements Instance {
 
 	@Override
 	public boolean equals(Object o) {
-		if (o instanceof PolarisSubChannel) {
-			PolarisSubChannel other = (PolarisSubChannel) o;
+		if (o instanceof PolarisSubChannel other) {
 			return StringUtils.equals(this.getId(), other.getId());
 		}
 		return false;

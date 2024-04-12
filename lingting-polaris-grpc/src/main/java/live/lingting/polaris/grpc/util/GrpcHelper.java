@@ -7,6 +7,7 @@ import io.grpc.EquivalentAddressGroup;
 import io.grpc.LoadBalancer.Subchannel;
 import live.lingting.polaris.grpc.loadbalance.PolarisLoadBalancer.Tuple;
 import live.lingting.polaris.grpc.loadbalance.PolarisSubChannel;
+import lombok.experimental.UtilityClass;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,27 +22,10 @@ import static io.grpc.ConnectivityState.SHUTDOWN;
 /**
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
+@UtilityClass
 public class GrpcHelper {
 
 	public static final Attributes.Key<Ref<ConnectivityStateInfo>> STATE_INFO = Attributes.Key.create("state-info");
-
-	public static final class Ref<T> {
-
-		volatile T value;
-
-		public Ref(T value) {
-			this.value = value;
-		}
-
-		public T getValue() {
-			return value;
-		}
-
-		public void setValue(T value) {
-			this.value = value;
-		}
-
-	}
 
 	public static <T> Set<T> setsDifference(Set<T> a, Set<T> b) {
 		Set<T> aCopy = new HashSet<>(a);
@@ -80,6 +64,25 @@ public class GrpcHelper {
 		});
 
 		return readySubChannels;
+	}
+
+	@SuppressWarnings("java:S3077")
+	public static final class Ref<T> {
+
+		volatile T value;
+
+		public Ref(T value) {
+			this.value = value;
+		}
+
+		public T getValue() {
+			return value;
+		}
+
+		public void setValue(T value) {
+			this.value = value;
+		}
+
 	}
 
 }

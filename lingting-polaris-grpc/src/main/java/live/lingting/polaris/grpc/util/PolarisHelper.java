@@ -10,6 +10,7 @@ import io.grpc.Status;
 import live.lingting.polaris.grpc.client.MetadataClientInterceptor;
 import live.lingting.polaris.grpc.ratelimit.PolarisRateLimitServerInterceptor;
 import live.lingting.polaris.grpc.server.MetadataServerInterceptor;
+import lombok.experimental.UtilityClass;
 
 import java.util.Iterator;
 import java.util.Optional;
@@ -21,6 +22,7 @@ import java.util.function.Predicate;
 /**
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
+@UtilityClass
 public class PolarisHelper {
 
 	/**
@@ -28,7 +30,7 @@ public class PolarisHelper {
 	 * {@link PolarisLabelsInject#modifyRoute(Set)}} 或者
 	 * {@link PolarisLabelsInject#modifyRateLimit(Set)} 注入本次流量的标签信息
 	 */
-	private static PolarisLabelsInject LABELS_INJECT;
+	private static final PolarisLabelsInject LABELS_INJECT;
 
 	static {
 		ServiceLoader<PolarisLabelsInject> serviceLoader = ServiceLoader.load(PolarisLabelsInject.class);
@@ -47,16 +49,16 @@ public class PolarisHelper {
 			});
 	}
 
+	public static PolarisLabelsInject getLabelsInject() {
+		return LABELS_INJECT;
+	}
+
 	/**
 	 * 调用此方法注入用户自定义的 PolarisLabelsInject
 	 * @param inject {@link PolarisLabelsInject}
 	 */
 	public static void setLabelsInject(PolarisLabelsInject inject) {
 		LABELS_INJECT = inject;
-	}
-
-	public static PolarisLabelsInject getLabelsInject() {
-		return LABELS_INJECT;
 	}
 
 	public static ClientInterceptor buildMetadataClientInterceptor() {

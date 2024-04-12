@@ -28,8 +28,6 @@ public class ThreadPool {
 
 	protected static final Integer QUEUE_MAX = 10;
 
-	protected ThreadPoolExecutor pool;
-
 	static {
 		THREAD_POOL = new ThreadPool(new ThreadPoolExecutor(
 				// 核心线程数大小. 不论是否空闲都存在的线程
@@ -49,6 +47,8 @@ public class ThreadPool {
 				// 拒绝策略 - 在主线程继续执行.
 				new ThreadPoolExecutor.CallerRunsPolicy()));
 	}
+
+	protected ThreadPoolExecutor pool;
 
 	public static ThreadPool instance() {
 		return THREAD_POOL;

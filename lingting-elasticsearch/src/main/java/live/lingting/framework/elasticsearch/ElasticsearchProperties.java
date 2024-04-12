@@ -17,6 +17,11 @@ public class ElasticsearchProperties {
 	 */
 	protected Retry retry = new Retry();
 
+	/**
+	 * 滚动查询配置
+	 */
+	protected Scroll scroll = new Scroll();
+
 	@Getter
 	@Setter
 	public static class Retry {
@@ -47,11 +52,6 @@ public class ElasticsearchProperties {
 		private Duration versionConflictDelay;
 
 	}
-
-	/**
-	 * 滚动查询配置
-	 */
-	protected Scroll scroll = new Scroll();
 
 	@Getter
 	@Setter

@@ -21,13 +21,6 @@ public class SecurityToken {
 
 	private final String raw;
 
-	/**
-	 * token是否有效
-	 */
-	public boolean isAvailable() {
-		return StringUtils.hasText(getToken());
-	}
-
 	public static SecurityToken ofDelimiter(String raw, String delimiter) {
 		if (!StringUtils.hasText(raw)) {
 			return EMPTY;
@@ -42,6 +35,13 @@ public class SecurityToken {
 
 	public static SecurityToken of(String type, String token, String raw) {
 		return new SecurityToken(type, token, raw);
+	}
+
+	/**
+	 * token是否有效
+	 */
+	public boolean isAvailable() {
+		return StringUtils.hasText(getToken());
 	}
 
 }

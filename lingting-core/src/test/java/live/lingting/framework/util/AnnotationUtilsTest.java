@@ -45,15 +45,6 @@ class AnnotationUtilsTest {
 
 	}
 
-	static class P1 {
-
-	}
-
-	@A2
-	static class P2 {
-
-	}
-
 	@A1
 	interface I1 {
 
@@ -65,6 +56,15 @@ class AnnotationUtilsTest {
 	}
 
 	interface I3 extends I1 {
+
+	}
+
+	static class P1 {
+
+	}
+
+	@A2
+	static class P2 {
 
 	}
 

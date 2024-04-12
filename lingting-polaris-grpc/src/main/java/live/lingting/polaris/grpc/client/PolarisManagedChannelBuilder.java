@@ -32,13 +32,14 @@ import static live.lingting.polaris.grpc.loadbalance.PolarisLoadBalancerProvider
 /**
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
+@SuppressWarnings({ "java:S2274", "java:S3010", "java:S2142", "java:S1874", "java:S3077" })
 public class PolarisManagedChannelBuilder extends ManagedChannelBuilder<PolarisManagedChannelBuilder> {
 
 	private static final AtomicBoolean FIRST_INIT = new AtomicBoolean(false);
 
 	private static final Object MONITOR = new Object();
 
-	private static volatile SDKContext CONTEXT;
+	private static volatile SDKContext sdkContext;
 
 	private final ManagedChannelBuilder<?> builder;
 
@@ -47,6 +48,39 @@ public class PolarisManagedChannelBuilder extends ManagedChannelBuilder<PolarisM
 	private final List<ClientInterceptor> interceptors = new ArrayList<>();
 
 	private final ServiceKey sourceService;
+
+	private PolarisManagedChannelBuilder(String target, ServiceKey sourceService, SDKContext sdkContext) {
+		if (FIRST_INIT.compareAndSet(false, true)) {
+			if (sdkContext == null) {
+				sdkContext = SDKContext.initContext();
+				JvmHookHelper.addShutdownHook(sdkContext::destroy);
+			}
+			PolarisLoadBalancerFactory.init(sdkContext);
+			PolarisNameResolverFactory.init(sdkContext);
+			PolarisManagedChannelBuilder.sdkContext = sdkContext;
+			synchronized (MONITOR) {
+				MONITOR.notifyAll();
+			}
+		}
+		SDKContext prev = PolarisManagedChannelBuilder.sdkContext;
+		if (prev == null) {
+			synchronized (MONITOR) {
+				try {
+					MONITOR.wait();
+				}
+				catch (InterruptedException e) {
+					// noop
+				}
+				prev = PolarisManagedChannelBuilder.sdkContext;
+			}
+		}
+		if (sdkContext != null && prev != sdkContext) {
+			throw new IllegalStateException("[Polaris] SDKContext already initialize");
+		}
+
+		this.builder = ManagedChannelBuilder.forTarget(buildUrl(target, sourceService));
+		this.sourceService = sourceService;
+	}
 
 	/**
 	 * follow {@link ManagedChannelBuilder#forTarget(String)}
@@ -80,45 +114,30 @@ public class PolarisManagedChannelBuilder extends ManagedChannelBuilder<PolarisM
 		return new PolarisManagedChannelBuilder(target, sourceService, sdkContext);
 	}
 
-	private PolarisManagedChannelBuilder(String target, ServiceKey sourceService, SDKContext context) {
-		if (FIRST_INIT.compareAndSet(false, true)) {
-			if (context == null) {
-				context = SDKContext.initContext();
-				JvmHookHelper.addShutdownHook(context::destroy);
-			}
-			PolarisLoadBalancerFactory.init(context);
-			PolarisNameResolverFactory.init(context);
-			CONTEXT = context;
-			synchronized (MONITOR) {
-				MONITOR.notifyAll();
-			}
-		}
-		SDKContext prev = CONTEXT;
-		if (prev == null) {
-			synchronized (MONITOR) {
-				try {
-					MONITOR.wait();
-				}
-				catch (InterruptedException e) {
-					// noop
-				}
-				prev = CONTEXT;
-			}
-		}
-		if (context != null && prev != context) {
-			throw new IllegalStateException("[Polaris] SDKContext already initialize");
-		}
-
-		this.builder = ManagedChannelBuilder.forTarget(buildUrl(target, sourceService));
-		this.sourceService = sourceService;
-	}
-
 	public static SDKContext getSDKContext() {
-		return CONTEXT;
+		return sdkContext;
 	}
 
 	static void resetSDKContext() {
-		CONTEXT = null;
+		sdkContext = null;
+	}
+
+	private static String buildUrl(String target, ServiceKey sourceService) {
+		if (Objects.isNull(sourceService)) {
+			return target;
+		}
+
+		String json = JacksonUtils.toJson(sourceService);
+		String extendInfo = Base64.getUrlEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
+
+		if (target.contains("?")) {
+			target += "&extend_info=" + extendInfo;
+		}
+		else {
+			target += "?extend_info=" + extendInfo;
+		}
+
+		return target;
 	}
 
 	public PolarisManagedChannelBuilder directExecutor() {
@@ -134,8 +153,8 @@ public class PolarisManagedChannelBuilder extends ManagedChannelBuilder<PolarisM
 	public PolarisManagedChannelBuilder intercept(List<ClientInterceptor> interceptors) {
 
 		for (ClientInterceptor interceptor : interceptors) {
-			if (interceptor instanceof PolarisClientInterceptor) {
-				this.polarisInterceptors.add((PolarisClientInterceptor) interceptor);
+			if (interceptor instanceof PolarisClientInterceptor polarisClientInterceptor) {
+				this.polarisInterceptors.add(polarisClientInterceptor);
 			}
 			else {
 				this.interceptors.add(interceptor);
@@ -146,8 +165,8 @@ public class PolarisManagedChannelBuilder extends ManagedChannelBuilder<PolarisM
 
 	public PolarisManagedChannelBuilder intercept(ClientInterceptor... interceptors) {
 		for (ClientInterceptor interceptor : interceptors) {
-			if (interceptor instanceof PolarisClientInterceptor) {
-				this.polarisInterceptors.add((PolarisClientInterceptor) interceptor);
+			if (interceptor instanceof PolarisClientInterceptor polarisClientInterceptor) {
+				this.polarisInterceptors.add(polarisClientInterceptor);
 			}
 			else {
 				this.interceptors.add(interceptor);
@@ -166,7 +185,7 @@ public class PolarisManagedChannelBuilder extends ManagedChannelBuilder<PolarisM
 		return this;
 	}
 
-	@Deprecated
+	@Override
 	public PolarisManagedChannelBuilder nameResolverFactory(Factory resolverFactory) {
 		builder.nameResolverFactory(resolverFactory);
 		return this;
@@ -187,101 +206,115 @@ public class PolarisManagedChannelBuilder extends ManagedChannelBuilder<PolarisM
 		return this;
 	}
 
+	@Override
 	public PolarisManagedChannelBuilder offloadExecutor(Executor executor) {
 		this.builder.offloadExecutor(executor);
 		return this;
 	}
 
+	@Override
 	public PolarisManagedChannelBuilder usePlaintext() {
 		this.builder.usePlaintext();
 		return this;
 	}
 
+	@Override
 	public PolarisManagedChannelBuilder useTransportSecurity() {
 		this.builder.useTransportSecurity();
 		return this;
 	}
 
-	@Deprecated
-	public PolarisManagedChannelBuilder enableFullStreamDecompression() {
-		return this;
-	}
-
+	@Override
 	public PolarisManagedChannelBuilder maxInboundMessageSize(int bytes) {
 		this.builder.maxInboundMessageSize(bytes);
 		return this;
 	}
 
+	@Override
 	public PolarisManagedChannelBuilder maxInboundMetadataSize(int bytes) {
 		this.builder.maxInboundMetadataSize(bytes);
 		return this;
 	}
 
+	@Override
 	public PolarisManagedChannelBuilder keepAliveTime(long keepAliveTime, TimeUnit timeUnit) {
 		this.builder.keepAliveTime(keepAliveTime, timeUnit);
 		return this;
 	}
 
+	@Override
 	public PolarisManagedChannelBuilder keepAliveTimeout(long keepAliveTimeout, TimeUnit timeUnit) {
 		this.builder.keepAliveTimeout(keepAliveTimeout, timeUnit);
 		return this;
 	}
 
+	@Override
 	public PolarisManagedChannelBuilder keepAliveWithoutCalls(boolean enable) {
 		this.builder.keepAliveWithoutCalls(enable);
 		return this;
 	}
 
+	@Override
 	public PolarisManagedChannelBuilder maxRetryAttempts(int maxRetryAttempts) {
 		this.builder.maxRetryAttempts(maxRetryAttempts);
 		return this;
 	}
 
+	@Override
 	public PolarisManagedChannelBuilder maxHedgedAttempts(int maxHedgedAttempts) {
 		this.builder.maxHedgedAttempts(maxHedgedAttempts);
 		return this;
 	}
 
+	@Override
 	public PolarisManagedChannelBuilder retryBufferSize(long bytes) {
 		this.builder.retryBufferSize(bytes);
 		return this;
 	}
 
+	@Override
 	public PolarisManagedChannelBuilder perRpcBufferLimit(long bytes) {
 		this.builder.perRpcBufferLimit(bytes);
 		return this;
 	}
 
+	@Override
 	public PolarisManagedChannelBuilder disableRetry() {
 		this.builder.disableRetry();
 		return this;
 	}
 
+	@Override
 	public PolarisManagedChannelBuilder enableRetry() {
 		this.builder.enableRetry();
 		return this;
 	}
 
+	@Override
 	public PolarisManagedChannelBuilder setBinaryLog(BinaryLog binaryLog) {
 		this.builder.setBinaryLog(binaryLog);
 		return this;
 	}
 
+	@Override
 	public PolarisManagedChannelBuilder maxTraceEvents(int maxTraceEvents) {
 		this.builder.maxTraceEvents(maxTraceEvents);
 		return this;
 	}
 
+	@Override
 	public PolarisManagedChannelBuilder proxyDetector(ProxyDetector proxyDetector) {
 		this.builder.proxyDetector(proxyDetector);
 		return this;
 	}
 
+	@Override
 	public PolarisManagedChannelBuilder defaultServiceConfig(Map<String, ?> serviceConfig) {
 		this.builder.defaultServiceConfig(serviceConfig);
 		return this;
 	}
 
+	@Override
 	public PolarisManagedChannelBuilder disableServiceConfigLookUp() {
 		this.builder.disableServiceConfigLookUp();
 		return this;
@@ -289,30 +322,12 @@ public class PolarisManagedChannelBuilder extends ManagedChannelBuilder<PolarisM
 
 	public ManagedChannel build() {
 		for (PolarisClientInterceptor clientInterceptor : polarisInterceptors) {
-			clientInterceptor.init(this.sourceService.getNamespace(), this.sourceService.getService(), CONTEXT);
+			clientInterceptor.init(this.sourceService.getNamespace(), this.sourceService.getService(), sdkContext);
 			this.builder.intercept(clientInterceptor);
 		}
 		this.builder.intercept(interceptors);
 		this.builder.defaultLoadBalancingPolicy(LOADBALANCER_PROVIDER);
 		return builder.build();
-	}
-
-	private static String buildUrl(String target, ServiceKey sourceService) {
-		if (Objects.isNull(sourceService)) {
-			return target;
-		}
-
-		String json = JacksonUtils.toJson(sourceService);
-		String extendInfo = Base64.getUrlEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
-
-		if (target.contains("?")) {
-			target += "&extend_info=" + extendInfo;
-		}
-		else {
-			target += "?extend_info=" + extendInfo;
-		}
-
-		return target;
 	}
 
 }

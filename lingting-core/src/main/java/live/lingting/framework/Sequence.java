@@ -16,8 +16,6 @@ import java.util.List;
  */
 public interface Sequence {
 
-	int getSequence();
-
 	SequenceComparator INSTANCE_ASC = new SequenceComparator(true);
 
 	SequenceComparator INSTANCE_DESC = new SequenceComparator(false);
@@ -37,6 +35,8 @@ public interface Sequence {
 	static <T> List<T> desc(Collection<T> collection) {
 		return collection.stream().sorted(INSTANCE_DESC).toList();
 	}
+
+	int getSequence();
 
 	@RequiredArgsConstructor
 	class SequenceComparator implements Comparator<Object> {

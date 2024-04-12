@@ -2,9 +2,7 @@
 package live.lingting.polaris.grpc.server;
 
 import com.tencent.polaris.api.core.ProviderAPI;
-import com.tencent.polaris.api.exception.PolarisException;
 import com.tencent.polaris.api.rpc.InstanceDeregisterRequest;
-import com.tencent.polaris.api.rpc.InstanceHeartbeatRequest;
 import com.tencent.polaris.api.rpc.InstanceRegisterRequest;
 import com.tencent.polaris.api.rpc.InstanceRegisterResponse;
 import com.tencent.polaris.api.utils.StringUtils;
@@ -39,6 +37,15 @@ public class PolarisGrpcServer extends Server {
 
 	private final PolarisGrpcServerBuilder builder;
 
+	private final AtomicBoolean shutdownOnce = new AtomicBoolean(false);
+
+	private final ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(2, r -> {
+		Thread t = new Thread(r);
+		t.setDaemon(true);
+		t.setName("polaris-grpc-server");
+		return t;
+	});
+
 	private Server targetServer;
 
 	private String host;
@@ -48,15 +55,6 @@ public class PolarisGrpcServer extends Server {
 	private Duration maxWaitDuration;
 
 	private RegisterHook registerHook;
-
-	private final AtomicBoolean shutdownOnce = new AtomicBoolean(false);
-
-	private final ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(2, r -> {
-		Thread t = new Thread(r);
-		t.setDaemon(true);
-		t.setName("polaris-grpc-server");
-		return t;
-	});
 
 	PolarisGrpcServer(PolarisGrpcServerBuilder builder, SDKContext context, Server server) {
 		this.builder = builder;
@@ -187,39 +185,13 @@ public class PolarisGrpcServer extends Server {
 			registerHook.beforeRegister(request);
 		}
 
-		InstanceRegisterResponse response = providerAPI.register(request);
+		InstanceRegisterResponse response = providerAPI.registerInstance(request);
 
 		if (Objects.nonNull(registerHook)) {
 			registerHook.afterRegister(response);
 		}
 
 		LOG.info("[grpc-polaris] register polaris success, instance-id:{}", response.getInstanceId());
-
-		this.heartBeat(serviceName);
-	}
-
-	/**
-	 * Report heartbeat.
-	 * @param serviceName service name
-	 */
-	private void heartBeat(String serviceName) {
-		final int ttl = builder.getHeartbeatInterval();
-		final int port = targetServer.getPort();
-		final String namespace = builder.getNamespace();
-		executorService.scheduleAtFixedRate(() -> {
-			LOG.info("[grpc-polaris] report service heartbeat");
-			InstanceHeartbeatRequest request = new InstanceHeartbeatRequest();
-			request.setNamespace(namespace);
-			request.setService(serviceName);
-			request.setHost(host);
-			request.setPort(port);
-			try {
-				providerAPI.heartbeat(request);
-			}
-			catch (PolarisException e) {
-				LOG.error("[grpc-polaris] report service heartbeat fail", e);
-			}
-		}, ttl / 2, ttl, TimeUnit.SECONDS);
 	}
 
 	/**

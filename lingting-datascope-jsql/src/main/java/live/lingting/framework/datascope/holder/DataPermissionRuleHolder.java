@@ -2,6 +2,7 @@ package live.lingting.framework.datascope.holder;
 
 import live.lingting.framework.datascope.annotation.DataPermission;
 import live.lingting.framework.datascope.handler.DataPermissionRule;
+import lombok.experimental.UtilityClass;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -13,10 +14,8 @@ import java.util.Deque;
  *
  * @author hccake
  */
+@UtilityClass
 public final class DataPermissionRuleHolder {
-
-	private DataPermissionRuleHolder() {
-	}
 
 	/**
 	 * 使用栈存储 DataPermissionRule，便于在方法嵌套调用时使用不同的数据权限控制。

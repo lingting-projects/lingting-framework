@@ -3,6 +3,7 @@ package live.lingting.framework.mybatis.alias;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import live.lingting.framework.util.AnnotationUtils;
+import lombok.experimental.UtilityClass;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,10 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Hccake 2021/1/14
  * @version 1.0
  */
+@UtilityClass
 public final class TableAliasHelper {
-
-	private TableAliasHelper() {
-	}
 
 	private static final String COMMA = ",";
 
