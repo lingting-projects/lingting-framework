@@ -73,14 +73,14 @@ public class SecurityScope {
 		return func.apply(Optional.ofNullable(attribute(key)));
 	}
 
-	public <T> T attribute(String key, T defaultValue, Function<Optional<Object>, T> func) {
+	public <T> T attribute(String key, T defaultValue, Function<Object, T> func) {
 		return attribute(key, defaultValue, Optional::isEmpty, func);
 	}
 
 	/**
 	 * @param usingDefault 如果返回true表示使用默认值
 	 */
-	public <T> T attribute(String key, T defaultValue, Predicate<Optional<Object>> usingDefault, Function<Optional<Object>, T> func) {
+	public <T> T attribute(String key, T defaultValue, Predicate<Optional<Object>> usingDefault, Function<Object, T> func) {
 		Optional<Object> optional = Optional.ofNullable(attribute(key));
 		if (usingDefault.test(optional)) {
 			return defaultValue;
