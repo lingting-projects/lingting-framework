@@ -1,8 +1,8 @@
 dependencyResolutionManagement {
-    val mybatisVersion = "3.5.14"
+    val mybatisVersion = "3.5.15"
     val mybatisPlusVersion = "3.5.5"
     val jSqlParserVersion = "4.8"
-    val grpcVersion = "1.61.0"
+    val grpcVersion = "1.61.1"
     val elasticVersion = "8.12.2"
     val commonsNetVersion = "3.10.0"
     val securityProtobufVersion = "17_2023.12.18-SNAPSHOT"
@@ -10,7 +10,7 @@ dependencyResolutionManagement {
 
     versionCatalogs {
         create("libs") {
-            version("springBoot", "3.2.1")
+            version("springBoot", "3.2.3")
             version("formatter", "0.0.41")
             version("mapstruct", "1.5.3.Final")
             version("lombok", "1.18.30")

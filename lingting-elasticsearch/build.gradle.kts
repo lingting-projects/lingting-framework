@@ -6,5 +6,4 @@ dependencies {
 
     implementation(project(":lingting-core"))
     implementation(project(":lingting-jackson"))
-    testImplementation("ch.qos.logback:logback-classic")
 }
