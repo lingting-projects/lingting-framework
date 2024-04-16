@@ -49,7 +49,8 @@ public class PolarisManagedChannelBuilder extends ManagedChannelBuilder<PolarisM
 
 	private final ServiceKey sourceService;
 
-	private PolarisManagedChannelBuilder(String target, ServiceKey sourceService, SDKContext sdkContext) {
+	private PolarisManagedChannelBuilder(ServiceKey sourceService, SDKContext sdkContext,
+			ManagedChannelBuilder<?> builder) {
 		if (FIRST_INIT.compareAndSet(false, true)) {
 			if (sdkContext == null) {
 				sdkContext = SDKContext.initContext();
@@ -78,7 +79,7 @@ public class PolarisManagedChannelBuilder extends ManagedChannelBuilder<PolarisM
 			throw new IllegalStateException("[Polaris] SDKContext already initialize");
 		}
 
-		this.builder = ManagedChannelBuilder.forTarget(buildUrl(target, sourceService));
+		this.builder = builder;
 		this.sourceService = sourceService;
 	}
 
@@ -98,7 +99,7 @@ public class PolarisManagedChannelBuilder extends ManagedChannelBuilder<PolarisM
 	 * @return {@link PolarisManagedChannelBuilder}
 	 */
 	public static PolarisManagedChannelBuilder forTarget(String target, ServiceKey sourceService) {
-		return new PolarisManagedChannelBuilder(target, sourceService, null);
+		return forTarget(target, sourceService, null);
 	}
 
 	/**
@@ -111,7 +112,13 @@ public class PolarisManagedChannelBuilder extends ManagedChannelBuilder<PolarisM
 	 */
 	public static PolarisManagedChannelBuilder forTarget(String target, ServiceKey sourceService,
 			SDKContext sdkContext) {
-		return new PolarisManagedChannelBuilder(target, sourceService, sdkContext);
+		ManagedChannelBuilder<?> forTarget = ManagedChannelBuilder.forTarget(buildUrl(target, sourceService));
+		return forTarget(sourceService, sdkContext, forTarget);
+	}
+
+	public static PolarisManagedChannelBuilder forTarget(ServiceKey sourceService, SDKContext sdkContext,
+			ManagedChannelBuilder<?> builder) {
+		return new PolarisManagedChannelBuilder(sourceService, sdkContext, builder);
 	}
 
 	public static SDKContext getSDKContext() {
@@ -122,7 +129,7 @@ public class PolarisManagedChannelBuilder extends ManagedChannelBuilder<PolarisM
 		sdkContext = null;
 	}
 
-	private static String buildUrl(String target, ServiceKey sourceService) {
+	public static String buildUrl(String target, ServiceKey sourceService) {
 		if (Objects.isNull(sourceService)) {
 			return target;
 		}
