@@ -10,6 +10,7 @@ import java.util.function.BiPredicate;
  * @author lingting
  */
 @UtilityClass
+@SuppressWarnings("java:S1168")
 public class ArrayUtils {
 
 	public static final int NOT_FOUNT = -1;
@@ -67,6 +68,92 @@ public class ArrayUtils {
 
 			return s.equalsIgnoreCase(t);
 		}) > NOT_FOUNT;
+	}
+
+	public static <T> boolean isEquals(T[] array1, T[] array2) {
+		boolean empty1 = isEmpty(array1);
+		boolean empty2 = isEmpty(array2);
+
+		if (empty1 || empty2) {
+			return empty1 && empty2;
+		}
+
+		if (array1.length != array2.length) {
+			return false;
+		}
+
+		for (int i = 0; i < array1.length; i++) {
+			if (!Objects.equals(array1[i], array2[i])) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static <T> boolean isEquals(T[] array1, int array1Pos, T[] array2, int array2Pos, int len) {
+		boolean empty1 = isEmpty(array1);
+		boolean empty2 = isEmpty(array2);
+
+		if (empty1 || empty2) {
+			return empty1 && empty2;
+		}
+
+		for (int i = 0; i < len; i++) {
+			int i1 = array1Pos + i;
+			int i2 = array2Pos + i;
+
+			// 是否越界
+			boolean o1 = array1.length <= i1;
+			boolean o2 = array2.length <= i2;
+
+			if (o1 || o2) {
+				// 如果同时越界, 则相等, 否则不等
+				return o1 && o2;
+			}
+
+			T t1 = array1[i1];
+			T t2 = array2[i2];
+			if (!Objects.equals(t1, t2)) {
+				return false;
+			}
+		}
+		return true;
+
+	}
+
+	public static <T> T[] sub(T[] array, int start) {
+		if (array == null) {
+			return null;
+		}
+		return sub(array, start, array.length);
+	}
+
+	/**
+	 * 截取数组
+	 * @param array 数组
+	 * @param start 左闭
+	 * @param end 右开
+	 */
+	public static <T> T[] sub(T[] array, int start, int end) {
+		if (array == null) {
+			return null;
+		}
+		Class<?> type = array.getClass().getComponentType();
+
+		if (array.length < 1) {
+			return (T[]) Array.newInstance(type, 0);
+		}
+
+		int fromIndex = Math.max(0, start);
+		int toIndex = Math.min(array.length + 1, end);
+		T[] result = (T[]) Array.newInstance(type, toIndex - fromIndex);
+
+		for (int i = fromIndex; i < toIndex; i++) {
+			T t = array[i];
+			result[i - fromIndex] = t;
+		}
+
+		return result;
 	}
 
 }
