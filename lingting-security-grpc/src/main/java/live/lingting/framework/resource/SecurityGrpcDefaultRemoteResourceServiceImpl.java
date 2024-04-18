@@ -11,10 +11,14 @@ import live.lingting.framework.security.domain.SecurityToken;
 import live.lingting.framework.security.resource.SecurityResourceService;
 import live.lingting.protobuf.SecurityGrpcAuthorization;
 import live.lingting.protobuf.SecurityGrpcAuthorizationServiceGrpc;
+import lombok.SneakyThrows;
+
+import static live.lingting.framework.exception.SecurityGrpcThrowing.convert;
 
 /**
  * @author lingting 2023-12-18 16:30
  */
+@SuppressWarnings("java:S112")
 public class SecurityGrpcDefaultRemoteResourceServiceImpl implements SecurityResourceService, ContextComponent {
 
 	protected final ManagedChannel channel;
@@ -29,6 +33,7 @@ public class SecurityGrpcDefaultRemoteResourceServiceImpl implements SecurityRes
 		this.convert = convert;
 	}
 
+	@SneakyThrows
 	@Override
 	public SecurityScope resolve(SecurityToken token) {
 		SecurityGrpcAuthorization.AuthorizationVO authorizationVO = resolveByRemote(token);
@@ -36,10 +41,13 @@ public class SecurityGrpcDefaultRemoteResourceServiceImpl implements SecurityRes
 		return convert.voToScope(vo);
 	}
 
-	protected SecurityGrpcAuthorization.AuthorizationVO resolveByRemote(SecurityToken token) {
+	protected SecurityGrpcAuthorization.AuthorizationVO resolveByRemote(SecurityToken token) throws Exception {
 		try {
 			SecurityGrpcRemoteContent.put(token);
 			return blocking.resolve(Empty.getDefaultInstance());
+		}
+		catch (Exception e) {
+			throw convert(e);
 		}
 		finally {
 			SecurityGrpcRemoteContent.pop();

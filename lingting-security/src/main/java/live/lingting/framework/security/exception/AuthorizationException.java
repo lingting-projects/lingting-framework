@@ -13,4 +13,8 @@ public class AuthorizationException extends SecurityException {
 		super(message);
 	}
 
+	public AuthorizationException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
 }

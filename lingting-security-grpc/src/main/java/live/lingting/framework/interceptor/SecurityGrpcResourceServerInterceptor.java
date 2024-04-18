@@ -7,6 +7,7 @@ import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import live.lingting.framework.Sequence;
 import live.lingting.framework.grpc.interceptor.AbstractServerInterceptor;
+import live.lingting.framework.grpc.simple.ForwardingServerOnCallListener;
 import live.lingting.framework.security.authorize.SecurityAuthorize;
 import live.lingting.framework.security.domain.SecurityScope;
 import live.lingting.framework.security.domain.SecurityToken;
@@ -15,6 +16,8 @@ import live.lingting.framework.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
+
+import static live.lingting.framework.exception.SecurityGrpcThrowing.throwing;
 
 /**
  * @author lingting 2023-12-14 16:28
@@ -41,17 +44,18 @@ public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterce
 			ServerCallHandler<S, R> next) {
 		SecurityScope scope = getScope(headers);
 		service.putScope(scope);
-		try {
-			MethodDescriptor<S, R> descriptor = call.getMethodDescriptor();
 
-			if (allowAuthority(headers, descriptor)) {
-				validAuthority(descriptor);
+		MethodDescriptor<S, R> descriptor = call.getMethodDescriptor();
+
+		if (allowAuthority(headers, descriptor)) {
+			validAuthority(descriptor);
+		}
+		return new ForwardingServerOnCallListener<>(call, headers, next) {
+			@Override
+			public void onFinally() {
+				service.popScope();
 			}
-			return next.startCall(call, headers);
-		}
-		finally {
-			service.popScope();
-		}
+		};
 	}
 
 	protected <S, R> void validAuthority(MethodDescriptor<S, R> descriptor) {
@@ -70,8 +74,8 @@ public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterce
 		try {
 			return service.resolve(token);
 		}
-		catch (Exception e) {
-			log.error("resolve token error! token: {}", token, e);
+		catch (Exception ex) {
+			throwing(ex, e -> log.error("resolve token error! token: {}", token, e));
 			return null;
 		}
 	}

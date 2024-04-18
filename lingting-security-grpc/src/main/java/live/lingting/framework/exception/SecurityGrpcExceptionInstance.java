@@ -22,7 +22,7 @@ public class SecurityGrpcExceptionInstance implements GrpcExceptionInstance {
 	@GrpcExceptionHandler(AuthorizationException.class)
 	public Status handlerAuthorizationException(MethodDescriptor<?, ?> descriptor, AuthorizationException e) {
 		log.error("Authorization error! target: {}. {}", descriptor.getFullMethodName(), e.getMessage());
-		return Status.UNAUTHENTICATED.withCause(e);
+		return Status.UNAUTHENTICATED.withCause(e).withDescription(e.getMessage());
 	}
 
 	/**
@@ -31,7 +31,7 @@ public class SecurityGrpcExceptionInstance implements GrpcExceptionInstance {
 	@GrpcExceptionHandler(PermissionsException.class)
 	public Status handlerPermissionsException(MethodDescriptor<?, ?> descriptor, PermissionsException e) {
 		log.error("Permissions error! target: {}. {}", descriptor.getFullMethodName(), e.getMessage());
-		return Status.PERMISSION_DENIED.withCause(e);
+		return Status.PERMISSION_DENIED.withCause(e).withDescription(e.getMessage());
 	}
 
 }
