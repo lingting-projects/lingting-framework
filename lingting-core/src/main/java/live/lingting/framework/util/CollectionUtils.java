@@ -49,9 +49,9 @@ public class CollectionUtils {
 	}
 
 	/**
-	 * 复数对应转为 Collection
+	 * 复数对应转为 List
 	 */
-	public static Collection<Object> multiToList(Object obj) {
+	public static List<Object> multiToList(Object obj) {
 		if (obj == null) {
 			return new ArrayList<>();
 		}
@@ -59,8 +59,11 @@ public class CollectionUtils {
 		if (!isMulti(obj)) {
 			return toList(obj);
 		}
-		else if (obj instanceof Collection) {
-			return (Collection<Object>) obj;
+		else if (obj instanceof List<?>) {
+			return (List<Object>) obj;
+		}
+		else if (obj instanceof Collection<?> collection) {
+			return new ArrayList<>(collection);
 		}
 
 		List<Object> list = new ArrayList<>();
@@ -101,7 +104,7 @@ public class CollectionUtils {
 	 * 分割为多个小list, 每个list最多拥有 size个元素
 	 * @param collection 原始数据
 	 * @param size 单个list最多元素数量
-	 * @return java.util.List<java.util.List<D>>
+	 * @return java.util.List<java.util.List < D>>
 	 */
 	public static <D> List<List<D>> split(Collection<D> collection, int size) {
 		return split(collection.iterator(), size);
