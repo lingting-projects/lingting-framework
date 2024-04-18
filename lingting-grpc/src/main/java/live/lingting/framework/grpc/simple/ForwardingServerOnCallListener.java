@@ -9,17 +9,18 @@ import io.grpc.ServerCallHandler;
  * @author lingting 2023-12-18 19:10
  */
 
-public class ForwardingServerOnCallListener<S> extends ForwardingServerCallListener<S> {
+public class ForwardingServerOnCallListener<S, R> extends ForwardingServerCallListener<S> {
 
 	private final ServerCall.Listener<S> delegate;
 
-	protected <R> ForwardingServerOnCallListener(ServerCall<S, R> call, Metadata headers,
-			ServerCallHandler<S, R> next) {
-		this(next.startCall(call, headers));
-	}
-
-	protected ForwardingServerOnCallListener(ServerCall.Listener<S> delegate) {
-		this.delegate = delegate;
+	protected ForwardingServerOnCallListener(ServerCall<S, R> call, Metadata headers, ServerCallHandler<S, R> next) {
+		try {
+			this.delegate = next.startCall(call, headers);
+		}
+		catch (Exception e) {
+			onFinally();
+			throw e;
+		}
 	}
 
 	@Override
@@ -39,6 +40,7 @@ public class ForwardingServerOnCallListener<S> extends ForwardingServerCallListe
 		onHalfCloseBefore();
 		super.onHalfClose();
 		onHalfCloseAfter();
+		onFinally();
 	}
 
 	@Override
@@ -46,6 +48,7 @@ public class ForwardingServerOnCallListener<S> extends ForwardingServerCallListe
 		onCancelBefore();
 		super.onCancel();
 		onCancelAfter();
+		onFinally();
 	}
 
 	@Override
@@ -53,6 +56,7 @@ public class ForwardingServerOnCallListener<S> extends ForwardingServerCallListe
 		onCompleteBefore();
 		super.onComplete();
 		onCompleteAfter();
+		onFinally();
 	}
 
 	@Override
@@ -99,6 +103,10 @@ public class ForwardingServerOnCallListener<S> extends ForwardingServerCallListe
 	}
 
 	public void onReadyAfter() {
+		//
+	}
+
+	public void onFinally() {
 		//
 	}
 

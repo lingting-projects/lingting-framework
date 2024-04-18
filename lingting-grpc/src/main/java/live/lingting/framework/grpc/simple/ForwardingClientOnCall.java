@@ -15,11 +15,13 @@ public class ForwardingClientOnCall<S, R> extends ForwardingClientCall<S, R> {
 	private final ClientCall<S, R> delegate;
 
 	public ForwardingClientOnCall(MethodDescriptor<S, R> method, CallOptions callOptions, Channel next) {
-		this(next.newCall(method, callOptions));
-	}
-
-	public ForwardingClientOnCall(ClientCall<S, R> delegate) {
-		this.delegate = delegate;
+		try {
+			this.delegate = next.newCall(method, callOptions);
+		}
+		catch (Exception e) {
+			onFinally();
+			throw e;
+		}
 	}
 
 	@Override
@@ -46,6 +48,7 @@ public class ForwardingClientOnCall<S, R> extends ForwardingClientCall<S, R> {
 		onHalfCloseBefore();
 		super.halfClose();
 		onHalfCloseAfter();
+		onFinally();
 	}
 
 	public void onStartBefore(Listener<R> responseListener, Metadata headers) {
@@ -69,6 +72,10 @@ public class ForwardingClientOnCall<S, R> extends ForwardingClientCall<S, R> {
 	}
 
 	public void onHalfCloseAfter() {
+		//
+	}
+
+	public void onFinally() {
 		//
 	}
 
