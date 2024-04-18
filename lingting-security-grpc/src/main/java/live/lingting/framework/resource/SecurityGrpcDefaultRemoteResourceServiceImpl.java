@@ -4,13 +4,10 @@ import com.google.protobuf.Empty;
 import io.grpc.ManagedChannel;
 import live.lingting.framework.context.ContextComponent;
 import live.lingting.framework.convert.SecurityGrpcConvert;
-import live.lingting.framework.grpc.GrpcClientProvide;
 import live.lingting.framework.interceptor.SecurityGrpcRemoteContent;
-import live.lingting.framework.interceptor.SecurityGrpcRemoteResourceClientInterceptor;
 import live.lingting.framework.security.domain.AuthorizationVO;
 import live.lingting.framework.security.domain.SecurityScope;
 import live.lingting.framework.security.domain.SecurityToken;
-import live.lingting.framework.security.properties.SecurityProperties;
 import live.lingting.framework.security.resource.SecurityResourceService;
 import live.lingting.protobuf.SecurityGrpcAuthorization;
 import live.lingting.protobuf.SecurityGrpcAuthorizationServiceGrpc;
@@ -26,22 +23,23 @@ public class SecurityGrpcDefaultRemoteResourceServiceImpl implements SecurityRes
 
 	protected final SecurityGrpcConvert convert;
 
-	public SecurityGrpcDefaultRemoteResourceServiceImpl(SecurityProperties properties,
-			SecurityGrpcRemoteResourceClientInterceptor interceptor, GrpcClientProvide provide,
-			SecurityGrpcConvert convert) {
-		SecurityProperties.Authorization authorization = properties.getAuthorization();
-		channel = provide.builder(authorization.getRemoteHost()).provide().interceptor(interceptor).build();
-		blocking = provide.stub(channel, SecurityGrpcAuthorizationServiceGrpc::newBlockingStub);
+	public SecurityGrpcDefaultRemoteResourceServiceImpl(ManagedChannel channel, SecurityGrpcConvert convert) {
+		this.channel = channel;
+		this.blocking = SecurityGrpcAuthorizationServiceGrpc.newBlockingStub(channel);
 		this.convert = convert;
 	}
 
 	@Override
 	public SecurityScope resolve(SecurityToken token) {
+		SecurityGrpcAuthorization.AuthorizationVO authorizationVO = resolveByRemote(token);
+		AuthorizationVO vo = convert.toJava(authorizationVO);
+		return convert.voToScope(vo);
+	}
+
+	protected SecurityGrpcAuthorization.AuthorizationVO resolveByRemote(SecurityToken token) {
 		try {
 			SecurityGrpcRemoteContent.put(token);
-			SecurityGrpcAuthorization.AuthorizationVO authorizationVO = blocking.resolve(Empty.getDefaultInstance());
-			AuthorizationVO vo = convert.toJava(authorizationVO);
-			return convert.voToScope(vo);
+			return blocking.resolve(Empty.getDefaultInstance());
 		}
 		finally {
 			SecurityGrpcRemoteContent.pop();
@@ -55,7 +53,7 @@ public class SecurityGrpcDefaultRemoteResourceServiceImpl implements SecurityRes
 
 	@Override
 	public void onApplicationStop() {
-		channel.shutdownNow();
+		channel.shutdown();
 	}
 
 }
