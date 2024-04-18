@@ -12,10 +12,12 @@ import io.grpc.Server;
 import io.grpc.ServerServiceDefinition;
 import live.lingting.polaris.grpc.server.impl.NoopDelayRegister;
 import live.lingting.polaris.grpc.util.NetworkHelper;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.SocketAddress;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
@@ -52,6 +54,7 @@ public class PolarisGrpcServer extends Server {
 
 	private DelayRegister delayRegister = new NoopDelayRegister();
 
+	@Setter
 	private Duration maxWaitDuration;
 
 	private RegisterHook registerHook;
@@ -82,6 +85,31 @@ public class PolarisGrpcServer extends Server {
 		}
 
 		return this;
+	}
+
+	@Override
+	public int getPort() {
+		return targetServer.getPort();
+	}
+
+	@Override
+	public List<? extends SocketAddress> getListenSockets() {
+		return targetServer.getListenSockets();
+	}
+
+	@Override
+	public List<ServerServiceDefinition> getServices() {
+		return targetServer.getServices();
+	}
+
+	@Override
+	public List<ServerServiceDefinition> getImmutableServices() {
+		return targetServer.getImmutableServices();
+	}
+
+	@Override
+	public List<ServerServiceDefinition> getMutableServices() {
+		return targetServer.getMutableServices();
 	}
 
 	@Override
@@ -132,10 +160,6 @@ public class PolarisGrpcServer extends Server {
 			return;
 		}
 		this.delayRegister = delayRegister;
-	}
-
-	public void setMaxWaitDuration(Duration maxWaitDuration) {
-		this.maxWaitDuration = maxWaitDuration;
 	}
 
 	private void initLocalHost() {
