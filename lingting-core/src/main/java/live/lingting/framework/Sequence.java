@@ -16,9 +16,9 @@ import java.util.List;
  */
 public interface Sequence {
 
-	SequenceComparator INSTANCE_ASC = new SequenceComparator(true);
+	SequenceComparator INSTANCE_ASC = new SequenceComparator(true, 0);
 
-	SequenceComparator INSTANCE_DESC = new SequenceComparator(false);
+	SequenceComparator INSTANCE_DESC = new SequenceComparator(false, 0);
 
 	static void asc(List<Object> list) {
 		list.sort(INSTANCE_ASC);
@@ -42,6 +42,8 @@ public interface Sequence {
 	class SequenceComparator implements Comparator<Object> {
 
 		private final boolean isAsc;
+
+		private final int defaultSequence;
 
 		@Override
 		public int compare(Object o1, Object o2) {
@@ -72,25 +74,23 @@ public interface Sequence {
 		}
 
 		protected int find(Object obj) {
-			int lowered = lowerSequence();
 			if (obj == null) {
-				return lowered;
+				return defaultSequence;
 			}
 
-			int orderSequence = obj instanceof Sequence sequence ? sequence.getSequence() : lowered;
+			int orderSequence = obj instanceof Sequence sequence ? sequence.getSequence() : defaultSequence;
 			int orderSpring = findBySpring(obj);
 			return high(orderSequence, orderSpring);
 		}
 
 		protected int findBySpring(Object obj) {
-			int lowered = lowerSequence();
 			if (!ClassUtils.isPresent("org.springframework.core.annotation.Order", getClass().getClassLoader())) {
-				return lowered;
+				return defaultSequence;
 			}
 			// 注解上的排序值
-			int oa = lowered;
+			int oa = defaultSequence;
 			// 类方法上的排序值
-			int om = lowered;
+			int om = defaultSequence;
 
 			Order annotation = obj.getClass().getAnnotation(Order.class);
 			if (annotation != null) {
