@@ -67,7 +67,9 @@ public class RandomUtils {
 		StringBuilder builder = new StringBuilder(len);
 
 		for (int i = 0; i < len; i++) {
-			builder.append(base.charAt(nextInt(base.length())));
+			int index = nextInt(base.length());
+			char c = base.charAt(index);
+			builder.append(c);
 		}
 
 		return builder.toString();
@@ -75,6 +77,14 @@ public class RandomUtils {
 
 	public static String nextStr(int len) {
 		return nextStr(STRING, len);
+	}
+
+	public static String nextLetter(int len) {
+		return nextStr(LETTER, len);
+	}
+
+	public static String nextNumber(int len) {
+		return nextStr(NUMBER, len);
 	}
 
 	public static String nextHex(int len) {
