@@ -1,19 +1,17 @@
 package live.lingting.framework.convert;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.protobuf.ByteString;
 import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.security.convert.SecurityConvert;
 import live.lingting.framework.security.domain.AuthorizationVO;
+import live.lingting.framework.security.domain.SecurityScopeAttributes;
 import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.StringUtils;
 import live.lingting.protobuf.SecurityGrpcAuthorization;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 
 /**
  * @author lingting 2023-12-18 16:04
@@ -29,8 +27,7 @@ public class SecurityGrpcConvert implements SecurityConvert {
 			.setUsername(vo.getUsername())
 			.setAvatar(vo.getAvatar())
 			.setNickname(vo.getNickname())
-			.setIsSystem(Boolean.TRUE.equals(vo.getIsSystem()))
-			.setIsEnabled(Boolean.TRUE.equals(vo.getIsEnabled()));
+			.setIsEnabled(Boolean.TRUE.equals(vo.getEnabled()));
 
 		if (!CollectionUtils.isEmpty(vo.getRoles())) {
 			builder.addAllRoles(vo.getRoles());
@@ -51,8 +48,7 @@ public class SecurityGrpcConvert implements SecurityConvert {
 		vo.setUsername(authorizationVO.getUsername());
 		vo.setAvatar(authorizationVO.getAvatar());
 		vo.setNickname(authorizationVO.getNickname());
-		vo.setIsSystem(authorizationVO.getIsSystem());
-		vo.setIsEnabled(authorizationVO.getIsEnabled());
+		vo.setEnabled(authorizationVO.getIsEnabled());
 		vo.setRoles(new HashSet<>(authorizationVO.getRolesList()));
 		vo.setPermissions(new HashSet<>(authorizationVO.getPermissionsList()));
 		vo.setAttributes(ofBytes(authorizationVO.getAttributes()));
@@ -63,7 +59,7 @@ public class SecurityGrpcConvert implements SecurityConvert {
 		return StandardCharsets.UTF_8;
 	}
 
-	public ByteString toBytes(Map<String, Object> attributes) {
+	public ByteString toBytes(SecurityScopeAttributes attributes) {
 		if (CollectionUtils.isEmpty(attributes)) {
 			return ByteString.EMPTY;
 		}
@@ -72,19 +68,18 @@ public class SecurityGrpcConvert implements SecurityConvert {
 		return ByteString.copyFrom(json, charset);
 	}
 
-	public Map<String, Object> ofBytes(ByteString bytes) {
+	public SecurityScopeAttributes ofBytes(ByteString bytes) {
 		if (bytes.isEmpty()) {
-			return new HashMap<>();
+			return new SecurityScopeAttributes();
 		}
 		Charset charset = charset();
 		String json = bytes.toString(charset);
 
 		if (!StringUtils.hasText(json)) {
-			return new HashMap<>();
+			return new SecurityScopeAttributes();
 		}
 
-		return JacksonUtils.toObj(json, new TypeReference<>() {
-		});
+		return JacksonUtils.toObj(json, SecurityScopeAttributes.class);
 	}
 
 }

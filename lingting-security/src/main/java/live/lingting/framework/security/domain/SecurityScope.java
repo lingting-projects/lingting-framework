@@ -4,7 +4,6 @@ import live.lingting.framework.util.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -31,12 +30,10 @@ public class SecurityScope {
 
 	private String nickname;
 
-	private Boolean isSystem;
-
 	/**
 	 * 是否启用
 	 */
-	private Boolean isEnabled;
+	private Boolean enabled;
 
 	/**
 	 * 过期时间的时间戳
@@ -47,14 +44,10 @@ public class SecurityScope {
 
 	private Set<String> permissions;
 
-	private Map<String, Object> attributes;
-
-	public boolean isSystem() {
-		return Boolean.TRUE.equals(getIsSystem());
-	}
+	private SecurityScopeAttributes attributes;
 
 	public boolean enabled() {
-		return Boolean.TRUE.equals(getIsEnabled());
+		return Boolean.TRUE.equals(getEnabled());
 	}
 
 	/**
@@ -63,11 +56,13 @@ public class SecurityScope {
 	public boolean isLogin() {
 		boolean tokenAvailable = StringUtils.hasText(getToken());
 		boolean userAvailable = StringUtils.hasText(getUserId());
-		boolean enableAvailable = getIsEnabled() != null;
-		return tokenAvailable && userAvailable && getIsSystem() != null && enableAvailable;
+		boolean enableAvailable = getEnabled() != null;
+		return tokenAvailable && userAvailable && enableAvailable;
 	}
 
-	public Object attribute(String key) {return attributes == null || attributes.isEmpty() ? null : attributes.get(key);}
+	public Object attribute(String key) {
+		return attributes == null ? null : attributes.find(key);
+	}
 
 	public <T> T attribute(String key, Function<Optional<Object>, T> func) {
 		return func.apply(Optional.ofNullable(attribute(key)));
@@ -80,7 +75,8 @@ public class SecurityScope {
 	/**
 	 * @param usingDefault 如果返回true表示使用默认值
 	 */
-	public <T> T attribute(String key, T defaultValue, Predicate<Optional<Object>> usingDefault, Function<Object, T> func) {
+	public <T> T attribute(String key, T defaultValue, Predicate<Optional<Object>> usingDefault,
+			Function<Object, T> func) {
 		Optional<Object> optional = Optional.ofNullable(attribute(key));
 		if (usingDefault.test(optional)) {
 			return defaultValue;

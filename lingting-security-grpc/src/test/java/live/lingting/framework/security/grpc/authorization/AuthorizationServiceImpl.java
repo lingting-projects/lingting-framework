@@ -2,6 +2,7 @@ package live.lingting.framework.security.grpc.authorization;
 
 import live.lingting.framework.security.authorize.SecurityAuthorizationService;
 import live.lingting.framework.security.domain.SecurityScope;
+import live.lingting.framework.security.domain.SecurityScopeAttributes;
 import live.lingting.framework.security.exception.AuthorizationException;
 import live.lingting.framework.security.store.SecurityStore;
 import live.lingting.framework.util.LocalDateTimeUtils;
@@ -9,10 +10,8 @@ import live.lingting.framework.util.MdcUtils;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -36,12 +35,11 @@ public class AuthorizationServiceImpl implements SecurityAuthorizationService {
 		scope.setPassword(password);
 		scope.setAvatar("");
 		scope.setNickname(username);
-		scope.setIsSystem(true);
-		scope.setIsEnabled(true);
+		scope.setEnabled(true);
 		scope.setExpireTime(expireTime());
 		scope.setRoles(new HashSet<>(List.of(username)));
 		scope.setPermissions(new HashSet<>(List.of(username)));
-		Map<String, Object> attributes = new HashMap<>();
+		SecurityScopeAttributes attributes = new SecurityScopeAttributes();
 		attributes.put("expand", true);
 		attributes.put("tag", MdcUtils.traceId());
 		scope.setAttributes(attributes);

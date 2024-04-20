@@ -58,16 +58,6 @@ public class SecurityAuthorize {
 			return;
 		}
 
-		// 要求系统
-		if (authorize.onlySystem()) {
-			valid(SecurityScope::isSystem);
-		}
-
-		// 要求普通用户
-		if (authorize.onlyNormal()) {
-			valid(scope -> !scope.isSystem());
-		}
-
 		// 校验拥有配置
 		validHas(authorize);
 

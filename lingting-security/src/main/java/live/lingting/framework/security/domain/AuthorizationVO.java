@@ -3,7 +3,6 @@ package live.lingting.framework.security.domain;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -25,17 +24,15 @@ public class AuthorizationVO {
 
 	private String nickname;
 
-	private Boolean isSystem;
-
 	/**
 	 * 是否启用
 	 */
-	private Boolean isEnabled;
+	private Boolean enabled;
 
 	private Set<String> roles;
 
 	private Set<String> permissions;
 
-	private Map<String, Object> attributes;
+	private SecurityScopeAttributes attributes;
 
 }

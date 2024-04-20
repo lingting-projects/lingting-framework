@@ -40,10 +40,6 @@ public class SecurityHolder {
 		return Optional.ofNullable(scope());
 	}
 
-	public static boolean isSystem() {
-		return scopeOption().map(SecurityScope::isSystem).orElse(true);
-	}
-
 	public static String token() {
 		return scopeOption().map(SecurityScope::getToken).orElse("");
 	}
