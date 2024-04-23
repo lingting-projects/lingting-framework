@@ -3,6 +3,8 @@ package live.lingting.framework.util;
 import lombok.experimental.UtilityClass;
 import org.slf4j.MDC;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -35,4 +37,11 @@ public class MdcUtils {
 		MDC.remove(TRACE_ID);
 	}
 
+	public static Map<String, String> copyContext() {
+		Map<String, String> copy = MDC.getCopyOfContextMap();
+		if (copy == null) {
+			return new HashMap<>();
+		}
+		return copy;
+	}
 }

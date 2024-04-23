@@ -6,7 +6,9 @@ import live.lingting.framework.util.StringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -29,7 +31,7 @@ public class ThreadPool {
 	protected static final Integer QUEUE_MAX = 10;
 
 	static {
-		THREAD_POOL = new ThreadPool(new ThreadPoolExecutor(
+		ThreadPoolExecutor executor = new ThreadPoolExecutor(
 				// 核心线程数大小. 不论是否空闲都存在的线程
 				300,
 				// 最大线程数 - 1万个
@@ -45,7 +47,8 @@ public class ThreadPool {
 				// 新线程创建工厂 - LinkedBlockingQueue 不支持线程优先级. 所以直接新增线程就可以了
 				runnable -> new Thread(null, runnable),
 				// 拒绝策略 - 在主线程继续执行.
-				new ThreadPoolExecutor.CallerRunsPolicy()));
+				new ThreadPoolExecutor.CallerRunsPolicy());
+		THREAD_POOL = new ThreadPool(executor);
 	}
 
 	protected ThreadPoolExecutor pool;
@@ -118,8 +121,8 @@ public class ThreadPool {
 	}
 
 	public void execute(String name, ThrowingRunnable runnable) {
-		// 获取当前线程的traceId
-		String traceId = MdcUtils.getTraceId();
+		// 获取当前线程的mdc上下文
+		Map<String, String> copy = MdcUtils.copyContext();
 
 		getPool().execute(() -> {
 			Thread thread = Thread.currentThread();
@@ -128,10 +131,8 @@ public class ThreadPool {
 				thread.setName(name);
 			}
 
-			// 存在则填充
-			if (StringUtils.hasText(traceId)) {
-				MdcUtils.fillTraceId(traceId);
-			}
+			Map<String, String> oldMdc = MdcUtils.copyContext();
+			MDC.setContextMap(copy);
 
 			try {
 				runnable.run();
@@ -144,8 +145,8 @@ public class ThreadPool {
 				log.error("Thread exception inside thread pool!", throwable);
 			}
 			finally {
+				MDC.setContextMap(oldMdc);
 				thread.setName(oldName);
-				MdcUtils.removeTraceId();
 			}
 		});
 	}
