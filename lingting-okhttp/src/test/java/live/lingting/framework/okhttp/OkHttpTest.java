@@ -13,8 +13,8 @@ class OkHttpTest {
 
 	@Test
 	void test() {
-		OkHttp okHttp = OkHttpBuilder.builder().build();
-		String body = okHttp.get(HttpUrlBuilder.builder().host("www.baidu.com").build(), String.class);
+		OkHttp3 okHttp3 = OkHttp3Builder.builder().build();
+		String body = okHttp3.get(HttpUrlBuilder.builder().host("www.baidu.com").build(), String.class);
 		assertNotNull(body);
 		assertTrue(body.contains("百度"));
 	}

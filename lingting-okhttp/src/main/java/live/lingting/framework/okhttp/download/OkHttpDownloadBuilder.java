@@ -1,7 +1,7 @@
 package live.lingting.framework.okhttp.download;
 
 import live.lingting.framework.download.AbstractDownloadBuilder;
-import live.lingting.framework.okhttp.OkHttp;
+import live.lingting.framework.okhttp.OkHttp3;
 
 import java.time.Duration;
 
@@ -10,7 +10,7 @@ import java.time.Duration;
  */
 public class OkHttpDownloadBuilder extends AbstractDownloadBuilder<OkHttpDownloadBuilder> {
 
-	static final OkHttp DEFAULT_CLIENT = OkHttp.builder()
+	static final OkHttp3 DEFAULT_CLIENT = OkHttp3.builder()
 		.disableSsl()
 		.callTimeout(Duration.ofSeconds(10))
 		.connectTimeout(Duration.ofSeconds(10))
@@ -20,13 +20,13 @@ public class OkHttpDownloadBuilder extends AbstractDownloadBuilder<OkHttpDownloa
 	/**
 	 * 客户端配置
 	 */
-	OkHttp client = DEFAULT_CLIENT;
+	OkHttp3 client = DEFAULT_CLIENT;
 
 	protected OkHttpDownloadBuilder(String url) {
 		super(url);
 	}
 
-	public OkHttpDownloadBuilder client(OkHttp client) {
+	public OkHttpDownloadBuilder client(OkHttp3 client) {
 		this.client = client;
 		return this;
 	}

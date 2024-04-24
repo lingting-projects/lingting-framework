@@ -4,11 +4,15 @@ import live.lingting.framework.http.HostnameAllVerifier;
 import live.lingting.framework.http.X509TrustAllManager;
 import lombok.Getter;
 import okhttp3.CookieJar;
+import okhttp3.Dispatcher;
+import okhttp3.OkHttpClient;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
+import java.net.Proxy;
+import java.net.ProxySelector;
 import java.time.Duration;
 import java.util.function.UnaryOperator;
 
@@ -17,9 +21,9 @@ import java.util.function.UnaryOperator;
  */
 @Getter
 @SuppressWarnings("java:S1700")
-public class OkHttpBuilder {
+public class OkHttp3Builder {
 
-	private okhttp3.OkHttpClient.Builder okHttpClientBuilder = new okhttp3.OkHttpClient.Builder();
+	private OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder();
 
 	private SocketFactory socketFactory;
 
@@ -43,15 +47,21 @@ public class OkHttpBuilder {
 
 	private Duration writeTimeout;
 
-	private CookieJar cookieJar = null;
+	private CookieJar cookieJar;
 
-	public static OkHttpBuilder builder() {
-		return new OkHttpBuilder();
+	private Proxy proxy;
+
+	private ProxySelector proxySelector;
+
+	private Dispatcher dispatcher;
+
+	public static OkHttp3Builder builder() {
+		return new OkHttp3Builder();
 	}
 
-	public okhttp3.OkHttpClient.Builder builder(okhttp3.OkHttpClient.Builder builder) {
+	public OkHttpClient.Builder builder(OkHttpClient.Builder builder) {
 		if (builder == null) {
-			builder = new okhttp3.OkHttpClient.Builder();
+			builder = new OkHttpClient.Builder();
 		}
 
 		if (socketFactory != null) {
@@ -86,69 +96,76 @@ public class OkHttpBuilder {
 			builder.setCookieJar$okhttp(cookieJar);
 		}
 
+		if (proxy != null) {
+			builder.proxy(proxy);
+		}
+
+		if (proxySelector != null) {
+			builder.proxySelector(proxySelector);
+		}
+
+		if (dispatcher != null) {
+			builder.dispatcher(dispatcher);
+		}
+
 		return builder;
 	}
 
-	public OkHttp build() {
+	public OkHttp3 build() {
 		return build(okHttpClientBuilder);
 	}
 
-	public OkHttp build(okhttp3.OkHttpClient.Builder clientBuilder) {
-		return new OkHttp(builder(clientBuilder).build());
+	public OkHttp3 build(OkHttpClient.Builder clientBuilder) {
+		return new OkHttp3(builder(clientBuilder).build());
 	}
 
-	public OkHttp build(UnaryOperator<okhttp3.OkHttpClient.Builder> operator) {
-		okhttp3.OkHttpClient.Builder build = builder(okHttpClientBuilder);
-		return new OkHttp(operator.apply(build).build());
+	public OkHttp3 build(UnaryOperator<OkHttpClient.Builder> operator) {
+		OkHttpClient.Builder build = builder(okHttpClientBuilder);
+		return new OkHttp3(operator.apply(build).build());
 	}
 
-	public OkHttpBuilder okHttpClientBuilder(okhttp3.OkHttpClient.Builder httpClientBuilder) {
+	public OkHttp3Builder okHttpClientBuilder(OkHttpClient.Builder httpClientBuilder) {
 		this.okHttpClientBuilder = httpClientBuilder;
 		return this;
 	}
 
-	public OkHttpBuilder socketFactory(SocketFactory socketFactory) {
+	public OkHttp3Builder socketFactory(SocketFactory socketFactory) {
 		this.socketFactory = socketFactory;
 		return this;
 	}
 
-	public OkHttpBuilder hostnameVerifier(HostnameVerifier hostnameVerifier) {
+	public OkHttp3Builder hostnameVerifier(HostnameVerifier hostnameVerifier) {
 		this.hostnameVerifier = hostnameVerifier;
 		return this;
 	}
 
-	public OkHttpBuilder sslSocketFactory(SSLSocketFactory ssf) {
+	public OkHttp3Builder ssl(SSLSocketFactory ssf, X509TrustManager trustManager) {
 		this.sslSocketFactory = ssf;
-		return this;
-	}
-
-	public OkHttpBuilder trustManager(X509TrustManager trustManager) {
 		this.trustManager = trustManager;
 		return this;
 	}
 
-	public OkHttpBuilder disableSsl() {
-		return sslSocketFactory((SSLSocketFactory) SSLSocketFactory.getDefault())
-			.trustManager(new X509TrustAllManager())
+	public OkHttp3Builder disableSsl() {
+		return ssl((SSLSocketFactory) SSLSocketFactory.getDefault(), X509TrustAllManager.INSTANCE)
 			.hostnameVerifier(new HostnameAllVerifier());
 	}
 
-	public OkHttpBuilder callTimeout(Duration callTimeout) {
+	public OkHttp3Builder callTimeout(Duration callTimeout) {
 		this.callTimeout = callTimeout;
 		return this;
 	}
 
-	public OkHttpBuilder connectTimeout(Duration connectTimeout) {
+	public OkHttp3Builder connectTimeout(Duration connectTimeout) {
 		this.connectTimeout = connectTimeout;
 		return this;
 	}
 
-	public OkHttpBuilder readTimeout(Duration readTimeout) {
+	public OkHttp3Builder readTimeout(Duration readTimeout) {
 		this.readTimeout = readTimeout;
 		return this;
 	}
 
-	public OkHttpBuilder writeTimeout(Duration writeTimeout) {
+	public OkHttp3Builder writeTimeout(Duration writeTimeout) {
 		this.writeTimeout = writeTimeout;
 		return this;
 	}
@@ -156,28 +173,43 @@ public class OkHttpBuilder {
 	/**
 	 * 无限等待时间
 	 */
-	public OkHttpBuilder infiniteTimeout() {
+	public OkHttp3Builder infiniteTimeout() {
 		return timeout(Duration.ZERO, Duration.ZERO, Duration.ZERO, Duration.ZERO);
 	}
 
-	public OkHttpBuilder timeout(Duration connectTimeout, Duration readTimeout) {
+	public OkHttp3Builder timeout(Duration connectTimeout, Duration readTimeout) {
 		return connectTimeout(connectTimeout).readTimeout(readTimeout);
 	}
 
-	public OkHttpBuilder timeout(Duration callTimeout, Duration connectTimeout, Duration readTimeout,
+	public OkHttp3Builder timeout(Duration callTimeout, Duration connectTimeout, Duration readTimeout,
 			Duration writeTimeout) {
 		return callTimeout(callTimeout).connectTimeout(connectTimeout)
 			.readTimeout(readTimeout)
 			.writeTimeout(writeTimeout);
 	}
 
-	public OkHttpBuilder cookieJar(CookieJar jar) {
+	public OkHttp3Builder cookieJar(CookieJar jar) {
 		this.cookieJar = jar;
 		return this;
 	}
 
-	public OkHttpBuilder keepCookieJar() {
-		return cookieJar(new OkHttpKeepCookieJar());
+	public OkHttp3Builder keepCookieJar() {
+		return cookieJar(new KeepCookieJar());
+	}
+
+	public OkHttp3Builder proxy(Proxy proxy) {
+		this.proxy = proxy;
+		return this;
+	}
+
+	public OkHttp3Builder proxySelector(ProxySelector proxySelector) {
+		this.proxySelector = proxySelector;
+		return this;
+	}
+
+	public OkHttp3Builder dispatcher(Dispatcher dispatcher) {
+		this.dispatcher = dispatcher;
+		return this;
 	}
 
 }

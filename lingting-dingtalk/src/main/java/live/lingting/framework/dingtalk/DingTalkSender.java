@@ -1,7 +1,7 @@
 package live.lingting.framework.dingtalk;
 
 import live.lingting.framework.dingtalk.message.DingTalkMessage;
-import live.lingting.framework.okhttp.OkHttp;
+import live.lingting.framework.okhttp.OkHttp3;
 import live.lingting.framework.util.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,7 +27,7 @@ public class DingTalkSender {
 
 	public static final MediaType MEDIA = MediaType.parse("application/json");
 
-	private static final OkHttp HTTP_CLIENT = OkHttp.builder().build();
+	protected static final OkHttp3 CLIENT = OkHttp3.builder().build();
 
 	/**
 	 * 请求路径
@@ -113,7 +113,7 @@ public class DingTalkSender {
 		String requestUrl = isSecret ? secret(timestamp) : getUrl();
 		RequestBody requestBody = RequestBody.create(message, MEDIA);
 
-		String response = HTTP_CLIENT.post(requestUrl, requestBody, String.class);
+		String response = CLIENT.post(requestUrl, requestBody, String.class);
 		return DingTalkResponse.of(response);
 	}
 

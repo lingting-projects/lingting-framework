@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author lingting 2022/11/17 16:42
  */
-public class OkHttpKeepCookieJar implements CookieJar {
+public class KeepCookieJar implements CookieJar {
 
 	private final Map<String, Map<String, Cookie>> cache = new ConcurrentHashMap<>();
 

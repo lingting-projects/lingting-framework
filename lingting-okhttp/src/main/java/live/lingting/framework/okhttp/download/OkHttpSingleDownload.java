@@ -1,7 +1,7 @@
 package live.lingting.framework.okhttp.download;
 
 import live.lingting.framework.download.AbstractSingleDownload;
-import live.lingting.framework.okhttp.OkHttp;
+import live.lingting.framework.okhttp.OkHttp3;
 import live.lingting.framework.util.StreamUtils;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -15,7 +15,7 @@ import java.io.OutputStream;
  */
 public class OkHttpSingleDownload extends AbstractSingleDownload<OkHttpSingleDownload> implements OkHttpDownload {
 
-	protected final OkHttp client;
+	protected final OkHttp3 client;
 
 	protected OkHttpSingleDownload(OkHttpDownloadBuilder builder) {
 		super(builder);

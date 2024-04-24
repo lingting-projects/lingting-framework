@@ -1,7 +1,7 @@
 package live.lingting.framework.okhttp.download;
 
 import live.lingting.framework.download.AbstractMultiDownload;
-import live.lingting.framework.okhttp.OkHttp;
+import live.lingting.framework.okhttp.OkHttp3;
 import live.lingting.framework.util.StreamUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ import java.io.OutputStream;
 @Getter
 public class OkHttpMultiDownload extends AbstractMultiDownload<OkHttpMultiDownload> implements OkHttpDownload {
 
-	protected final OkHttp client;
+	protected final OkHttp3 client;
 
 	protected OkHttpMultiDownload(OkHttpDownloadBuilder builder) {
 		super(builder);

@@ -17,10 +17,10 @@ import okhttp3.ResponseBody;
  * @author lingting 2023/1/31 13:59
  */
 @Slf4j
-public record OkHttp(OkHttpClient client) {
+public record OkHttp3(OkHttpClient client) {
 
-	public static OkHttpBuilder builder() {
-		return new OkHttpBuilder();
+	public static OkHttp3Builder builder() {
+		return new OkHttp3Builder();
 	}
 
 	public Response request(Request request) {
@@ -62,9 +62,18 @@ public record OkHttp(OkHttpClient client) {
 		});
 	}
 
+	// endregion
+
+	// region get
+
 	public Response get(String url) {
 		Request.Builder builder = new Request.Builder().url(url).get();
 		return request(builder.build());
+	}
+
+	public <T> T get(String url, ThrowingFunction<Response, T> function) {
+		Request.Builder builder = new Request.Builder().url(url).get();
+		return request(builder.build(), function);
 	}
 
 	public <T> T get(String url, Class<T> cls) {
@@ -81,6 +90,9 @@ public record OkHttp(OkHttpClient client) {
 		Request.Builder builder = new Request.Builder().url(url).get();
 		return request(builder.build(), cls);
 	}
+	// endregion
+
+	// region post
 
 	public Response post(String url, RequestBody body) {
 		Request.Builder builder = new Request.Builder().url(url).post(body);
@@ -91,18 +103,17 @@ public record OkHttp(OkHttpClient client) {
 		Request.Builder builder = new Request.Builder().url(url).post(requestBody);
 		return request(builder.build(), cls);
 	}
-
 	// endregion
 
 	public CookieJar cookieJar() {
 		return client.cookieJar();
 	}
 
-	public OkHttpBuilder newBuilder() {
+	public OkHttp3Builder newBuilder() {
 		return builder().okHttpClientBuilder(client.newBuilder());
 	}
 
-	public OkHttp copy() {
+	public OkHttp3 copy() {
 		return newBuilder().build();
 	}
 	// endregion
