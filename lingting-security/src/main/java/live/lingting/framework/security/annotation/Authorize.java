@@ -8,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 鉴权, 默认为登录即可访问. 串行, 任一属性要求不通过即不允许
+ * 鉴权, 默认为登录且用户可用 即可访问. 串行, 任一属性要求不通过即不允许
  *
  * @author lingting 2023-03-29 20:38
  */
@@ -22,6 +22,11 @@ public @interface Authorize {
 	 * 是否允许匿名, 为true时, 登录和未登录均允许访问. 优先级最高
 	 */
 	boolean anyone() default false;
+
+	/**
+	 * 是否仅已启用用户访问
+	 */
+	boolean onlyEnabled() default true;
 
 	/**
 	 * 必须拥有所有指定角色才可以访问, 为空时允许所有角色访问.

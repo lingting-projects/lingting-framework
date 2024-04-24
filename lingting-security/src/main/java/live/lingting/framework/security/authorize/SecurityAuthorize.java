@@ -44,6 +44,7 @@ public class SecurityAuthorize {
 	 */
 	public void valid(Authorize authorize) throws PermissionsException {
 		boolean allowAnyone = authorize != null && authorize.anyone();
+		boolean allowDisabled = authorize != null && !authorize.onlyEnabled();
 
 		// 允许匿名, 直接执行
 		if (allowAnyone) {
@@ -53,16 +54,18 @@ public class SecurityAuthorize {
 		// 非匿名, 要求登录
 		validLogin();
 
-		// 未配置, 已通过登录交易, 结束
-		if (authorize == null) {
-			return;
+		// 不允许未启用用户访问, 校验是否启用
+		if (!allowDisabled) {
+			valid(SecurityScope::enabled);
 		}
 
-		// 校验拥有配置
-		validHas(authorize);
-
-		// 校验为拥有配置
-		validNot(authorize);
+		// 进行配置校验
+		if (authorize != null) {
+			// 校验拥有配置
+			validHas(authorize);
+			// 校验未拥有配置
+			validNot(authorize);
+		}
 	}
 
 	protected void validHas(Authorize authorize) {
