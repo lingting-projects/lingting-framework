@@ -18,7 +18,7 @@ import java.time.format.DateTimeParseException;
  * @author lingting 2022/8/22 9:41
  */
 @Slf4j
-public class LocalTimeTypeHandler extends BaseTypeHandler<LocalTime> {
+public class LocalTimeTypeHandler extends BaseTypeHandler<LocalTime>implements AutoRegisterTypeHandler<LocalTime> {
 
 	public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss");
 

@@ -17,7 +17,7 @@ import java.sql.SQLException;
  * @author lingting
  */
 @MappedTypes(Money.class)
-public class MoneyTypeHandler extends BaseTypeHandler<Money> {
+public class MoneyTypeHandler extends BaseTypeHandler<Money> implements AutoRegisterTypeHandler<Money> {
 
 	@Override
 	public void setNonNullParameter(PreparedStatement ps, int i, Money parameter, JdbcType jdbcType)

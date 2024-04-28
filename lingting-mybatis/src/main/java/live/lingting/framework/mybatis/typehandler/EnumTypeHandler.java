@@ -15,7 +15,7 @@ import java.util.Objects;
  * @author lingting 2022/12/14 16:06
  */
 @RequiredArgsConstructor
-public class EnumTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> {
+public class EnumTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> implements AutoRegisterTypeHandler<E> {
 
 	private final Class<E> type;
 
