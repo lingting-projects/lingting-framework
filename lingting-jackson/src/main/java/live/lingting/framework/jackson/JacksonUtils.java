@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import live.lingting.framework.jackson.module.BooleanModule;
 import live.lingting.framework.jackson.module.EnumModule;
 import live.lingting.framework.jackson.module.JavaTimeModule;
+import live.lingting.framework.jackson.module.MoneyModule;
 import live.lingting.framework.jackson.module.RModule;
 import live.lingting.framework.jackson.provider.NullSerializerProvider;
 import live.lingting.framework.jackson.sensitive.SensitiveModule;
@@ -53,6 +54,8 @@ public class JacksonUtils {
 		mapper.registerModule(new RModule());
 		// 脱敏相关
 		mapper.registerModule(new SensitiveModule());
+		// 金额相关
+		mapper.registerModule(new MoneyModule());
 		return mapper;
 	}
 
