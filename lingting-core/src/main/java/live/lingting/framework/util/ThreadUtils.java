@@ -1,12 +1,14 @@
 package live.lingting.framework.util;
 
-import live.lingting.framework.function.ThrowingRunnable;
+import live.lingting.framework.function.ThrowableRunnable;
+import live.lingting.framework.thread.KeepRunnable;
 import live.lingting.framework.thread.ThreadPool;
 import lombok.experimental.UtilityClass;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Supplier;
 
 /**
@@ -19,12 +21,20 @@ public class ThreadUtils {
 		return ThreadPool.instance();
 	}
 
-	public static void execute(ThrowingRunnable runnable) {
+	public static ThreadPoolExecutor executor() {
+		return instance().getPool();
+	}
+
+	public static void execute(ThrowableRunnable runnable) {
 		execute(null, runnable);
 	}
 
-	public static void execute(String name, ThrowingRunnable runnable) {
+	public static void execute(String name, ThrowableRunnable runnable) {
 		instance().execute(name, runnable);
+	}
+
+	public static void execute(KeepRunnable runnable) {
+		instance().execute(runnable);
 	}
 
 	public static <T> CompletableFuture<T> async(Supplier<T> supplier) {

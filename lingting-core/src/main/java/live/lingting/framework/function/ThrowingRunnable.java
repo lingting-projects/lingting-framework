@@ -5,8 +5,9 @@ package live.lingting.framework.function;
  */
 @FunctionalInterface
 @SuppressWarnings("java:S112")
-public interface ThrowingRunnable {
+public interface ThrowingRunnable extends ThrowableRunnable {
 
+	@Override
 	void run() throws Exception;
 
 }

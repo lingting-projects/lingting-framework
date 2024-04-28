@@ -1,6 +1,6 @@
 package live.lingting.framework.thread;
 
-import live.lingting.framework.function.ThrowingRunnable;
+import live.lingting.framework.function.ThrowableRunnable;
 import live.lingting.framework.value.WaitValue;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,7 +21,7 @@ public class Async {
 	@Setter
 	protected ThreadPool pool = defaultPool;
 
-	public void submit(String name, ThrowingRunnable runnable) throws InterruptedException {
+	public void submit(String name, ThrowableRunnable runnable) throws InterruptedException {
 		increment();
 		pool.execute(String.format("Async-%s", name), () -> {
 			try {

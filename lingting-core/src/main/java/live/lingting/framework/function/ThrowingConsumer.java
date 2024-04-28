@@ -5,8 +5,9 @@ package live.lingting.framework.function;
  */
 @FunctionalInterface
 @SuppressWarnings("java:S112")
-public interface ThrowingConsumer<T> {
+public interface ThrowingConsumer<T> extends ThrowableConsumer<T> {
 
+	@Override
 	void accept(T t) throws Exception;
 
 }

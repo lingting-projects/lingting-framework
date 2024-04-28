@@ -1,14 +1,10 @@
 package live.lingting.framework.thread;
 
-import live.lingting.framework.function.ThrowingRunnable;
-import live.lingting.framework.util.MdcUtils;
-import live.lingting.framework.util.StringUtils;
+import live.lingting.framework.function.ThrowableRunnable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -116,39 +112,21 @@ public class ThreadPool {
 		return size - activeCount < 10;
 	}
 
-	public void execute(ThrowingRunnable runnable) {
+	public void execute(ThrowableRunnable runnable) {
 		execute(null, runnable);
 	}
 
-	public void execute(String name, ThrowingRunnable runnable) {
-		// 获取当前线程的mdc上下文
-		Map<String, String> copy = MdcUtils.copyContext();
-
-		getPool().execute(() -> {
-			Thread thread = Thread.currentThread();
-			String oldName = thread.getName();
-			if (StringUtils.hasText(name)) {
-				thread.setName(name);
-			}
-
-			Map<String, String> oldMdc = MdcUtils.copyContext();
-			MDC.setContextMap(copy);
-
-			try {
+	public void execute(String name, ThrowableRunnable runnable) {
+		execute(new KeepRunnable(name) {
+			@Override
+			protected void process() throws Throwable {
 				runnable.run();
 			}
-			catch (InterruptedException e) {
-				thread.interrupt();
-				log.warn("Thread interrupted inside thread pool");
-			}
-			catch (Throwable throwable) {
-				log.error("Thread exception inside thread pool!", throwable);
-			}
-			finally {
-				MDC.setContextMap(oldMdc);
-				thread.setName(oldName);
-			}
 		});
+	}
+
+	public void execute(KeepRunnable runnable) {
+		getPool().execute(runnable);
 	}
 
 	public <T> CompletableFuture<T> async(Supplier<T> supplier) {

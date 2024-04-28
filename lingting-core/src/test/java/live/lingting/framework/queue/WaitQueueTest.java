@@ -3,8 +3,6 @@ package live.lingting.framework.queue;
 import live.lingting.framework.util.ThreadUtils;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -20,10 +18,7 @@ class WaitQueueTest {
 		queue.add(1);
 		assertEquals(1, queue.get());
 
-		AtomicBoolean atomic = new AtomicBoolean();
-		ThreadUtils.execute(() -> {
-			assertEquals(2, queue.poll());
-		});
+		ThreadUtils.execute(() -> assertEquals(2, queue.poll()));
 		queue.add(2);
 
 	}
