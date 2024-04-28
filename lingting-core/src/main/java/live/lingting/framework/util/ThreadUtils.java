@@ -22,7 +22,7 @@ public class ThreadUtils {
 	}
 
 	public static ThreadPoolExecutor executor() {
-		return instance().getPool();
+		return instance().executor();
 	}
 
 	public static void execute(ThrowableRunnable runnable) {

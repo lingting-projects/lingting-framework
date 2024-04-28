@@ -2,7 +2,6 @@ package live.lingting.framework.thread;
 
 import live.lingting.framework.function.ThrowableRunnable;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.Callable;
@@ -17,7 +16,6 @@ import java.util.function.Supplier;
  * @author lingting 2022/11/17 20:15
  */
 @Slf4j
-@Getter
 @AllArgsConstructor
 @SuppressWarnings("java:S6548")
 public class ThreadPool {
@@ -47,23 +45,29 @@ public class ThreadPool {
 		THREAD_POOL = new ThreadPool(executor);
 	}
 
-	protected ThreadPoolExecutor pool;
+	protected ThreadPoolExecutor executor;
 
 	public static ThreadPool instance() {
 		return THREAD_POOL;
 	}
 
 	public static ThreadPool update(ThreadPoolExecutor executor) {
-		ThreadPool instance = instance();
-		instance.pool = executor;
-		return instance;
+		return instance().executor(executor);
+	}
+
+	public ThreadPoolExecutor executor() {
+		return executor;
+	}
+
+	public ThreadPool executor(ThreadPoolExecutor executor) {
+		this.executor = executor;
+		return this;
 	}
 
 	/**
 	 * 线程池是否运行中
 	 */
 	public boolean isRunning() {
-		ThreadPoolExecutor executor = getPool();
 		return !executor.isShutdown() && !executor.isTerminated() && !executor.isTerminating();
 	}
 
@@ -71,28 +75,28 @@ public class ThreadPool {
 	 * 核心线程数
 	 */
 	public long getCorePoolSize() {
-		return getPool().getCorePoolSize();
+		return executor.getCorePoolSize();
 	}
 
 	/**
 	 * 活跃线程数
 	 */
 	public long getActiveCount() {
-		return getPool().getActiveCount();
+		return executor.getActiveCount();
 	}
 
 	/**
 	 * 已执行任务总数
 	 */
 	public long getTaskCount() {
-		return getPool().getTaskCount();
+		return executor.getTaskCount();
 	}
 
 	/**
 	 * 允许的最大线程数量
 	 */
 	public long getMaximumPoolSize() {
-		return getPool().getMaximumPoolSize();
+		return executor.getMaximumPoolSize();
 	}
 
 	/**
@@ -126,15 +130,15 @@ public class ThreadPool {
 	}
 
 	public void execute(KeepRunnable runnable) {
-		getPool().execute(runnable);
+		executor.execute(runnable);
 	}
 
 	public <T> CompletableFuture<T> async(Supplier<T> supplier) {
-		return CompletableFuture.supplyAsync(supplier, pool);
+		return CompletableFuture.supplyAsync(supplier, executor);
 	}
 
 	public <T> Future<T> submit(Callable<T> callable) {
-		return pool.submit(callable);
+		return executor.submit(callable);
 	}
 
 }

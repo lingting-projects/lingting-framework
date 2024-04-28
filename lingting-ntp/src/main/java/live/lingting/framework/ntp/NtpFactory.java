@@ -1,6 +1,5 @@
 package live.lingting.framework.ntp;
 
-import live.lingting.framework.thread.ThreadPool;
 import live.lingting.framework.util.IpUtils;
 import live.lingting.framework.util.ThreadUtils;
 import live.lingting.framework.value.CycleValue;
@@ -98,8 +97,7 @@ public class NtpFactory {
 			throws UnknownHostException, ExecutionException, TimeoutException, InterruptedException {
 		String ip = IpUtils.resolve(host);
 
-		ThreadPool instance = ThreadUtils.instance();
-		ThreadPoolExecutor executor = instance.getPool();
+		ThreadPoolExecutor executor = ThreadUtils.executor();
 		CompletableFuture<Ntp> future = CompletableFuture.supplyAsync(() -> new Ntp(host, diff(host)), executor);
 		try {
 			Ntp ntp = future.get(cycle.next(), TimeUnit.SECONDS);

@@ -37,7 +37,7 @@ public abstract class AbstractDownloadBuilder<B extends AbstractDownloadBuilder<
 	 */
 	protected String filename;
 
-	protected ThreadPoolExecutor executor = ThreadUtils.instance().getPool();
+	protected ThreadPoolExecutor executor = ThreadUtils.executor();
 
 	protected boolean multi = false;
 
