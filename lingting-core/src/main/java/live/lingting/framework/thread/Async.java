@@ -33,9 +33,12 @@ public class Async {
 		this.executor = executor;
 	}
 
+	public void submit(ThrowableRunnable runnable) {
+		submit("", runnable);
+	}
+
 	public void submit(String name, ThrowableRunnable runnable) {
-		String threadName = String.format("Async-%s", name);
-		StateKeepRunnable keepRunnable = new StateKeepRunnable(threadName, runnable);
+		StateKeepRunnable keepRunnable = new StateKeepRunnable(name, runnable);
 		executor.execute(keepRunnable);
 	}
 
