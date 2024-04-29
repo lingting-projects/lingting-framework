@@ -38,7 +38,28 @@ public class Async {
 	}
 
 	public void submit(String name, ThrowableRunnable runnable) {
-		StateKeepRunnable keepRunnable = new StateKeepRunnable(name, runnable);
+		StateKeepRunnable keepRunnable = new StateKeepRunnable(name) {
+
+			@Override
+			protected void doProcess() throws Throwable {
+				runnable.run();
+			}
+		};
+		executor.execute(keepRunnable);
+	}
+
+	public void execute(Runnable runnable) {
+		execute("", runnable);
+	}
+
+	public void execute(String name, Runnable runnable) {
+		StateKeepRunnable keepRunnable = new StateKeepRunnable(name) {
+
+			@Override
+			protected void doProcess() throws Throwable {
+				runnable.run();
+			}
+		};
 		executor.execute(keepRunnable);
 	}
 

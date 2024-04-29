@@ -1,13 +1,10 @@
 package live.lingting.framework.thread;
 
-import live.lingting.framework.function.ThrowableRunnable;
-
 /**
  * @author lingting 2024-04-29 10:41
  */
-public class StateKeepRunnable extends KeepRunnable {
-
-	protected final ThrowableRunnable runnable;
+@SuppressWarnings("java:S112")
+public abstract class StateKeepRunnable extends KeepRunnable {
 
 	protected Thread thread;
 
@@ -17,13 +14,12 @@ public class StateKeepRunnable extends KeepRunnable {
 
 	protected State state = State.WAIT;
 
-	public StateKeepRunnable(ThrowableRunnable runnable) {
-		this.runnable = runnable;
+	protected StateKeepRunnable() {
+		super();
 	}
 
-	public StateKeepRunnable(String name, ThrowableRunnable runnable) {
+	protected StateKeepRunnable(String name) {
 		super(name);
-		this.runnable = runnable;
 	}
 
 	@Override
@@ -31,8 +27,10 @@ public class StateKeepRunnable extends KeepRunnable {
 		start = System.currentTimeMillis();
 		state = State.RUNNING;
 		thread = Thread.currentThread();
-		runnable.run();
+		doProcess();
 	}
+
+	protected abstract void doProcess() throws Throwable;
 
 	@Override
 	protected void onFinally() {
