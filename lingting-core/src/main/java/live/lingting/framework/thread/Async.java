@@ -1,10 +1,14 @@
 package live.lingting.framework.thread;
 
 import live.lingting.framework.function.ThrowableRunnable;
-import live.lingting.framework.value.WaitValue;
+import live.lingting.framework.util.ThreadUtils;
+import live.lingting.framework.util.ValueUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author lingting 2023-06-05 17:31
@@ -14,39 +18,45 @@ import lombok.extern.slf4j.Slf4j;
 public class Async {
 
 	@Setter
-	protected static ThreadPool defaultPool = ThreadPool.instance();
+	protected static Executor defaultExecutor = ThreadUtils.executor();
 
-	protected final WaitValue<Integer> counter = WaitValue.of(0);
+	protected final AtomicInteger counter = new AtomicInteger(0);
 
 	@Setter
-	protected ThreadPool pool = defaultPool;
+	protected Executor executor = defaultExecutor;
 
-	public void submit(String name, ThrowableRunnable runnable) throws InterruptedException {
+	public void submit(String name, ThrowableRunnable runnable) {
 		increment();
-		pool.execute(String.format("Async-%s", name), () -> {
-			try {
+		String threadName = String.format("Async-%s", name);
+		KeepRunnable keepRunnable = new KeepRunnable(threadName) {
+
+			@Override
+			protected void process() throws Throwable {
 				runnable.run();
 			}
-			finally {
+
+			@Override
+			protected void onFinally() {
 				decrement();
 			}
-		});
+		};
+		executor.execute(keepRunnable);
 	}
 
-	protected void increment() throws InterruptedException {
-		counter.update(v -> v + 1);
+	protected void increment() {
+		counter.incrementAndGet();
 	}
 
-	protected void decrement() throws InterruptedException {
-		counter.update(v -> v - 1);
+	protected void decrement() {
+		counter.decrementAndGet();
 	}
 
-	public void await() throws InterruptedException {
-		counter.wait(v -> v < 1);
+	public void await() {
+		ValueUtils.awaitTrue(() -> counter.get() < 1);
 	}
 
 	public long count() {
-		return counter.getValue();
+		return counter.get();
 	}
 
 }

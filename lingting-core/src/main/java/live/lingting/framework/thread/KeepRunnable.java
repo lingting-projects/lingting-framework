@@ -55,11 +55,16 @@ public abstract class KeepRunnable implements Runnable {
 			log.error("Thread exception inside thread pool!", throwable);
 		}
 		finally {
+			onFinally();
 			MDC.setContextMap(oldMdc);
 			thread.setName(oldName);
 		}
 	}
 
 	protected abstract void process() throws Throwable;
+
+	protected void onFinally() {
+
+	}
 
 }
