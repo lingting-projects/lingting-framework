@@ -32,10 +32,10 @@ public class DingTalkBalancedSender {
 		return queue.poll();
 	}
 
-	public void send(DingTalkMessage message) {
+	public DingTalkResponse send(DingTalkMessage message) {
 		DingTalkSender sender = sender();
 		try {
-			sender.sendMessage(message);
+			return sender.sendMessage(message);
 		}
 		finally {
 			queue.add(sender);
