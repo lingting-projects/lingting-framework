@@ -1,9 +1,4 @@
-package live.lingting.framework.dingtalk;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import live.lingting.framework.jackson.JacksonUtils;
-import lombok.SneakyThrows;
+package live.lingting.framework;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,12 +30,12 @@ public class MarkdownBuilder {
 	/**
 	 * 存放内容
 	 */
-	protected final List<String> content = new ArrayList<>();
+	private final List<String> content = new ArrayList<>();
 
 	/**
 	 * 当前操作行文本
 	 */
-	protected StringBuilder lineTextBuilder;
+	private StringBuilder lineTextBuilder;
 
 	public MarkdownBuilder() {
 		this.lineTextBuilder = new StringBuilder();
@@ -73,7 +68,7 @@ public class MarkdownBuilder {
 		if (Pattern.matches(isOrderListPattern, tmp)) {
 			// 如果是数字开头
 			String substring = tmp.substring(0, tmp.indexOf(ORDER_LIST_PREFIX) - 1);
-			index = JacksonUtils.toObj(substring, Integer.class);
+			index = Integer.parseInt(substring);
 		}
 		return orderList(index, content);
 	}
@@ -184,21 +179,8 @@ public class MarkdownBuilder {
 	/**
 	 * 代码
 	 */
-	public MarkdownBuilder json(Object obj) {
-		String json;
-		if (obj instanceof String string) {
-			json = string;
-		}
-		else {
-			json = multiJson(obj);
-		}
+	public MarkdownBuilder json(String json) {
 		return code("json", json);
-	}
-
-	@SneakyThrows
-	protected String multiJson(Object obj) {
-		ObjectMapper mapper = JacksonUtils.getMapper().copy().enable(SerializationFeature.INDENT_OUTPUT);
-		return mapper.writeValueAsString(obj);
 	}
 
 	/**
@@ -225,7 +207,7 @@ public class MarkdownBuilder {
 	 *
 	 * @author lingting 2020-06-10 22:55:39
 	 */
-	protected MarkdownBuilder title(int i, Object content) {
+	private MarkdownBuilder title(int i, Object content) {
 		// 如果当前操作行已有字符，需要换行
 		lineBreak();
 		lineTextBuilder.append(TITLE_PREFIX.repeat(Math.max(0, i)));

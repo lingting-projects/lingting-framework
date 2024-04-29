@@ -1,7 +1,7 @@
 package live.lingting.framework.dingtalk.message;
 
+import live.lingting.framework.MarkdownBuilder;
 import live.lingting.framework.dingtalk.DingTalkParams;
-import live.lingting.framework.dingtalk.MarkdownBuilder;
 import live.lingting.framework.dingtalk.enums.MessageTypeEnum;
 import lombok.Getter;
 import lombok.Setter;
