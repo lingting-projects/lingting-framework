@@ -16,9 +16,9 @@ import java.util.Map;
 @SuppressWarnings("java:S112")
 public abstract class KeepRunnable implements Runnable {
 
-	private final String name;
+	protected final String name;
 
-	private final Map<String, String> mdc;
+	protected final Map<String, String> mdc;
 
 	protected KeepRunnable() {
 		this("");

@@ -1,12 +1,10 @@
 package live.lingting.framework.thread;
 
 import live.lingting.framework.function.ThrowableRunnable;
-import lombok.RequiredArgsConstructor;
 
 /**
  * @author lingting 2024-04-29 10:41
  */
-@RequiredArgsConstructor
 public class StateKeepRunnable extends KeepRunnable {
 
 	protected final ThrowableRunnable runnable;
@@ -18,6 +16,15 @@ public class StateKeepRunnable extends KeepRunnable {
 	protected long end;
 
 	protected State state = State.WAIT;
+
+	public StateKeepRunnable(ThrowableRunnable runnable) {
+		this.runnable = runnable;
+	}
+
+	public StateKeepRunnable(String name, ThrowableRunnable runnable) {
+		super(name);
+		this.runnable = runnable;
+	}
 
 	@Override
 	protected void process() throws Throwable {
@@ -31,6 +38,10 @@ public class StateKeepRunnable extends KeepRunnable {
 	protected void onFinally() {
 		end = System.currentTimeMillis();
 		state = State.FINISH;
+	}
+
+	public boolean isFinish() {
+		return state == State.FINISH;
 	}
 
 	/**
@@ -50,7 +61,7 @@ public class StateKeepRunnable extends KeepRunnable {
 	 * 结束
 	 */
 	public void stop() {
-		if (thread != null) {
+		if (thread != null && !isFinish() && !thread.isInterrupted()) {
 			thread.interrupt();
 		}
 	}

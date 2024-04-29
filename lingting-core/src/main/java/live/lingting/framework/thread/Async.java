@@ -7,8 +7,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 /**
  * @author lingting 2023-06-05 17:31
@@ -20,43 +23,50 @@ public class Async {
 	@Setter
 	protected static Executor defaultExecutor = ThreadUtils.executor();
 
-	protected final AtomicInteger counter = new AtomicInteger(0);
+	private final List<StateKeepRunnable> list = new CopyOnWriteArrayList<>();
 
 	@Setter
 	protected Executor executor = defaultExecutor;
 
 	public void submit(String name, ThrowableRunnable runnable) {
-		increment();
 		String threadName = String.format("Async-%s", name);
-		KeepRunnable keepRunnable = new KeepRunnable(threadName) {
-
-			@Override
-			protected void process() throws Throwable {
-				runnable.run();
-			}
-
-			@Override
-			protected void onFinally() {
-				decrement();
-			}
-		};
+		StateKeepRunnable keepRunnable = new StateKeepRunnable(threadName, runnable);
 		executor.execute(keepRunnable);
 	}
 
-	protected void increment() {
-		counter.incrementAndGet();
-	}
-
-	protected void decrement() {
-		counter.decrementAndGet();
-	}
-
 	public void await() {
-		ValueUtils.awaitTrue(() -> counter.get() < 1);
+		await(null);
+	}
+
+	/**
+	 * 等待结束
+	 * @param duration 超时时间
+	 */
+	public void await(Duration duration) {
+		Supplier<Boolean> supplier = () -> {
+			long count = count();
+			if (count < 1) {
+				return true;
+			}
+
+			if (duration == null) {
+				return false;
+			}
+			long millis = duration.toMillis();
+			for (StateKeepRunnable runnable : list) {
+				// 执行时间超时
+				if (runnable.time() >= millis) {
+					runnable.stop();
+				}
+			}
+			return count() < 1;
+		};
+		ValueUtils.awaitTrue(supplier);
 	}
 
 	public long count() {
-		return counter.get();
+		list.removeIf(StateKeepRunnable::isFinish);
+		return list.size();
 	}
 
 }
