@@ -3,7 +3,6 @@ package live.lingting.framework.thread;
 import live.lingting.framework.function.ThrowableRunnable;
 import live.lingting.framework.util.ThreadUtils;
 import live.lingting.framework.util.ValueUtils;
-import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,16 +16,22 @@ import java.util.function.Supplier;
  * @author lingting 2023-06-05 17:31
  */
 @Slf4j
-@Getter
 public class Async {
 
 	@Setter
 	protected static Executor defaultExecutor = ThreadUtils.executor();
 
-	private final List<StateKeepRunnable> list = new CopyOnWriteArrayList<>();
+	protected final List<StateKeepRunnable> list = new CopyOnWriteArrayList<>();
 
-	@Setter
-	protected Executor executor = defaultExecutor;
+	protected final Executor executor;
+
+	public Async() {
+		this(defaultExecutor);
+	}
+
+	public Async(Executor executor) {
+		this.executor = executor;
+	}
 
 	public void submit(String name, ThrowableRunnable runnable) {
 		String threadName = String.format("Async-%s", name);
