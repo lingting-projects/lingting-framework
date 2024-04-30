@@ -12,6 +12,7 @@ import java.util.List;
  *
  * @author lingting 2021/3/2 15:07
  */
+@SuppressWarnings("java:S2142")
 public abstract class AbstractQueueThread<E> extends AbstractThreadContextComponent {
 
 	/**
@@ -157,7 +158,7 @@ public abstract class AbstractQueueThread<E> extends AbstractThreadContextCompon
 			e = poll(duration);
 		}
 		catch (InterruptedException ex) {
-			log.error("Class: {}; ThreadId: {}; poll interrupted!", getSimpleName(), getId());
+			log.error("Class: {}; ThreadId: {}; poll interrupted!", getSimpleName(), threadId());
 			interrupt();
 		}
 		return e;
@@ -168,7 +169,7 @@ public abstract class AbstractQueueThread<E> extends AbstractThreadContextCompon
 	 */
 	@Override
 	protected void shutdown() {
-		log.warn("Class: {}; ThreadId: {}; shutdown! data: {}", getSimpleName(), getId(), data);
+		log.warn("Class: {}; ThreadId: {}; shutdown! data: {}", getSimpleName(), threadId(), data);
 	}
 
 }

@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author lingting 2023-04-22 10:39
  */
-@SuppressWarnings("java:S1066")
+@SuppressWarnings({ "java:S1066", "java:S2142" })
 public abstract class AbstractDynamicTimer<T> extends AbstractThreadContextComponent {
 
 	protected final JavaReentrantLock lock = new JavaReentrantLock();
@@ -84,7 +84,7 @@ public abstract class AbstractDynamicTimer<T> extends AbstractThreadContextCompo
 
 	@Override
 	protected void shutdown() {
-		log.warn("Class: {}; ThreadId: {}; shutdown! unprocessed data size: {}", getSimpleName(), getId(),
+		log.warn("Class: {}; ThreadId: {}; shutdown! unprocessed data size: {}", getSimpleName(), threadId(),
 				queue.size());
 	}
 
