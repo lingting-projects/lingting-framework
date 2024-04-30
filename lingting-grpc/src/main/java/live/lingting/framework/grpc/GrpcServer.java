@@ -18,6 +18,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -37,7 +38,7 @@ public class GrpcServer implements ContextComponent {
 
 	private final Map<String, Method> fullMethodNameMap;
 
-	public GrpcServer(ServerBuilder<?> builder, List<ServerInterceptor> interceptors, List<BindableService> services) {
+	public GrpcServer(ServerBuilder<?> builder, Collection<ServerInterceptor> interceptors, Collection<BindableService> services) {
 		// 升序排序
 		List<ServerInterceptor> asc = Sequence.asc(interceptors);
 		// 获取一个游标在尾部的迭代器

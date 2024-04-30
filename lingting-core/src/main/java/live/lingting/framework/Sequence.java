@@ -20,7 +20,7 @@ public interface Sequence {
 
 	SequenceComparator INSTANCE_DESC = new SequenceComparator(false, 0);
 
-	static void asc(List<Object> list) {
+	static <T> void asc(List<T> list) {
 		list.sort(INSTANCE_ASC);
 	}
 
@@ -28,7 +28,7 @@ public interface Sequence {
 		return collection.stream().sorted(INSTANCE_ASC).toList();
 	}
 
-	static void desc(List<Object> list) {
+	static <T> void desc(List<T> list) {
 		list.sort(INSTANCE_DESC);
 	}
 
