@@ -3,6 +3,7 @@ package live.lingting.framework.dingtalk;
 import live.lingting.framework.dingtalk.message.DingTalkMessage;
 import live.lingting.framework.queue.WaitQueue;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 
@@ -11,6 +12,7 @@ import java.util.Collection;
  *
  * @author lingting 2020/6/10 21:25
  */
+@Slf4j
 public class DingTalkBalancedSender {
 
 	private final WaitQueue<DingTalkSender> queue = new WaitQueue<>();
@@ -39,6 +41,21 @@ public class DingTalkBalancedSender {
 		}
 		finally {
 			queue.add(sender);
+		}
+	}
+
+	public void retry(DingTalkMessage message) {
+		while (true) {
+			try {
+				DingTalkResponse response = send(message);
+				if (response.isSuccess()) {
+					return;
+				}
+				log.error("钉钉消息发送失败! code: {}; message: {}", response.getCode(), response.getMessage());
+			}
+			catch (Exception e) {
+				log.error("钉钉消息发送异常!", e);
+			}
 		}
 	}
 

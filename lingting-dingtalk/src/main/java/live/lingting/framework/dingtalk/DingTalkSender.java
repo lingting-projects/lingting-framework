@@ -14,6 +14,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.function.Supplier;
 
 /**
@@ -27,7 +28,9 @@ public class DingTalkSender {
 
 	public static final MediaType MEDIA = MediaType.parse("application/json");
 
-	protected static final OkHttp3 CLIENT = OkHttp3.builder().build();
+	protected static final OkHttp3 CLIENT = OkHttp3.builder()
+		.timeout(Duration.ofSeconds(10), Duration.ofSeconds(10))
+		.build();
 
 	/**
 	 * 请求路径
