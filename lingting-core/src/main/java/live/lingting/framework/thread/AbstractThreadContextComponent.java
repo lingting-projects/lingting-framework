@@ -67,7 +67,7 @@ public abstract class AbstractThreadContextComponent implements ContextComponent
 			protected void process() throws Throwable {
 				Thread thread = Thread.currentThread();
 				threadValue.update(thread);
-				run();
+				AbstractThreadContextComponent.this.run();
 			}
 		});
 	}
