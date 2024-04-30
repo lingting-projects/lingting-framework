@@ -127,12 +127,18 @@ allprojects {
         }
 
         repositories {
-            mavenCentral() {
-                if (isSnapshot) {
-                    url = URI.create("https://oss.sonatype.org/content/repositories/snapshots/")
+            maven() {
+                name = "center"
+                url = if (isSnapshot) {
+                    URI.create("https://oss.sonatype.org/content/repositories/snapshots/")
+                } else {
+                    URI.create("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
                 }
 
                 credentials {
+                    /**
+                     * 推荐使用 user -> profile -> user token
+                     */
                     username = "${findProperty("nexus.username")}"
                     password = "${findProperty("nexus.password")}"
                 }
