@@ -27,6 +27,8 @@ public class MarkdownBuilder {
 
 	public static final String ORDER_LIST_PREFIX = ". ";
 
+	public static final String CODE_SIMPLE_PREFIX = "`";
+
 	/**
 	 * 存放内容
 	 */
@@ -181,6 +183,10 @@ public class MarkdownBuilder {
 	 */
 	public MarkdownBuilder json(String json) {
 		return code("json", json);
+	}
+
+	public MarkdownBuilder simpleCode(Object content) {
+		return append(CODE_SIMPLE_PREFIX).append(content).append(CODE_SIMPLE_PREFIX);
 	}
 
 	/**

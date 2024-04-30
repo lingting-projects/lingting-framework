@@ -34,8 +34,10 @@ class MarkdownBuilderTest {
 
 			.italic("italic")
 			.bold("bold")
-			.quote("quote")
+			.simpleCode("简易代码")
 			.lineBreak()
+
+			.quoteBreak("quote")
 
 			.code("shell", "cd ~")
 			.json("[1,2,3]")
