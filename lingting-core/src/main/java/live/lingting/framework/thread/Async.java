@@ -45,7 +45,7 @@ public class Async {
 				runnable.run();
 			}
 		};
-		executor.execute(keepRunnable);
+		submit(keepRunnable);
 	}
 
 	public void execute(Runnable runnable) {
@@ -60,7 +60,12 @@ public class Async {
 				runnable.run();
 			}
 		};
-		executor.execute(keepRunnable);
+		submit(keepRunnable);
+	}
+
+	protected void submit(StateKeepRunnable runnable) {
+		list.add(runnable);
+		executor.execute(runnable);
 	}
 
 	public void await() {
