@@ -6,6 +6,7 @@ import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.util.ThreadUtils;
 import live.lingting.framework.util.ValueUtils;
 import live.lingting.framework.value.WaitValue;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 
 import java.util.concurrent.Executor;
@@ -41,8 +42,9 @@ public abstract class AbstractThreadContextComponent implements ContextComponent
 		return thread(Thread::getId, -1L);
 	}
 
+	@SneakyThrows
 	protected void interrupt() {
-		thread(Thread::interrupt);
+		threadValue.update((Thread) null);
 	}
 
 	protected void init() {
@@ -67,7 +69,12 @@ public abstract class AbstractThreadContextComponent implements ContextComponent
 			protected void process() throws Throwable {
 				Thread thread = Thread.currentThread();
 				threadValue.update(thread);
-				AbstractThreadContextComponent.this.run();
+				try {
+					AbstractThreadContextComponent.this.run();
+				}
+				finally {
+					threadValue.update((Thread) null);
+				}
 			}
 		});
 	}
