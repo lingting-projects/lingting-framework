@@ -2,6 +2,7 @@ package live.lingting.framework;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -40,16 +41,14 @@ class MarkdownBuilderTest {
 			.quoteBreak("quote")
 
 			.code("shell", "cd ~")
-			.json("[1,2,3]")
+			.json("[1,2,3]");
 
-		;
-
-		String string = builder.toString();
+		String string = builder.build();
 		assertFalse(string.isBlank());
 		assertTrue(string.contains("####"));
 		assertTrue(string.contains("-"));
 		assertTrue(string.contains("```"));
-
+		assertEquals(21, builder.lines());
 	}
 
 }
