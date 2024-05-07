@@ -1,6 +1,6 @@
 package live.lingting.framework.util;
 
-import live.lingting.framework.function.ThrowingBiConsumerE;
+import live.lingting.framework.function.ThrowingConsumerE;
 import live.lingting.framework.stream.CloneInputStream;
 import lombok.experimental.UtilityClass;
 
@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -44,10 +45,10 @@ public class StreamUtils {
 	 * 读取流
 	 * @param in 流
 	 * @param size 缓冲区大小
-	 * @param consumer 消费读取到的数据, int: byte[] 可用长度, byte[] 数据
+	 * @param consumer 消费读取到的数据, byte[] 数据
 	 * @exception IOException 读取异常
 	 */
-	public static void read(InputStream in, int size, ThrowingBiConsumerE<Integer, byte[], IOException> consumer)
+	public static void read(InputStream in, int size, ThrowingConsumerE<byte[], IOException> consumer)
 			throws IOException {
 		byte[] bytes = new byte[size];
 		int len;
@@ -58,7 +59,9 @@ public class StreamUtils {
 				break;
 			}
 
-			consumer.accept(len, bytes);
+			// 复制一份
+			byte[] copy = Arrays.copyOf(bytes, len);
+			consumer.accept(copy);
 		}
 	}
 
@@ -67,7 +70,7 @@ public class StreamUtils {
 	}
 
 	public static void write(InputStream in, OutputStream out, int size) throws IOException {
-		read(in, size, (len, bytes) -> out.write(bytes, 0, len));
+		read(in, size, out::write);
 	}
 
 	public static String toString(InputStream in) throws IOException {
@@ -194,9 +197,9 @@ public class StreamUtils {
 		List<Byte> list = new ArrayList<>();
 		AtomicInteger atomic = new AtomicInteger(0);
 
-		read(in, size, (len, bytes) -> {
-			for (int i = 0; i < len; i++) {
-				list.add(bytes[i]);
+		read(in, size, bytes -> {
+			for (byte b : bytes) {
+				list.add(b);
 				// 如果是一整行数据, 则消费
 				if (isLine(list)) {
 					// 获取行索引, 并自增
