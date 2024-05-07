@@ -100,7 +100,7 @@ public abstract class AbstractMultiDownload<D extends AbstractMultiDownload<D>> 
 		finished = true;
 	}
 
-	protected long generateFileSize() {
+	protected long generateFileSize() throws IOException {
 		if (fileSize != null) {
 			return fileSize;
 		}
@@ -112,7 +112,7 @@ public abstract class AbstractMultiDownload<D extends AbstractMultiDownload<D>> 
 	/**
 	 * 从远端获取文件大小
 	 */
-	protected abstract long remoteSize();
+	protected abstract long remoteSize()throws IOException ;
 
 	/**
 	 * 把指定范围的文件流写入到输出流

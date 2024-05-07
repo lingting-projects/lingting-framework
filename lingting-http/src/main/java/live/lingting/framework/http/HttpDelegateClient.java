@@ -2,6 +2,7 @@ package live.lingting.framework.http;
 
 import live.lingting.framework.http.java.JavaHttpDelegateClient;
 import live.lingting.framework.http.okhttp.OkHttpDelegateClient;
+import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.util.ThreadUtils;
 
 import javax.net.SocketFactory;
@@ -10,6 +11,7 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.net.ProxySelector;
+import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
@@ -25,6 +27,7 @@ public abstract class HttpDelegateClient<D> {
 	public static OkHttpDelegateClient.Builder okhttp() {
 		return new OkHttpDelegateClient.Builder();
 	}
+
 	public static JavaHttpDelegateClient.Builder java() {
 		return new JavaHttpDelegateClient.Builder();
 	}
@@ -32,10 +35,23 @@ public abstract class HttpDelegateClient<D> {
 	public abstract D client();
 
 	public abstract <T> HttpResponse<T> request(HttpRequest request, HttpResponse.BodyHandler<T> handler)
-			throws IOException, InterruptedException;
+			throws IOException;
 
 	public abstract <T> void request(HttpRequest request, HttpResponse.BodyHandler<T> handler,
 			ResponseCallback<T> callback) throws IOException;
+
+	public <T> T request(HttpRequest request, Class<T> cls) throws IOException {
+		HttpResponse<String> response = request(request, HttpResponse.BodyHandlers.ofString());
+		String body = response.body();
+		if (String.class.isAssignableFrom(cls)) {
+			return (T) body;
+		}
+		return JacksonUtils.toObj(body, cls);
+	}
+
+	public <T> HttpResponse<T> get(URI uri, HttpResponse.BodyHandler<T> handler) throws IOException {
+		return request(HttpRequest.newBuilder().GET().uri(uri).build(), handler);
+	}
 
 	public abstract static class Builder<D, C extends HttpDelegateClient<D>, B extends Builder<D, C, B>> {
 

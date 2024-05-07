@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Consumer;
 
@@ -23,7 +24,7 @@ public abstract class AbstractDownload<D extends AbstractDownload<D>> implements
 	protected final ThreadPoolExecutor executor;
 
 	@Getter
-	protected final String url;
+	protected final URI url;
 
 	@Getter
 	protected final File dir;

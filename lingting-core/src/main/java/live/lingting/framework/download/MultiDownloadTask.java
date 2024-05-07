@@ -48,8 +48,9 @@ public class MultiDownloadTask<D extends AbstractMultiDownload<D>> {
 			doDownload(start, end);
 		}
 		catch (Exception e) {
-			throw new DownloadException(
-					String.format("multi download error[%d-%d:%s]!", start, end, download.getFileSize()), e);
+			Long size = download.getFileSize();
+			String message = String.format("multi download error! size: %s; range: %d-%d", size, start, end);
+			throw new DownloadException(message, e);
 		}
 	}
 

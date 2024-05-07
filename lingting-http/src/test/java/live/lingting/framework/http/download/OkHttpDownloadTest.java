@@ -1,4 +1,4 @@
-package live.lingting.framework.okhttp.download;
+package live.lingting.framework.http.download;
 
 import live.lingting.framework.domain.ClassField;
 import live.lingting.framework.exception.DownloadException;
@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.security.NoSuchAlgorithmException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,9 +26,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author lingting 2024-01-29 16:43
  */
-class OkHttpDownloadTest {
+class HttpDownloadTest {
 
-	final String url = "https://mirrors.huaweicloud.com/repository/maven/live/lingting/components/component-validation/0.0.1/component-validation-0.0.1.pom";
+	final URI url = URI.create(
+			"https://mirrors.huaweicloud.com/repository/maven/live/lingting/components/component-validation/0.0.1/component-validation-0.0.1.pom");
 
 	final String filename = "component-validation-0.0.1.pom";
 
@@ -44,7 +46,7 @@ class OkHttpDownloadTest {
 
 	@Test
 	void resolveFilename() throws InvocationTargetException, IllegalAccessException {
-		OkHttpDownload download = OkHttpDownload.single(url).build();
+		HttpDownload download = HttpDownload.single(url).build();
 		ClassField cf = ClassUtils.classField("filename", download.getClass());
 		assertNotNull(cf);
 		assertEquals(filename, cf.get(download));
@@ -52,7 +54,7 @@ class OkHttpDownloadTest {
 
 	@Test
 	void single() throws IOException, InterruptedException, NoSuchAlgorithmException {
-		OkHttpDownload download = OkHttpDownload.single(url)
+		HttpDownload download = HttpDownload.single(url)
 			.filename(String.format("%d.%s.s.pom", System.currentTimeMillis(), RandomUtils.nextHex(3)))
 			.build();
 
@@ -61,7 +63,7 @@ class OkHttpDownloadTest {
 		assertFalse(download.isFinished());
 		assertThrowsExactly(DownloadException.class, download::await);
 
-		OkHttpDownload await = download.start().await();
+		HttpDownload await = download.start().await();
 
 		assertEquals(download, await);
 		assertTrue(download.isStart());
@@ -79,7 +81,7 @@ class OkHttpDownloadTest {
 
 	@Test
 	void multi() throws IOException, InterruptedException, NoSuchAlgorithmException {
-		OkHttpDownload download = OkHttpDownload.multi(url)
+		HttpDownload download = HttpDownload.multi(url)
 			.filename(String.format("%d.%s.m.pom", System.currentTimeMillis(), RandomUtils.nextHex(3)))
 			.maxShardSize(50)
 			.build();
@@ -89,7 +91,7 @@ class OkHttpDownloadTest {
 		assertFalse(download.isFinished());
 		assertThrowsExactly(DownloadException.class, download::await);
 
-		OkHttpMultiDownload await = (OkHttpMultiDownload) download.start().await();
+		HttpMultiDownload await = (HttpMultiDownload) download.start().await();
 
 		assertEquals(download, await);
 		assertTrue(download.isStart());

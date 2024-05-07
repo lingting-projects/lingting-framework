@@ -1,18 +1,19 @@
 package live.lingting.framework.dingtalk;
 
 import live.lingting.framework.dingtalk.message.DingTalkMessage;
-import live.lingting.framework.okhttp.OkHttp3;
+import live.lingting.framework.http.HttpDelegateClient;
 import live.lingting.framework.util.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import okhttp3.MediaType;
-import okhttp3.RequestBody;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.net.URI;
 import java.net.URLEncoder;
+import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.function.Supplier;
@@ -28,7 +29,7 @@ public class DingTalkSender {
 
 	public static final MediaType MEDIA = MediaType.parse("application/json");
 
-	protected static final OkHttp3 CLIENT = OkHttp3.builder()
+	protected static final HttpDelegateClient<?> CLIENT = HttpDelegateClient.okhttp()
 		.timeout(Duration.ofSeconds(10), Duration.ofSeconds(10))
 		.build();
 
@@ -51,7 +52,6 @@ public class DingTalkSender {
 
 	/**
 	 * 发送消息 根据参数值判断使用哪种发送方式
-	 *
 	 */
 	public DingTalkResponse sendMessage(DingTalkMessage message) {
 		if (StringUtils.hasText(getSecret())) {
@@ -109,15 +109,21 @@ public class DingTalkSender {
 	 * @param isSecret 是否签名 true 签名
 	 * @return java.lang.String
 	 */
+	@SneakyThrows
 	public DingTalkResponse request(DingTalkMessage dingTalkMessage, boolean isSecret) {
 		String message = dingTalkMessage.generate();
 		Long timestamp = getCurrentTimeMillisSupplier().get();
 
 		String requestUrl = isSecret ? secret(timestamp) : getUrl();
-		RequestBody requestBody = RequestBody.create(message, MEDIA);
 
-		String response = CLIENT.post(requestUrl, requestBody, String.class);
-		return DingTalkResponse.of(response);
+		HttpRequest request = HttpRequest.newBuilder()
+			.POST(HttpRequest.BodyPublishers.ofString(message, StandardCharsets.UTF_8))
+			.uri(URI.create(requestUrl))
+			.header("Content-Type", "application/json")
+			.build();
+
+		String json = CLIENT.request(request, String.class);
+		return DingTalkResponse.of(json);
 	}
 
 }

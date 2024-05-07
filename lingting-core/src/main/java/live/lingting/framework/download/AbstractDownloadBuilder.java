@@ -6,6 +6,7 @@ import live.lingting.framework.util.ThreadUtils;
 import lombok.Getter;
 
 import java.io.File;
+import java.net.URI;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
@@ -25,7 +26,7 @@ public abstract class AbstractDownloadBuilder<B extends AbstractDownloadBuilder<
 	/**
 	 * 文件下载地址
 	 */
-	protected final String url;
+	protected final URI url;
 
 	/**
 	 * 文件存放文件夹
@@ -59,9 +60,8 @@ public abstract class AbstractDownloadBuilder<B extends AbstractDownloadBuilder<
 	 */
 	protected long maxShardSize = DEFAULT_MAX_SHARD_SIZE;
 
-	protected AbstractDownloadBuilder(String url) {
-		String[] split = url.split("/");
-
+	protected AbstractDownloadBuilder(URI url) {
+		String[] split = url.getPath().split("/");
 		this.url = url;
 		this.filename = split[split.length - 1];
 	}

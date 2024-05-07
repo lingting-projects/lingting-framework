@@ -7,6 +7,7 @@ import lombok.SneakyThrows;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
+import java.io.IOException;
 import java.net.Authenticator;
 import java.net.CookieHandler;
 import java.net.http.HttpClient;
@@ -29,7 +30,7 @@ public class JavaHttpDelegateClient extends HttpDelegateClient<HttpClient> {
 
 	@SneakyThrows
 	@Override
-	public <T> HttpResponse<T> request(HttpRequest request, HttpResponse.BodyHandler<T> handler) {
+	public <T> HttpResponse<T> request(HttpRequest request, HttpResponse.BodyHandler<T> handler) throws IOException {
 		return client.send(request, handler);
 	}
 
