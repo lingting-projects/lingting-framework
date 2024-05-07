@@ -6,8 +6,10 @@ import javax.net.ssl.SSLSession;
 /**
  * @author lingting 2024-01-29 16:29
  */
-@SuppressWarnings("java:S5527")
+@SuppressWarnings({ "java:S5527", "java:S6548" })
 public class HostnameAllVerifier implements HostnameVerifier {
+
+	public static final HostnameAllVerifier INSTANCE = new HostnameAllVerifier();
 
 	@Override
 	public boolean verify(String hostname, SSLSession sslSession) {
