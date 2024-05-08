@@ -9,7 +9,6 @@ import lombok.SneakyThrows;
 import okhttp3.Authenticator;
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.CookieJar;
 import okhttp3.Dispatcher;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -30,7 +29,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 
 /**
  * @author lingting 2024-05-07 13:52
@@ -44,8 +42,6 @@ public class OkHttpDelegateClient extends HttpDelegateClient<OkHttpClient> {
 	public static final int DEFAULT_SIZE = 1024 * 1024 * 10;
 
 	private final OkHttpClient client;
-
-	private final Executor executor;
 
 	@Override
 	public OkHttpClient client() {
@@ -170,17 +166,10 @@ public class OkHttpDelegateClient extends HttpDelegateClient<OkHttpClient> {
 
 		protected Authenticator authenticator;
 
-		private CookieJar cookieJar;
-
 		private Dispatcher dispatcher;
 
 		public Builder authenticator(Authenticator authenticator) {
 			this.authenticator = authenticator;
-			return this;
-		}
-
-		public Builder cookie(CookieJar cookieJar) {
-			this.cookieJar = cookieJar;
 			return this;
 		}
 
@@ -190,7 +179,7 @@ public class OkHttpDelegateClient extends HttpDelegateClient<OkHttpClient> {
 		}
 
 		@Override
-		public OkHttpDelegateClient build() {
+		protected OkHttpDelegateClient doBuild() {
 			OkHttpClient.Builder builder = new OkHttpClient.Builder();
 			nonNull(socketFactory, builder::socketFactory);
 			nonNull(hostnameVerifier, builder::hostnameVerifier);
@@ -205,7 +194,10 @@ public class OkHttpDelegateClient extends HttpDelegateClient<OkHttpClient> {
 			nonNull(writeTimeout, builder::writeTimeout);
 			nonNull(proxySelector, builder::proxySelector);
 			nonNull(authenticator, builder::authenticator);
-			nonNull(cookieJar, builder::cookieJar);
+
+			if (cookie != null) {
+				builder.cookieJar(new OkHttpCookie(cookie));
+			}
 
 			if (dispatcher == null && executor != null) {
 				dispatcher = new Dispatcher(executor);
@@ -214,7 +206,7 @@ public class OkHttpDelegateClient extends HttpDelegateClient<OkHttpClient> {
 			nonNull(dispatcher, builder::dispatcher);
 
 			OkHttpClient delegate = builder.build();
-			return new OkHttpDelegateClient(delegate, executor);
+			return new OkHttpDelegateClient(delegate);
 		}
 
 	}

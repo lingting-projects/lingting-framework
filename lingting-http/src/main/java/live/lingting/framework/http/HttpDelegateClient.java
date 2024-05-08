@@ -10,6 +10,9 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
+import java.net.CookieStore;
 import java.net.ProxySelector;
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -32,7 +35,13 @@ public abstract class HttpDelegateClient<D> {
 		return new JavaHttpDelegateClient.Builder();
 	}
 
+	protected CookieStore cookie;
+
 	public abstract D client();
+
+	public CookieStore cookie() {
+		return cookie;
+	}
 
 	public abstract <T> HttpResponse<T> request(HttpRequest request, HttpResponse.BodyHandler<T> handler)
 			throws IOException;
@@ -80,6 +89,8 @@ public abstract class HttpDelegateClient<D> {
 		protected Duration writeTimeout;
 
 		protected ProxySelector proxySelector;
+
+		protected CookieStore cookie;
 
 		public B socketFactory(SocketFactory socketFactory) {
 			this.socketFactory = socketFactory;
@@ -151,6 +162,16 @@ public abstract class HttpDelegateClient<D> {
 			return (B) this;
 		}
 
+		public B cookie(CookieStore cookie) {
+			this.cookie = cookie;
+			return (B) this;
+		}
+
+		public B memoryCookie() {
+			CookieManager manager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
+			return cookie(manager.getCookieStore());
+		}
+
 		protected <A> void nonNull(A a, Consumer<A> consumer) {
 			if (a == null) {
 				return;
@@ -158,7 +179,13 @@ public abstract class HttpDelegateClient<D> {
 			consumer.accept(a);
 		}
 
-		public abstract C build();
+		public C build() {
+			C c = doBuild();
+			c.cookie = cookie;
+			return c;
+		}
+
+		protected abstract C doBuild();
 
 	}
 

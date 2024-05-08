@@ -9,7 +9,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import java.io.IOException;
 import java.net.Authenticator;
-import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -27,6 +28,7 @@ public class JavaHttpDelegateClient extends HttpDelegateClient<HttpClient> {
 	public HttpClient client() {
 		return client;
 	}
+
 
 	@SneakyThrows
 	@Override
@@ -55,15 +57,8 @@ public class JavaHttpDelegateClient extends HttpDelegateClient<HttpClient> {
 
 		protected Authenticator authenticator;
 
-		protected CookieHandler cookieHandler;
-
 		public Builder authenticator(Authenticator authenticator) {
 			this.authenticator = authenticator;
-			return this;
-		}
-
-		public Builder cookie(CookieHandler cookieHandler) {
-			this.cookieHandler = cookieHandler;
 			return this;
 		}
 
@@ -74,7 +69,7 @@ public class JavaHttpDelegateClient extends HttpDelegateClient<HttpClient> {
 
 		@SneakyThrows
 		@Override
-		public JavaHttpDelegateClient build() {
+		protected JavaHttpDelegateClient doBuild() {
 			HttpClient.Builder builder = HttpClient.newBuilder();
 
 			if (trustManager != null) {
@@ -88,7 +83,10 @@ public class JavaHttpDelegateClient extends HttpDelegateClient<HttpClient> {
 			nonNull(proxySelector, builder::proxy);
 			nonNull(executor, builder::executor);
 			nonNull(authenticator, builder::authenticator);
-			nonNull(cookieHandler, builder::cookieHandler);
+
+			if (cookie != null) {
+				builder.cookieHandler(new CookieManager(cookie, CookiePolicy.ACCEPT_ALL));
+			}
 
 			HttpClient delegate = builder.build();
 			return new JavaHttpDelegateClient(delegate);
