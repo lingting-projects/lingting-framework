@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,14 +31,12 @@ public class GrpcExceptionProcessor {
 
 	private final List<GrpcExceptionInvoke> invokes = new ArrayList<>();
 
-	public GrpcExceptionProcessor(List<GrpcExceptionInstance> instances) {
-		this.instances = instances;
+	public GrpcExceptionProcessor(Collection<GrpcExceptionInstance> instances) {
+		this.instances = Sequence.asc(instances);
 		init();
 	}
 
 	public void init() {
-		Sequence.asc(instances);
-
 		for (GrpcExceptionInstance instance : instances) {
 			for (Method method : ClassUtils.methods(instance.getClass())) {
 				GrpcExceptionHandler handler = AnnotationUtils.findAnnotation(method, GrpcExceptionHandler.class);

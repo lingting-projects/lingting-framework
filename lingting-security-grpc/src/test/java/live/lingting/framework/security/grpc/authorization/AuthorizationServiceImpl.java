@@ -40,7 +40,7 @@ public class AuthorizationServiceImpl implements SecurityAuthorizationService {
 		scope.setRoles(new HashSet<>(List.of(username)));
 		scope.setPermissions(new HashSet<>(List.of(username)));
 		SecurityScopeAttributes attributes = new SecurityScopeAttributes();
-		attributes.put("expand", true);
+		attributes.put("expand", "true");
 		attributes.put("tag", MdcUtils.traceId());
 		scope.setAttributes(attributes);
 		return scope;
