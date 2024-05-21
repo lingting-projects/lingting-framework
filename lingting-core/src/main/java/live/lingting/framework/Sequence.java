@@ -69,7 +69,19 @@ public interface Sequence {
 		/**
 		 * 返回排序在前面的优先级
 		 */
-		protected int high(int o1, int o2) {
+		protected int high(Integer o1, Integer o2) {
+			if (o1 == null && o2 == null) {
+				return defaultSequence;
+			}
+
+			if (o1 == null) {
+				return o2;
+			}
+
+			if (o2 == null) {
+				return o1;
+			}
+
 			return isAsc ? Math.min(o1, o2) : Math.max(o1, o2);
 		}
 
@@ -78,29 +90,24 @@ public interface Sequence {
 				return defaultSequence;
 			}
 
-			int orderSequence = obj instanceof Sequence sequence ? sequence.getSequence() : defaultSequence;
-			int orderSpring = findBySpring(obj);
+			Integer orderSequence = obj instanceof Sequence sequence ? sequence.getSequence() : null;
+			Integer orderSpring = findBySpring(obj);
 			return high(orderSequence, orderSpring);
 		}
 
-		protected int findBySpring(Object obj) {
+		protected Integer findBySpring(Object obj) {
 			if (!ClassUtils.isPresent("org.springframework.core.annotation.Order", getClass().getClassLoader())) {
-				return defaultSequence;
+				return null;
 			}
-			// 注解上的排序值
-			int oa = defaultSequence;
-			// 类方法上的排序值
-			int om = defaultSequence;
-
 			Order annotation = obj.getClass().getAnnotation(Order.class);
-			if (annotation != null) {
-				oa = annotation.value();
+			// 注解上的排序值
+			Integer oa = annotation != null ? annotation.value() : null;
+			// 类方法上的排序值
+			Integer om = obj instanceof Ordered ordered ? ordered.getOrder() : null;
+			// 均为null则返回null
+			if (oa == null && om == null) {
+				return null;
 			}
-
-			if (obj instanceof Ordered ordered) {
-				om = ordered.getOrder();
-			}
-
 			return high(oa, om);
 		}
 

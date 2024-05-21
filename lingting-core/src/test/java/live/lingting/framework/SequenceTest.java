@@ -21,20 +21,22 @@ class SequenceTest {
 		List<Object> list = new ArrayList<>();
 		ES e__1 = new ES(-1);
 		ES e_2 = new ES(2);
-		list.add(e__1);
-		list.add(new ES(1));
-		list.add(new ES(1));
 		list.add(e_2);
+		list.add(new ES(1));
+		list.add(new ES(1));
+		list.add(e__1);
 
 		Sequence.asc(list);
 		assertEquals(e__1, list.get(0));
+		assertEquals(e_2, list.get(list.size() - 1));
 		Sequence.desc(list);
 		assertEquals(e_2, list.get(0));
 
+		// 没有按0算. 居中
 		String e_s = "es";
 		list.add(e_s);
 		Sequence.asc(list);
-		assertEquals(e_s, list.get(list.size() - 1));
+		assertEquals(e_s, list.get(1));
 
 		EA e_a = new EA();
 		list.add(e_a);
