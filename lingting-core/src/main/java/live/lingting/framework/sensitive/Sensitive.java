@@ -1,5 +1,7 @@
 package live.lingting.framework.sensitive;
 
+import live.lingting.framework.sensitive.serializer.SensitiveDefaultSerializer;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -16,12 +18,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Sensitive {
 
-	SensitiveType value() default SensitiveType.DEFAULT;
-
-	/**
-	 * 当类型为 {@link SensitiveType#CUSTOMER} 时, 获取此class对应的bean进行脱敏
-	 */
-	Class<? extends SensitiveSerializer> cls() default SensitiveSerializer.class;
+	Class<? extends SensitiveSerializer> value() default SensitiveDefaultSerializer.class;
 
 	String middle() default SensitiveUtils.MIDDLE;
 

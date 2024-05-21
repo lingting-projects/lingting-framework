@@ -3,7 +3,8 @@ package live.lingting.framework.jackson.sensitive;
 import com.fasterxml.jackson.databind.JsonNode;
 import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.sensitive.Sensitive;
-import live.lingting.framework.sensitive.SensitiveType;
+import live.lingting.framework.sensitive.serializer.SensitiveAllSerializer;
+import live.lingting.framework.sensitive.serializer.SensitiveMobileSerializer;
 import lombok.Getter;
 import lombok.Setter;
 import org.junit.jupiter.api.Test;
@@ -35,16 +36,16 @@ class SensitiveTest {
 	@Setter
 	static class SensitiveTestEntity {
 
-		@Sensitive(SensitiveType.ALL)
+		@Sensitive(SensitiveAllSerializer.class)
 		private String all;
 
-		@Sensitive(SensitiveType.DEFAULT)
+		@Sensitive
 		private String defaultValue;
 
-		@Sensitive(SensitiveType.MOBILE)
+		@Sensitive(SensitiveMobileSerializer.class)
 		private String mobile;
 
-		@Sensitive(SensitiveType.CUSTOMER)
+		@Sensitive(SensitiveSpiProvider.SensitiveSpiSerializer.class)
 		private String spi;
 
 	}

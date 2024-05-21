@@ -1,7 +1,15 @@
 package live.lingting.framework.sensitive;
 
+import live.lingting.framework.Sequence;
+import live.lingting.framework.sensitive.serializer.SensitiveDefaultProvider;
 import live.lingting.framework.util.StringUtils;
 import lombok.experimental.UtilityClass;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
 
 /**
  * @author lingting 2023-04-27 15:42
@@ -63,6 +71,44 @@ public class SensitiveUtils {
 			}
 		}
 		return serialize(raw, prefixLength, suffixLength);
+	}
+
+	public static SensitiveSerializer findSerializer(Sensitive sensitive) {
+		List<SensitiveProvider> providers = providers();
+		for (SensitiveProvider provider : providers) {
+			SensitiveSerializer serializer = provider.find(sensitive);
+			if (serializer != null) {
+				return serializer;
+			}
+		}
+		return null;
+	}
+
+	public static List<SensitiveProvider> providers() {
+		List<SensitiveProvider> providers = new ArrayList<>();
+		providers.add(SensitiveDefaultProvider.INSTANCE);
+
+		try {
+			ServiceLoader<SensitiveProvider> loader = ServiceLoader.load(SensitiveProvider.class);
+
+			loader.stream().filter(Objects::nonNull).forEach(provider -> {
+				try {
+					SensitiveProvider p = provider.get();
+					if (p != null) {
+						providers.add(p);
+					}
+				}
+				catch (ServiceConfigurationError error) {
+					//
+				}
+			});
+		}
+		catch (ServiceConfigurationError e) {
+			//
+		}
+
+		Sequence.asc(providers);
+		return providers;
 	}
 
 }

@@ -13,7 +13,10 @@ public class SensitiveSpiProvider implements SensitiveProvider {
 
 	@Override
 	public SensitiveSerializer find(Sensitive sensitive) {
-		return new SensitiveSpiSerializer();
+		if (SensitiveSpiSerializer.class.isAssignableFrom(sensitive.value())) {
+			return new SensitiveSpiSerializer();
+		}
+		return null;
 	}
 
 	public static class SensitiveSpiSerializer implements SensitiveSerializer {

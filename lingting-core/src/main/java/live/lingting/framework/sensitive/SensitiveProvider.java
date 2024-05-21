@@ -14,7 +14,7 @@ public interface SensitiveProvider extends Sequence {
 	 */
 	@Override
 	default int getSequence() {
-		return Integer.MAX_VALUE;
+		return 0;
 	}
 
 }
