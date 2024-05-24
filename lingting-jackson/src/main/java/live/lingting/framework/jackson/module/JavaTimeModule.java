@@ -10,8 +10,8 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.OffsetDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer;
-import live.lingting.framework.domain.DatePattern;
 import live.lingting.framework.jackson.serializer.InstantSerializer;
+import live.lingting.framework.time.DatePattern;
 
 import java.time.Instant;
 import java.time.LocalDate;

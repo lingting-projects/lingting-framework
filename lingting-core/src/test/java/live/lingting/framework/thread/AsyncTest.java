@@ -1,6 +1,6 @@
 package live.lingting.framework.thread;
 
-import live.lingting.framework.StopWatch;
+import live.lingting.framework.time.StopWatch;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.TimeUnit;

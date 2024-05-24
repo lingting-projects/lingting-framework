@@ -1,4 +1,4 @@
-package live.lingting.framework.domain;
+package live.lingting.framework.reflect;
 
 import live.lingting.framework.util.AnnotationUtils;
 

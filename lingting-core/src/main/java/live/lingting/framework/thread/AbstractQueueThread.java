@@ -1,6 +1,6 @@
 package live.lingting.framework.thread;
 
-import live.lingting.framework.StopWatch;
+import live.lingting.framework.time.StopWatch;
 import live.lingting.framework.util.CollectionUtils;
 
 import java.time.Duration;

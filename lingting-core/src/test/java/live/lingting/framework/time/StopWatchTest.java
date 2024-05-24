@@ -1,4 +1,4 @@
-package live.lingting.framework;
+package live.lingting.framework.time;
 
 import org.junit.jupiter.api.Test;
 

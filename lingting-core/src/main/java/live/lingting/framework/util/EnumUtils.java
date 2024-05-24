@@ -2,7 +2,7 @@ package live.lingting.framework.util;
 
 import com.baomidou.mybatisplus.annotation.IEnum;
 import com.fasterxml.jackson.annotation.JsonValue;
-import live.lingting.framework.domain.ClassField;
+import live.lingting.framework.reflect.ClassField;
 import lombok.experimental.UtilityClass;
 
 import java.lang.annotation.Annotation;

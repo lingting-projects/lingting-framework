@@ -1,7 +1,7 @@
 package live.lingting.framework.http.download;
 
-import live.lingting.framework.domain.ClassField;
 import live.lingting.framework.exception.DownloadException;
+import live.lingting.framework.reflect.ClassField;
 import live.lingting.framework.util.ClassUtils;
 import live.lingting.framework.util.DigestUtils;
 import live.lingting.framework.util.FileUtils;

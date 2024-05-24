@@ -2,8 +2,8 @@ package live.lingting.framework.elasticsearch;
 
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.json.JsonData;
-import live.lingting.framework.domain.ClassField;
 import live.lingting.framework.elasticsearch.annotation.Document;
+import live.lingting.framework.reflect.ClassField;
 import live.lingting.framework.util.AnnotationUtils;
 import live.lingting.framework.util.ClassUtils;
 import live.lingting.framework.util.StringUtils;

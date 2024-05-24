@@ -1,6 +1,6 @@
 package live.lingting.framework.util;
 
-import live.lingting.framework.domain.ClassField;
+import live.lingting.framework.reflect.ClassField;
 import lombok.experimental.UtilityClass;
 
 import java.io.File;

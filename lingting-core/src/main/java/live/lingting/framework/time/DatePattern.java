@@ -1,4 +1,4 @@
-package live.lingting.framework.domain;
+package live.lingting.framework.time;
 
 import lombok.experimental.UtilityClass;
 
