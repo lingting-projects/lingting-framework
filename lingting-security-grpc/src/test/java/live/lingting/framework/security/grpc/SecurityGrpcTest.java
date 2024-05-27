@@ -23,7 +23,7 @@ import live.lingting.framework.security.authorize.SecurityAuthorize;
 import live.lingting.framework.security.domain.SecurityToken;
 import live.lingting.framework.security.grpc.authorization.AuthorizationServiceImpl;
 import live.lingting.framework.security.grpc.authorization.Password;
-import live.lingting.framework.security.resolver.DefaultSecurityTokenResolver;
+import live.lingting.framework.security.resolver.SecurityTokenDefaultResolver;
 import live.lingting.framework.security.resolver.SecurityTokenResolver;
 import live.lingting.framework.security.resource.SecurityDefaultResourceServiceImpl;
 import live.lingting.framework.security.store.SecurityMemoryStore;
@@ -66,7 +66,7 @@ class SecurityGrpcTest {
 		GrpcServerProperties serverProperties = new GrpcServerProperties();
 		SecurityGrpcProperties properties = new SecurityGrpcProperties();
 		List<SecurityTokenResolver> resolvers = new ArrayList<>();
-		resolvers.add(new DefaultSecurityTokenResolver(store));
+		resolvers.add(new SecurityTokenDefaultResolver(store));
 		SecurityDefaultResourceServiceImpl resourceService = new SecurityDefaultResourceServiceImpl(resolvers);
 		SecurityAuthorize authorize = new SecurityAuthorize(0);
 		SecurityGrpcExceptionInstance securityGrpcExceptionInstance = new SecurityGrpcExceptionInstance();

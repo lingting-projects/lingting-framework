@@ -20,7 +20,7 @@ import static live.lingting.framework.exception.SecurityGrpcThrowing.convert;
  * @author lingting 2023-12-18 16:30
  */
 @SuppressWarnings("java:S112")
-public class GrpcRemoteSecurityTokenResolver implements SecurityTokenResolver, ContextComponent, Sequence {
+public class SecurityTokenGrpcRemoteResolver implements SecurityTokenResolver, ContextComponent, Sequence {
 
 	protected final ManagedChannel channel;
 
@@ -28,7 +28,7 @@ public class GrpcRemoteSecurityTokenResolver implements SecurityTokenResolver, C
 
 	protected final SecurityGrpcConvert convert;
 
-	public GrpcRemoteSecurityTokenResolver(ManagedChannel channel, SecurityGrpcConvert convert) {
+	public SecurityTokenGrpcRemoteResolver(ManagedChannel channel, SecurityGrpcConvert convert) {
 		this.channel = channel;
 		this.blocking = SecurityGrpcAuthorizationServiceGrpc.newBlockingStub(channel);
 		this.convert = convert;

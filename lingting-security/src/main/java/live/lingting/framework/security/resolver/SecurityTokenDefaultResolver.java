@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
  * @author lingting 2024-05-27 16:36
  */
 @RequiredArgsConstructor
-public class DefaultSecurityTokenResolver implements SecurityTokenResolver, Sequence {
+public class SecurityTokenDefaultResolver implements SecurityTokenResolver, Sequence {
 
 	private final SecurityStore store;
 
