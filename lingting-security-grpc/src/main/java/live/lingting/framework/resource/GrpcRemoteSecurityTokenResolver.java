@@ -2,13 +2,14 @@ package live.lingting.framework.resource;
 
 import com.google.protobuf.Empty;
 import io.grpc.ManagedChannel;
+import live.lingting.framework.Sequence;
 import live.lingting.framework.context.ContextComponent;
 import live.lingting.framework.convert.SecurityGrpcConvert;
 import live.lingting.framework.interceptor.SecurityGrpcRemoteContent;
 import live.lingting.framework.security.domain.AuthorizationVO;
 import live.lingting.framework.security.domain.SecurityScope;
 import live.lingting.framework.security.domain.SecurityToken;
-import live.lingting.framework.security.resource.SecurityResourceService;
+import live.lingting.framework.security.resolver.SecurityTokenResolver;
 import live.lingting.protobuf.SecurityGrpcAuthorization;
 import live.lingting.protobuf.SecurityGrpcAuthorizationServiceGrpc;
 import lombok.SneakyThrows;
@@ -19,7 +20,7 @@ import static live.lingting.framework.exception.SecurityGrpcThrowing.convert;
  * @author lingting 2023-12-18 16:30
  */
 @SuppressWarnings("java:S112")
-public class SecurityGrpcDefaultRemoteResourceServiceImpl implements SecurityResourceService, ContextComponent {
+public class GrpcRemoteSecurityTokenResolver implements SecurityTokenResolver, ContextComponent, Sequence {
 
 	protected final ManagedChannel channel;
 
@@ -27,18 +28,10 @@ public class SecurityGrpcDefaultRemoteResourceServiceImpl implements SecurityRes
 
 	protected final SecurityGrpcConvert convert;
 
-	public SecurityGrpcDefaultRemoteResourceServiceImpl(ManagedChannel channel, SecurityGrpcConvert convert) {
+	public GrpcRemoteSecurityTokenResolver(ManagedChannel channel, SecurityGrpcConvert convert) {
 		this.channel = channel;
 		this.blocking = SecurityGrpcAuthorizationServiceGrpc.newBlockingStub(channel);
 		this.convert = convert;
-	}
-
-	@SneakyThrows
-	@Override
-	public SecurityScope resolve(SecurityToken token) {
-		SecurityGrpcAuthorization.AuthorizationVO authorizationVO = resolveByRemote(token);
-		AuthorizationVO vo = convert.toJava(authorizationVO);
-		return convert.voToScope(vo);
 	}
 
 	protected SecurityGrpcAuthorization.AuthorizationVO resolveByRemote(SecurityToken token) throws Exception {
@@ -55,6 +48,19 @@ public class SecurityGrpcDefaultRemoteResourceServiceImpl implements SecurityRes
 	}
 
 	@Override
+	public boolean isSupport(SecurityToken token) {
+		return true;
+	}
+
+	@SneakyThrows
+	@Override
+	public SecurityScope resolver(SecurityToken token) {
+		SecurityGrpcAuthorization.AuthorizationVO authorizationVO = resolveByRemote(token);
+		AuthorizationVO vo = convert.toJava(authorizationVO);
+		return convert.voToScope(vo);
+	}
+
+	@Override
 	public void onApplicationStart() {
 		//
 	}
@@ -62,6 +68,11 @@ public class SecurityGrpcDefaultRemoteResourceServiceImpl implements SecurityRes
 	@Override
 	public void onApplicationStop() {
 		channel.shutdown();
+	}
+
+	@Override
+	public int getSequence() {
+		return Integer.MAX_VALUE;
 	}
 
 }
