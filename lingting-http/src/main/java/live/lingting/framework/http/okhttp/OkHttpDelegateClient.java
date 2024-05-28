@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 
 /**
  * @author lingting 2024-05-07 13:52
@@ -140,7 +141,7 @@ public class OkHttpDelegateClient extends HttpDelegateClient<OkHttpClient> {
 
 	@Override
 	public <T> void request(HttpRequest request, HttpResponse.BodyHandler<T> handler, ResponseCallback<T> callback)
-			throws IOException {
+		throws IOException {
 		Call call = convert(request);
 		Callback enqueue = new Callback() {
 			@Override
@@ -178,9 +179,8 @@ public class OkHttpDelegateClient extends HttpDelegateClient<OkHttpClient> {
 			return this;
 		}
 
-		@Override
-		protected OkHttpDelegateClient doBuild() {
-			OkHttpClient.Builder builder = new OkHttpClient.Builder();
+		public OkHttpDelegateClient build(Supplier<OkHttpClient.Builder> supplier) {
+			OkHttpClient.Builder builder = supplier.get();
 			nonNull(socketFactory, builder::socketFactory);
 			nonNull(hostnameVerifier, builder::hostnameVerifier);
 
@@ -207,6 +207,11 @@ public class OkHttpDelegateClient extends HttpDelegateClient<OkHttpClient> {
 
 			OkHttpClient delegate = builder.build();
 			return new OkHttpDelegateClient(delegate);
+		}
+
+		@Override
+		protected OkHttpDelegateClient doBuild() {
+			return build(OkHttpClient.Builder::new);
 		}
 
 	}

@@ -15,6 +15,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.security.SecureRandom;
+import java.util.function.Supplier;
 
 /**
  * @author lingting 2024-05-07 13:52
@@ -68,14 +69,13 @@ public class JavaHttpDelegateClient extends HttpDelegateClient<HttpClient> {
 		}
 
 		@SneakyThrows
-		@Override
-		protected JavaHttpDelegateClient doBuild() {
-			HttpClient.Builder builder = HttpClient.newBuilder();
+		public JavaHttpDelegateClient build(Supplier<HttpClient.Builder> supplier) {
+			HttpClient.Builder builder = supplier.get();
 
 			if (trustManager != null) {
 				SSLContext context = SSLContext.getInstance("TLS");
 				SecureRandom random = new SecureRandom();
-				context.init(null, new TrustManager[] { trustManager }, random);
+				context.init(null, new TrustManager[]{trustManager}, random);
 				builder.sslContext(context);
 			}
 
@@ -90,6 +90,12 @@ public class JavaHttpDelegateClient extends HttpDelegateClient<HttpClient> {
 
 			HttpClient delegate = builder.build();
 			return new JavaHttpDelegateClient(delegate);
+		}
+
+		@SneakyThrows
+		@Override
+		protected JavaHttpDelegateClient doBuild() {
+			return build(HttpClient::newBuilder);
 		}
 
 	}
