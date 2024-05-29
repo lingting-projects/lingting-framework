@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option java_package = "live.lingting.framework.protobuf";
+option java_multiple_files = false;
+
+message AuthorizationVO {
+  string token = 1;
+  string userId = 2;
+  string tenantId = 3;
+  string username = 4;
+  string avatar = 5;
+  string nickname = 6;
+  bool isEnabled = 8;
+  repeated string roles = 9;
+  repeated string permissions = 10;
+  bytes attributes = 11;
+}
+
+message AuthorizationPasswordPO {
+  string username = 1;
+  string password = 2;
+}
+
+service SecurityGrpcAuthorizationService {
+
+  rpc logout(google.protobuf.Empty) returns (AuthorizationVO) {};
+
+  rpc password(AuthorizationPasswordPO) returns (AuthorizationVO) {};
+
+  rpc refresh(google.protobuf.Empty) returns (AuthorizationVO) {};
+
+  rpc resolve(google.protobuf.Empty) returns (AuthorizationVO) {};
+
+}

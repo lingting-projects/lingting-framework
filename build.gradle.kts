@@ -36,7 +36,8 @@ idea {
 
 buildscript {
     dependencies {
-        classpath(libs.springFormatterClasspath)
+        classpath(libs.springFormatterPlugin)
+        classpath(libs.grpcProtobufPlugin)
     }
 }
 

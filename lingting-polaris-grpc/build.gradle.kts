@@ -2,7 +2,7 @@ dependencies {
     api(project(":lingting-grpc"))
     implementation(project(":lingting-jackson"))
 
-    compileOnly(platform("com.tencent.polaris:polaris-dependencies:${libs.versions.polarisVersion.get()}"))
+    compileOnly(platform(libs.polarisDependencies))
     compileOnly("com.tencent.polaris:polaris-client")
     compileOnly("com.tencent.polaris:polaris-discovery-api")
     compileOnly("com.tencent.polaris:polaris-router-api")

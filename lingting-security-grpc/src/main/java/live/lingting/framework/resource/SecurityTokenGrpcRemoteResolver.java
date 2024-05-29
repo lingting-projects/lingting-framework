@@ -6,12 +6,12 @@ import live.lingting.framework.Sequence;
 import live.lingting.framework.context.ContextComponent;
 import live.lingting.framework.convert.SecurityGrpcConvert;
 import live.lingting.framework.interceptor.SecurityGrpcRemoteContent;
+import live.lingting.framework.protobuf.SecurityGrpcAuthorization;
+import live.lingting.framework.protobuf.SecurityGrpcAuthorizationServiceGrpc;
 import live.lingting.framework.security.domain.AuthorizationVO;
 import live.lingting.framework.security.domain.SecurityScope;
 import live.lingting.framework.security.domain.SecurityToken;
 import live.lingting.framework.security.resolver.SecurityTokenResolver;
-import live.lingting.protobuf.SecurityGrpcAuthorization;
-import live.lingting.protobuf.SecurityGrpcAuthorizationServiceGrpc;
 import lombok.SneakyThrows;
 
 import static live.lingting.framework.exception.SecurityGrpcThrowing.convert;

@@ -2,12 +2,12 @@ package live.lingting.framework.convert;
 
 import com.google.protobuf.ByteString;
 import live.lingting.framework.jackson.JacksonUtils;
+import live.lingting.framework.protobuf.SecurityGrpcAuthorization;
 import live.lingting.framework.security.convert.SecurityConvert;
 import live.lingting.framework.security.domain.AuthorizationVO;
 import live.lingting.framework.security.domain.SecurityScopeAttributes;
 import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.StringUtils;
-import live.lingting.protobuf.SecurityGrpcAuthorization;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;

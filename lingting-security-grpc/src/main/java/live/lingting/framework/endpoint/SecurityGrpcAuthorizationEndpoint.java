@@ -3,6 +3,8 @@ package live.lingting.framework.endpoint;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import live.lingting.framework.convert.SecurityGrpcConvert;
+import live.lingting.framework.protobuf.SecurityGrpcAuthorization;
+import live.lingting.framework.protobuf.SecurityGrpcAuthorizationServiceGrpc;
 import live.lingting.framework.security.annotation.Authorize;
 import live.lingting.framework.security.authorize.SecurityAuthorizationService;
 import live.lingting.framework.security.domain.AuthorizationVO;
@@ -11,8 +13,6 @@ import live.lingting.framework.security.exception.AuthorizationException;
 import live.lingting.framework.security.password.SecurityPassword;
 import live.lingting.framework.security.resource.SecurityHolder;
 import live.lingting.framework.security.store.SecurityStore;
-import live.lingting.protobuf.SecurityGrpcAuthorization;
-import live.lingting.protobuf.SecurityGrpcAuthorizationServiceGrpc;
 import lombok.RequiredArgsConstructor;
 
 /**

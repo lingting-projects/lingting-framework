@@ -3,10 +3,13 @@ dependencyResolutionManagement {
     val mybatisPlusVersion = "3.5.5"
     val jSqlParserVersion = "4.8"
     val grpcVersion = "1.61.1"
+    val grpcProtobufVersion = "0.9.4"
+    // 和grpc中依赖的版本保持一致
+    val grpcProtocVersion = "3.25.1"
     val elasticVersion = "8.12.2"
     val commonsNetVersion = "3.10.0"
-    val securityProtobufVersion = "17_2023.12.18-SNAPSHOT"
     val polarisVersion = "1.15.0"
+    val javaxVersion = "1.3.2"
 
     versionCatalogs {
         create("libs") {
@@ -16,14 +19,20 @@ dependencyResolutionManagement {
             version("lombok", "1.18.30")
             version("lombokMapstructBinding", "0.2.0")
             version("jSqlParser", jSqlParserVersion)
-            version("polarisVersion", polarisVersion)
+            version("polaris", polarisVersion)
+            version("grpc", grpcVersion)
 
             library("springBootClasspath", "org.springframework.boot", "spring-boot-gradle-plugin").versionRef("springBoot")
-            library("springFormatterClasspath", "io.spring.javaformat", "spring-javaformat-gradle-plugin").versionRef("formatter")
+            library("springFormatterPlugin", "io.spring.javaformat", "spring-javaformat-gradle-plugin").versionRef("formatter")
             library("springFormatterCheckstyle", "io.spring.javaformat", "spring-javaformat-checkstyle").versionRef("formatter")
 
             library("springBootDependencies", "org.springframework.boot", "spring-boot-dependencies").versionRef("springBoot")
+            library("polarisDependencies", "com.tencent.polaris", "polaris-dependencies").versionRef("polaris")
             library("grpcDependencies", "io.grpc", "grpc-bom").version(grpcVersion)
+
+            library("grpcProtobufPlugin", "com.google.protobuf", "protobuf-gradle-plugin").version(grpcProtobufVersion)
+            library("grpcProtoc", "com.google.protobuf", "protoc").version(grpcProtocVersion)
+            library("javaxAnnotation", "javax.annotation", "javax.annotation-api").version(javaxVersion)
 
             library("mapstruct", "org.mapstruct", "mapstruct").versionRef("mapstruct")
             library("lombok", "org.projectlombok", "lombok").versionRef("lombok")
@@ -43,7 +52,6 @@ dependencyResolutionManagement {
             bundle("elasticsearch", listOf("elasticsearch", "elasticsearchClient"));
 
             library("commonsNet", "commons-net", "commons-net").version(commonsNetVersion)
-            library("securityProtobuf", "live.lingting.protobuf", "protobuf-java").version(securityProtobufVersion)
 
             bundle("implementation", listOf("mapstruct"));
             bundle("compile", listOf("lombok"))
