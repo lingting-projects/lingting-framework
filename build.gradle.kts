@@ -190,6 +190,9 @@ configure(javaProjects) {
 
     tasks.withType<Test> {
         useJUnitPlatform()
+        testLogging {
+            showStandardStreams = true
+        }
     }
 
     tasks.withType<JavaCompile> {
