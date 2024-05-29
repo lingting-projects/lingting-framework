@@ -29,10 +29,12 @@ class HttpUrlBuilderTest {
 
 		copy.addParam("q3", List.of("q31", "q32"));
 		assertEquals("https://www.google.com:80/search?&q1=q1&q2=q2&q3=q31&q3=q32", copy.build());
-		copy.uriSegment("a", "b", "c");
+		copy.uriSegment("a").uriSegment("b", "c");
 		assertEquals("https://www.google.com:80/search/a/b/c/?&q1=q1&q2=q2&q3=q31&q3=q32", copy.build());
 		URI uri = copy.buildUri();
 		assertEquals("https://www.google.com:80/search/a/b/c/?&q1=q1&q2=q2&q3=q31&q3=q32", uri.toString());
+		HttpUrlBuilder from = HttpUrlBuilder.from(uri);
+		assertEquals("https://www.google.com:80/search/a/b/c/?&q1=q1&q2=q2&q3=q31&q3=q32", from.build());
 	}
 
 }

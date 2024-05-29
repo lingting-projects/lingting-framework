@@ -5,6 +5,7 @@ import live.lingting.framework.util.StringUtils;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,7 @@ import java.util.Map;
 /**
  * @author lingting 2024-01-29 16:13
  */
-public class HttpUrlBuilder  {
+public class HttpUrlBuilder {
 
 	private final Map<String, List<String>> params = new HashMap<>();
 
@@ -26,6 +27,25 @@ public class HttpUrlBuilder  {
 
 	public static HttpUrlBuilder builder() {
 		return new HttpUrlBuilder();
+	}
+
+	public static HttpUrlBuilder from(String url) {
+		URI u = URI.create(url);
+		return from(u);
+	}
+
+	public static HttpUrlBuilder from(URI u) {
+		HttpUrlBuilder builder = builder().scheme(u.getScheme()).host(u.getHost()).port(u.getPort()).uri(u.getPath());
+		String query = u.getQuery();
+		if (StringUtils.hasText(query)) {
+			Arrays.stream(query.split("&")).forEach(s -> {
+				String[] split = s.split("=");
+				if (split.length == 2) {
+					builder.addParam(split[0], split[1]);
+				}
+			});
+		}
+		return builder;
 	}
 
 	public HttpUrlBuilder scheme(String scheme) {
@@ -127,7 +147,8 @@ public class HttpUrlBuilder  {
 			builder.append("/");
 		}
 		if (StringUtils.hasText(uri)) {
-			builder.append(uri);
+			String string = uri.toString();
+			builder.append(string.startsWith("/") ? string.substring(1) : string);
 		}
 		if (builder.charAt(builder.length() - 1) != '?') {
 			builder.append("?");
