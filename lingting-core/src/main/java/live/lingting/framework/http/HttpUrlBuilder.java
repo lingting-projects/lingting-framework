@@ -1,7 +1,9 @@
 package live.lingting.framework.http;
 
+import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.StringUtils;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +12,7 @@ import java.util.Map;
 /**
  * @author lingting 2024-01-29 16:13
  */
-public class HttpUrlBuilder {
+public class HttpUrlBuilder  {
 
 	private final Map<String, List<String>> params = new HashMap<>();
 
@@ -20,20 +22,23 @@ public class HttpUrlBuilder {
 
 	private Integer port;
 
-	private String uri;
+	private StringBuilder uri;
 
 	public static HttpUrlBuilder builder() {
 		return new HttpUrlBuilder();
 	}
 
-	public HttpUrlBuilder http() {
-		this.scheme = "http";
+	public HttpUrlBuilder scheme(String scheme) {
+		this.scheme = scheme;
 		return this;
 	}
 
+	public HttpUrlBuilder http() {
+		return scheme("http");
+	}
+
 	public HttpUrlBuilder https() {
-		this.scheme = "https";
-		return this;
+		return scheme("https");
 	}
 
 	public HttpUrlBuilder host(String host) {
@@ -47,12 +52,44 @@ public class HttpUrlBuilder {
 	}
 
 	public HttpUrlBuilder uri(String uri) {
+		return uri(new StringBuilder(uri));
+	}
+
+	public HttpUrlBuilder uri(StringBuilder uri) {
 		this.uri = uri;
 		return this;
 	}
 
-	public HttpUrlBuilder addParam(String name, String value) {
-		params.computeIfAbsent(name, k -> new ArrayList<>()).add(value);
+	public HttpUrlBuilder uriSegment(String... segments) {
+		if (uri == null) {
+			uri = new StringBuilder();
+		}
+
+		if (!uri.isEmpty() && !uri.substring(uri.length() - 1).equals("/")) {
+			uri.append("/");
+		}
+
+		for (String segment : segments) {
+			uri.append(segment).append("/");
+		}
+
+		return this;
+	}
+
+	public HttpUrlBuilder addParam(String name, Object value) {
+		if (value == null) {
+			return this;
+		}
+		if (value instanceof Map<?, ?> map) {
+			map.forEach((k, v) -> addParam(k.toString(), v));
+		}
+		else if (CollectionUtils.isMulti(value)) {
+			CollectionUtils.multiToList(value).forEach(o -> addParam(name, o));
+		}
+		else {
+			List<String> list = params.computeIfAbsent(name, k -> new ArrayList<>());
+			list.add(value.toString());
+		}
 		return this;
 	}
 
@@ -64,7 +101,7 @@ public class HttpUrlBuilder {
 			if (value == null) {
 				continue;
 			}
-			addParam(key, value.toString());
+			addParam(key, value);
 		}
 		return this;
 	}
@@ -105,6 +142,19 @@ public class HttpUrlBuilder {
 		}
 
 		return builder.toString();
+	}
+
+	public URI buildUri() {
+		String string = build();
+		return URI.create(string);
+	}
+
+	public HttpUrlBuilder copy() {
+		return builder().scheme(scheme)
+			.host(host)
+			.port(port)
+			.uri(uri == null ? null : uri.toString())
+			.addParams(params);
 	}
 
 }

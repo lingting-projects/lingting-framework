@@ -2,6 +2,9 @@ package live.lingting.framework.http;
 
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -21,6 +24,15 @@ class HttpUrlBuilderTest {
 		assertEquals("https://www.google.com/search?&q1=q1&q2=q2", builder.build());
 		builder.port(80).http();
 		assertEquals("https://www.google.com:80/search?&q1=q1&q2=q2", builder.build());
+		HttpUrlBuilder copy = builder.copy();
+		assertEquals("https://www.google.com:80/search?&q1=q1&q2=q2", copy.build());
+
+		copy.addParam("q3", List.of("q31", "q32"));
+		assertEquals("https://www.google.com:80/search?&q1=q1&q2=q2&q3=q31&q3=q32", copy.build());
+		copy.uriSegment("a", "b", "c");
+		assertEquals("https://www.google.com:80/search/a/b/c/?&q1=q1&q2=q2&q3=q31&q3=q32", copy.build());
+		URI uri = copy.buildUri();
+		assertEquals("https://www.google.com:80/search/a/b/c/?&q1=q1&q2=q2&q3=q31&q3=q32", uri.toString());
 	}
 
 }
