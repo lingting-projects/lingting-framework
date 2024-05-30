@@ -15,26 +15,28 @@ class HttpUrlBuilderTest {
 	@Test
 	void test() {
 		HttpUrlBuilder builder = HttpUrlBuilder.builder().https().host("www.baidu.com");
-		assertEquals("https://www.baidu.com/?", builder.build());
+		assertEquals("https://www.baidu.com", builder.build());
 		builder.uri("search").http();
-		assertEquals("http://www.baidu.com/search?", builder.build());
+		assertEquals("http://www.baidu.com/search", builder.build());
 		builder.https().addParam("q1", "q1").addParam("q2", "q2");
-		assertEquals("https://www.baidu.com/search?&q1=q1&q2=q2", builder.build());
+		assertEquals("https://www.baidu.com/search?q1=q1&q2=q2", builder.build());
 		builder.http().host("https://www.google.com");
-		assertEquals("https://www.google.com/search?&q1=q1&q2=q2", builder.build());
+		assertEquals("https://www.google.com/search?q1=q1&q2=q2", builder.build());
 		builder.port(80).http();
-		assertEquals("https://www.google.com:80/search?&q1=q1&q2=q2", builder.build());
-		HttpUrlBuilder copy = builder.copy();
-		assertEquals("https://www.google.com:80/search?&q1=q1&q2=q2", copy.build());
+		assertEquals("http://www.google.com:80/search?q1=q1&q2=q2", builder.build());
+		HttpUrlBuilder copy = builder.copy().https();
+		assertEquals("https://www.google.com:80/search?q1=q1&q2=q2", copy.build());
 
 		copy.addParam("q3", List.of("q31", "q32"));
-		assertEquals("https://www.google.com:80/search?&q1=q1&q2=q2&q3=q31&q3=q32", copy.build());
+		assertEquals("https://www.google.com:80/search?q1=q1&q2=q2&q3=q31&q3=q32", copy.build());
 		copy.uriSegment("a").uriSegment("b", "c");
-		assertEquals("https://www.google.com:80/search/a/b/c/?&q1=q1&q2=q2&q3=q31&q3=q32", copy.build());
+		assertEquals("https://www.google.com:80/search/a/b/c?q1=q1&q2=q2&q3=q31&q3=q32", copy.build());
+		copy.addParam("q4", "s p a c e");
+		assertEquals("https://www.google.com:80/search/a/b/c?q1=q1&q2=q2&q3=q31&q3=q32&q4=s p a c e", copy.build());
 		URI uri = copy.buildUri();
-		assertEquals("https://www.google.com:80/search/a/b/c/?&q1=q1&q2=q2&q3=q31&q3=q32", uri.toString());
+		assertEquals("https://www.google.com:80/search/a/b/c?q1=q1&q2=q2&q3=q31&q3=q32&q4=s%20p%20a%20c%20e", uri.toString());
 		HttpUrlBuilder from = HttpUrlBuilder.from(uri);
-		assertEquals("https://www.google.com:80/search/a/b/c/?&q1=q1&q2=q2&q3=q31&q3=q32", from.build());
+		assertEquals("https://www.google.com:80/search/a/b/c?q1=q1&q2=q2&q3=q31&q3=q32&q4=s p a c e", from.build());
 	}
 
 }

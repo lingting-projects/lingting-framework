@@ -4,6 +4,7 @@ import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.StringUtils;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -62,7 +63,14 @@ public class HttpUrlBuilder {
 	}
 
 	public HttpUrlBuilder host(String host) {
-		this.host = host;
+		if (host.contains("://")) {
+			String[] split = host.split("://");
+			scheme(split[0]);
+			this.host = split[1];
+		}
+		else {
+			this.host = host;
+		}
 		return this;
 	}
 
@@ -135,39 +143,64 @@ public class HttpUrlBuilder {
 		}
 
 		StringBuilder builder = new StringBuilder();
-
-		if (!host.startsWith("http")) {
-			builder.append(scheme).append("://");
-		}
+		builder.append(scheme).append("://");
 		builder.append(host);
+		if (host.endsWith("/")) {
+			builder.deleteCharAt(builder.length() - 1);
+		}
 		if (port != null) {
 			builder.append(":").append(port);
 		}
-		if (!host.endsWith("/")) {
+		builder.append(buildPath());
+		String query = buildQuery();
+		if (StringUtils.hasText(query)) {
+			if (builder.charAt(builder.length() - 1) != '?') {
+				builder.append("?");
+			}
+			builder.append(query);
+		}
+		return builder.toString();
+	}
+
+	public String buildPath() {
+		if (!StringUtils.hasText(uri)) {
+			return "";
+		}
+		StringBuilder builder = new StringBuilder();
+		String string = uri.toString();
+		if (!string.startsWith("/")) {
 			builder.append("/");
 		}
-		if (StringUtils.hasText(uri)) {
-			String string = uri.toString();
-			builder.append(string.startsWith("/") ? string.substring(1) : string);
+		builder.append(string);
+		if (string.endsWith("/")) {
+			builder.deleteCharAt(builder.length() - 1);
 		}
-		if (builder.charAt(builder.length() - 1) != '?') {
-			builder.append("?");
-		}
+		return builder.toString();
+	}
 
+	public String buildQuery() {
+		StringBuilder builder = new StringBuilder();
 		for (Map.Entry<String, List<String>> entry : params.entrySet()) {
 			String field = entry.getKey();
-
 			for (String v : entry.getValue()) {
-				builder.append("&").append(field).append("=").append(v);
+				builder.append(field).append("=").append(v).append("&");
 			}
 		}
-
+		if (!CollectionUtils.isEmpty(params)) {
+			builder.deleteCharAt(builder.length() - 1);
+		}
 		return builder.toString();
 	}
 
 	public URI buildUri() {
-		String string = build();
-		return URI.create(string);
+		try {
+			String path = buildPath();
+			String query = buildQuery();
+			return new URI(scheme, null, host, port, path, query, null);
+		}
+		catch (URISyntaxException e) {
+			throw new IllegalStateException("Could not create URI object: " + e.getMessage(), e);
+		}
 	}
 
 	public HttpUrlBuilder copy() {
