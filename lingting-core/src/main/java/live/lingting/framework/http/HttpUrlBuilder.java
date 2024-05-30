@@ -196,7 +196,9 @@ public class HttpUrlBuilder {
 		try {
 			String path = buildPath();
 			String query = buildQuery();
-			return new URI(scheme, null, host, port, path, query, null);
+			int p = port == null ? -1 : port;
+			String q = StringUtils.hasText(query) ? query : null;
+			return new URI(scheme, null, host, p, path, q, null);
 		}
 		catch (URISyntaxException e) {
 			throw new IllegalStateException("Could not create URI object: " + e.getMessage(), e);
