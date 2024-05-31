@@ -1,6 +1,5 @@
 package live.lingting.framework.system;
 
-import live.lingting.framework.exception.CommandTimeoutException;
 import live.lingting.framework.util.FileUtils;
 import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.util.SystemUtils;
@@ -12,6 +11,7 @@ import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author lingting 2022/6/25 11:55
@@ -145,13 +145,13 @@ public class Command {
 	 * @param millis 等待时间, 单位: 毫秒
 	 * @return live.lingting.tools.system.CommandResult
 	 */
-	public CommandResult result(long millis) throws InterruptedException, CommandTimeoutException {
+	public CommandResult result(long millis) throws InterruptedException, TimeoutException {
 		if (process.waitFor(millis, TimeUnit.MILLISECONDS)) {
 			return result();
 		}
 		// 超时. 强行杀死子线程
 		process.destroyForcibly();
-		throw new CommandTimeoutException();
+		throw new TimeoutException();
 	}
 
 	public void close() {
