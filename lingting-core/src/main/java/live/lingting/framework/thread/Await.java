@@ -1,0 +1,112 @@
+package live.lingting.framework.thread;
+
+import live.lingting.framework.function.InterruptedRunnable;
+import live.lingting.framework.util.ThreadUtils;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+
+/**
+ * @author lingting 2024-05-31 11:14
+ */
+@RequiredArgsConstructor
+public class Await<S> {
+
+	private final Supplier<S> supplier;
+
+	private final Predicate<S> predicate;
+
+	private final InterruptedRunnable sleep;
+
+	private final Duration timeout;
+
+	public static <S> AwaitBuilder<S> builder(Supplier<S> supplier, Predicate<S> predicate) {
+		return Await.<S>builder().supplier(supplier).predicate(predicate);
+	}
+
+	public static <S> AwaitBuilder<S> builder() {
+		return new AwaitBuilder<>();
+	}
+
+	public static class AwaitBuilder<S> {
+
+		private Supplier<S> supplier;
+
+		private Predicate<S> predicate;
+
+		private InterruptedRunnable sleep = InterruptedRunnable.THREAD_SLEEP;
+
+		private Duration timeout;
+
+		AwaitBuilder() {
+		}
+
+		public AwaitBuilder<S> supplier(Supplier<S> supplier) {
+			this.supplier = supplier;
+			return this;
+		}
+
+		public AwaitBuilder<S> predicate(Predicate<S> predicate) {
+			this.predicate = predicate;
+			return this;
+		}
+
+		public AwaitBuilder<S> sleep(InterruptedRunnable sleep) {
+			this.sleep = sleep;
+			return this;
+		}
+
+		public AwaitBuilder<S> timeout(Duration timeout) {
+			this.timeout = timeout;
+			return this;
+		}
+
+		public Await<S> build() {
+			return new Await<>(this.supplier, this.predicate, this.sleep, this.timeout);
+		}
+
+		public S await() {
+			return build().await();
+		}
+
+	}
+
+	@SneakyThrows
+	public S await() {
+		Supplier<S> supply = new Supplier<>() {
+			@SneakyThrows
+			@Override
+			public S get() {
+				while (true) {
+					S s = supplier.get();
+					if (predicate.test(s)) {
+						return s;
+					}
+
+					sleep.run();
+				}
+			}
+		};
+		// 未设置超时
+		if (timeout == null || timeout.isNegative() || timeout.isZero()) {
+			return supply.get();
+		}
+
+		try {
+			// 设置超时
+			CompletableFuture<S> future = CompletableFuture.supplyAsync(supply, ThreadUtils.executor())
+				.orTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS);
+			return future.get();
+		}
+		catch (ExecutionException e) {
+			throw e.getCause();
+		}
+	}
+
+}
