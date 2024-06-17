@@ -71,7 +71,7 @@ public class ScriptBuilder<T> {
 			sourceBuilder.append("\n");
 		}
 		sourceBuilder.append(script);
-		if (!script.endsWith("}")) {
+		if (!script.endsWith(";")) {
 			sourceBuilder.append(";");
 		}
 		return this;
