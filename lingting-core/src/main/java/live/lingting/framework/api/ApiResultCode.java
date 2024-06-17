@@ -27,6 +27,10 @@ public enum ApiResultCode implements ResultCode {
 	 */
 	FORBIDDEN_ERROR(403, "Forbidden Error!"),
 	/**
+	 * 请求地址异常
+	 */
+	NOT_FOUND_ERROR(404, "Path Not Found!"),
+	/**
 	 * 重复请求
 	 */
 	REPEAT_ERROR(409, "Repeat error!"),
