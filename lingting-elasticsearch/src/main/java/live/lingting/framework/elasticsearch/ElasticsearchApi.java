@@ -14,6 +14,7 @@ import co.elastic.clients.elasticsearch.core.BulkRequest;
 import co.elastic.clients.elasticsearch.core.BulkResponse;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryResponse;
+import co.elastic.clients.elasticsearch.core.GetRequest;
 import co.elastic.clients.elasticsearch.core.ScrollRequest;
 import co.elastic.clients.elasticsearch.core.ScrollResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
@@ -142,6 +143,11 @@ public class ElasticsearchApi<T> {
 		Query.Builder qb = new Query.Builder();
 		qb.bool(bq -> bq.must(queries));
 		return qb.build();
+	}
+
+	public T get(String id) throws IOException {
+		GetRequest request = GetRequest.of(gr -> gr.index(index).id(id));
+		return client.get(request, cls).source();
 	}
 
 	public T getByQuery(Query... queries) throws IOException {
@@ -330,36 +336,46 @@ public class ElasticsearchApi<T> {
 	}
 
 	public void saveBatch(UnaryOperator<BulkRequest.Builder> operator, Collection<T> collection) throws IOException {
-		if (CollectionUtils.isEmpty(collection)) {
-			return;
-		}
-
-		List<BulkOperation> operations = new ArrayList<>();
-
-		for (T t : collection) {
+		batch(operator, collection, t -> {
 			String documentId = documentId(t);
 
 			BulkOperation.Builder ob = new BulkOperation.Builder();
 			ob.create(create -> create.id(documentId).document(t));
-			operations.add(ob.build());
+			return ob.build();
+		});
+	}
+
+	public <E> BulkResponse batch(Collection<E> collection, Function<E, BulkOperation> function) throws IOException {
+		return batch(builder -> builder, collection, function);
+	}
+
+	public <E> BulkResponse batch(UnaryOperator<BulkRequest.Builder> operator, Collection<E> collection,
+			Function<E, BulkOperation> function) throws IOException {
+		if (CollectionUtils.isEmpty(collection)) {
+			return BulkResponse.of(br -> br.errors(false).items(Collections.emptyList()).ingestTook(0L).took(0));
+		}
+
+		List<BulkOperation> operations = new ArrayList<>();
+
+		for (E e : collection) {
+			operations.add(function.apply(e));
 		}
 
 		BulkResponse response = bulk(builder -> operator.apply(builder.refresh(Refresh.WaitFor)), operations);
 		if (response.errors()) {
 			List<BulkResponseItem> collect = response.items().stream().filter(item -> item.error() != null).toList();
-			BulkResponseItem first = collect.get(0);
-
-			for (int i = 1; i < collect.size(); i++) {
+			boolean allError = collect.size() == collection.size();
+			for (int i = (allError ? 1 : 0); i < collect.size(); i++) {
 				ErrorCause error = collect.get(i).error();
 				log.warn("save error: {}", error);
 			}
 
 			// 全部保存失败, 抛异常
-			if (collect.size() == collection.size()) {
-				throw new IOException("bulk save error! " + first.error());
+			if (allError) {
+				throw new IOException("bulk save error! " + collect.get(0).error());
 			}
-			log.warn("save error: {}", first.error());
 		}
+		return response;
 	}
 
 	public boolean deleteByQuery(Query... queries) throws IOException {
@@ -422,9 +438,7 @@ public class ElasticsearchApi<T> {
 		Query query = merge(queries);
 		SearchRequest.Builder builder = operator.apply(new SearchRequest.Builder().scroll(scrollTime)
 			// 返回匹配的所有文档数量
-			.trackTotalHits(TrackHits.of(th -> th.enabled(true)))).index(index).query(query)
-
-		;
+			.trackTotalHits(TrackHits.of(th -> th.enabled(true)))).index(index).query(query);
 
 		if (params.getSize() != null) {
 			builder.size(params.getSize().intValue());
