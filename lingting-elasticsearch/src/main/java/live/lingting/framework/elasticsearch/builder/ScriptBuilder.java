@@ -26,6 +26,7 @@ public class ScriptBuilder<T> {
 
 	private String lang = "painless";
 
+
 	// region params
 	public <R> ScriptBuilder<T> put(ElasticsearchFunction<T, R> func, R value) {
 		String field = fieldName(func);
@@ -40,26 +41,51 @@ public class ScriptBuilder<T> {
 
 	// endregion
 
-	// region script
+	// region script basic
+	public static <T> ScriptBuilder<T> builder() {
+		return new ScriptBuilder<>();
+	}
+
+	public static String fillEnd(String source) {
+		if (!source.endsWith(";")) {
+			return "%s;".formatted(source);
+		}
+		return source;
+	}
+
 	public static String genSourceField(String field) {
-		return String.format("%s.%s", PREFIX_SOURCE, field);
+		return "%s.%s".formatted(PREFIX_SOURCE, field);
 	}
 
 	public static String genParamsField(String field) {
-		return String.format("%s.%s", PREFIX_PARAMS, field);
+		return "%s.%s".formatted(PREFIX_PARAMS, field);
+	}
+
+	public static String genSymbol(String field, String symbol) {
+		return genSymbol(field, symbol, genParamsField(field));
+	}
+
+	public static String genSymbol(String field, String symbol, String value) {
+		return "%s %s %s".formatted(genSourceField(field), symbol, value);
+	}
+
+	public static String genIf(String condition, String script) {
+		return "if(%s){%s}".formatted(condition, fillEnd(script));
 	}
 
 	public static String genSetNull(String field) {
-		return String.format("%s = null", genSourceField(field));
+		return genSymbol(field, "=", "null");
 	}
 
 	public static String genSetParams(String field) {
-		return String.format("%s = %s", genSourceField(field), genParamsField(field));
+		return genSymbol(field, "=", genParamsField(field));
 	}
 
 	public static String genSetIfAbsent(String field) {
-		return String.format("if(%s==null || %s==''){%s=%s;}", genSourceField(field), genSourceField(field),
-				genSourceField(field), genParamsField(field));
+		String sourceField = genSourceField(field);
+		String condition = "%s==null || %s==''".formatted(sourceField, sourceField);
+		String script = genSetParams(field);
+		return genIf(condition, script);
 	}
 
 	public ScriptBuilder<T> append(String script) {
@@ -70,10 +96,7 @@ public class ScriptBuilder<T> {
 		if (!sourceBuilder.isEmpty()) {
 			sourceBuilder.append("\n");
 		}
-		sourceBuilder.append(script);
-		if (!script.endsWith(";")) {
-			sourceBuilder.append(";");
-		}
+		sourceBuilder.append(fillEnd(script));
 		return this;
 	}
 
@@ -113,7 +136,28 @@ public class ScriptBuilder<T> {
 
 	// endregion
 
+	// region script number
+
+	public ScriptBuilder<T> increasing(String field) {
+		return increasing(field, 1);
+	}
+
+	public ScriptBuilder<T> increasing(String field, Number value) {
+		return append(genSymbol(field, "+="), field, value);
+	}
+
+	public ScriptBuilder<T> decrease(String field) {
+		return decrease(field, 1);
+	}
+
+	public ScriptBuilder<T> decrease(String field, Number value) {
+		return append(genSymbol(field, "-="), field, value);
+	}
+
+	// endregion
+
 	// region build
+
 	public InlineScript buildInline() {
 		return InlineScript.of(i -> i.source(sourceBuilder.toString()).lang(lang).params(params));
 	}
