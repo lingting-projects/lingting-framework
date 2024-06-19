@@ -5,6 +5,8 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import co.elastic.clients.json.JsonData;
 import co.elastic.clients.util.ObjectBuilder;
+import live.lingting.framework.elasticsearch.ElasticsearchFunction;
+import live.lingting.framework.elasticsearch.function.TermOperator;
 import live.lingting.framework.util.CollectionUtils;
 import lombok.experimental.UtilityClass;
 
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static live.lingting.framework.elasticsearch.ElasticsearchUtils.fieldName;
 import static live.lingting.framework.elasticsearch.ElasticsearchUtils.fieldValue;
 
 /**
@@ -23,6 +26,7 @@ import static live.lingting.framework.elasticsearch.ElasticsearchUtils.fieldValu
 @UtilityClass
 public class QueryComposer {
 
+	// region basic
 	public static <T> Query term(String field, T obj) {
 		return term(field, obj, builder -> builder);
 	}
@@ -134,5 +138,72 @@ public class QueryComposer {
 	public static Query not(List<Query> queries) {
 		return Query.of(q -> q.bool(b -> b.mustNot(queries)));
 	}
+	// endregion
+
+	// region lambda
+	public static <T> Query term(ElasticsearchFunction<?, T> func, T obj) {
+		return term(func, obj, builder -> builder);
+	}
+
+	public static <T> Query term(ElasticsearchFunction<?, T> func, T obj, TermOperator operator) {
+		String field = fieldName(func);
+		return QueryComposer.term(field, obj, operator);
+	}
+
+	public static <T> Query terms(ElasticsearchFunction<?, T> func, Collection<T> objects) {
+		String field = fieldName(func);
+		return QueryComposer.terms(field, objects);
+	}
+
+	/**
+	 * 小于
+	 */
+	public static <T> Query lt(ElasticsearchFunction<?, T> func, T obj) {
+		String field = fieldName(func);
+		return QueryComposer.lt(field, obj);
+	}
+
+	/**
+	 * 小于等于
+	 */
+	public static <T> Query le(ElasticsearchFunction<?, T> func, T obj) {
+		String field = fieldName(func);
+		return QueryComposer.le(field, obj);
+	}
+
+	/**
+	 * 大于
+	 */
+	public static <T> Query gt(ElasticsearchFunction<?, T> func, T obj) {
+		String field = fieldName(func);
+		return QueryComposer.gt(field, obj);
+	}
+
+	/**
+	 * 大于等于
+	 */
+	public static <T> Query ge(ElasticsearchFunction<?, T> func, T obj) {
+		String field = fieldName(func);
+		return QueryComposer.ge(field, obj);
+	}
+
+	/**
+	 * 大于等于 start 小于等于 end
+	 */
+	public static <T> Query between(ElasticsearchFunction<?, T> func, T start, T end) {
+		String field = fieldName(func);
+		return QueryComposer.between(field, start, end);
+	}
+
+	public static <T> Query wildcardAll(ElasticsearchFunction<?, T> func, T obj) {
+		return wildcard(func, obj);
+	}
+
+	public static <T> Query wildcard(ElasticsearchFunction<?, T> func, T obj) {
+		String field = fieldName(func);
+		return QueryComposer.wildcard(field, obj);
+	}
+
+	// endregion
 
 }

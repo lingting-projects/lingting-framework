@@ -26,7 +26,6 @@ public class ScriptBuilder<T> {
 
 	private String lang = "painless";
 
-
 	// region params
 	public <R> ScriptBuilder<T> put(ElasticsearchFunction<T, R> func, R value) {
 		String field = fieldName(func);
@@ -159,7 +158,7 @@ public class ScriptBuilder<T> {
 	// region build
 
 	public InlineScript buildInline() {
-		return InlineScript.of(i -> i.source(sourceBuilder.toString()).lang(lang).params(params));
+		return InlineScript.of(i -> i.source(sourceBuilder.toString()).lang(lang).params(new HashMap<>(params)));
 	}
 
 	public Script build() {

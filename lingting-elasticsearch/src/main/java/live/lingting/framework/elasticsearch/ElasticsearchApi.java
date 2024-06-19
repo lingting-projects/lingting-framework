@@ -36,6 +36,7 @@ import live.lingting.framework.api.PaginationResult;
 import live.lingting.framework.api.ScrollCursor;
 import live.lingting.framework.api.ScrollParams;
 import live.lingting.framework.api.ScrollResult;
+import live.lingting.framework.elasticsearch.builder.QueryBuilder;
 import live.lingting.framework.elasticsearch.composer.SortComposer;
 import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataPermissionHandler;
 import live.lingting.framework.function.ThrowingRunnable;
@@ -133,16 +134,14 @@ public class ElasticsearchApi<T> {
 	}
 
 	public Query merge(Query... arrays) {
-		List<Query> queries = new ArrayList<>();
-		Arrays.stream(arrays).filter(Objects::nonNull).forEach(queries::add);
+		QueryBuilder<T> builder = QueryBuilder.builder();
+		Arrays.stream(arrays).filter(Objects::nonNull).forEach(builder::addMust);
 
 		if (handler != null && !handler.ignorePermissionControl(index)) {
-			handler.filterDataScopes(index).forEach(scope -> queries.add(scope.invoke(index)));
+			handler.filterDataScopes(index).forEach(scope -> builder.addMust(scope.invoke(index)));
 		}
 
-		Query.Builder qb = new Query.Builder();
-		qb.bool(bq -> bq.must(queries));
-		return qb.build();
+		return builder.build();
 	}
 
 	public T get(String id) throws IOException {
