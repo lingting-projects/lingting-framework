@@ -10,17 +10,15 @@ import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.baomidou.mybatisplus.core.toolkit.ArrayUtils;
 import com.baomidou.mybatisplus.core.toolkit.Assert;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
-import live.lingting.framework.util.CollectionUtils;
-import live.lingting.framework.util.StringUtils;
 import net.sf.jsqlparser.expression.Expression;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
+
+import static live.lingting.framework.util.ValueUtils.isPresent;
 
 /**
  * 增加了一些简单条件的 IfPresent 条件 支持，Collection String Object 等等判断是否为空，或者是否为null
@@ -157,28 +155,6 @@ public class LambdaQueryWrapperX<T> extends AbstractLambdaWrapper<T, LambdaQuery
 
 	// ======= 分界线，以上 copy 自 mybatis-plus 源码 =====
 
-	/**
-	 * 当前条件只是否非null，且不为空
-	 * @param obj 值
-	 * @return boolean 不为空返回true
-	 */
-	protected boolean isPresent(Object obj) {
-		if (null == obj) {
-			return false;
-		}
-		else if (obj instanceof CharSequence charSequence) {
-			// 字符串比较特殊，如果是空字符串也不行
-			return StringUtils.hasText(charSequence);
-		}
-		else if (obj instanceof Collection<?> collection) {
-			return !CollectionUtils.isEmpty(collection);
-		}
-		if (obj.getClass().isArray()) {
-			return ArrayUtils.isNotEmpty((Object[]) obj);
-		}
-		return true;
-	}
-
 	public LambdaQueryWrapperX<T> eqIfPresent(SFunction<T, ?> column, Object val) {
 		return super.eq(isPresent(val), column, val);
 	}
@@ -236,34 +212,9 @@ public class LambdaQueryWrapperX<T> extends AbstractLambdaWrapper<T, LambdaQuery
 	}
 	// region customize
 
-	protected LambdaQueryWrapperX<T> appendSqlSegment(ISqlSegment segment) {
+	public LambdaQueryWrapperX<T> appendSqlSegment(ISqlSegment segment) {
 		this.appendSqlSegments(() -> "", segment);
 		return this;
-	}
-
-	public LambdaQueryWrapperX<T> jsonContains(SFunction<T, ?> column, Object... values) {
-		return jsonContains(column, Arrays.asList(values));
-	}
-
-	public LambdaQueryWrapperX<T> jsonContains(SFunction<T, ?> column, Collection<Object> values) {
-		this.appendSqlSegment(() -> {
-			String field = this.columnToString(column);
-			String keyword = "JSON_CONTAINS";
-			String content = values.stream()
-				.map(i -> this.formatParam(null, i))
-				.collect(Collectors.joining(",", "(", ")"));
-
-			return String.format("%s(%s,JSON_ARRAY%s)", keyword, field, content);
-		});
-		return this;
-	}
-
-	public LambdaQueryWrapperX<T> jsonContainsIfPresent(SFunction<T, ?> column, Object... values) {
-		return maybeDo(isPresent(values), () -> jsonContains(column, values));
-	}
-
-	public LambdaQueryWrapperX<T> jsonContainsIfPresent(SFunction<T, ?> column, Collection<Object> values) {
-		return maybeDo(isPresent(values), () -> jsonContains(column, values));
 	}
 
 	public LambdaQueryWrapperX<T> addSql(String sql) {

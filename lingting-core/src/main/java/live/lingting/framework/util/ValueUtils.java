@@ -66,7 +66,9 @@ public class ValueUtils {
 	}
 
 	/**
-	 * 判断对象是否存在值
+	 * 当前对象是否非null，且不为空
+	 * @param value 值
+	 * @return boolean 不为空返回true
 	 */
 	public static boolean isPresent(Object value) {
 		if (value == null) {
