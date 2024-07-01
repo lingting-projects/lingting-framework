@@ -136,7 +136,10 @@ public class ElasticsearchApi<T> {
 	public Query merge(Query... arrays) {
 		QueryBuilder<T> builder = QueryBuilder.builder();
 		Arrays.stream(arrays).filter(Objects::nonNull).forEach(builder::addMust);
+		return merge(builder);
+	}
 
+	public Query merge(QueryBuilder<T> builder) {
 		if (handler != null && !handler.ignorePermissionControl(index)) {
 			handler.filterDataScopes(index).forEach(scope -> builder.addMust(scope.invoke(index)));
 		}
@@ -150,10 +153,14 @@ public class ElasticsearchApi<T> {
 	}
 
 	public T getByQuery(Query... queries) throws IOException {
+		return getByQuery(QueryBuilder.builder(queries));
+	}
+
+	public T getByQuery(QueryBuilder<T> queries) throws IOException {
 		return getByQuery(builder -> builder, queries);
 	}
 
-	public T getByQuery(UnaryOperator<SearchRequest.Builder> operator, Query... queries) throws IOException {
+	public T getByQuery(UnaryOperator<SearchRequest.Builder> operator, QueryBuilder<T> queries) throws IOException {
 		return search(builder -> operator.apply(builder).size(1), queries).hits()
 			.stream()
 			.findFirst()
@@ -162,16 +169,25 @@ public class ElasticsearchApi<T> {
 	}
 
 	public long count(Query... queries) throws IOException {
+		return count(QueryBuilder.builder(queries));
+	}
+
+	public long count(QueryBuilder<T> queries) throws IOException {
 		HitsMetadata<T> metadata = search(builder -> builder.size(0), queries);
 		TotalHits hits = metadata.total();
 		return hits == null ? 0 : hits.value();
 	}
 
 	public HitsMetadata<T> search(Query... queries) throws IOException {
+		return search(QueryBuilder.builder(queries));
+	}
+
+	public HitsMetadata<T> search(QueryBuilder<T> queries) throws IOException {
 		return search(builder -> builder, queries);
 	}
 
-	public HitsMetadata<T> search(UnaryOperator<SearchRequest.Builder> operator, Query... queries) throws IOException {
+	public HitsMetadata<T> search(UnaryOperator<SearchRequest.Builder> operator, QueryBuilder<T> queries)
+			throws IOException {
 		Query query = merge(queries);
 
 		SearchRequest.Builder builder = operator.apply(new SearchRequest.Builder()
@@ -196,7 +212,7 @@ public class ElasticsearchApi<T> {
 		}).toList();
 	}
 
-	public PaginationResult<T> page(PaginationParams params, Query... queries) throws IOException {
+	public PaginationResult<T> page(PaginationParams params, QueryBuilder<T> queries) throws IOException {
 		List<SortOptions> sorts = ofLimitSort(params.getSorts());
 
 		int from = (int) params.start();
@@ -210,13 +226,13 @@ public class ElasticsearchApi<T> {
 		return new PaginationResult<>(total, list);
 	}
 
-	public void aggs(BiConsumer<String, Aggregate> consumer, Map<String, Aggregation> aggregationMap, Query... queries)
-			throws IOException {
+	public void aggs(BiConsumer<String, Aggregate> consumer, Map<String, Aggregation> aggregationMap,
+			QueryBuilder<T> queries) throws IOException {
 		aggs(builder -> builder, consumer, aggregationMap, queries);
 	}
 
 	public void aggs(UnaryOperator<SearchRequest.Builder> operator, BiConsumer<String, Aggregate> consumer,
-			Map<String, Aggregation> aggregationMap, Query... queries) throws IOException {
+			Map<String, Aggregation> aggregationMap, QueryBuilder<T> queries) throws IOException {
 		aggs(operator, response -> {
 			Map<String, Aggregate> aggregations = response.aggregations();
 			Set<Map.Entry<String, Aggregate>> entries = aggregations.entrySet();
@@ -229,8 +245,7 @@ public class ElasticsearchApi<T> {
 	}
 
 	public void aggs(UnaryOperator<SearchRequest.Builder> operator, Consumer<SearchResponse<T>> consumer,
-			Map<String, Aggregation> aggregationMap, Query... queries) throws IOException {
-
+			Map<String, Aggregation> aggregationMap, QueryBuilder<T> queries) throws IOException {
 		Query query = merge(queries);
 
 		SearchRequest.Builder builder = operator.apply(new SearchRequest.Builder()
@@ -287,17 +302,21 @@ public class ElasticsearchApi<T> {
 		return Result.Updated.equals(result);
 	}
 
-	public boolean updateByQuery(Function<Script.Builder, ObjectBuilder<Script>> scriptOperator, Query... queries)
-			throws IOException {
+	public boolean updateByQuery(Script script, Query... queries) throws IOException {
+		return updateByQuery(script, QueryBuilder.builder(queries));
+	}
+
+	public boolean updateByQuery(Function<Script.Builder, ObjectBuilder<Script>> scriptOperator,
+			QueryBuilder<T> queries) throws IOException {
 		return updateByQuery(scriptOperator.apply(new Script.Builder()).build(), queries);
 	}
 
-	public boolean updateByQuery(Script script, Query... queries) throws IOException {
+	public boolean updateByQuery(Script script, QueryBuilder<T> queries) throws IOException {
 		return updateByQuery(builder -> builder, script, queries);
 	}
 
-	public boolean updateByQuery(UnaryOperator<UpdateByQueryRequest.Builder> operator, Script script, Query... queries)
-			throws IOException {
+	public boolean updateByQuery(UnaryOperator<UpdateByQueryRequest.Builder> operator, Script script,
+			QueryBuilder<T> queries) throws IOException {
 		Query query = merge(queries);
 
 		UpdateByQueryRequest.Builder builder = operator.apply(new UpdateByQueryRequest.Builder()
@@ -378,10 +397,14 @@ public class ElasticsearchApi<T> {
 	}
 
 	public boolean deleteByQuery(Query... queries) throws IOException {
+		return deleteByQuery(QueryBuilder.builder(queries));
+	}
+
+	public boolean deleteByQuery(QueryBuilder<T> queries) throws IOException {
 		return deleteByQuery(builder -> builder, queries);
 	}
 
-	public boolean deleteByQuery(UnaryOperator<DeleteByQueryRequest.Builder> operator, Query... queries)
+	public boolean deleteByQuery(UnaryOperator<DeleteByQueryRequest.Builder> operator, QueryBuilder<T> queries)
 			throws IOException {
 		Query query = merge(queries);
 
@@ -395,10 +418,18 @@ public class ElasticsearchApi<T> {
 	}
 
 	public List<T> list(Query... queries) throws IOException {
+		return list(QueryBuilder.builder(queries));
+	}
+
+	public List<T> list(QueryBuilder<T> queries) throws IOException {
 		return list(builder -> builder, queries);
 	}
 
 	public List<T> list(UnaryOperator<SearchRequest.Builder> operator, Query... queries) throws IOException {
+		return list(operator, QueryBuilder.builder(queries));
+	}
+
+	public List<T> list(UnaryOperator<SearchRequest.Builder> operator, QueryBuilder<T> queries) throws IOException {
 		List<T> list = new ArrayList<>();
 
 		ScrollParams<String> params = new ScrollParams<>(scrollSize, null);
@@ -420,11 +451,15 @@ public class ElasticsearchApi<T> {
 	}
 
 	public ScrollResult<T, String> scroll(ScrollParams<String> params, Query... queries) throws IOException {
+		return scroll(params, QueryBuilder.builder(queries));
+	}
+
+	public ScrollResult<T, String> scroll(ScrollParams<String> params, QueryBuilder<T> queries) throws IOException {
 		return scroll(builder -> builder, params, queries);
 	}
 
 	public ScrollResult<T, String> scroll(UnaryOperator<SearchRequest.Builder> operator, ScrollParams<String> params,
-			Query... queries) throws IOException {
+			QueryBuilder<T> queries) throws IOException {
 		String scrollId = null;
 		if (params.getCursor() != null) {
 			scrollId = params.getCursor();
@@ -479,6 +514,10 @@ public class ElasticsearchApi<T> {
 	}
 
 	public LimitCursor<T> pageCursor(PaginationParams params, Query... queries) {
+		return pageCursor(params, QueryBuilder.builder(queries));
+	}
+
+	public LimitCursor<T> pageCursor(PaginationParams params, QueryBuilder<T> queries) {
 		return new LimitCursor<>(page -> {
 			params.setPage(page);
 			return page(params, queries);
@@ -486,6 +525,11 @@ public class ElasticsearchApi<T> {
 	}
 
 	public ScrollCursor<T, String> scrollCursor(ScrollParams<String> params, Query... queries) throws IOException {
+		return scrollCursor(params, QueryBuilder.builder(queries));
+	}
+
+	public ScrollCursor<T, String> scrollCursor(ScrollParams<String> params, QueryBuilder<T> queries)
+			throws IOException {
 		ScrollResult<T, String> scroll = scroll(params, queries);
 		return new ScrollCursor<>(scrollId -> {
 			params.setCursor(scrollId);

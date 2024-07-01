@@ -346,6 +346,18 @@ public class QueryBuilder<E> {
 		return new QueryBuilder<>();
 	}
 
+	public static <C> QueryBuilder<C> builder(Query... queries) {
+		return new QueryBuilder<C>().addMust(queries);
+	}
+
+	public QueryBuilder<E> copy() {
+		return new QueryBuilder<E>().merge(this);
+	}
+
+	public <T> QueryBuilder<T> to() {
+		return new QueryBuilder<T>().merge(this);
+	}
+
 	public Query build() {
 		BoolQuery.Builder builder = new BoolQuery.Builder();
 		if (!CollectionUtils.isEmpty(must)) {
