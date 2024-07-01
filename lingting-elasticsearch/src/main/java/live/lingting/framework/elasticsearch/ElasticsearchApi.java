@@ -69,21 +69,21 @@ import java.util.function.UnaryOperator;
 @Getter
 public class ElasticsearchApi<T> {
 
-	private final String index;
+	protected final String index;
 
-	private final Class<T> cls;
+	protected final Class<T> cls;
 
-	private final Function<T, String> idFunc;
+	protected final Function<T, String> idFunc;
 
-	private final ElasticsearchDataPermissionHandler handler;
+	protected final ElasticsearchDataPermissionHandler handler;
 
-	private final ElasticsearchClient client;
+	protected final ElasticsearchClient client;
 
-	private final ElasticsearchProperties.Retry retryProperties;
+	protected final ElasticsearchProperties.Retry retryProperties;
 
-	private final Long scrollSize;
+	protected final Long scrollSize;
 
-	private final Time scrollTime;
+	protected final Time scrollTime;
 
 	public ElasticsearchApi(Class<T> cls, Function<T, String> idFunc, ElasticsearchProperties properties,
 			ElasticsearchDataPermissionHandler handler, ElasticsearchClient client) {
