@@ -57,7 +57,7 @@ public class QueryComposer {
 	 */
 	public static <T> Query lt(String field, T obj) {
 		JsonData value = JsonData.of(obj);
-		return Query.of(qb -> qb.range(rq -> rq.field(field).lt(value)));
+		return Query.of(qb -> qb.range(rb -> rb.untyped(ub -> ub.field(field).lt(value))));
 	}
 
 	/**
@@ -65,7 +65,7 @@ public class QueryComposer {
 	 */
 	public static <T> Query le(String field, T obj) {
 		JsonData value = JsonData.of(obj);
-		return Query.of(qb -> qb.range(rq -> rq.field(field).lte(value)));
+		return Query.of(qb -> qb.range(rq -> rq.untyped(ub -> ub.field(field).lte(value))));
 	}
 
 	/**
@@ -73,7 +73,7 @@ public class QueryComposer {
 	 */
 	public static <T> Query gt(String field, T obj) {
 		JsonData value = JsonData.of(obj);
-		return Query.of(qb -> qb.range(rq -> rq.field(field).gt(value)));
+		return Query.of(qb -> qb.range(rq -> rq.untyped(ub -> ub.field(field).gt(value))));
 	}
 
 	/**
@@ -81,7 +81,7 @@ public class QueryComposer {
 	 */
 	public static <T> Query ge(String field, T obj) {
 		JsonData value = JsonData.of(obj);
-		return Query.of(qb -> qb.range(rq -> rq.field(field).gte(value)));
+		return Query.of(qb -> qb.range(rq -> rq.untyped(ub -> ub.field(field).gte(value))));
 	}
 
 	/**
@@ -90,11 +90,13 @@ public class QueryComposer {
 	public static <T> Query between(String field, T start, T end) {
 		JsonData startData = JsonData.of(start);
 		JsonData endData = JsonData.of(end);
-		return Query.of(q -> q.range(rb -> rb.field(field)
+		return Query.of(q -> q.range(rb -> rb.untyped(ub -> ub.field(field)
 			// 大于等于 start
 			.gte(startData)
 			// 小于等于 end
-			.lte(endData)));
+			.lte(endData)
+
+		)));
 	}
 
 	public static Query exists(String field) {

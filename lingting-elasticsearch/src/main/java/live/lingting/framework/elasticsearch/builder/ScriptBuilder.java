@@ -1,6 +1,5 @@
 package live.lingting.framework.elasticsearch.builder;
 
-import co.elastic.clients.elasticsearch._types.InlineScript;
 import co.elastic.clients.elasticsearch._types.Script;
 import co.elastic.clients.json.JsonData;
 import live.lingting.framework.elasticsearch.ElasticsearchFunction;
@@ -157,13 +156,9 @@ public class ScriptBuilder<T> {
 
 	// region build
 
-	public InlineScript buildInline() {
-		return InlineScript.of(i -> i.source(sourceBuilder.toString()).lang(lang).params(new HashMap<>(params)));
-	}
-
 	public Script build() {
-		InlineScript inline = buildInline();
-		return Script.of(s -> s.inline(inline));
+		String source = sourceBuilder.toString();
+		return Script.of(s -> s.lang(lang).source(source).params(new HashMap<>(params)));
 	}
 	// endregion
 
