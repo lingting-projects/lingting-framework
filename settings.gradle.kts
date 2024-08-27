@@ -1,8 +1,8 @@
 dependencyResolutionManagement {
-    val mybatisVersion = "3.5.15"
-    val mybatisPlusVersion = "3.5.5"
-    val jSqlParserVersion = "4.8"
-    val grpcVersion = "1.61.1"
+    val mybatisVersion = "3.5.16"
+    val mybatisPlusVersion = "3.5.7"
+    val jSqlParserVersion = "4.9"
+    val grpcVersion = "1.66.0"
     val grpcProtobufVersion = "0.9.4"
     // 和grpc中依赖的版本保持一致
     val grpcProtocVersion = "3.25.1"
@@ -13,10 +13,10 @@ dependencyResolutionManagement {
 
     versionCatalogs {
         create("libs") {
-            version("springBoot", "3.2.4")
+            version("springBoot", "3.3.3")
             version("formatter", "0.0.41")
-            version("mapstruct", "1.5.3.Final")
-            version("lombok", "1.18.30")
+            version("mapstruct", "1.5.5.Final")
+            version("lombok", "1.18.34")
             version("lombokMapstructBinding", "0.2.0")
             version("jSqlParser", jSqlParserVersion)
             version("polaris", polarisVersion)

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.cfg.CacheProvider;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 import com.fasterxml.jackson.databind.ser.SerializerFactory;
 import live.lingting.framework.jackson.serializer.NullArrayJsonSerializer;
@@ -51,12 +52,21 @@ public class NullSerializerProvider extends DefaultSerializerProvider {
 		super(src, config, f);
 	}
 
+	protected NullSerializerProvider(NullSerializerProvider provider, CacheProvider cacheProvider) {
+		super(provider, cacheProvider);
+	}
+
 	@Override
 	public DefaultSerializerProvider copy() {
 		if (getClass() != NullSerializerProvider.class) {
 			return super.copy();
 		}
 		return new NullSerializerProvider(this);
+	}
+
+	@Override
+	public DefaultSerializerProvider withCaches(CacheProvider cacheProvider) {
+		return new NullSerializerProvider(this, cacheProvider);
 	}
 
 	@Override
