@@ -4,10 +4,8 @@ import live.lingting.framework.exception.DownloadException;
 import live.lingting.framework.reflect.ClassField;
 import live.lingting.framework.util.ClassUtils;
 import live.lingting.framework.util.DigestUtils;
-import live.lingting.framework.util.FileUtils;
 import live.lingting.framework.util.RandomUtils;
 import live.lingting.framework.util.StreamUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -29,20 +27,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class HttpDownloadTest {
 
 	final URI url = URI.create(
-			"https://mirrors.huaweicloud.com/repository/maven/live/lingting/components/component-validation/0.0.1/component-validation-0.0.1.pom");
+			"https://maven.aliyun.com/repository/central/live/lingting/components/component-validation/0.0.1/component-validation-0.0.1.pom");
 
 	final String filename = "component-validation-0.0.1.pom";
 
 	final String md5 = "2ce519cf7373a533e1fd297edb9ad1c3";
-
-	File file = null;
-
-	@AfterEach
-	void after() {
-		if (file != null) {
-			FileUtils.delete(file);
-		}
-	}
 
 	@Test
 	void resolveFilename() throws InvocationTargetException, IllegalAccessException {
@@ -70,12 +59,15 @@ class HttpDownloadTest {
 		assertTrue(download.isSuccess());
 		assertTrue(download.isFinished());
 
-		file = download.getFile();
+		File file = download.getFile();
 		System.out.println(file.getAbsolutePath());
 		try (FileInputStream stream = new FileInputStream(file)) {
 			String string = StreamUtils.toString(stream);
 			String md5Hex = DigestUtils.md5Hex(string);
 			assertEquals(md5, md5Hex);
+		}
+		finally {
+			file.delete();
 		}
 	}
 
@@ -98,7 +90,7 @@ class HttpDownloadTest {
 		assertTrue(download.isSuccess());
 		assertTrue(download.isFinished());
 
-		file = download.getFile();
+		File file = download.getFile();
 		System.out.println(file.getAbsolutePath());
 		System.out.printf("%d-%d%n", await.getMaxShard(), await.getFinishedShard());
 		assertEquals(await.getMaxShard(), await.getFinishedShard());
@@ -106,6 +98,9 @@ class HttpDownloadTest {
 			String string = StreamUtils.toString(stream);
 			String md5Hex = DigestUtils.md5Hex(string);
 			assertEquals(md5, md5Hex);
+		}
+		finally {
+			file.delete();
 		}
 	}
 

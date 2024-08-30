@@ -37,7 +37,7 @@ public class MultiDownloadTask<D extends AbstractMultiDownload<D>> {
 			// 起始值
 			long start = next - maxShardSize;
 			// 结束值
-			long end = Math.min(start + maxShardSize, size);
+			long end = Math.min(start + maxShardSize, size) - 1;
 			tryDownload(start, end);
 			count++;
 		}
