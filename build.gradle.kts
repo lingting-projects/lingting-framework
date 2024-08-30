@@ -1,11 +1,9 @@
+import com.vanniktech.maven.publish.SonatypeHost
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
-import java.net.URI
 
 val projectGroup = "live.lingting.framework"
-val projectVersion = "2024.01.24-SNAPSHOT"
+val projectVersion = "2024.01.24-Bata-1"
 
-// 是否为测试版本
-val isSnapshot = projectVersion.endsWith("SNAPSHOT")
 // 用于子模块获取包管理信息
 val catalogLibs = libs
 // 用于声明依赖的项目
@@ -17,13 +15,11 @@ val javaVersion = JavaVersion.VERSION_17
 // 字符集
 val encoding = "UTF-8"
 val ideaLanguageLevel = IdeaLanguageLevel(javaVersion);
-// 仅打包jar, 不打包源文件jar和文档jar
-val onlyJar = isSnapshot
 
 plugins {
     id("idea")
     id("java")
-    id("maven-publish")
+    id("com.vanniktech.maven.publish") version "0.29.0"
     id("signing")
 }
 
@@ -50,7 +46,7 @@ allprojects {
 
     apply {
         plugin("idea")
-        plugin("maven-publish")
+        plugin("com.vanniktech.maven.publish")
         plugin("signing")
     }
 
@@ -76,86 +72,49 @@ allprojects {
         }
     }
 
-    publishing {
+    mavenPublishing {
+        val projectRepository = "lingting-projects/lingting-framework"
+        val projectUrl = "https://github.com/$projectRepository"
 
-        publications {
-            create<MavenPublication>("mavenJava") {
+        publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
+        signAllPublications()
 
-                if (isJava) {
-                    from(components["java"])
+        pom {
+            name = project.name
+            description = if (project.description.isNullOrBlank()) {
+                project.name
+            } else {
+                project.description
+            }
+            url = projectUrl
 
-                    if (!onlyJar) {
-                        java {
-                            withJavadocJar()
-                            withSourcesJar()
-                        }
-                    }
-                } else if (isDependency) {
-                    from(components["javaPlatform"])
+            licenses {
+                license {
+                    name = "MIT License"
+                    url = "https://www.opensource.org/licenses/mit-license.php"
+                    distribution = "repo"
                 }
+            }
 
-                pom {
-                    name = project.name
-                    description = project.description
-
-                    licenses {
-                        license {
-                            name = "MIT License"
-                            url = "https://www.opensource.org/licenses/mit-license.php"
-                            distribution = "repo"
-                        }
-                    }
-
-                    developers {
-                        developer {
-                            id = "lingting"
-                            name = id
-                            email = "sunlisten.gzm@gmail.com"
-                            url = "https://github.com/lingting"
-                        }
-                    }
-
-                    val repository = "lingting-projects/lingting-framework"
-                    scm {
-                        connection = "scm:git:git@github.com:$repository.git"
-                        developerConnection = "scm:git:git@github.com:$repository.git"
-                        url = "https://github.com/$repository"
-                        tag = "HEAD"
-                    }
+            developers {
+                developer {
+                    id = "lingting"
+                    name = id
+                    email = "sunlisten.gzm@gmail.com"
+                    url = "https://github.com/lingting"
                 }
+            }
 
+            scm {
+                connection = "scm:git:git@github.com:$projectRepository.git"
+                developerConnection = "scm:git:git@github.com:$projectRepository.git"
+                url = projectUrl
+                tag = "HEAD"
             }
         }
 
-        repositories {
-            maven() {
-                name = "center"
-                url = if (isSnapshot) {
-                    URI.create("https://oss.sonatype.org/content/repositories/snapshots/")
-                } else {
-                    URI.create("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-                }
-
-                credentials {
-                    /**
-                     * 推荐使用 user -> profile -> user token
-                     */
-                    username = "${findProperty("nexus.username")}"
-                    password = "${findProperty("nexus.password")}"
-                }
-            }
-        }
-
-        signing {
-            /**
-             * <h1> 需要在 GRADLE_HOME 目录下的 gradle.properties(没有则新建) 配置以下属性</h1>
-             *  <p> signing.keyId : kleopatra 查看整数密钥ID, 取后8位</p>
-             *  <p> signing.password : 证书的密码</p>
-             *  <p> signing.secretKeyRingFile : kleopatra 右键证书 -> Backup Secret Keys -> 保存文件 -> 修改文件后缀为 gpg -> 填写完整的文件地址(eg: C:/Users/lingting/.gradle/lingting.gpg)</p>
-             */
-            sign(publishing.publications["mavenJava"])
-        }
     }
+
 }
 
 configure(javaProjects) {

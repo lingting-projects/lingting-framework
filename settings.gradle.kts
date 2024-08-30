@@ -5,7 +5,7 @@ dependencyResolutionManagement {
     val grpcVersion = "1.66.0"
     val grpcProtobufVersion = "0.9.4"
     // 和grpc中依赖的版本保持一致
-    val grpcProtocVersion = "3.25.1"
+    val grpcProtocVersion = "3.25.3"
     val elasticVersion = "8.15.0"
     val commonsNetVersion = "3.11.1"
     val polarisVersion = "1.15.9"

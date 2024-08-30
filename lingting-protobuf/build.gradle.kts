@@ -5,7 +5,6 @@ plugins {
 dependencies {
     api("io.grpc:grpc-stub")
     api("io.grpc:grpc-protobuf")
-    api("com.google.protobuf:protobuf-java")
     api(libs.javaxAnnotation)
     compileOnly(enforcedPlatform(libs.grpcDependencies))
 }
