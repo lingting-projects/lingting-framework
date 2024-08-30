@@ -40,10 +40,10 @@ public class NtpFactory {
 
 	public static final NtpFactory INSTANCE = new NtpFactory();
 
-	private static final String[] HOSTS = { "time.windows.com", "time.nist.gov", "time.apple.com",
-			"time.asia.apple.com", "cn.ntp.org.cn", "ntp.ntsc.ac.cn", "cn.pool.ntp.org", "ntp.aliyun.com",
-			"ntp1.aliyun.com", "ntp2.aliyun.com", "ntp3.aliyun.com", "ntp4.aliyun.com", "ntp5.aliyun.com",
-			"ntp6.aliyun.com", "ntp7.aliyun.com", };
+	private static final String[] HOSTS = {"time.windows.com", "time.nist.gov", "time.apple.com",
+		"time.asia.apple.com", "cn.ntp.org.cn", "ntp.ntsc.ac.cn", "cn.pool.ntp.org", "ntp.aliyun.com",
+		"ntp1.aliyun.com", "ntp2.aliyun.com", "ntp3.aliyun.com", "ntp4.aliyun.com", "ntp5.aliyun.com",
+		"ntp6.aliyun.com", "ntp7.aliyun.com",};
 
 	private final Set<String> blockHosts = new HashSet<>();
 
@@ -94,13 +94,17 @@ public class NtpFactory {
 	}
 
 	public Ntp createByFuture(CycleValue<Long> cycle, String host)
-			throws UnknownHostException, ExecutionException, TimeoutException, InterruptedException {
+		throws UnknownHostException, ExecutionException, TimeoutException, InterruptedException {
 		String ip = IpUtils.resolve(host);
 
 		ThreadPoolExecutor executor = ThreadUtils.executor();
-		CompletableFuture<Ntp> future = CompletableFuture.supplyAsync(() -> new Ntp(host, diff(host)), executor);
+		CompletableFuture<Ntp> future = CompletableFuture.supplyAsync(() -> {
+			long diff = diff(host);
+			return new Ntp(host, diff);
+		}, executor);
 		try {
-			Ntp ntp = future.get(cycle.next(), TimeUnit.SECONDS);
+			Long next = cycle.next();
+			Ntp ntp = future.get(next, TimeUnit.SECONDS);
 			if (ntp != null) {
 				return ntp;
 			}
@@ -111,7 +115,8 @@ public class NtpFactory {
 
 		future = CompletableFuture.supplyAsync(() -> new Ntp(ip, diff(ip)), executor);
 		try {
-			return future.get(cycle.next(), TimeUnit.SECONDS);
+			Long next = cycle.next();
+			return future.get(next, TimeUnit.SECONDS);
 		}
 		finally {
 			future.cancel(true);
@@ -121,6 +126,7 @@ public class NtpFactory {
 	public long diff(String host) {
 		try (NTPUDPClient client = new NTPUDPClient()) {
 			client.setDefaultTimeout(Duration.ofSeconds(5));
+			client.open();
 			client.setSoTimeout(Duration.ofSeconds(3));
 			TimeInfo time = client.getTime(InetAddress.getByName(host));
 			long system = System.currentTimeMillis();
