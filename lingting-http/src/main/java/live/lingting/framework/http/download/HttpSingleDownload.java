@@ -1,7 +1,7 @@
 package live.lingting.framework.http.download;
 
 import live.lingting.framework.download.AbstractSingleDownload;
-import live.lingting.framework.http.HttpDelegateClient;
+import live.lingting.framework.http.HttpClient;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -12,7 +12,7 @@ import java.net.http.HttpRequest;
  */
 public class HttpSingleDownload extends AbstractSingleDownload<HttpSingleDownload> implements HttpDownload {
 
-	protected final HttpDelegateClient<?> client;
+	protected final HttpClient client;
 
 	protected HttpSingleDownload(HttpDownloadBuilder builder) {
 		super(builder);
@@ -26,7 +26,7 @@ public class HttpSingleDownload extends AbstractSingleDownload<HttpSingleDownloa
 	}
 
 	@Override
-	public HttpDelegateClient<?> client() {
+	public HttpClient client() {
 		return client;
 	}
 

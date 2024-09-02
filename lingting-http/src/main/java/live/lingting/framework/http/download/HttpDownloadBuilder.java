@@ -1,7 +1,7 @@
 package live.lingting.framework.http.download;
 
 import live.lingting.framework.download.AbstractDownloadBuilder;
-import live.lingting.framework.http.HttpDelegateClient;
+import live.lingting.framework.http.HttpClient;
 
 import java.net.URI;
 import java.time.Duration;
@@ -11,7 +11,7 @@ import java.time.Duration;
  */
 public class HttpDownloadBuilder extends AbstractDownloadBuilder<HttpDownloadBuilder> {
 
-	static final HttpDelegateClient<?> DEFAULT_CLIENT = HttpDelegateClient.okhttp()
+	static final HttpClient DEFAULT_CLIENT = HttpClient.okhttp()
 		.disableSsl()
 		.callTimeout(Duration.ofSeconds(10))
 		.connectTimeout(Duration.ofSeconds(10))
@@ -21,7 +21,7 @@ public class HttpDownloadBuilder extends AbstractDownloadBuilder<HttpDownloadBui
 	/**
 	 * 客户端配置
 	 */
-	HttpDelegateClient<?> client = DEFAULT_CLIENT;
+	HttpClient client = DEFAULT_CLIENT;
 
 	protected HttpDownloadBuilder(String url) {
 		this(URI.create(url));
@@ -31,7 +31,7 @@ public class HttpDownloadBuilder extends AbstractDownloadBuilder<HttpDownloadBui
 		super(url);
 	}
 
-	public HttpDownloadBuilder client(HttpDelegateClient<?> client) {
+	public HttpDownloadBuilder client(HttpClient client) {
 		this.client = client;
 		return this;
 	}

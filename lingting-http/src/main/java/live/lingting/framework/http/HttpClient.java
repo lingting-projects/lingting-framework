@@ -1,7 +1,5 @@
 package live.lingting.framework.http;
 
-import live.lingting.framework.http.java.JavaHttpDelegateClient;
-import live.lingting.framework.http.okhttp.OkHttpDelegateClient;
 import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.util.ThreadUtils;
 
@@ -22,26 +20,25 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
 /**
- * @author lingting 2024-05-07 13:35
+ * @author lingting 2024-09-02 15:28
  */
-@SuppressWarnings("unchecked")
-public abstract class HttpDelegateClient<D> {
-
-	public static OkHttpDelegateClient.Builder okhttp() {
-		return new OkHttpDelegateClient.Builder();
-	}
-
-	public static JavaHttpDelegateClient.Builder java() {
-		return new JavaHttpDelegateClient.Builder();
-	}
+public abstract class HttpClient {
 
 	protected CookieStore cookie;
 
-	public abstract D client();
+	public static JavaHttpClient.Builder java() {
+		return new JavaHttpClient.Builder();
+	}
+
+	public static OkHttpClient.Builder okhttp() {
+		return new OkHttpClient.Builder();
+	}
 
 	public CookieStore cookie() {
 		return cookie;
 	}
+
+	public abstract Object client();
 
 	public abstract <T> HttpResponse<T> request(HttpRequest request, HttpResponse.BodyHandler<T> handler)
 			throws IOException;
@@ -62,7 +59,7 @@ public abstract class HttpDelegateClient<D> {
 		return request(HttpRequest.newBuilder().GET().uri(uri).build(), handler);
 	}
 
-	public abstract static class Builder<D, C extends HttpDelegateClient<D>, B extends Builder<D, C, B>> {
+	public abstract static class Builder<C extends HttpClient, B extends HttpClient.Builder<C, B>> {
 
 		protected ExecutorService executor = ThreadUtils.executor();
 

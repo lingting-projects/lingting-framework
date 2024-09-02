@@ -1,7 +1,5 @@
-package live.lingting.framework.http.java;
+package live.lingting.framework.http;
 
-import live.lingting.framework.http.HttpDelegateClient;
-import live.lingting.framework.http.ResponseCallback;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
@@ -11,25 +9,23 @@ import java.io.IOException;
 import java.net.Authenticator;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.security.SecureRandom;
 import java.util.function.Supplier;
 
 /**
- * @author lingting 2024-05-07 13:52
+ * @author lingting 2024-09-02 15:33
  */
 @RequiredArgsConstructor
-public class JavaHttpDelegateClient extends HttpDelegateClient<HttpClient> {
+public class JavaHttpClient extends HttpClient {
 
-	private final HttpClient client;
+	protected final java.net.http.HttpClient client;
 
 	@Override
-	public HttpClient client() {
+	public java.net.http.HttpClient client() {
 		return client;
 	}
-
 
 	@SneakyThrows
 	@Override
@@ -54,7 +50,7 @@ public class JavaHttpDelegateClient extends HttpDelegateClient<HttpClient> {
 		});
 	}
 
-	public static class Builder extends HttpDelegateClient.Builder<HttpClient, JavaHttpDelegateClient, Builder> {
+	public static class Builder extends HttpClient.Builder<JavaHttpClient, JavaHttpClient.Builder> {
 
 		protected Authenticator authenticator;
 
@@ -69,13 +65,13 @@ public class JavaHttpDelegateClient extends HttpDelegateClient<HttpClient> {
 		}
 
 		@SneakyThrows
-		public JavaHttpDelegateClient build(Supplier<HttpClient.Builder> supplier) {
-			HttpClient.Builder builder = supplier.get();
+		public JavaHttpClient build(Supplier<java.net.http.HttpClient.Builder> supplier) {
+			java.net.http.HttpClient.Builder builder = supplier.get();
 
 			if (trustManager != null) {
 				SSLContext context = SSLContext.getInstance("TLS");
 				SecureRandom random = new SecureRandom();
-				context.init(null, new TrustManager[]{trustManager}, random);
+				context.init(null, new TrustManager[] { trustManager }, random);
 				builder.sslContext(context);
 			}
 
@@ -88,14 +84,13 @@ public class JavaHttpDelegateClient extends HttpDelegateClient<HttpClient> {
 				builder.cookieHandler(new CookieManager(cookie, CookiePolicy.ACCEPT_ALL));
 			}
 
-			HttpClient delegate = builder.build();
-			return new JavaHttpDelegateClient(delegate);
+			java.net.http.HttpClient delegate = builder.build();
+			return new JavaHttpClient(delegate);
 		}
 
-		@SneakyThrows
 		@Override
-		protected JavaHttpDelegateClient doBuild() {
-			return build(HttpClient::newBuilder);
+		protected JavaHttpClient doBuild() {
+			return build(java.net.http.HttpClient::newBuilder);
 		}
 
 	}

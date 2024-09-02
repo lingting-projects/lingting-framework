@@ -1,7 +1,7 @@
 package live.lingting.framework.http.download;
 
 import live.lingting.framework.download.AbstractMultiDownload;
-import live.lingting.framework.http.HttpDelegateClient;
+import live.lingting.framework.http.HttpClient;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,7 +19,7 @@ import java.net.http.HttpResponse;
 @Getter
 public class HttpMultiDownload extends AbstractMultiDownload<HttpMultiDownload> implements HttpDownload {
 
-	protected final HttpDelegateClient<?> client;
+	protected final HttpClient client;
 
 	protected HttpMultiDownload(HttpDownloadBuilder builder) {
 		super(builder);
@@ -44,7 +44,7 @@ public class HttpMultiDownload extends AbstractMultiDownload<HttpMultiDownload> 
 	}
 
 	@Override
-	public HttpDelegateClient<?> client() {
+	public HttpClient client() {
 		return client;
 	}
 

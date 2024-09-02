@@ -2,7 +2,7 @@ package live.lingting.framework.http.download;
 
 import live.lingting.framework.download.Download;
 import live.lingting.framework.exception.DownloadException;
-import live.lingting.framework.http.HttpDelegateClient;
+import live.lingting.framework.http.HttpClient;
 import live.lingting.framework.util.StreamUtils;
 
 import java.io.IOException;
@@ -44,7 +44,7 @@ public interface HttpDownload extends Download {
 		return new HttpDownloadBuilder(url).multi();
 	}
 
-	HttpDelegateClient<?> client();
+	HttpClient client();
 
 	@Override
 	HttpDownload start() throws IOException;
@@ -53,7 +53,7 @@ public interface HttpDownload extends Download {
 	HttpDownload await() throws InterruptedException;
 
 	default void write(HttpRequest request, OutputStream output) throws IOException {
-		HttpDelegateClient<?> client = client();
+		HttpClient client = client();
 		HttpResponse<InputStream> response = client.request(request, HttpResponse.BodyHandlers.ofInputStream());
 
 		int code = response.statusCode();

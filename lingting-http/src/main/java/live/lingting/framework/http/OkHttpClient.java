@@ -1,8 +1,11 @@
-package live.lingting.framework.http.okhttp;
+package live.lingting.framework.http;
 
 import live.lingting.framework.flow.FutureSubscriber;
-import live.lingting.framework.http.HttpDelegateClient;
-import live.lingting.framework.http.ResponseCallback;
+import live.lingting.framework.function.ThrowingFunction;
+import live.lingting.framework.http.okhttp.OkHttpCookie;
+import live.lingting.framework.http.okhttp.OkHttpResponse;
+import live.lingting.framework.http.okhttp.OkHttpResponseCallback;
+import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.util.StreamUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -10,13 +13,12 @@ import okhttp3.Authenticator;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Dispatcher;
+import okhttp3.HttpUrl;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,24 +34,24 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
 /**
- * @author lingting 2024-05-07 13:52
+ * @author lingting 2024-09-02 15:36
  */
 @RequiredArgsConstructor
-public class OkHttpDelegateClient extends HttpDelegateClient<OkHttpClient> {
+public class OkHttpClient extends HttpClient {
 
 	/**
 	 * 一次读取10M
 	 */
 	public static final int DEFAULT_SIZE = 1024 * 1024 * 10;
 
-	private final OkHttpClient client;
+	protected final okhttp3.OkHttpClient client;
 
 	@Override
-	public OkHttpClient client() {
+	public okhttp3.OkHttpClient client() {
 		return client;
 	}
 
-	protected Call convert(HttpRequest request) throws IOException {
+	public static Request convert(HttpRequest request) throws IOException {
 		Request.Builder builder = new Request.Builder();
 
 		// 请求头
@@ -89,11 +91,12 @@ public class OkHttpDelegateClient extends HttpDelegateClient<OkHttpClient> {
 			return subscriber.get();
 		}).orElse(null);
 		builder.method(request.method(), body);
-		return client.newCall(builder.build());
+		return builder.build();
 	}
 
 	@SneakyThrows
-	protected <T> HttpResponse<T> convert(HttpRequest request, Response response, HttpResponse.BodyHandler<T> handler) {
+	public static <T> HttpResponse<T> convert(HttpRequest request, Response response,
+			HttpResponse.BodyHandler<T> handler) {
 		HttpResponse.ResponseInfo info = new OkHttpResponse.ResponseInfo(response);
 
 		HttpResponse.BodySubscriber<T> subscriber = handler.apply(info);
@@ -132,38 +135,89 @@ public class OkHttpDelegateClient extends HttpDelegateClient<OkHttpClient> {
 
 	@Override
 	public <T> HttpResponse<T> request(HttpRequest request, HttpResponse.BodyHandler<T> handler) throws IOException {
-		Call call = convert(request);
+		Request okhttp = convert(request);
 
-		try (Response response = call.execute()) {
+		try (Response response = request(okhttp)) {
 			return convert(request, response, handler);
 		}
 	}
 
 	@Override
 	public <T> void request(HttpRequest request, HttpResponse.BodyHandler<T> handler, ResponseCallback<T> callback)
-		throws IOException {
-		Call call = convert(request);
-		Callback enqueue = new Callback() {
-			@Override
-			public void onFailure(@NotNull Call call, @NotNull IOException e) {
-				callback.onError(request, e);
-			}
-
-			@Override
-			public void onResponse(@NotNull Call call, @NotNull Response response) {
-				try {
-					HttpResponse<T> convert = convert(request, response, handler);
-					callback.onResponse(request, convert);
-				}
-				catch (Throwable e) {
-					callback.onError(request, e);
-				}
-			}
-		};
-		call.enqueue(enqueue);
+			throws IOException {
+		Request okhttp = convert(request);
+		OkHttpResponseCallback<T> enqueue = new OkHttpResponseCallback<>(request, handler, callback);
+		request(okhttp, enqueue);
 	}
 
-	public static class Builder extends HttpDelegateClient.Builder<OkHttpClient, OkHttpDelegateClient, Builder> {
+	// region 原始请求
+
+	public Response request(Request request) throws IOException {
+		Call call = client.newCall(request);
+		return call.execute();
+	}
+
+	public void request(Request request, Callback callback) {
+		Call call = client.newCall(request);
+		call.enqueue(callback);
+	}
+
+	@SneakyThrows
+	public <T> T request(Request request, ThrowingFunction<Response, T> function) throws IOException {
+		try (Response response = request(request)) {
+			return function.apply(response);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T request(Request request, Class<T> cls) throws IOException {
+		return request(request, response -> {
+			ResponseBody responseBody = response.body();
+			if (responseBody == null) {
+				return null;
+			}
+
+			String string = responseBody.string();
+			if (cls.isAssignableFrom(String.class)) {
+				return (T) string;
+			}
+			return JacksonUtils.toObj(string, cls);
+		});
+	}
+
+	public Response get(String url) throws IOException {
+		Request.Builder builder = new Request.Builder().url(url).get();
+		return request(builder.build());
+	}
+
+	public <T> T get(String url, Class<T> cls) throws IOException {
+		Request.Builder builder = new Request.Builder().url(url).get();
+		return request(builder.build(), cls);
+	}
+
+	public Response get(HttpUrl url) throws IOException {
+		Request.Builder builder = new Request.Builder().url(url).get();
+		return request(builder.build());
+	}
+
+	public <T> T get(HttpUrl url, Class<T> cls) throws IOException {
+		Request.Builder builder = new Request.Builder().url(url).get();
+		return request(builder.build(), cls);
+	}
+
+	public Response post(String url, RequestBody body) throws IOException {
+		Request.Builder builder = new Request.Builder().url(url).post(body);
+		return request(builder.build());
+	}
+
+	public <T> T post(String url, RequestBody requestBody, Class<T> cls) throws IOException {
+		Request.Builder builder = new Request.Builder().url(url).post(requestBody);
+		return request(builder.build(), cls);
+	}
+
+	// endregion
+
+	public static class Builder extends HttpClient.Builder<OkHttpClient, OkHttpClient.Builder> {
 
 		protected Authenticator authenticator;
 
@@ -179,8 +233,8 @@ public class OkHttpDelegateClient extends HttpDelegateClient<OkHttpClient> {
 			return this;
 		}
 
-		public OkHttpDelegateClient build(Supplier<OkHttpClient.Builder> supplier) {
-			OkHttpClient.Builder builder = supplier.get();
+		public OkHttpClient build(Supplier<okhttp3.OkHttpClient.Builder> supplier) {
+			okhttp3.OkHttpClient.Builder builder = supplier.get();
 			nonNull(socketFactory, builder::socketFactory);
 			nonNull(hostnameVerifier, builder::hostnameVerifier);
 
@@ -205,13 +259,13 @@ public class OkHttpDelegateClient extends HttpDelegateClient<OkHttpClient> {
 
 			nonNull(dispatcher, builder::dispatcher);
 
-			OkHttpClient delegate = builder.build();
-			return new OkHttpDelegateClient(delegate);
+			okhttp3.OkHttpClient client = builder.build();
+			return new OkHttpClient(client);
 		}
 
 		@Override
-		protected OkHttpDelegateClient doBuild() {
-			return build(OkHttpClient.Builder::new);
+		protected OkHttpClient doBuild() {
+			return build(okhttp3.OkHttpClient.Builder::new);
 		}
 
 	}

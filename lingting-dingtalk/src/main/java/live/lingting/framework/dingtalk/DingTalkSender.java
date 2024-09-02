@@ -1,7 +1,7 @@
 package live.lingting.framework.dingtalk;
 
 import live.lingting.framework.dingtalk.message.DingTalkMessage;
-import live.lingting.framework.http.HttpDelegateClient;
+import live.lingting.framework.http.HttpClient;
 import live.lingting.framework.util.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,7 +29,7 @@ public class DingTalkSender {
 
 	public static final MediaType MEDIA = MediaType.parse("application/json");
 
-	protected static final HttpDelegateClient<?> CLIENT = HttpDelegateClient.okhttp()
+	protected static final HttpClient CLIENT = HttpClient.okhttp()
 		.timeout(Duration.ofSeconds(10), Duration.ofSeconds(10))
 		.build();
 
