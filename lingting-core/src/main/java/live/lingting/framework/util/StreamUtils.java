@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 
 import static live.lingting.framework.util.ByteUtils.isLine;
@@ -125,10 +126,15 @@ public class StreamUtils {
 
 	public static CloneInputStream clone(InputStream input, int size) throws IOException {
 		File file = FileUtils.createTemp(".clone");
+		AtomicLong atomic = new AtomicLong();
 		try (FileOutputStream output = new FileOutputStream(file)) {
 			write(input, output, size);
+			read(input, size, bytes -> {
+				atomic.addAndGet(bytes.length);
+				output.write(bytes);
+			});
 		}
-		return new CloneInputStream(file);
+		return new CloneInputStream(file, atomic.get());
 	}
 
 	/**

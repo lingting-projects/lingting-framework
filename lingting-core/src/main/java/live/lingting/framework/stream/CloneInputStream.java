@@ -19,12 +19,18 @@ import java.io.InputStream;
  */
 public class CloneInputStream extends InputStream {
 
-	private final File file;
+	protected final File file;
 
-	private final FileInputStream stream;
+	/**
+	 * 字节数
+	 */
+	protected final long size;
 
-	public CloneInputStream(File file) throws FileNotFoundException {
+	protected final FileInputStream stream;
+
+	public CloneInputStream(File file, long size) throws IOException {
 		this.file = file;
+		this.size = size;
 		this.stream = new FileInputStream(file);
 	}
 
@@ -71,6 +77,10 @@ public class CloneInputStream extends InputStream {
 	@Override
 	public int read() throws IOException {
 		return stream.read();
+	}
+
+	public long size() {
+		return size;
 	}
 
 	public FileInputStream copy() throws FileNotFoundException {
