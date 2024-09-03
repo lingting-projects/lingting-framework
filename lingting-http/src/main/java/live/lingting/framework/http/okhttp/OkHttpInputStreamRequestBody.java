@@ -48,7 +48,7 @@ public class OkHttpInputStreamRequestBody extends RequestBody {
 
 	@Override
 	public void writeTo(@NotNull BufferedSink bufferedSink) throws IOException {
-		StreamUtils.read(input, readSize, bufferedSink::write);
+		StreamUtils.read(input, readSize, (buffer, len) -> bufferedSink.write(buffer, 0, len));
 	}
 
 }

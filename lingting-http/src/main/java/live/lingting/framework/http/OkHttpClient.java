@@ -27,6 +27,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -38,11 +39,6 @@ import java.util.function.Supplier;
  */
 @RequiredArgsConstructor
 public class OkHttpClient extends HttpClient {
-
-	/**
-	 * 一次读取10M
-	 */
-	public static final int DEFAULT_SIZE = 1024 * 1024 * 10;
 
 	protected final okhttp3.OkHttpClient client;
 
@@ -76,11 +72,11 @@ public class OkHttpClient extends HttpClient {
 					int size = list.stream().mapToInt(ByteBuffer::remaining).sum();
 					byte[] bytes = new byte[size];
 
-					int len = 0;
+					int offset = 0;
 					for (ByteBuffer buffer : list) {
 						int remaining = buffer.remaining();
-						buffer.get(bytes, len, remaining);
-						len += remaining;
+						buffer.get(bytes, offset, remaining);
+						offset += remaining;
 					}
 
 					return RequestBody.create(bytes, type);
@@ -108,8 +104,11 @@ public class OkHttpClient extends HttpClient {
 			if (body != null) {
 				List<ByteBuffer> buffers = new ArrayList<>();
 				InputStream stream = body.byteStream();
-				StreamUtils.read(stream, DEFAULT_SIZE, bytes -> {
-					ByteBuffer buffer = ByteBuffer.wrap(bytes);
+				StreamUtils.read(stream, (bytes, length) -> {
+					// 减少复制 - 也不知道划不划得来
+					byte[] copy = bytes.length == length ? bytes : Arrays.copyOf(bytes, length);
+					// 如果使用 ByteBuffer.wrap(bytes, 0, length) 返回值会有问题
+					ByteBuffer buffer = ByteBuffer.wrap(copy);
 					buffers.add(buffer);
 				});
 				subscriber.onNext(buffers);
