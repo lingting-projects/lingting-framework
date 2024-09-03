@@ -2,6 +2,8 @@ package live.lingting.framework.util;
 
 import live.lingting.framework.function.ThrowingConsumerE;
 import live.lingting.framework.stream.CloneInputStream;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.UtilityClass;
 
 import java.io.ByteArrayOutputStream;
@@ -29,7 +31,9 @@ import static live.lingting.framework.util.ByteUtils.trimEndLine;
 @UtilityClass
 public class StreamUtils {
 
-	public static final int DEFAULT_SIZE = 1024 * 1024;
+	@Getter
+	@Setter
+	static int readSize = 1024 * 1024 * 10;
 
 	public static byte[] read(InputStream in) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -44,13 +48,14 @@ public class StreamUtils {
 
 	/**
 	 * 读取流
-	 * @param in 流
-	 * @param size 缓冲区大小
+	 *
+	 * @param in       流
+	 * @param size     缓冲区大小
 	 * @param consumer 消费读取到的数据, byte[] 数据
-	 * @exception IOException 读取异常
+	 * @throws IOException 读取异常
 	 */
 	public static void read(InputStream in, int size, ThrowingConsumerE<byte[], IOException> consumer)
-			throws IOException {
+		throws IOException {
 		byte[] bytes = new byte[size];
 		int len;
 
@@ -67,7 +72,7 @@ public class StreamUtils {
 	}
 
 	public static void write(InputStream in, OutputStream out) throws IOException {
-		write(in, out, DEFAULT_SIZE);
+		write(in, out, readSize);
 	}
 
 	public static void write(InputStream in, OutputStream out, int size) throws IOException {
@@ -75,7 +80,7 @@ public class StreamUtils {
 	}
 
 	public static String toString(InputStream in) throws IOException {
-		return toString(in, DEFAULT_SIZE, StandardCharsets.UTF_8);
+		return toString(in, readSize, StandardCharsets.UTF_8);
 	}
 
 	public static String toString(InputStream in, int size, Charset charset) throws IOException {
@@ -87,6 +92,7 @@ public class StreamUtils {
 
 	/**
 	 * 从流中读取 int
+	 *
 	 * @author lingting 2021-07-22 14:54
 	 */
 	public static int readInt(InputStream is, int noOfBytes, boolean bigEndian) throws IOException {
@@ -116,12 +122,13 @@ public class StreamUtils {
 	 * <p color="red">
 	 * 注意: 在使用后及时关闭复制流
 	 * </p>
+	 *
 	 * @param stream 源流
 	 * @return 返回指定数量的从源流复制出来的只读流
 	 * @author lingting 2021-04-16 16:18
 	 */
 	public static CloneInputStream clone(InputStream stream) throws IOException {
-		return clone(stream, DEFAULT_SIZE);
+		return clone(stream, readSize);
 	}
 
 	public static CloneInputStream clone(InputStream input, int size) throws IOException {
@@ -142,14 +149,15 @@ public class StreamUtils {
 	 * <p>
 	 * 不会自动关闭流
 	 * </p>
-	 * @param in 流
-	 * @param charset 字符集
+	 *
+	 * @param in       流
+	 * @param charset  字符集
 	 * @param consumer 行数据消费, int: 行索引
 	 * @throws IOException 异常
 	 */
 	public static void readLine(InputStream in, Charset charset, BiConsumer<Integer, String> consumer)
-			throws IOException {
-		readLine(in, charset, DEFAULT_SIZE, consumer);
+		throws IOException {
+		readLine(in, charset, readSize, consumer);
 	}
 
 	/**
@@ -157,13 +165,14 @@ public class StreamUtils {
 	 * <p>
 	 * 不会自动关闭流
 	 * </p>
-	 * @param in 流
-	 * @param charset 字符集
+	 *
+	 * @param in       流
+	 * @param charset  字符集
 	 * @param consumer 行数据消费, int: 行索引
 	 * @throws IOException 异常
 	 */
 	public static void readLine(InputStream in, Charset charset, int size, BiConsumer<Integer, String> consumer)
-			throws IOException {
+		throws IOException {
 		readLine(in, size, (index, bytes) -> {
 			String string = new String(bytes, charset);
 			String clean = StringUtils.cleanBom(string);
@@ -176,12 +185,13 @@ public class StreamUtils {
 	 * <p>
 	 * 不会自动关闭流
 	 * </p>
-	 * @param in 流
+	 *
+	 * @param in       流
 	 * @param consumer 行数据消费, int: 行索引
 	 * @throws IOException 异常
 	 */
 	public static void readLine(InputStream in, BiConsumer<Integer, byte[]> consumer) throws IOException {
-		readLine(in, DEFAULT_SIZE, consumer);
+		readLine(in, readSize, consumer);
 	}
 
 	/**
@@ -189,8 +199,9 @@ public class StreamUtils {
 	 * <p>
 	 * 不会自动关闭流
 	 * </p>
-	 * @param in 流
-	 * @param size 一次读取数据大小
+	 *
+	 * @param in       流
+	 * @param size     一次读取数据大小
 	 * @param consumer 行数据消费, int: 行索引
 	 * @throws IOException 异常
 	 */

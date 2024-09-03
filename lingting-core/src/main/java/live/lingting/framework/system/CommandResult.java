@@ -55,7 +55,7 @@ public class CommandResult {
 	public String stdOutStr() throws IOException {
 		if (!StringUtils.hasText(strOutput)) {
 			try (FileInputStream output = new FileInputStream(stdOut)) {
-				strOutput = StreamUtils.toString(output, StreamUtils.DEFAULT_SIZE, charset);
+				strOutput = StreamUtils.toString(output, StreamUtils.getReadSize(), charset);
 			}
 		}
 		return strOutput;
@@ -64,7 +64,7 @@ public class CommandResult {
 	public String stdErrStr() throws IOException {
 		if (!StringUtils.hasText(strError)) {
 			try (FileInputStream error = new FileInputStream(stdErr)) {
-				strError = StreamUtils.toString(error, StreamUtils.DEFAULT_SIZE, charset);
+				strError = StreamUtils.toString(error, StreamUtils.getReadSize(), charset);
 			}
 		}
 		return strError;

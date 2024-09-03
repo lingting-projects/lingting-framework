@@ -24,7 +24,7 @@ public class OkHttpInputStreamRequestBody extends RequestBody {
 
 	@Getter
 	@Setter
-	static int readSize = StreamUtils.DEFAULT_SIZE;
+	static int readSize = StreamUtils.getReadSize();
 
 	protected final InputStream input;
 
