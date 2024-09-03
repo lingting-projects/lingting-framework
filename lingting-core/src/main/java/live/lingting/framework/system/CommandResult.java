@@ -1,96 +1,67 @@
 package live.lingting.framework.system;
 
 import live.lingting.framework.util.StreamUtils;
-import live.lingting.framework.util.StringUtils;
 import lombok.Getter;
+import lombok.SneakyThrows;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.time.LocalDateTime;
+import java.time.Duration;
 
 /**
  * @author lingting 2022/6/25 12:01
  */
+@Getter
 public class CommandResult {
 
-	protected File stdOut;
+	protected final Command command;
 
-	protected File stdErr;
+	protected final int exitCode;
 
-	@Getter
-	protected LocalDateTime startTime;
+	protected final long end;
 
-	@Getter
-	protected LocalDateTime endTime;
+	protected final Duration duration;
 
-	protected String strOutput = null;
+	protected String stdOut;
 
-	protected String strError = null;
+	protected String stdErr;
 
-	private Charset charset;
-
-	public static CommandResult of(File stdOut, File stdErr, LocalDateTime startTime, LocalDateTime endTime,
-			Charset charset) {
-		CommandResult result = new CommandResult();
-		result.stdOut = stdOut;
-		result.stdErr = stdErr;
-		result.charset = charset;
-		result.startTime = startTime;
-		result.endTime = endTime;
-		return result;
+	public CommandResult(Command command, int exitCode) {
+		this.command = command;
+		this.exitCode = exitCode;
+		this.end = System.currentTimeMillis();
+		this.duration = Duration.ofMillis(end - command.startTime);
 	}
 
-	public File stdOut() {
+	@SneakyThrows
+	public synchronized String getStdOut() {
+		if (stdOut == null) {
+			InputStream stream = stdOut();
+			stdOut = new String(StreamUtils.read(stream), command.charset);
+		}
 		return stdOut;
 	}
 
-	public File stdErr() {
+	@SneakyThrows
+	public synchronized String getStdErr() {
+		if (stdErr == null) {
+			InputStream stream = stdErr();
+			stdErr = new String(StreamUtils.read(stream), command.charset);
+		}
 		return stdErr;
 	}
 
-	public String stdOutStr() throws IOException {
-		if (!StringUtils.hasText(strOutput)) {
-			try (FileInputStream output = new FileInputStream(stdOut)) {
-				strOutput = StreamUtils.toString(output, StreamUtils.getReadSize(), charset);
-			}
-		}
-		return strOutput;
+	public InputStream stdOut() throws IOException {
+		return Files.newInputStream(command.stdOut.toPath());
 	}
 
-	public String stdErrStr() throws IOException {
-		if (!StringUtils.hasText(strError)) {
-			try (FileInputStream error = new FileInputStream(stdErr)) {
-				strError = StreamUtils.toString(error, StreamUtils.getReadSize(), charset);
-			}
-		}
-		return strError;
-	}
-
-	public InputStream stdOutStream() throws IOException {
-		return Files.newInputStream(stdOut.toPath());
-	}
-
-	public InputStream stdErrStream() throws IOException {
-		return Files.newInputStream(stdErr.toPath());
+	public InputStream stdErr() throws IOException {
+		return Files.newInputStream(command.stdErr.toPath());
 	}
 
 	public void clean() {
-		try {
-			Files.delete(stdOut.toPath());
-		}
-		catch (Exception e) {
-			//
-		}
-		try {
-			Files.delete(stdErr.toPath());
-		}
-		catch (Exception e) {
-			//
-		}
+		command.clean();
 	}
 
 }

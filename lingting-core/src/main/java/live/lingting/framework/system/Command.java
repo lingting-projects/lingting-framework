@@ -8,7 +8,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -16,32 +18,35 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author lingting 2022/6/25 11:55
  */
+@SuppressWarnings("java:S1845")
 public class Command {
 
-	public static final String NEXT_LINE = SystemUtils.lineSeparator();
+	public static final String ENTER = SystemUtils.lineSeparator();
 
-	public static final String EXIT_COMMAND = "exit";
+	public static final String EXIT = "exit";
 
-	private final Process process;
+	protected final Process process;
 
-	private final OutputStream stdIn;
+	protected final OutputStream stdIn;
 
 	/**
 	 * 标准输出
 	 */
-	private final File stdOut;
+	protected final File stdOut;
 
-	private final File stdErr;
+	protected final File stdErr;
 
-	private final String nextLine;
+	protected final String enter;
 
-	private final String exit;
+	protected final String exit;
 
-	private final Charset charset;
+	protected final Charset charset;
 
-	private final LocalDateTime startTime;
+	protected final Long startTime;
 
-	private Command(String init, String nextLine, String exit, Charset charset) throws IOException {
+	protected final List<String> history = new ArrayList<>();
+
+	protected Command(String init, String enter, String exit, Charset charset) throws IOException {
 		if (!StringUtils.hasText(init)) {
 			throw new IllegalArgumentException("Empty init");
 		}
@@ -58,10 +63,10 @@ public class Command {
 		ProcessBuilder builder = new ProcessBuilder(cmdArray).redirectError(stdErr).redirectOutput(stdOut);
 		this.process = builder.start();
 		this.stdIn = process.getOutputStream();
-		this.nextLine = nextLine;
+		this.enter = enter;
 		this.exit = exit;
 		this.charset = charset;
-		this.startTime = LocalDateTime.now();
+		this.startTime = System.currentTimeMillis();
 	}
 
 	/**
@@ -77,24 +82,30 @@ public class Command {
 	 * 推荐使用此实例
 	 */
 	public static Command of(String init, Charset charset) throws IOException {
-		return of(init, NEXT_LINE, EXIT_COMMAND, charset);
+		return of(init, ENTER, EXIT, charset);
 	}
 
-	public static Command of(String init, String nextLine, String exit, Charset charset) throws IOException {
-		return new Command(init, nextLine, exit, charset);
+	public static Command of(String init, String enter, String exit, Charset charset) throws IOException {
+		return new Command(init, enter, exit, charset);
+	}
+
+	public List<String> history() {
+		return Collections.unmodifiableList(history);
 	}
 
 	public Command write(String str) throws IOException {
-		stdIn.write(str.getBytes(charset));
+		byte[] bytes = str.getBytes(charset);
+		stdIn.write(bytes);
 		stdIn.flush();
+		history.add(str);
 		return this;
 	}
 
 	/**
 	 * 换到下一行
 	 */
-	public Command line() throws IOException {
-		return write(nextLine);
+	public Command enter() throws IOException {
+		return write(enter);
 	}
 
 	/**
@@ -102,7 +113,7 @@ public class Command {
 	 */
 	public Command exit() throws IOException {
 		write(exit);
-		return line();
+		return enter();
 	}
 
 	/**
@@ -111,7 +122,7 @@ public class Command {
 	 */
 	public Command exec(String str) throws IOException {
 		write(str);
-		return line();
+		return enter();
 	}
 
 	/**
@@ -127,9 +138,9 @@ public class Command {
 	 * 需要: eg: exit().exit().exit()
 	 * </p>
 	 */
-	public CommandResult result() throws InterruptedException {
-		process.waitFor();
-		return CommandResult.of(stdOut, stdErr, startTime, LocalDateTime.now(), charset);
+	public CommandResult waitFor() throws InterruptedException {
+		int i = process.waitFor();
+		return new CommandResult(this, i);
 	}
 
 	/**
@@ -145,17 +156,26 @@ public class Command {
 	 * @param millis 等待时间, 单位: 毫秒
 	 * @return live.lingting.tools.system.CommandResult
 	 */
-	public CommandResult result(long millis) throws InterruptedException, TimeoutException {
-		if (process.waitFor(millis, TimeUnit.MILLISECONDS)) {
-			return result();
+	public CommandResult waitFor(long millis) throws InterruptedException, TimeoutException {
+		// 超时
+		if (!process.waitFor(millis, TimeUnit.MILLISECONDS)) {
+			throw new TimeoutException();
 		}
-		// 超时. 强行杀死子线程
-		process.destroyForcibly();
-		throw new TimeoutException();
+		int i = process.exitValue();
+		return new CommandResult(this, i);
 	}
 
-	public void close() {
+	public void destroy() {
 		process.destroy();
+	}
+
+	public void destroyForcibly() {
+		process.destroyForcibly();
+	}
+
+	public void clean() {
+		FileUtils.delete(stdOut);
+		FileUtils.delete(stdErr);
 	}
 
 }
