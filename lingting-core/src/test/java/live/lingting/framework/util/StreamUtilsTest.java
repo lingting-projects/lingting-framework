@@ -4,9 +4,9 @@ import live.lingting.framework.stream.CloneInputStream;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,7 +22,7 @@ class StreamUtilsTest {
 
 	final String line3 = "这是一行文本\n这是第二行文本\r\neng";
 
-	InputStream of(String string) {
+	ByteArrayInputStream of(String string) {
 		return new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8));
 	}
 
@@ -66,6 +66,16 @@ class StreamUtilsTest {
 		assertEquals(line3, StreamUtils.toString(clone));
 		FileInputStream copy = clone.copy();
 		assertEquals(line3, StreamUtils.toString(copy));
+	}
+
+	@Test
+	void testWriteLength() throws IOException {
+		ByteArrayInputStream source = of(line3);
+		source.reset();
+		long length = source.available() / 2;
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		StreamUtils.write(source, out, length);
+		assertEquals(length, out.size());
 	}
 
 }
