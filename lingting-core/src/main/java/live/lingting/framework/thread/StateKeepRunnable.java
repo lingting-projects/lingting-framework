@@ -58,7 +58,7 @@ public abstract class StateKeepRunnable extends KeepRunnable {
 	/**
 	 * 结束
 	 */
-	public void stop() {
+	public void interrupt() {
 		if (thread != null && !isFinish() && !thread.isInterrupted()) {
 			thread.interrupt();
 		}

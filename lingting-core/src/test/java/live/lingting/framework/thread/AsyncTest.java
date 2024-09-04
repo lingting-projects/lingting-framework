@@ -1,10 +1,10 @@
 package live.lingting.framework.thread;
 
 import live.lingting.framework.time.StopWatch;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.LockSupport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,29 +13,57 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author lingting 2024-01-26 17:07
  */
+@Slf4j
 class AsyncTest {
 
 	@Test
-	void test() throws InterruptedException {
+	void test() {
+		int max = 10;
+
 		StopWatch watch = new StopWatch();
 		watch.start();
 
-		AtomicLong atomic = new AtomicLong(0);
 		Async async = new Async();
-
-		for (int i = 0; i < 10; i++) {
-			async.submit("Async-" + i, () -> {
-				atomic.incrementAndGet();
-				LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(500));
-			});
+		for (int i = 0; i < max; i++) {
+			async.submit("Async-" + i, () -> LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(500)));
 		}
-
 		async.await();
 		watch.stop();
 
 		assertTrue(watch.timeMillis() > 500);
-		assertEquals(0, async.count());
-		assertEquals(10, atomic.get());
+		assertEquals(0, async.notCompletedCount());
+		assertEquals(max, async.allCount());
+	}
+
+	@Test
+	void testLimit() {
+		long limit = 5;
+		int max = 10;
+		Async async = new Async(limit);
+		for (int i = 0; i < max; i++) {
+			async.submit("Async-" + i, () -> LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(500)));
+		}
+
+		while (async.notCompletedCount() > 0) {
+			long runningCount = async.runningCount();
+			// 执行中数量必须小于等于线程数限制
+			assertTrue(runningCount <= async.getLimit());
+			LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(95));
+		}
+		assertEquals(max, async.allCount());
+	}
+
+	@Test
+	void testMulti() {
+		int max = 100000;
+		Async async = new Async();
+		for (int i = 0; i < max; i++) {
+			async.submit("Async-" + i, () -> LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1)));
+		}
+		async.await();
+
+		assertEquals(0, async.notCompletedCount());
+		assertEquals(max, async.allCount());
 	}
 
 }
