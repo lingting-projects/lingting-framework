@@ -104,7 +104,7 @@ public class AbstractCipherBuilder<B extends AbstractCipherBuilder<B>> {
 
 	public Cipher build() {
 		String symbol = symbol();
-		return new Cipher(algorithm, symbol, charset, secret, iv);
+		return new Cipher(algorithm, mode, padding, symbol, charset, secret, iv);
 	}
 
 }

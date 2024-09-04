@@ -27,6 +27,16 @@ public class Cipher {
 	protected final String algorithm;
 
 	/**
+	 * 加密模式
+	 */
+	protected final String mode;
+
+	/**
+	 * 填充模式
+	 */
+	protected final String padding;
+
+	/**
 	 * 加密具体行为, 如: AES/ECB/NoPadding
 	 */
 	protected final String symbol;
@@ -38,11 +48,11 @@ public class Cipher {
 	protected final IvParameterSpec iv;
 
 	public Cipher useSecret(SecretKeySpec secret) {
-		return new Cipher(algorithm, symbol, charset, secret, iv);
+		return new Cipher(algorithm, mode, padding, symbol, charset, secret, iv);
 	}
 
 	public Cipher useIv(IvParameterSpec iv) {
-		return new Cipher(algorithm, symbol, charset, secret, iv);
+		return new Cipher(algorithm, mode, padding, symbol, charset, secret, iv);
 	}
 
 	public javax.crypto.Cipher instance() throws NoSuchPaddingException, NoSuchAlgorithmException {
@@ -66,12 +76,24 @@ public class Cipher {
 
 	// region builder
 
+	public CipherBuilder toBuilder() {
+		return builder().algorithm(algorithm).mode(mode).padding(padding).charset(charset).secret(secret).iv(iv);
+	}
+
 	public static CipherBuilder builder() {
 		return new CipherBuilder();
 	}
 
 	public static CipherBuilder.AES aesBuilder() {
 		return new CipherBuilder.AES();
+	}
+
+	// endregion
+
+	// region short
+
+	public static Cipher aes() {
+		return aesBuilder().build();
 	}
 
 	// endregion
