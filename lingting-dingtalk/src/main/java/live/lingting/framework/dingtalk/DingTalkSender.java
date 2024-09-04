@@ -1,5 +1,6 @@
 package live.lingting.framework.dingtalk;
 
+import live.lingting.framework.crypto.mac.Mac;
 import live.lingting.framework.dingtalk.message.DingTalkMessage;
 import live.lingting.framework.http.HttpClient;
 import live.lingting.framework.util.StringUtils;
@@ -7,10 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
-import okhttp3.MediaType;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpRequest;
@@ -27,8 +25,6 @@ import java.util.function.Supplier;
 @Accessors(chain = true)
 public class DingTalkSender {
 
-	public static final MediaType MEDIA = MediaType.parse("application/json");
-
 	protected static final HttpClient CLIENT = HttpClient.okhttp()
 		.timeout(Duration.ofSeconds(10), Duration.ofSeconds(10))
 		.build();
@@ -36,12 +32,14 @@ public class DingTalkSender {
 	/**
 	 * 请求路径
 	 */
-	private final String url;
+	protected final String url;
 
 	/**
 	 * 密钥
 	 */
-	private String secret;
+	protected String secret;
+
+	protected Mac mac;
 
 	@Setter
 	private Supplier<Long> currentTimeMillisSupplier = System::currentTimeMillis;
@@ -80,7 +78,14 @@ public class DingTalkSender {
 	 * 设置密钥
 	 */
 	public DingTalkSender setSecret(String secret) {
-		this.secret = StringUtils.hasText(secret) ? secret : null;
+		if (StringUtils.hasText(secret)) {
+			this.secret = secret;
+			this.mac = Mac.hmacBuilder().sha256().secret(secret).build();
+		}
+		else {
+			this.secret = null;
+			this.mac = null;
+		}
 		return this;
 	}
 
@@ -90,15 +95,8 @@ public class DingTalkSender {
 	 */
 	@SneakyThrows
 	public String secret(long timestamp) {
-		SecretKeySpec key = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-
-		Mac mac = Mac.getInstance("HmacSHA256");
-		mac.init(key);
-
-		byte[] secretBytes = (timestamp + "\n" + secret).getBytes(StandardCharsets.UTF_8);
-		byte[] bytes = mac.doFinal(secretBytes);
-
-		String base64 = java.util.Base64.getEncoder().encodeToString(bytes);
+		String source = timestamp + "\n" + secret;
+		String base64 = mac.calculateBase64(source);
 		String sign = URLEncoder.encode(base64, StandardCharsets.UTF_8);
 		return "%s&timestamp=%d&sign=%s".formatted(url, timestamp, sign);
 	}
