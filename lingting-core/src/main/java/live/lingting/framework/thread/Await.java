@@ -8,6 +8,7 @@ import lombok.SneakyThrows;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -26,56 +27,7 @@ public class Await<S> {
 
 	private final Duration timeout;
 
-	public static <S> AwaitBuilder<S> builder(Supplier<S> supplier, Predicate<S> predicate) {
-		return Await.<S>builder().supplier(supplier).predicate(predicate);
-	}
-
-	public static <S> AwaitBuilder<S> builder() {
-		return new AwaitBuilder<>();
-	}
-
-	public static class AwaitBuilder<S> {
-
-		private Supplier<S> supplier;
-
-		private Predicate<S> predicate;
-
-		private InterruptedRunnable sleep = InterruptedRunnable.THREAD_SLEEP;
-
-		private Duration timeout;
-
-		AwaitBuilder() {
-		}
-
-		public AwaitBuilder<S> supplier(Supplier<S> supplier) {
-			this.supplier = supplier;
-			return this;
-		}
-
-		public AwaitBuilder<S> predicate(Predicate<S> predicate) {
-			this.predicate = predicate;
-			return this;
-		}
-
-		public AwaitBuilder<S> sleep(InterruptedRunnable sleep) {
-			this.sleep = sleep;
-			return this;
-		}
-
-		public AwaitBuilder<S> timeout(Duration timeout) {
-			this.timeout = timeout;
-			return this;
-		}
-
-		public Await<S> build() {
-			return new Await<>(this.supplier, this.predicate, this.sleep, this.timeout);
-		}
-
-		public S await() {
-			return build().await();
-		}
-
-	}
+	private final ThreadPoolExecutor executor;
 
 	@SneakyThrows
 	public S await() {
@@ -100,13 +52,68 @@ public class Await<S> {
 
 		try {
 			// 设置超时
-			CompletableFuture<S> future = CompletableFuture.supplyAsync(supply, ThreadUtils.executor())
+			CompletableFuture<S> future = CompletableFuture.supplyAsync(supply, executor)
 				.orTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS);
 			return future.get();
 		}
 		catch (ExecutionException e) {
 			throw e.getCause();
 		}
+	}
+
+	public static <S> AwaitBuilder<S> builder(Supplier<S> supplier, Predicate<S> predicate) {
+		return Await.<S>builder().supplier(supplier).predicate(predicate);
+	}
+
+	public static <S> AwaitBuilder<S> builder() {
+		return new AwaitBuilder<>();
+	}
+
+	public static class AwaitBuilder<S> {
+
+		private Supplier<S> supplier;
+
+		private Predicate<S> predicate;
+
+		private InterruptedRunnable sleep = InterruptedRunnable.THREAD_SLEEP;
+
+		private Duration timeout;
+
+		private ThreadPoolExecutor executor = ThreadUtils.executor();
+
+		public AwaitBuilder<S> supplier(Supplier<S> supplier) {
+			this.supplier = supplier;
+			return this;
+		}
+
+		public AwaitBuilder<S> predicate(Predicate<S> predicate) {
+			this.predicate = predicate;
+			return this;
+		}
+
+		public AwaitBuilder<S> sleep(InterruptedRunnable sleep) {
+			this.sleep = sleep;
+			return this;
+		}
+
+		public AwaitBuilder<S> timeout(Duration timeout) {
+			this.timeout = timeout;
+			return this;
+		}
+
+		public AwaitBuilder<S> executor(ThreadPoolExecutor executor) {
+			this.executor = executor;
+			return this;
+		}
+
+		public Await<S> build() {
+			return new Await<>(supplier, predicate, sleep, timeout, executor);
+		}
+
+		public S await() {
+			return build().await();
+		}
+
 	}
 
 }

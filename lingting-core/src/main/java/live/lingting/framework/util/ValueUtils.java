@@ -18,18 +18,18 @@ import java.util.function.Supplier;
 public class ValueUtils {
 
 	public static void awaitTrue(Supplier<Boolean> supplier) {
-		awaitTrue(supplier, null);
+		awaitTrue(null, supplier);
 	}
 
-	public static void awaitTrue(Supplier<Boolean> supplier, Duration timeout) {
+	public static void awaitTrue(Duration timeout, Supplier<Boolean> supplier) {
 		Await.builder(supplier, Boolean.TRUE::equals).timeout(timeout).await();
 	}
 
 	public static void awaitFalse(Supplier<Boolean> supplier) {
-		awaitFalse(supplier, null);
+		awaitFalse(null, supplier);
 	}
 
-	public static void awaitFalse(Supplier<Boolean> supplier, Duration timeout) {
+	public static void awaitFalse(Duration timeout, Supplier<Boolean> supplier) {
 		Await.builder(supplier, Boolean.FALSE::equals).timeout(timeout).await();
 	}
 
@@ -41,11 +41,11 @@ public class ValueUtils {
 	 * @param <T> 值类型
 	 */
 	public static <T> T await(Supplier<T> supplier, Predicate<T> predicate) {
-		return await(supplier, predicate, InterruptedRunnable.THREAD_SLEEP, null);
+		return await(null, supplier, predicate, InterruptedRunnable.THREAD_SLEEP);
 	}
 
-	public static <T> T await(Supplier<T> supplier, Predicate<T> predicate, Duration timeout) {
-		return await(supplier, predicate, InterruptedRunnable.THREAD_SLEEP, timeout);
+	public static <T> T await(Duration timeout, Supplier<T> supplier, Predicate<T> predicate) {
+		return await(timeout, supplier, predicate, InterruptedRunnable.THREAD_SLEEP);
 	}
 
 	/**
@@ -57,12 +57,12 @@ public class ValueUtils {
 	 * @param <T> 值类型
 	 */
 	public static <T> T await(Supplier<T> supplier, Predicate<T> predicate, InterruptedRunnable sleep) {
-		return await(supplier, predicate, sleep, null);
+		return await(null, supplier, predicate, sleep);
 	}
 
-	public static <T> T await(Supplier<T> supplier, Predicate<T> predicate, InterruptedRunnable sleep,
-			Duration timeout) {
-		return Await.<T>builder(supplier, predicate).sleep(sleep).timeout(timeout).await();
+	public static <T> T await(Duration timeout, Supplier<T> supplier, Predicate<T> predicate,
+			InterruptedRunnable sleep) {
+		return Await.builder(supplier, predicate).sleep(sleep).timeout(timeout).await();
 	}
 
 	/**
