@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 /**
  * @author lingting 2024-09-04 11:36
  */
-class CipherTest {
+class AESTest {
 
 	@SneakyThrows
 	@Test

@@ -1,8 +1,8 @@
 package live.lingting.framework.crypto.cipher;
 
+import live.lingting.framework.crypto.AbstractCrypt;
 import live.lingting.framework.util.StringUtils;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -18,13 +18,7 @@ import java.security.NoSuchAlgorithmException;
  * @author lingting 2024-09-04 10:17
  */
 @Getter
-@RequiredArgsConstructor
-public class Cipher {
-
-	/**
-	 * 加密方式, 如 AES
-	 */
-	protected final String algorithm;
+public class Cipher extends AbstractCrypt<Cipher> {
 
 	/**
 	 * 加密模式
@@ -41,17 +35,16 @@ public class Cipher {
 	 */
 	protected final String symbol;
 
-	protected final Charset charset;
-
-	protected final SecretKeySpec secret;
-
-	protected final IvParameterSpec iv;
-
-	public Cipher useSecret(SecretKeySpec secret) {
-		return new Cipher(algorithm, mode, padding, symbol, charset, secret, iv);
+	public Cipher(String algorithm, String mode, String padding, String symbol, Charset charset, SecretKeySpec secret,
+			IvParameterSpec iv) {
+		super(algorithm, charset, secret, iv);
+		this.mode = mode;
+		this.padding = padding;
+		this.symbol = symbol;
 	}
 
-	public Cipher useIv(IvParameterSpec iv) {
+	@Override
+	protected Cipher instance(String algorithm, Charset charset, SecretKeySpec secret, IvParameterSpec iv) {
 		return new Cipher(algorithm, mode, padding, symbol, charset, secret, iv);
 	}
 
@@ -110,6 +103,12 @@ public class Cipher {
 			IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 		byte[] bytes = plaintext.getBytes(charset);
 		return encrypt(bytes);
+	}
+
+	public String encryptString(byte[] bytes) throws InvalidAlgorithmParameterException, NoSuchPaddingException,
+			IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+		byte[] encrypt = encrypt(bytes);
+		return new String(encrypt, charset);
 	}
 
 	public String encryptBase64(byte[] bytes) throws InvalidAlgorithmParameterException, NoSuchPaddingException,
