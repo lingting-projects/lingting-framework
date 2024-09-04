@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -84,6 +85,12 @@ public class StreamUtils {
 			byte[] copy = Arrays.copyOf(bytes, length);
 			consumer.accept(copy);
 		});
+	}
+
+	public static void write(InputStream in, File file) throws IOException {
+		try (OutputStream out = Files.newOutputStream(file.toPath())) {
+			write(in, out);
+		}
 	}
 
 	public static void write(InputStream in, OutputStream out) throws IOException {

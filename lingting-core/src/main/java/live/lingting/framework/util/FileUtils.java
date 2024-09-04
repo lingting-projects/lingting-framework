@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -140,11 +139,19 @@ public class FileUtils {
 
 	public static File createTemp(InputStream in) throws IOException {
 		File file = createTemp();
+		StreamUtils.write(in, file);
+		return file;
+	}
 
-		try (FileOutputStream out = new FileOutputStream(file)) {
-			StreamUtils.write(in, out);
-		}
+	public static File createTemp(InputStream in, String suffix) throws IOException {
+		File file = createTemp(suffix);
+		StreamUtils.write(in, file);
+		return file;
+	}
 
+	public static File createTemp(InputStream in, String suffix, File dir) throws IOException {
+		File file = createTemp(suffix, dir);
+		StreamUtils.write(in, file);
 		return file;
 	}
 
