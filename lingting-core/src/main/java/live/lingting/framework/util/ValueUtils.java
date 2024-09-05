@@ -8,6 +8,7 @@ import java.lang.reflect.Array;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -87,6 +88,14 @@ public class ValueUtils {
 			return Array.getLength(value) > 0;
 		}
 		return true;
+	}
+
+	public static String uuid() {
+		return UUID.randomUUID().toString();
+	}
+
+	public static String simpleUuid() {
+		return uuid().replace("-", "");
 	}
 
 }

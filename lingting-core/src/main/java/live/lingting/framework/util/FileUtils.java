@@ -187,7 +187,9 @@ public class FileUtils {
 
 	public static boolean delete(File file) {
 		try {
-			Files.delete(file.toPath());
+			if (file != null) {
+				Files.delete(file.toPath());
+			}
 			return true;
 		}
 		catch (IOException e) {

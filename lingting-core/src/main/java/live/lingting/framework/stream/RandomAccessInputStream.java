@@ -44,7 +44,7 @@ public class RandomAccessInputStream extends InputStream {
 			File temp = FileUtils.createTemp(in, ".input", TEMP_DIR);
 			this.file = new RandomAccessFile(temp, MODE);
 			this.path = temp.toPath();
-			this.size = Files.size(path);
+			this.size = temp.length();
 		}
 	}
 
