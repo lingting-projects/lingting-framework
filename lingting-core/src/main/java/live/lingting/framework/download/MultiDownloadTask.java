@@ -1,7 +1,7 @@
 package live.lingting.framework.download;
 
 import live.lingting.framework.exception.DownloadException;
-import live.lingting.framework.stream.RandomAccessFileOutputStream;
+import live.lingting.framework.stream.RandomAccessOutputStream;
 import live.lingting.framework.value.StepValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -55,7 +55,7 @@ public class MultiDownloadTask<D extends AbstractMultiDownload<D>> {
 	}
 
 	protected void doDownload(long start, long end) throws IOException {
-		try (RandomAccessFileOutputStream output = new RandomAccessFileOutputStream(target)) {
+		try (RandomAccessOutputStream output = new RandomAccessOutputStream(target)) {
 			output.seek(start);
 			download.write(output, start, end);
 		}

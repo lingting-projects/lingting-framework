@@ -24,7 +24,7 @@ import java.util.List;
 @UtilityClass
 public class FileUtils {
 
-	private static final File TEMP_DIR = SystemUtils.tmpDirLingting();
+	public static final File TEMP_DIR = SystemUtils.tmpDirLingting();
 
 	/**
 	 * 扫描指定路径下所有文件
