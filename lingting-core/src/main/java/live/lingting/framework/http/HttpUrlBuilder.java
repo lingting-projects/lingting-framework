@@ -24,7 +24,7 @@ public class HttpUrlBuilder {
 
 	private Integer port;
 
-	private StringBuilder uri;
+	private StringBuilder uri = new StringBuilder("/");
 
 	public static HttpUrlBuilder builder() {
 		return new HttpUrlBuilder();
@@ -79,20 +79,36 @@ public class HttpUrlBuilder {
 		return this;
 	}
 
-	public HttpUrlBuilder uri(String uri) {
-		return uri(new StringBuilder(uri));
-	}
-
-	public HttpUrlBuilder uri(StringBuilder uri) {
-		this.uri = uri;
+	public HttpUrlBuilder uri(String string) {
+		String newUri;
+		String query;
+		if (string.contains("?")) {
+			String[] split = string.split("\\?", 2);
+			newUri = split[0];
+			query = split[1];
+		}
+		else {
+			newUri = string;
+			query = "";
+		}
+		this.uri = new StringBuilder(newUri);
+		if (StringUtils.hasText(query)) {
+			String[] split = query.split("&");
+			for (String kv : split) {
+				String[] array = kv.split("=", 2);
+				String name = array[0];
+				String value = array.length > 1 ? array[1] : null;
+				addParam(name, value);
+			}
+		}
 		return this;
 	}
 
-	public HttpUrlBuilder uriSegment(String... segments) {
-		if (uri == null) {
-			uri = new StringBuilder();
-		}
+	public HttpUrlBuilder uri(StringBuilder uri) {
+		return uri(uri.toString());
+	}
 
+	public HttpUrlBuilder uriSegment(String... segments) {
 		if (!uri.isEmpty() && !uri.substring(uri.length() - 1).equals("/")) {
 			uri.append("/");
 		}
@@ -105,9 +121,6 @@ public class HttpUrlBuilder {
 	}
 
 	public HttpUrlBuilder addParam(String name, Object value) {
-		if (value == null) {
-			return this;
-		}
 		if (value instanceof Map<?, ?> map) {
 			map.forEach((k, v) -> addParam(k.toString(), v));
 		}
@@ -116,7 +129,9 @@ public class HttpUrlBuilder {
 		}
 		else {
 			List<String> list = params.computeIfAbsent(name, k -> new ArrayList<>());
-			list.add(value.toString());
+			if (value != null) {
+				list.add(value.toString());
+			}
 		}
 		return this;
 	}
@@ -182,8 +197,14 @@ public class HttpUrlBuilder {
 		StringBuilder builder = new StringBuilder();
 		for (Map.Entry<String, List<String>> entry : params.entrySet()) {
 			String field = entry.getKey();
-			for (String v : entry.getValue()) {
-				builder.append(field).append("=").append(v).append("&");
+			List<String> list = entry.getValue();
+			if (CollectionUtils.isEmpty(list)) {
+				builder.append(field);
+			}
+			else {
+				for (String v : list) {
+					builder.append(field).append("=").append(v).append("&");
+				}
 			}
 		}
 		if (!CollectionUtils.isEmpty(params)) {
@@ -206,11 +227,7 @@ public class HttpUrlBuilder {
 	}
 
 	public HttpUrlBuilder copy() {
-		return builder().scheme(scheme)
-			.host(host)
-			.port(port)
-			.uri(uri == null ? null : uri.toString())
-			.addParams(params);
+		return builder().scheme(scheme).host(host).port(port).uri(uri).addParams(params);
 	}
 
 }
