@@ -11,6 +11,9 @@ import okio.BufferedSink;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -30,9 +33,15 @@ public class OkHttpInputStreamRequestBody extends RequestBody {
 
 	protected final long size;
 
-	public OkHttpInputStreamRequestBody(CloneInputStream stream) {
-		this.input = stream;
-		this.size = stream.size();
+	public OkHttpInputStreamRequestBody(InputStream stream) throws IOException {
+		CloneInputStream clone = new CloneInputStream(stream);
+		this.input = clone;
+		this.size = clone.size();
+	}
+
+	public OkHttpInputStreamRequestBody(File file) throws FileNotFoundException {
+		this.input = new FileInputStream(file);
+		this.size = file.length();
 	}
 
 	@Nullable

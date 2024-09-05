@@ -28,9 +28,22 @@ public class CloneInputStream extends InputStream {
 
 	protected final FileInputStream stream;
 
-	public CloneInputStream(File file, long size) throws IOException {
+	public CloneInputStream(InputStream input) throws IOException {
+		if (input instanceof CloneInputStream clone) {
+			this.file = clone.file;
+			this.size = clone.size;
+		}
+		else {
+			File temp = FileUtils.createTemp(input);
+			this.file = temp;
+			this.size = temp.length();
+		}
+		this.stream = new FileInputStream(file);
+	}
+
+	public CloneInputStream(File file) throws IOException {
 		this.file = file;
-		this.size = size;
+		this.size = file.length();
 		this.stream = new FileInputStream(file);
 	}
 

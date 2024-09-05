@@ -188,15 +188,10 @@ public class StreamUtils {
 
 	public static CloneInputStream clone(InputStream input, int size) throws IOException {
 		File file = FileUtils.createTemp(".clone");
-		AtomicLong atomic = new AtomicLong();
 		try (FileOutputStream output = new FileOutputStream(file)) {
 			write(input, output, size);
-			read(input, size, (bytes, length) -> {
-				atomic.addAndGet(length);
-				output.write(bytes, 0, length);
-			});
 		}
-		return new CloneInputStream(file, atomic.get());
+		return new CloneInputStream(file);
 	}
 
 	/**
