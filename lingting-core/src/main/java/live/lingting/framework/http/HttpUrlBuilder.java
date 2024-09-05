@@ -2,12 +2,15 @@ package live.lingting.framework.http;
 
 import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.StringUtils;
+import live.lingting.framework.value.MultiValue;
+import live.lingting.framework.value.multi.ListMultiValue;
+import live.lingting.framework.value.multi.UnmodifiableMultiValue;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
+import java.net.URL;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,15 +19,15 @@ import java.util.Map;
  */
 public class HttpUrlBuilder {
 
-	private final Map<String, List<String>> params = new HashMap<>();
+	protected final ListMultiValue<String, String> params = new ListMultiValue<>();
 
-	private String scheme = "https";
+	protected String scheme = "https";
 
-	private String host;
+	protected String host;
 
-	private Integer port;
+	protected Integer port;
 
-	private StringBuilder uri = new StringBuilder("/");
+	protected StringBuilder uri = new StringBuilder("/");
 
 	public static HttpUrlBuilder builder() {
 		return new HttpUrlBuilder();
@@ -47,6 +50,26 @@ public class HttpUrlBuilder {
 			});
 		}
 		return builder;
+	}
+
+	public UnmodifiableMultiValue<String, String> params() {
+		return params.unmodifiable();
+	}
+
+	public String scheme() {
+		return scheme;
+	}
+
+	public String host() {
+		return host;
+	}
+
+	public Integer port() {
+		return port;
+	}
+
+	public String uri() {
+		return uri.toString();
 	}
 
 	public HttpUrlBuilder scheme(String scheme) {
@@ -128,24 +151,21 @@ public class HttpUrlBuilder {
 			CollectionUtils.multiToList(value).forEach(o -> addParam(name, o));
 		}
 		else {
-			List<String> list = params.computeIfAbsent(name, k -> new ArrayList<>());
+			params.ifAbsent(name);
 			if (value != null) {
-				list.add(value.toString());
+				params.add(name, value.toString());
 			}
 		}
 		return this;
 	}
 
 	public HttpUrlBuilder addParams(Map<String, ?> params) {
-		for (Map.Entry<String, ?> entry : params.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
+		params.forEach(this::addParam);
+		return this;
+	}
 
-			if (value == null) {
-				continue;
-			}
-			addParam(key, value);
-		}
+	public HttpUrlBuilder addParams(MultiValue<String, ?, ?> params) {
+		params.each(this::addParam);
 		return this;
 	}
 
@@ -195,7 +215,7 @@ public class HttpUrlBuilder {
 
 	public String buildQuery() {
 		StringBuilder builder = new StringBuilder();
-		for (Map.Entry<String, List<String>> entry : params.entrySet()) {
+		for (Map.Entry<String, List<String>> entry : params.entries()) {
 			String field = entry.getKey();
 			List<String> list = entry.getValue();
 			if (CollectionUtils.isEmpty(list)) {
@@ -207,8 +227,9 @@ public class HttpUrlBuilder {
 				}
 			}
 		}
-		if (!CollectionUtils.isEmpty(params)) {
-			builder.deleteCharAt(builder.length() - 1);
+		int lastIndex = builder.length() - 1;
+		if (!builder.isEmpty() && builder.charAt(lastIndex) == '&') {
+			builder.deleteCharAt(lastIndex);
 		}
 		return builder.toString();
 	}
@@ -224,6 +245,10 @@ public class HttpUrlBuilder {
 		catch (URISyntaxException e) {
 			throw new IllegalStateException("Could not create URI object: " + e.getMessage(), e);
 		}
+	}
+
+	public URL buildUrl() throws MalformedURLException {
+		return buildUri().toURL();
 	}
 
 	public HttpUrlBuilder copy() {
