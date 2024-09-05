@@ -44,6 +44,10 @@ public interface MultiValue<K, V, C extends Collection<V>> {
 
 	boolean isEmpty();
 
+	boolean isEmpty(K key);
+
+	boolean hasKey(K key);
+
 	Collection<V> get(K key);
 
 	Iterator<V> iterator(K key);

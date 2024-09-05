@@ -67,4 +67,27 @@ public class UnmodifiableMultiValue<K, V> extends AbstractMultiValue<K, V, Colle
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public Collection<V> get(K key) {
+		if (!hasKey(key)) {
+			return Collections.emptyList();
+		}
+		return super.get(key);
+	}
+
+	@Override
+	public void clear() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Collection<V> remove(K key) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean remove(K key, V value) {
+		throw new UnsupportedOperationException();
+	}
+
 }

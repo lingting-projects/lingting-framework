@@ -1,10 +1,11 @@
 package live.lingting.framework.value.multi;
 
+import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.value.MultiValue;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -34,17 +35,12 @@ public abstract class AbstractMultiValue<K, V, C extends Collection<V>> implemen
 	// region fill
 	@Override
 	public void add(K key, V value) {
-		addAll(key, value);
+		absent(key).add(value);
 	}
 
 	@Override
 	public void addAll(K key, Collection<V> values) {
 		absent(key).addAll(values);
-	}
-
-	@SafeVarargs
-	public final void addAll(K key, V... values) {
-		absent(key).addAll(Arrays.asList(values));
 	}
 
 	@Override
@@ -65,14 +61,7 @@ public abstract class AbstractMultiValue<K, V, C extends Collection<V>> implemen
 
 	@Override
 	public void put(K key, V value) {
-		putAll(key, value);
-	}
-
-	@SafeVarargs
-	public final void putAll(K key, V... values) {
-		C c = supplier.get();
-		c.addAll(Arrays.asList(values));
-		map.put(key, c);
+		putAll(key, Collections.singletonList(value));
 	}
 
 	@Override
@@ -102,6 +91,16 @@ public abstract class AbstractMultiValue<K, V, C extends Collection<V>> implemen
 	}
 
 	@Override
+	public boolean isEmpty(K key) {
+		return isEmpty() || !hasKey(key) || absent(key).isEmpty();
+	}
+
+	@Override
+	public boolean hasKey(K key) {
+		return map.containsKey(key);
+	}
+
+	@Override
 	public Collection<V> get(K key) {
 		return absent(key);
 	}
@@ -113,7 +112,11 @@ public abstract class AbstractMultiValue<K, V, C extends Collection<V>> implemen
 
 	@Override
 	public V first(K key) {
-		return get(key).iterator().next();
+		Collection<V> collection = get(key);
+		if (CollectionUtils.isEmpty(collection)) {
+			return null;
+		}
+		return collection.iterator().next();
 	}
 
 	@Override
@@ -152,6 +155,9 @@ public abstract class AbstractMultiValue<K, V, C extends Collection<V>> implemen
 
 	@Override
 	public boolean remove(K key, V value) {
+		if (!hasKey(key)) {
+			return false;
+		}
 		C absent = absent(key);
 		return absent.remove(value);
 	}
