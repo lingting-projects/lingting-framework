@@ -67,7 +67,7 @@ class TestMultipartTask extends MultipartTask<TestMultipartTask> {
 
 	@SneakyThrows
 	@Override
-	protected void handler(Part part) {
+	protected void onPart(Part part) {
 		try (InputStream stream = multipart.stream(part)) {
 			cache.put(part.index, stream.readAllBytes());
 		}

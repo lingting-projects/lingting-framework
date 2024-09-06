@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static live.lingting.framework.multipart.MultipartTaskStatus.COMPLETED;
@@ -92,26 +93,29 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 	@SneakyThrows
 	protected void calculate() {
 		lock.runByInterruptibly(() -> {
-			int cn = 0;
-			int sn = 0;
-			int fn = 0;
-			for (PartTask t : tasks) {
-				cn += 1;
+			AtomicInteger cn = new AtomicInteger();
+			AtomicInteger sn = new AtomicInteger();
+			AtomicInteger fn = new AtomicInteger();
+			tasks.stream().filter(PartTask::isCompleted).forEach(t -> {
+				cn.addAndGet(1);
 				if (t.isSuccessful()) {
-					sn += 1;
+					sn.addAndGet(1);
 				}
 				else {
-					fn += 1;
+					fn.addAndGet(1);
 				}
-			}
-			completedNumber = cn;
-			successfulNumber = sn;
-			failedNumber = fn;
+			});
+			completedNumber = cn.get();
+			successfulNumber = sn.get();
+			failedNumber = fn.get();
 
-			boolean isCompleted = cn == partCount;
+			boolean isCompleted = completedNumber == partCount;
 			boolean currentCompleted = isCompleted();
 			if (isCompleted && !currentCompleted) {
-				reference.compareAndSet(RUNNING, COMPLETED);
+				boolean isSet = reference.compareAndSet(RUNNING, COMPLETED);
+				if (isSet) {
+					onCompleted();
+				}
 			}
 		});
 	}
@@ -122,7 +126,7 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 		}
 
 		async.submit("MultipartInit-" + multipart.id, () -> {
-			init();
+			onStarted();
 			for (Part part : multipart.parts) {
 				doPart(part);
 			}
@@ -137,7 +141,7 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 			task.status = PartTaskStatus.RUNNING;
 			Throwable t = null;
 			try {
-				handler(part);
+				onPart(part);
 				task.status = PartTaskStatus.SUCCESSFUL;
 			}
 			catch (Throwable throwable) {
@@ -157,9 +161,14 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 		return false;
 	}
 
-	protected void init() {
+	protected void onStarted() {
+		//
 	}
 
-	protected abstract void handler(Part part);
+	protected abstract void onPart(Part part);
+
+	protected void onCompleted() {
+		//
+	}
 
 }

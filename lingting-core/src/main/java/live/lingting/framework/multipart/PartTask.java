@@ -16,8 +16,16 @@ public class PartTask {
 
 	long retryCount = 0L;
 
+	public boolean isCompleted() {
+		return isSuccessful() || isFailed();
+	}
+
 	public boolean isSuccessful() {
 		return status == PartTaskStatus.SUCCESSFUL;
+	}
+
+	public boolean isFailed() {
+		return status == PartTaskStatus.FAILED;
 	}
 
 }
