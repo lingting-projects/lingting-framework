@@ -1,5 +1,6 @@
 package live.lingting.framework.value.multi;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -10,7 +11,7 @@ import java.util.Map;
 public class UnmodifiableMultiValue<K, V> extends AbstractMultiValue<K, V, Collection<V>> {
 
 	public UnmodifiableMultiValue(AbstractMultiValue<K, V, ?> value) {
-		super(null);
+		super(ArrayList::new);
 		value.forEach(((k, vs) -> map.put(k, Collections.unmodifiableCollection(vs))));
 	}
 

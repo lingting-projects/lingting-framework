@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -127,6 +128,17 @@ public abstract class AbstractMultiValue<K, V, C extends Collection<V>> implemen
 	@Override
 	public Collection<C> values() {
 		return map.values();
+	}
+
+	@Override
+	public Map<K, C> map() {
+		Map<K, C> hashMap = new HashMap<>();
+		this.map.forEach((k, vs) -> {
+			C c = supplier.get();
+			c.addAll(vs);
+			hashMap.put(k, c);
+		});
+		return hashMap;
 	}
 
 	@Override

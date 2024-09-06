@@ -58,6 +58,8 @@ public interface MultiValue<K, V, C extends Collection<V>> {
 
 	Collection<C> values();
 
+	Map<K, C> map();
+
 	Set<Map.Entry<K, C>> entries();
 
 	UnmodifiableMultiValue<K, V> unmodifiable();
