@@ -19,6 +19,12 @@ import java.io.InputStream;
  */
 public class CloneInputStream extends InputStream {
 
+	public static final File TEMP_DIR = new File(FileUtils.TEMP_DIR, "clone");
+
+	static {
+		FileUtils.createDir(TEMP_DIR);
+	}
+
 	protected final File file;
 
 	/**
@@ -34,7 +40,7 @@ public class CloneInputStream extends InputStream {
 			this.size = clone.size;
 		}
 		else {
-			File temp = FileUtils.createTemp(input);
+			File temp = FileUtils.createTemp(input, ".clone", TEMP_DIR);
 			this.file = temp;
 			this.size = temp.length();
 		}
