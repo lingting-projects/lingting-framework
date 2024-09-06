@@ -19,9 +19,6 @@ public class RandomAccessInputStream extends InputStream {
 
 	public static final File TEMP_DIR = RandomAccessOutputStream.TEMP_DIR;
 
-	static {
-		FileUtils.createDir(TEMP_DIR);
-	}
 
 	protected final RandomAccessFile file;
 

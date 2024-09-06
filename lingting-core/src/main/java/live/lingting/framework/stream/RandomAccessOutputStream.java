@@ -17,11 +17,8 @@ public class RandomAccessOutputStream extends OutputStream {
 
 	public static final String MODE = "rw";
 
-	public static final File TEMP_DIR = new File(FileUtils.TEMP_DIR, "random");
+	public static final File TEMP_DIR = FileUtils.createTempDir("random");
 
-	static {
-		FileUtils.createDir(TEMP_DIR);
-	}
 
 	protected final RandomAccessFile file;
 

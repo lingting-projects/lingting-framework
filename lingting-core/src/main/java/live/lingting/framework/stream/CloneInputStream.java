@@ -19,11 +19,8 @@ import java.io.InputStream;
  */
 public class CloneInputStream extends InputStream {
 
-	public static final File TEMP_DIR = new File(FileUtils.TEMP_DIR, "clone");
+	public static final File TEMP_DIR = FileUtils.createTempDir("clone");
 
-	static {
-		FileUtils.createDir(TEMP_DIR);
-	}
 
 	protected final File file;
 

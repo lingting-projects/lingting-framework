@@ -5,7 +5,7 @@ package live.lingting.framework.multipart;
  */
 public enum MultipartTaskStatus {
 
-	WAIT, RUNNING, COMPLETED
+	WAIT, RUNNING, COMPLETED,
 
 	;
 

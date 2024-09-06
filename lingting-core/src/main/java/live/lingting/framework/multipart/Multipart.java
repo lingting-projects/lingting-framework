@@ -27,13 +27,9 @@ import static live.lingting.framework.util.ValueUtils.simpleUuid;
  */
 public class Multipart {
 
-	public static final File TEMP_DIR = new File(FileUtils.TEMP_DIR, "multipart");
+	public static final File TEMP_DIR = FileUtils.createTempDir("multipart");
 
 	public static final String TEMP_SUFFIX = ".source";
-
-	static {
-		FileUtils.createDir(TEMP_DIR);
-	}
 
 	/**
 	 * 每个分片的最大大小: byte
@@ -62,6 +58,7 @@ public class Multipart {
 	/**
 	 * 原始内容缓存文件
 	 */
+	@Getter
 	protected final File source;
 
 	protected final Map<Long, File> cache;
@@ -75,10 +72,22 @@ public class Multipart {
 	}
 
 	protected Multipart(File source, long partSize, String id) {
+		this(source, source.length(), partSize, id);
+	}
+
+	public Multipart(long size, long partSize) {
+		this(size, partSize, null);
+	}
+
+	public Multipart(long size, long partSize, String id) {
+		this(null, size, partSize, id);
+	}
+
+	protected Multipart(File source, long size, long partSize, String id) {
 		this.source = source;
 		this.partSize = partSize;
 		this.id = StringUtils.hasText(id) ? id : simpleUuid();
-		this.size = source.length();
+		this.size = size;
 		this.parts = split(size, partSize);
 		this.cache = new ConcurrentHashMap<>(parts.size());
 	}

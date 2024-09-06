@@ -75,6 +75,12 @@ public class FileUtils {
 		return dir.mkdirs();
 	}
 
+	public static File createTempDir(String child) {
+		File file = new File(TEMP_DIR, child);
+		FileUtils.createDir(file);
+		return file;
+	}
+
 	/**
 	 * 创建指定文件, 已存在时不会重新创建
 	 * @param file 文件.

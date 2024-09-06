@@ -12,6 +12,8 @@ public class PartTask {
 
 	final Part part;
 
+	Throwable t;
+
 	PartTaskStatus status = PartTaskStatus.WAIT;
 
 	long retryCount = 0L;

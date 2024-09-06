@@ -21,7 +21,7 @@ import static live.lingting.framework.multipart.MultipartTaskStatus.WAIT;
 /**
  * @author lingting 2024-09-05 14:48
  */
-@SuppressWarnings({ "java:S1172", "java:S1181" })
+@SuppressWarnings({ "unchecked", "java:S1172", "java:S1181" ,"java:S112"})
 public abstract class MultipartTask<I extends MultipartTask<I>> {
 
 	protected final Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
@@ -72,19 +72,27 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 		return COMPLETED == status();
 	}
 
+	public boolean hasFailed() {
+		return failedNumber > 0;
+	}
+
 	public List<PartTask> tasks() {
 		return Collections.unmodifiableList(tasks);
 	}
 
-	public void await() {
-		await(null);
+	public List<PartTask> tasksFailed() {
+		return tasks.stream().filter(PartTask::isFailed).toList();
 	}
 
-	public void await(Duration duration) {
-		if (!isStarted()) {
-			return;
+	public I await() {
+		return await(null);
+	}
+
+	public I await(Duration duration) {
+		if (isStarted()) {
+			ValueUtils.awaitTrue(duration, this::isCompleted);
 		}
-		ValueUtils.awaitTrue(duration, this::isCompleted);
+		return (I) this;
 	}
 
 	/**
@@ -149,6 +157,7 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 				task.status = PartTaskStatus.FAILED;
 			}
 
+			task.t = t;
 			if (task.isSuccessful() || !allowRetry(task, t)) {
 				calculate();
 				break;
@@ -165,7 +174,7 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 		//
 	}
 
-	protected abstract void onPart(Part part);
+	protected abstract void onPart(Part part) throws Throwable;
 
 	protected void onCompleted() {
 		//
