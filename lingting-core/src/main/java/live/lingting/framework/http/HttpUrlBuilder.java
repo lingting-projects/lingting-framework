@@ -11,12 +11,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 /**
  * @author lingting 2024-01-29 16:13
  */
+@SuppressWarnings("unchecked")
 public class HttpUrlBuilder {
 
 	protected final ListMultiValue<String, String> params = new ListMultiValue<>();
@@ -50,6 +51,31 @@ public class HttpUrlBuilder {
 			});
 		}
 		return builder;
+	}
+
+	public static String buildQuery(MultiValue<String, String, ?> value) {
+		return buildQuery((Map<String, Collection<String>>) value.map());
+	}
+
+	public static String buildQuery(Map<String, Collection<String>> map) {
+		StringBuilder builder = new StringBuilder();
+		for (Map.Entry<String, Collection<String>> entry : map.entrySet()) {
+			String field = entry.getKey();
+			Collection<String> list = entry.getValue();
+			if (CollectionUtils.isEmpty(list)) {
+				builder.append(field);
+			}
+			else {
+				for (String v : list) {
+					builder.append(field).append("=").append(v).append("&");
+				}
+			}
+		}
+		int lastIndex = builder.length() - 1;
+		if (!builder.isEmpty() && builder.charAt(lastIndex) == '&') {
+			builder.deleteCharAt(lastIndex);
+		}
+		return builder.toString();
 	}
 
 	public UnmodifiableMultiValue<String, String> params() {
@@ -214,24 +240,7 @@ public class HttpUrlBuilder {
 	}
 
 	public String buildQuery() {
-		StringBuilder builder = new StringBuilder();
-		for (Map.Entry<String, List<String>> entry : params.entries()) {
-			String field = entry.getKey();
-			List<String> list = entry.getValue();
-			if (CollectionUtils.isEmpty(list)) {
-				builder.append(field);
-			}
-			else {
-				for (String v : list) {
-					builder.append(field).append("=").append(v).append("&");
-				}
-			}
-		}
-		int lastIndex = builder.length() - 1;
-		if (!builder.isEmpty() && builder.charAt(lastIndex) == '&') {
-			builder.deleteCharAt(lastIndex);
-		}
-		return builder.toString();
+		return buildQuery(params);
 	}
 
 	public URI buildUri() {
