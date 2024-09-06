@@ -7,6 +7,6 @@ package live.lingting.framework.function;
 @SuppressWarnings("java:S112")
 public interface ThrowingBiFunction<T, D, R> {
 
-	R apply(T t, D d) throws Exception;
+	R apply(T t, D d) throws Throwable;
 
 }

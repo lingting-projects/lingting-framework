@@ -2,6 +2,7 @@ package live.lingting.framework.retry;
 
 import live.lingting.framework.function.ThrowingSupplier;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
@@ -38,6 +39,7 @@ public class Retry<T> {
 		return value().get();
 	}
 
+	@SneakyThrows
 	public RetryValue<T> value() {
 		Exception ex = null;
 		while (true) {

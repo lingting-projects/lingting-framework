@@ -8,6 +8,6 @@ package live.lingting.framework.function;
 public interface ThrowingConsumer<T> extends ThrowableConsumer<T> {
 
 	@Override
-	void accept(T t) throws Exception;
+	void accept(T t) throws Throwable;
 
 }

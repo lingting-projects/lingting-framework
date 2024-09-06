@@ -8,6 +8,6 @@ package live.lingting.framework.function;
 public interface ThrowingRunnable extends ThrowableRunnable {
 
 	@Override
-	void run() throws Exception;
+	void run() throws Throwable;
 
 }

@@ -45,6 +45,7 @@ import live.lingting.framework.retry.Retry;
 import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.StringUtils;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -124,6 +125,7 @@ public class ElasticsearchApi<T> {
 		});
 	}
 
+	@SneakyThrows
 	public <R> R retry(ThrowingSupplier<R> supplier) throws Exception {
 		if (retryProperties == null || !retryProperties.isEnabled()) {
 			return supplier.get();
