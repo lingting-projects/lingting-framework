@@ -44,6 +44,11 @@ public abstract class AbstractThreadContextComponent implements ContextComponent
 
 	@SneakyThrows
 	protected void interrupt() {
+		thread(t -> {
+			if (!t.isInterrupted()) {
+				t.interrupt();
+			}
+		});
 		threadValue.update((Thread) null);
 	}
 
