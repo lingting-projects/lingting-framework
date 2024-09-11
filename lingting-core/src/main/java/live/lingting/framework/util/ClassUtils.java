@@ -16,10 +16,12 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -33,6 +35,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 
 /**
  * @author lingting 2021/2/25 21:17
@@ -41,19 +44,19 @@ import java.util.jar.JarFile;
 @SuppressWarnings({ "java:S3011", "unchecked" })
 public class ClassUtils {
 
-	private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
+	static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
 
-	private static final Map<String, Boolean> CACHE_CLASS_PRESENT = new ConcurrentHashMap<>(8);
+	static final Map<String, Map<ClassLoader, Boolean>> CACHE_CLASS_PRESENT = new ConcurrentHashMap<>(8);
 
-	private static final Map<Class<?>, Field[]> CACHE_FIELDS = new ConcurrentHashMap<>(16);
+	static final Map<Class<?>, Field[]> CACHE_FIELDS = new ConcurrentHashMap<>(16);
 
-	private static final Map<Class<?>, Method[]> CACHE_METHODS = new ConcurrentHashMap<>(16);
+	static final Map<Class<?>, Method[]> CACHE_METHODS = new ConcurrentHashMap<>(16);
 
-	private static final Map<Class<?>, ClassField[]> CACHE_CLASS_FIELDS = new ConcurrentHashMap<>(16);
+	static final Map<Class<?>, ClassField[]> CACHE_CLASS_FIELDS = new ConcurrentHashMap<>(16);
 
-	private static final Map<Class<?>, Type[]> CACHE_TYPE_ARGUMENTS = new ConcurrentHashMap<>();
+	static final Map<Class<?>, Type[]> CACHE_TYPE_ARGUMENTS = new ConcurrentHashMap<>();
 
-	private static final Map<Class<?>, Constructor<?>[]> CACHE_CONSTRUCTOR = new ConcurrentHashMap<>();
+	static final Map<Class<?>, Constructor<?>[]> CACHE_CONSTRUCTOR = new ConcurrentHashMap<>();
 
 	/**
 	 * 获取指定类的泛型
@@ -84,23 +87,46 @@ public class ClassUtils {
 	}
 
 	/**
+	 * 判断class是否可以被加载, 使用系统类加载器和当前工具类加载器
+	 * @param className 类名
+	 * @return true
+	 */
+	public static boolean isPresent(String className) {
+		return isPresent(className, ClassUtils.class.getClassLoader(), ClassLoader.getSystemClassLoader());
+	}
+
+	/**
 	 * 确定class是否可以被加载
 	 * @param className 完整类名
-	 * @param classLoader 类加载
+	 * @param classLoaders 类加载
 	 */
-	public static boolean isPresent(String className, ClassLoader classLoader) {
-		if (CACHE_CLASS_PRESENT.containsKey(className)) {
-			return CACHE_CLASS_PRESENT.get(className);
+	public static boolean isPresent(String className, ClassLoader... classLoaders) {
+		Collection<ClassLoader> loaders = Arrays.stream(classLoaders)
+			.filter(Objects::nonNull)
+			.collect(Collectors.toCollection(LinkedHashSet::new));
+		if (CollectionUtils.isEmpty(loaders)) {
+			throw new IllegalArgumentException("ClassLoaders can not be empty!");
 		}
-		try {
-			Class.forName(className, true, classLoader);
-			CACHE_CLASS_PRESENT.put(className, true);
-			return true;
+		Map<ClassLoader, Boolean> absent = CACHE_CLASS_PRESENT.computeIfAbsent(className,
+				k -> new ConcurrentHashMap<>(loaders.size()));
+
+		for (ClassLoader loader : loaders) {
+			Boolean flag = absent.computeIfAbsent(loader, k -> {
+				try {
+					Class.forName(className, true, loader);
+					return true;
+				}
+				catch (Exception ignored) {
+					//
+				}
+				return false;
+			});
+			if (Boolean.TRUE.equals(flag)) {
+				return true;
+			}
 		}
-		catch (Exception ex) {
-			CACHE_CLASS_PRESENT.put(className, false);
-			return false;
-		}
+
+		return false;
 	}
 
 	public static <T> Set<Class<T>> scan(String basePack, Class<?> cls) throws IOException {
