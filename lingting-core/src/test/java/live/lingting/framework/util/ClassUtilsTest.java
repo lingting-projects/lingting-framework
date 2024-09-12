@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static live.lingting.framework.util.ClassUtils.isPresent;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -32,6 +33,8 @@ class ClassUtilsTest {
 		loaders.add(ClassUtilsTest.class.getClassLoader());
 		assertEquals(loaders, map.keySet());
 		assertThrows(IllegalArgumentException.class, () -> ClassUtils.isPresent(className, null, null));
+		Set<Class<Object>> scan = assertDoesNotThrow(() -> ClassUtils.scan("live.lingting.framework"));
+		assertFalse(scan.isEmpty());
 	}
 
 }

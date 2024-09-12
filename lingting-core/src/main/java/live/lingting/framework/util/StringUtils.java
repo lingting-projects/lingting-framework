@@ -216,4 +216,24 @@ public class StringUtils {
 			.replace(BOM_UTF8, "");
 	}
 
+	public static String substringBefore(String str, String separator) {
+		int pos = str.indexOf(separator);
+		return pos == -1 ? str : str.substring(0, pos);
+	}
+
+	public static String substringBeforeLast(String str, String separator) {
+		int pos = str.lastIndexOf(separator);
+		return pos == -1 ? str : str.substring(0, pos);
+	}
+
+	public static String substringAfter(String str, String separator) {
+		int pos = str.indexOf(separator);
+		return pos == -1 ? "" : str.substring(pos + separator.length());
+	}
+
+	public static String substringAfterLast(String str, String separator) {
+		int pos = str.lastIndexOf(separator);
+		return pos == -1 ? str : str.substring(pos + separator.length());
+	}
+
 }

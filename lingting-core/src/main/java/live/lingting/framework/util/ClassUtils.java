@@ -3,7 +3,6 @@ package live.lingting.framework.util;
 import live.lingting.framework.reflect.ClassField;
 import lombok.experimental.UtilityClass;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
@@ -11,14 +10,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.net.JarURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -33,8 +28,6 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 
 /**
@@ -129,6 +122,10 @@ public class ClassUtils {
 		return false;
 	}
 
+	public static <T> Set<Class<T>> scan(String basePack) throws IOException {
+		return scan(basePack, null);
+	}
+
 	public static <T> Set<Class<T>> scan(String basePack, Class<?> cls) throws IOException {
 		return scan(basePack, tClass -> cls == null || cls.isAssignableFrom(tClass), (s, e) -> {
 		});
@@ -144,44 +141,17 @@ public class ClassUtils {
 	@SuppressWarnings("java:S3776")
 	public static <T> Set<Class<T>> scan(String basePack, Predicate<Class<T>> filter,
 			BiConsumer<String, Exception> error) throws IOException {
-		List<String> classNames = new ArrayList<>();
-		String clsPath = basePack.replace(".", "/");
-		URL url = Thread.currentThread().getContextClassLoader().getResource(clsPath);
-		if (url == null) {
-			return new HashSet<>();
-		}
-		if ("file".equals(url.getProtocol())) {
-			String path = url.getFile();
-			for (String file : FileUtils.scanFile(path, true)) {
-				if (file.endsWith(".class")) {
-					String className = basePack + "."
-							+ file.substring(path.length(), file.length() - 6).replace(File.separator, ".");
+		String scanName = basePack.replace(".", "/");
 
-					classNames.add(className);
-				}
-			}
-		}
-		else {
-			URLConnection connection = url.openConnection();
-			if (connection instanceof JarURLConnection jarURLConnection) {
-				JarFile jarFile = jarURLConnection.getJarFile();
-
-				Enumeration<JarEntry> entries = jarFile.entries();
-
-				while (entries.hasMoreElements()) {
-					JarEntry entry = entries.nextElement();
-					String entryName = entry.getName();
-
-					if (entryName.endsWith(".class") && entryName.startsWith(clsPath)) {
-						classNames.add(entryName.substring(0, entryName.length() - 6).replace("/", "."));
-					}
-				}
-
-			}
-		}
+		Collection<ResourceUtils.Resource> collection = ResourceUtils.scan(scanName,
+				resource -> !resource.isDirectory() && resource.getName().endsWith(".class"));
 
 		Set<Class<T>> classes = new HashSet<>();
-		for (String className : classNames) {
+		for (ResourceUtils.Resource resource : collection) {
+			String last = StringUtils.substringAfterLast(resource.getPath(), scanName);
+			String classPath = StringUtils.substringBeforeLast(scanName + last, ".");
+			String className = classPath.replace("/", ".");
+
 			try {
 				Class<T> aClass = (Class<T>) Class.forName(className);
 
