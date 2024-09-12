@@ -10,6 +10,8 @@ import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -43,6 +45,12 @@ class ResourceUtilsTest {
 				assertTrue(file.exists());
 			}
 		}
+
+		Resource s4 = ResourceUtils.get("scripts/ss1.sh");
+		assertNotNull(s4);
+		assertEquals("ss1.sh", StreamUtils.toString(s4.stream()).trim());
+		Resource s5 = ResourceUtils.get("scripts/ss9.sh");
+		assertNull(s5);
 	}
 
 }

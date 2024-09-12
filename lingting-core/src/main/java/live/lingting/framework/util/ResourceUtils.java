@@ -27,13 +27,53 @@ import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static live.lingting.framework.util.ResourceUtils.Resource.PROTOCOL_FILE;
+import static live.lingting.framework.util.ResourceUtils.Resource.PROTOCOL_JAR;
+
 /**
  * @author lingting 2024-09-11 17:20
  */
 @UtilityClass
 public class ResourceUtils {
 
-	public Collection<Resource> scan(String name) throws IOException {
+	public static ClassLoader currentClassLoader() {
+		ClassLoader loader = Thread.currentThread().getContextClassLoader();
+		return loader == null ? ClassLoader.getSystemClassLoader() : loader;
+	}
+
+	public static Resource get(String name) throws IOException {
+		ClassLoader loader = currentClassLoader();
+		return get(loader, name);
+	}
+
+	@SneakyThrows
+	public static Resource get(ClassLoader loader, String name) throws IOException {
+		URL resource = loader.getResource(name);
+		if (resource == null) {
+			return null;
+		}
+		String url = resource.toString();
+		String protocol = StringUtils.substringBefore(url, ":/");
+		if (protocol.startsWith(PROTOCOL_FILE)) {
+			URI uri = resource.toURI();
+			File dir = new File(uri);
+			return new Resource(protocol, dir);
+		}
+
+		if (protocol.startsWith(PROTOCOL_JAR)) {
+			URLConnection connection = resource.openConnection();
+			if (connection instanceof JarURLConnection jar) {
+				String[] split = url.split(Resource.DELIMITER_JAR);
+				int size = split.length - 1;
+				Collection<String> paths = Arrays.stream(split).limit(size).toList();
+				JarEntry entry = jar.getJarEntry();
+				return new Resource(protocol, paths, entry.getName(), entry.isDirectory());
+			}
+		}
+		return null;
+	}
+
+	public static Collection<Resource> scan(String name) throws IOException {
 		return scan(name, resource -> true);
 	}
 
@@ -43,15 +83,12 @@ public class ResourceUtils {
 	 * @param predicate 是否返回该资源
 	 * @return 所有满足条件的资源对象
 	 */
-	public Collection<Resource> scan(String name, Predicate<Resource> predicate) throws IOException {
-		ClassLoader loader = Thread.currentThread().getContextClassLoader();
-		if (loader == null) {
-			loader = ClassLoader.getSystemClassLoader();
-		}
+	public static Collection<Resource> scan(String name, Predicate<Resource> predicate) throws IOException {
+		ClassLoader loader = currentClassLoader();
 		return scan(loader, name, predicate);
 	}
 
-	public Collection<Resource> scan(ClassLoader loader, String name, Predicate<Resource> predicate)
+	public static Collection<Resource> scan(ClassLoader loader, String name, Predicate<Resource> predicate)
 			throws IOException {
 		Enumeration<URL> resources = loader.getResources(name);
 		Collection<Resource> result = new LinkedHashSet<>();
@@ -67,7 +104,7 @@ public class ResourceUtils {
 		String url = resource.toString();
 		String protocol = StringUtils.substringBefore(url, ":/");
 
-		if (protocol.equals("file")) {
+		if (protocol.startsWith(PROTOCOL_FILE)) {
 			URI uri = resource.toURI();
 			File dir = new File(uri);
 			if (!dir.isDirectory()) {
@@ -79,7 +116,8 @@ public class ResourceUtils {
 			}
 			return;
 		}
-		if (protocol.equals("jar")) {
+
+		if (protocol.startsWith(PROTOCOL_JAR)) {
 			URLConnection connection = resource.openConnection();
 			if (connection instanceof JarURLConnection jar) {
 				String[] split = url.split(Resource.DELIMITER_JAR);
