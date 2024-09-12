@@ -72,7 +72,7 @@ public class FileUtils {
 		if (dir.exists()) {
 			return true;
 		}
-		return dir.mkdirs();
+		return dir.mkdirs() || dir.exists();
 	}
 
 	public static File createTempDir(String child) {
