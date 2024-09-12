@@ -5,8 +5,8 @@ package live.lingting.framework.function;
  */
 @FunctionalInterface
 @SuppressWarnings("java:S112")
-public interface ThrowingFunction<T, R> {
+public interface ThrowingFunction<T, R> extends ThrowableFunction<T, R> {
 
-	R apply(T t) throws Throwable;
+	R apply(T t) throws Exception;
 
 }

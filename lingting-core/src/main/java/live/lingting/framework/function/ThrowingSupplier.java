@@ -8,6 +8,6 @@ package live.lingting.framework.function;
 public interface ThrowingSupplier<T> extends ThrowableSupplier<T> {
 
 	@Override
-	T get() throws Throwable;
+	T get() throws Exception;
 
 }

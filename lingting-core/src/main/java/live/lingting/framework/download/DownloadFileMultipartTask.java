@@ -1,6 +1,6 @@
 package live.lingting.framework.download;
 
-import live.lingting.framework.function.ThrowingFunction;
+import live.lingting.framework.function.ThrowableFunction;
 import live.lingting.framework.multipart.Multipart;
 import live.lingting.framework.multipart.Part;
 import live.lingting.framework.multipart.PartTask;
@@ -21,17 +21,17 @@ public class DownloadFileMultipartTask extends FileMultipartTask<DownloadFileMul
 
 	protected final File target;
 
-	protected final ThrowingFunction<Part, InputStream> download;
+	protected final ThrowableFunction<Part, InputStream> download;
 
 	protected final long maxRetryCount;
 
 	protected DownloadFileMultipartTask(Multipart multipart, long maxRetryCount,
-			ThrowingFunction<Part, InputStream> download, File target) {
+			ThrowableFunction<Part, InputStream> download, File target) {
 		this(multipart, maxRetryCount, new Async(), target, download);
 	}
 
 	protected DownloadFileMultipartTask(Multipart multipart, long maxRetryCount, Async async, File target,
-			ThrowingFunction<Part, InputStream> download) {
+			ThrowableFunction<Part, InputStream> download) {
 		super(multipart, async);
 		this.maxRetryCount = maxRetryCount;
 		this.target = target;

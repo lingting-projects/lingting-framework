@@ -5,7 +5,7 @@ package live.lingting.framework.function;
  */
 @FunctionalInterface
 @SuppressWarnings("java:S112")
-public interface ThrowingBiFunctionE<T, D, R,E extends Throwable> {
+public interface ThrowingBiFunctionE<T, D, R,E extends Exception> {
 
 	R apply(T t, D d) throws E;
 

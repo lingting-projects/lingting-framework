@@ -7,6 +7,6 @@ package live.lingting.framework.function;
 @SuppressWarnings("java:S112")
 public interface ThrowingBiConsumer<T, D> {
 
-	void accept(T t, D d) throws Throwable;
+	void accept(T t, D d) throws Exception;
 
 }
