@@ -64,26 +64,26 @@ public class Multipart {
 	protected final Map<Long, File> cache;
 
 	public Multipart(InputStream in, long partSize) throws IOException {
-		this(in, partSize, null);
+		this(null, in, partSize);
 	}
 
-	public Multipart(InputStream in, long partSize, String id) throws IOException {
-		this(FileUtils.createTemp(in, TEMP_SUFFIX, TEMP_DIR), partSize, id);
+	public Multipart(String id, InputStream in, long partSize) throws IOException {
+		this(id, FileUtils.createTemp(in, TEMP_SUFFIX, TEMP_DIR), partSize);
 	}
 
-	protected Multipart(File source, long partSize, String id) {
-		this(source, source.length(), partSize, id);
+	protected Multipart(String id, File source, long partSize) {
+		this(id, source, source.length(), partSize);
 	}
 
 	public Multipart(long size, long partSize) {
-		this(size, partSize, null);
+		this(null, size, partSize);
 	}
 
-	public Multipart(long size, long partSize, String id) {
-		this(null, size, partSize, id);
+	public Multipart(String id, long size, long partSize) {
+		this(id, null, size, partSize);
 	}
 
-	protected Multipart(File source, long size, long partSize, String id) {
+	protected Multipart(String id, File source, long size, long partSize) {
 		this.source = source;
 		this.partSize = partSize;
 		this.id = StringUtils.hasText(id) ? id : simpleUuid();
@@ -99,7 +99,30 @@ public class Multipart {
 	public static Multipart of(File file, long partSize, String id) throws IOException {
 		File temp = FileUtils.createTemp(TEMP_SUFFIX, TEMP_DIR);
 		FileUtils.copy(file, temp, true);
-		return new Multipart(temp, partSize, id);
+		return new Multipart(id, temp, partSize);
+	}
+
+	/**
+	 * 生成有限制的 分片
+	 * @param id id
+	 * @param size 总大小
+	 * @param partSize 初始每片大小
+	 * @param maxPartSize 每片大小的最大值
+	 * @param maxPartCount 最多多少个分片
+	 * @return 符合限制的分片
+	 */
+	public static Multipart of(String id, long size, long partSize, long maxPartSize, long maxPartCount) {
+		if (partSize > maxPartSize) {
+			throw new IllegalArgumentException("Part size can not be greater than " + maxPartSize);
+		}
+		long number = calculate(size, partSize);
+		if (number > maxPartCount) {
+			long step = partSize / 2;
+			long newPartSize = partSize + step;
+			return of(id, size, newPartSize, maxPartSize, maxPartCount);
+		}
+
+		return new Multipart(id, size, partSize);
 	}
 
 	/**
@@ -130,7 +153,7 @@ public class Multipart {
 	}
 
 	public Multipart usePartSize(long partSize, String id) {
-		return new Multipart(source, partSize, id);
+		return new Multipart(id, source, partSize);
 	}
 
 	public File file(Part part) {

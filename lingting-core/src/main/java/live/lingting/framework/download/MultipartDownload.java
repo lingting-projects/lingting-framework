@@ -99,7 +99,7 @@ public abstract class MultipartDownload<D extends MultipartDownload<D>> implemen
 			try {
 				long fileSize = size == null || size < 1 ? size() : size;
 				// 不使用多分配下载时, 只设置一个分片
-				Multipart multipart = new Multipart(fileSize, multi ? partSize : fileSize, id);
+				Multipart multipart = new Multipart(id, fileSize, multi ? partSize : fileSize);
 				DownloadFileMultipartTask task = new DownloadFileMultipartTask(multipart, maxRetryCount, async, file,
 						this::download);
 				task.start().await(timeout);
