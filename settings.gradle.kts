@@ -49,7 +49,7 @@ dependencyResolutionManagement {
 
             library("elasticsearch", "co.elastic.clients", "elasticsearch-java").version(elasticVersion)
             library("elasticsearchClient", "org.elasticsearch.client", "elasticsearch-rest-client").version(elasticVersion)
-            bundle("elasticsearch", listOf("elasticsearch", "elasticsearchClient"));
+            bundle("elasticsearch", listOf("elasticsearch", "elasticsearchClient"))
 
             library("commonsNet", "commons-net", "commons-net").version(commonsNetVersion)
 
