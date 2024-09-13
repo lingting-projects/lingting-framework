@@ -79,7 +79,7 @@ public class HttpUrlBuilder {
 	}
 
 	public UnmodifiableMultiValue<String, String> params() {
-		return params.unmodifiable();
+		return (UnmodifiableMultiValue<String, String>) params.unmodifiable();
 	}
 
 	public String scheme() {

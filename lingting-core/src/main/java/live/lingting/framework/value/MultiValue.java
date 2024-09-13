@@ -1,7 +1,6 @@
 package live.lingting.framework.value;
 
 import live.lingting.framework.value.multi.AbstractMultiValue;
-import live.lingting.framework.value.multi.UnmodifiableMultiValue;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -27,7 +26,7 @@ public interface MultiValue<K, V, C extends Collection<V>> {
 
 	void addAll(K key, Iterable<V> values);
 
-	void addAll(Map<K, Collection<V>> map);
+	void addAll(Map<K, ? extends Collection<V>> map);
 
 	void addAll(AbstractMultiValue<K, V, C> value);
 
@@ -40,6 +39,7 @@ public interface MultiValue<K, V, C extends Collection<V>> {
 	void putAll(AbstractMultiValue<K, V, C> value);
 
 	// endregion
+
 	// region get
 
 	boolean isEmpty();
@@ -54,6 +54,11 @@ public interface MultiValue<K, V, C extends Collection<V>> {
 
 	V first(K key);
 
+	default V first(K key, V defaultValue) {
+		V v = first(key);
+		return v == null ? defaultValue : v;
+	}
+
 	Set<K> keys();
 
 	Collection<C> values();
@@ -62,15 +67,18 @@ public interface MultiValue<K, V, C extends Collection<V>> {
 
 	Set<Map.Entry<K, C>> entries();
 
-	UnmodifiableMultiValue<K, V> unmodifiable();
+	MultiValue<K, V, Collection<V>> unmodifiable();
 
 	// endregion
+
 	// region remove
 	void clear();
 
 	C remove(K key);
 
 	boolean remove(K key, V value);
+
+	// endregion
 
 	// region function
 	void forEach(BiConsumer<K, C> consumer);
