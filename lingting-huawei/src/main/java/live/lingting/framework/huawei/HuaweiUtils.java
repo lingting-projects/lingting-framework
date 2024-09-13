@@ -23,6 +23,8 @@ public class HuaweiUtils {
 
 	public static final Duration TOKEN_EARLY_EXPIRE = Duration.ofMinutes(15);
 
+	public static final Duration CREDENTIAL_EXPIRE = Duration.ofDays(1);
+
 	public static LocalDateTime parse(String str, ZoneOffset zone) {
 		LocalDateTime parse = LocalDateTime.parse(str, FORMATTER);
 		return parse.plusSeconds(zone.getTotalSeconds());

@@ -3,11 +3,14 @@ package live.lingting.framework.huawei;
 import live.lingting.framework.http.HttpClient;
 import live.lingting.framework.http.HttpResponse;
 import live.lingting.framework.huawei.exception.HuaweiIamException;
+import live.lingting.framework.huawei.iam.HuaweiIamCredentialRequest;
+import live.lingting.framework.huawei.iam.HuaweiIamCredentialResponse;
 import live.lingting.framework.huawei.iam.HuaweiIamRequest;
 import live.lingting.framework.huawei.iam.HuaweiIamToken;
 import live.lingting.framework.huawei.iam.HuaweiIamTokenRequest;
 import live.lingting.framework.huawei.iam.HuaweiIamTokenResponse;
 import live.lingting.framework.huawei.properties.HuaweiIamProperties;
+import live.lingting.framework.s3.Credential;
 import live.lingting.framework.value.WaitValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +22,14 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import static live.lingting.framework.huawei.HuaweiUtils.CLIENT;
+import static live.lingting.framework.huawei.HuaweiUtils.CREDENTIAL_EXPIRE;
 import static live.lingting.framework.huawei.HuaweiUtils.TOKEN_EARLY_EXPIRE;
 
 /**
@@ -102,6 +111,34 @@ public class HuaweiIam {
 		LocalDateTime expire = HuaweiUtils.parse(convert.getExpire(), properties.getZone());
 		LocalDateTime issued = HuaweiUtils.parse(convert.getIssued(), properties.getZone());
 		return new HuaweiIamToken(token, expire, issued);
+	}
+
+	public Credential credential(HuaweiStatement statement) {
+		return credential(Collections.singleton(statement));
+	}
+
+	public Credential credential(HuaweiStatement statement, HuaweiStatement... statements) {
+		List<HuaweiStatement> list = new ArrayList<>(statements.length + 1);
+		list.add(statement);
+		list.addAll(Arrays.asList(statements));
+		return credential(list);
+	}
+
+	public Credential credential(Collection<HuaweiStatement> statements) {
+		return credential(CREDENTIAL_EXPIRE, statements);
+	}
+
+	public Credential credential(Duration timeout, Collection<HuaweiStatement> statements) {
+		HuaweiIamCredentialRequest request = new HuaweiIamCredentialRequest();
+		request.setTimeout(timeout);
+		request.setStatements(statements);
+		HttpResponse response = call(request);
+		HuaweiIamCredentialResponse convert = response.convert(HuaweiIamCredentialResponse.class);
+		String ak = convert.getAccess();
+		String sk = convert.getSecret();
+		String token = convert.getSecurityToken();
+		LocalDateTime expire = HuaweiUtils.parse(convert.getExpire(), properties.getZone());
+		return new Credential(ak, sk, token, expire);
 	}
 
 }
