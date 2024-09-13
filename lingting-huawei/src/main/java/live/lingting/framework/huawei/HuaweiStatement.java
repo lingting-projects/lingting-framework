@@ -1,6 +1,7 @@
 package live.lingting.framework.huawei;
 
 import live.lingting.framework.s3.Statement;
+import live.lingting.framework.util.CollectionUtils;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,6 +29,15 @@ public class HuaweiStatement extends Statement {
 			map.put(entry.getKey(), new LinkedHashSet<>(entry.getValue()));
 		}
 		conditions.put(operator, map);
+	}
+
+	@Override
+	public Map<String, Object> map() {
+		Map<String, Object> map = super.map();
+		if (!CollectionUtils.isEmpty(conditions)) {
+			map.put("Condition", conditions);
+		}
+		return map;
 	}
 
 }
