@@ -5,6 +5,7 @@ import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.util.ValueUtils;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Collection;
 import java.util.Map;
@@ -21,6 +22,7 @@ public class WaitValue<T> {
 	protected final JavaReentrantLock lock = new JavaReentrantLock();
 
 	@Getter
+	@Setter
 	protected T value;
 
 	public static <T> WaitValue<T> of() {
