@@ -2,9 +2,8 @@ package live.lingting.framework.http;
 
 import live.lingting.framework.flow.FutureSubscriber;
 import live.lingting.framework.function.ThrowingFunction;
+import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.http.okhttp.OkHttpCookie;
-import live.lingting.framework.http.okhttp.OkHttpResponse;
-import live.lingting.framework.http.okhttp.OkHttpResponseCallback;
 import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.util.StreamUtils;
 import lombok.RequiredArgsConstructor;
@@ -19,19 +18,16 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import org.jetbrains.annotations.NotNull;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
 /**
@@ -51,19 +47,18 @@ public class OkHttpClient extends HttpClient {
 		Request.Builder builder = new Request.Builder();
 
 		// 请求头
-		HttpHeaders headers = request.headers();
-		headers.map().forEach((k, vs) -> vs.forEach(v -> builder.addHeader(k, v)));
+		HttpHeaders headers = HttpHeaders.of(request.headers().map());
+		headers.each(builder::addHeader);
 
 		// 请求地址
 		builder.url(request.uri().toURL());
 
 		// 请求体
-		Optional<HttpRequest.BodyPublisher> optional = request.bodyPublisher();
-		RequestBody body = optional.map(publisher -> {
+		Optional<RequestBody> optional = request.bodyPublisher().map(publisher -> {
 			if (publisher.contentLength() < 1) {
 				return null;
 			}
-			MediaType type = headers.firstValue("Content-Type").map(MediaType::parse).orElse(null);
+			MediaType type = Optional.ofNullable(headers.contentType()).map(MediaType::parse).orElse(null);
 
 			FutureSubscriber<RequestBody, ByteBuffer> subscriber = new FutureSubscriber<>() {
 
@@ -85,68 +80,58 @@ public class OkHttpClient extends HttpClient {
 
 			publisher.subscribe(subscriber);
 			return subscriber.get();
-		}).orElse(null);
-		builder.method(request.method(), body);
+		});
+
+		builder.method(request.method(), optional.orElse(null));
 		return builder.build();
 	}
 
-	@SneakyThrows
-	public static <T> HttpResponse<T> convert(HttpRequest request, Response response,
-			HttpResponse.BodyHandler<T> handler) {
-		HttpResponse.ResponseInfo info = new OkHttpResponse.ResponseInfo(response);
-
-		HttpResponse.BodySubscriber<T> subscriber = handler.apply(info);
-
-		CompletableFuture<T> cf = new CompletableFuture<>();
-
-		try {
-			ResponseBody body = response.body();
-			if (body != null) {
-				List<ByteBuffer> buffers = new ArrayList<>();
-				InputStream stream = body.byteStream();
-				StreamUtils.read(stream, (bytes, length) -> {
-					// 减少复制 - 也不知道划不划得来
-					byte[] copy = bytes.length == length ? bytes : Arrays.copyOf(bytes, length);
-					// 如果使用 ByteBuffer.wrap(bytes, 0, length) 返回值会有问题
-					ByteBuffer buffer = ByteBuffer.wrap(copy);
-					buffers.add(buffer);
-				});
-				subscriber.onNext(buffers);
-			}
-			subscriber.onComplete();
-
-			subscriber.getBody().whenComplete((r, t) -> {
-				if (t != null) {
-					cf.completeExceptionally(t);
-				}
-				else {
-					cf.complete(r);
-				}
-			});
-
-			T t = cf.get();
-			return new OkHttpResponse<>(request, info, t);
+	public static HttpResponse convert(HttpRequest request, Response response) throws IOException {
+		int code = response.code();
+		ResponseBody body = response.body();
+		InputStream stream;
+		if (body != null) {
+			InputStream source = body.byteStream();
+			stream = StreamUtils.clone(source);
 		}
-		catch (ExecutionException e) {
-			throw e.getCause();
+		else {
+			stream = new ByteArrayInputStream(new byte[0]);
 		}
+
+		Map<String, List<String>> map = response.headers().toMultimap();
+		HttpHeaders headers = HttpHeaders.of(map);
+		return new HttpResponse(request, code, headers, stream);
 	}
 
 	@Override
-	public <T> HttpResponse<T> request(HttpRequest request, HttpResponse.BodyHandler<T> handler) throws IOException {
+	public HttpResponse request(HttpRequest request) throws IOException {
 		Request okhttp = convert(request);
 
 		try (Response response = request(okhttp)) {
-			return convert(request, response, handler);
+			return convert(request, response);
 		}
 	}
 
 	@Override
-	public <T> void request(HttpRequest request, HttpResponse.BodyHandler<T> handler, ResponseCallback<T> callback)
-			throws IOException {
+	public void request(HttpRequest request, ResponseCallback callback) throws IOException {
 		Request okhttp = convert(request);
-		OkHttpResponseCallback<T> enqueue = new OkHttpResponseCallback<>(request, handler, callback);
-		request(okhttp, enqueue);
+		request(okhttp, new Callback() {
+			@Override
+			public void onFailure(@NotNull Call call, @NotNull IOException e) {
+				callback.onError(request, e);
+			}
+
+			@Override
+			public void onResponse(@NotNull Call call, @NotNull Response r) throws IOException {
+				try {
+					HttpResponse response = convert(request, r);
+					callback.onResponse(response);
+				}
+				catch (Throwable e) {
+					callback.onError(request, e);
+				}
+			}
+		});
 	}
 
 	// region 原始请求

@@ -1,6 +1,5 @@
 package live.lingting.framework.http;
 
-import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.util.ThreadUtils;
 
 import javax.net.SocketFactory;
@@ -14,7 +13,6 @@ import java.net.CookieStore;
 import java.net.ProxySelector;
 import java.net.URI;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
@@ -40,23 +38,17 @@ public abstract class HttpClient {
 
 	public abstract Object client();
 
-	public abstract <T> HttpResponse<T> request(HttpRequest request, HttpResponse.BodyHandler<T> handler)
-			throws IOException;
+	public abstract HttpResponse request(HttpRequest request) throws IOException;
 
-	public abstract <T> void request(HttpRequest request, HttpResponse.BodyHandler<T> handler,
-			ResponseCallback<T> callback) throws IOException;
+	public abstract void request(HttpRequest request, ResponseCallback callback) throws IOException;
 
 	public <T> T request(HttpRequest request, Class<T> cls) throws IOException {
-		HttpResponse<String> response = request(request, HttpResponse.BodyHandlers.ofString());
-		String body = response.body();
-		if (String.class.isAssignableFrom(cls)) {
-			return (T) body;
-		}
-		return JacksonUtils.toObj(body, cls);
+		HttpResponse response = request(request);
+		return response.convert(cls);
 	}
 
-	public <T> HttpResponse<T> get(URI uri, HttpResponse.BodyHandler<T> handler) throws IOException {
-		return request(HttpRequest.newBuilder().GET().uri(uri).build(), handler);
+	public HttpResponse get(URI uri) throws IOException {
+		return request(HttpRequest.newBuilder().GET().uri(uri).build());
 	}
 
 	public abstract static class Builder<C extends HttpClient, B extends HttpClient.Builder<C, B>> {

@@ -1,17 +1,21 @@
 package live.lingting.framework.http;
 
+import live.lingting.framework.http.header.HttpHeaders;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Authenticator;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.security.SecureRandom;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -22,6 +26,14 @@ public class JavaHttpClient extends HttpClient {
 
 	protected final java.net.http.HttpClient client;
 
+	public static HttpResponse convert(java.net.http.HttpResponse<InputStream> r) {
+		HttpRequest request = r.request();
+		int code = r.statusCode();
+		Map<String, List<String>> map = r.headers().map();
+		HttpHeaders headers = HttpHeaders.of(map);
+		return new HttpResponse(request, code, headers, r.body());
+	}
+
 	@Override
 	public java.net.http.HttpClient client() {
 		return client;
@@ -29,19 +41,22 @@ public class JavaHttpClient extends HttpClient {
 
 	@SneakyThrows
 	@Override
-	public <T> HttpResponse<T> request(HttpRequest request, HttpResponse.BodyHandler<T> handler) throws IOException {
-		return client.send(request, handler);
+	public HttpResponse request(HttpRequest request) throws IOException {
+		java.net.http.HttpResponse<InputStream> r = client.send(request, BodyHandlers.ofInputStream());
+		return convert(r);
 	}
 
 	@Override
-	public <T> void request(HttpRequest request, HttpResponse.BodyHandler<T> handler, ResponseCallback<T> callback) {
-		client.sendAsync(request, handler).whenComplete((response, throwable) -> {
+	public void request(HttpRequest request, ResponseCallback callback) {
+		client.sendAsync(request, BodyHandlers.ofInputStream()).whenComplete((r, throwable) -> {
 			try {
+				HttpResponse response = convert(r);
+
 				if (throwable != null) {
 					callback.onError(request, throwable);
 				}
 				else {
-					callback.onResponse(request, response);
+					callback.onResponse(response);
 				}
 			}
 			catch (Throwable e) {

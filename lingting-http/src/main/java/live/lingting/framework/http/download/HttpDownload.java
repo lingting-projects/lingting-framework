@@ -3,6 +3,8 @@ package live.lingting.framework.http.download;
 import live.lingting.framework.download.MultipartDownload;
 import live.lingting.framework.exception.DownloadException;
 import live.lingting.framework.http.HttpClient;
+import live.lingting.framework.http.HttpResponse;
+import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.multipart.Part;
 import live.lingting.framework.util.StreamUtils;
 
@@ -10,9 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 
 /**
  * @author lingting 2023-12-20 16:43
@@ -55,11 +55,10 @@ public class HttpDownload extends MultipartDownload<HttpDownload> {
 	}
 
 	void write(HttpRequest request, OutputStream output) throws IOException {
-		HttpResponse<InputStream> response = client.request(request, HttpResponse.BodyHandlers.ofInputStream());
+		HttpResponse response = client.request(request);
 
-		int code = response.statusCode();
-		if (code < 200 || code > 299) {
-			throw new DownloadException(String.format("response status: %d", code));
+		if (!response.is2xx()) {
+			throw new DownloadException(String.format("response status: %d", response.code()));
 		}
 
 		try (InputStream input = response.body()) {
@@ -71,9 +70,9 @@ public class HttpDownload extends MultipartDownload<HttpDownload> {
 	@Override
 	public long size() throws IOException {
 		HttpRequest.Builder builder = HttpRequest.newBuilder().uri(uri).header("Accept-Encoding", "identity");
-		HttpResponse<InputStream> response = client.request(builder.build(), HttpResponse.BodyHandlers.ofInputStream());
+		HttpResponse response = client.request(builder.build());
 		HttpHeaders headers = response.headers();
-		return headers.firstValueAsLong("Content-Length").orElse(0);
+		return headers.contentLength();
 	}
 
 	@Override
@@ -84,11 +83,10 @@ public class HttpDownload extends MultipartDownload<HttpDownload> {
 		}
 
 		HttpRequest request = builder.build();
-		HttpResponse<InputStream> response = client.request(request, HttpResponse.BodyHandlers.ofInputStream());
+		HttpResponse response = client.request(request);
 
-		int code = response.statusCode();
-		if (code < 200 || code > 299) {
-			throw new DownloadException(String.format("response status: %d", code));
+		if (!response.is2xx()) {
+			throw new DownloadException(String.format("response status: %d", response.code()));
 		}
 
 		return response.body();

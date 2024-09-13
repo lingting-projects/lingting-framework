@@ -8,7 +8,8 @@ import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.net.URI;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandler;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,15 +44,15 @@ class HttpClientTest {
 
 	void assertGet(HttpClient http) throws IOException, InterruptedException {
 		HttpRequest.Builder builder = HttpRequest.newBuilder().uri(URI.create("https://www.baidu.com"));
-		HttpResponse.BodyHandler<String> handler = HttpResponse.BodyHandlers.ofString();
+		BodyHandler<String> handler = BodyHandlers.ofString();
 
-		HttpResponse<String> httpResponse = http.request(builder.build(), handler);
-		HttpResponse<String> raw = client.send(builder.build(), handler);
+		HttpResponse httpResponse = http.request(builder.build());
+		java.net.http.HttpResponse<String> raw = client.send(builder.build(), handler);
 
 		assertNotNull(httpResponse.body());
 		assertNotNull(raw.body());
 
-		assertEquals(raw.body(), httpResponse.body());
+		assertEquals(raw.body(), httpResponse.string());
 	}
 
 	void assertPost(HttpClient http) throws IOException, InterruptedException {
@@ -59,12 +60,12 @@ class HttpClientTest {
 			.POST(HttpRequest.BodyPublishers.ofString("user_login=sunlisten@foxmail.com"))
 			.uri(URI.create("https://gitee.com/check_user_login"));
 
-		HttpResponse.BodyHandler<String> handler = HttpResponse.BodyHandlers.ofString();
+		BodyHandler<String> handler = BodyHandlers.ofString();
 
-		HttpResponse<String> httpResponse = http.request(builder.build(), handler);
-		HttpResponse<String> raw = client.send(builder.build(), handler);
+		HttpResponse httpResponse = http.request(builder.build());
+		java.net.http.HttpResponse<String> raw = client.send(builder.build(), handler);
 
-		assertEquals(raw.body(), httpResponse.body());
+		assertEquals(raw.body(), httpResponse.string());
 	}
 
 	void assertCookie(HttpClient http) {

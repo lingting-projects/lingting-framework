@@ -3,6 +3,7 @@ package live.lingting.framework.http.download;
 import live.lingting.framework.util.DigestUtils;
 import live.lingting.framework.util.FileUtils;
 import live.lingting.framework.util.StreamUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -19,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author lingting 2024-01-29 16:43
  */
+@Slf4j
 class HttpDownloadTest {
 
 	final URI url = URI.create(
@@ -36,6 +38,10 @@ class HttpDownloadTest {
 		assertThrowsExactly(IllegalStateException.class, download::await);
 
 		HttpDownload await = download.start().await();
+
+		if (!download.isSuccess()) {
+			log.error("error", download.getEx());
+		}
 
 		assertEquals(download, await);
 		assertTrue(download.isStart());
@@ -63,6 +69,11 @@ class HttpDownloadTest {
 		assertFalse(download.isFinished());
 		assertThrowsExactly(IllegalStateException.class, download::await);
 		HttpDownload await = download.start().await();
+
+		if (!download.isSuccess()) {
+			log.error("error", download.getEx());
+		}
+
 		assertEquals(download, await);
 		assertTrue(download.isStart());
 		assertTrue(download.isSuccess());
