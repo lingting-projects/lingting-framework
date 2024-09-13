@@ -67,6 +67,7 @@ public abstract class MultipartDownload<D extends MultipartDownload<D>> implemen
 	@Getter
 	protected DownloadStatus downloadStatus = WAIT;
 
+	@Getter
 	protected DownloadException ex = null;
 
 	protected File file;
