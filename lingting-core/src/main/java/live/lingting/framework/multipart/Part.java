@@ -28,4 +28,25 @@ public class Part {
 		this.size = end - start + 1;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		Part part = (Part) o;
+		return index.equals(part.index) && start.equals(part.start) && end.equals(part.end);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = index.hashCode();
+		result = 31 * result + start.hashCode();
+		result = 31 * result + end.hashCode();
+		return result;
+	}
+
 }

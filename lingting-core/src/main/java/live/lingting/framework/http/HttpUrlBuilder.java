@@ -4,7 +4,6 @@ import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.value.MultiValue;
 import live.lingting.framework.value.multi.ListMultiValue;
-import live.lingting.framework.value.multi.UnmodifiableMultiValue;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -63,7 +62,7 @@ public class HttpUrlBuilder {
 			String field = entry.getKey();
 			Collection<String> list = entry.getValue();
 			if (CollectionUtils.isEmpty(list)) {
-				builder.append(field);
+				builder.append(field).append("&");
 			}
 			else {
 				for (String v : list) {
@@ -78,8 +77,8 @@ public class HttpUrlBuilder {
 		return builder.toString();
 	}
 
-	public UnmodifiableMultiValue<String, String> params() {
-		return (UnmodifiableMultiValue<String, String>) params.unmodifiable();
+	public MultiValue<String, String, Collection<String>> params() {
+		return params.unmodifiable();
 	}
 
 	public String scheme() {

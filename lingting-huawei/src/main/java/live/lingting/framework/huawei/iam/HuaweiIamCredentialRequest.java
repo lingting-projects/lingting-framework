@@ -26,8 +26,8 @@ public class HuaweiIamCredentialRequest extends HuaweiIamRequest {
 	protected Collection<HuaweiStatement> statements;
 
 	@Override
-	public HttpUrlBuilder urlBuilder() {
-		return HttpUrlBuilder.builder().uri("v3.0/OS-CREDENTIAL/securitytokens");
+	public void configure(HttpUrlBuilder builder) {
+		builder.uri("v3.0/OS-CREDENTIAL/securitytokens");
 	}
 
 	@Override

@@ -2,7 +2,9 @@ package live.lingting.framework.huawei.iam;
 
 import live.lingting.framework.http.HttpMethod;
 import live.lingting.framework.http.HttpUrlBuilder;
+import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.jackson.JacksonUtils;
+import lombok.Getter;
 
 import java.net.http.HttpRequest;
 
@@ -10,6 +12,9 @@ import java.net.http.HttpRequest;
  * @author lingting 2024-09-12 21:43
  */
 public abstract class HuaweiIamRequest {
+
+	@Getter
+	protected HttpHeaders headers = HttpHeaders.empty();
 
 	public boolean usingToken() {
 		return true;
@@ -23,7 +28,13 @@ public abstract class HuaweiIamRequest {
 		return HttpMethod.POST;
 	}
 
-	public abstract HttpUrlBuilder urlBuilder();
+	public HttpUrlBuilder urlBuilder() {
+		HttpUrlBuilder builder = HttpUrlBuilder.builder();
+		configure(builder);
+		return builder;
+	}
+
+	public abstract void configure(HttpUrlBuilder builder);
 
 	public HttpRequest.Builder builder() {
 		String contentType = contentType();

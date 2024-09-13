@@ -2,6 +2,7 @@ package live.lingting.framework.huawei;
 
 import live.lingting.framework.http.HttpClient;
 import live.lingting.framework.http.HttpResponse;
+import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.huawei.exception.HuaweiIamException;
 import live.lingting.framework.huawei.iam.HuaweiIamCredentialRequest;
 import live.lingting.framework.huawei.iam.HuaweiIamCredentialResponse;
@@ -10,7 +11,9 @@ import live.lingting.framework.huawei.iam.HuaweiIamToken;
 import live.lingting.framework.huawei.iam.HuaweiIamTokenRequest;
 import live.lingting.framework.huawei.iam.HuaweiIamTokenResponse;
 import live.lingting.framework.huawei.properties.HuaweiIamProperties;
+import live.lingting.framework.huawei.properties.HuaweiObsProperties;
 import live.lingting.framework.s3.Credential;
+import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.value.WaitValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -65,6 +68,8 @@ public class HuaweiIam {
 			HuaweiIamToken token = getTokenValue().notNull();
 			builder.header("X-Auth-Token", token.getValue());
 		}
+		HttpHeaders headers = iamRequest.getHeaders();
+		headers.each(builder::header);
 		HttpRequest request = builder.uri(uri).build();
 		HttpResponse response = client.request(request);
 
@@ -140,5 +145,68 @@ public class HuaweiIam {
 		LocalDateTime expire = HuaweiUtils.parse(convert.getExpire(), properties.getZone());
 		return new Credential(ak, sk, token, expire);
 	}
+
+	// region obs
+
+	public HuaweiObsBucket obsBucket(String region, String bucket) {
+		HuaweiObsProperties s = new HuaweiObsProperties();
+		s.setRegion(region);
+		s.setBucket(bucket);
+		return obsBucket(s);
+	}
+
+	public HuaweiObsBucket obsBucket(String region, String bucket, Collection<String> actions) {
+		HuaweiObsProperties s = new HuaweiObsProperties();
+		s.setRegion(region);
+		s.setBucket(bucket);
+		return obsBucket(s, actions);
+	}
+
+	public HuaweiObsBucket obsBucket(HuaweiObsProperties properties) {
+		return obsBucket(properties, HuaweiActions.OBS_BUCKET_DEFAULT);
+	}
+
+	public HuaweiObsBucket obsBucket(HuaweiObsProperties properties, Collection<String> actions) {
+		String bucket = StringUtils.hasText(properties.getBucket()) ? properties.getBucket() : "*";
+		HuaweiStatement statement = HuaweiStatement.allow();
+		statement.addAction(actions);
+		statement.addResource("obs:*:*:bucket:%s".formatted(bucket));
+		statement.addResource("obs:*:*:object:%s/*".formatted(bucket));
+		Credential credential = credential(statement);
+		HuaweiObsProperties copy = properties.copy();
+		copy.useCredential(credential);
+		return new HuaweiObsBucket(copy);
+	}
+
+	public HuaweiObsObject obsObject(String region, String bucket, String key) {
+		HuaweiObsProperties s = new HuaweiObsProperties();
+		s.setRegion(region);
+		s.setBucket(bucket);
+		return obsObject(s, key);
+	}
+
+	public HuaweiObsObject obsObject(String region, String bucket, String key, Collection<String> actions) {
+		HuaweiObsProperties s = new HuaweiObsProperties();
+		s.setRegion(region);
+		s.setBucket(bucket);
+		return obsObject(s, key, actions);
+	}
+
+	public HuaweiObsObject obsObject(HuaweiObsProperties properties, String key) {
+		return obsObject(properties, key, HuaweiActions.OBS_OBJECT_DEFAULT);
+	}
+
+	public HuaweiObsObject obsObject(HuaweiObsProperties properties, String key, Collection<String> actions) {
+		String bucket = properties.getBucket();
+		HuaweiStatement statement = HuaweiStatement.allow();
+		statement.addAction(actions);
+		statement.addResource("obs:*:*:object:%s/%s".formatted(bucket, key));
+		Credential credential = credential(statement);
+		HuaweiObsProperties copy = properties.copy();
+		copy.useCredential(credential);
+		return new HuaweiObsObject(copy, key);
+	}
+
+	// endregion
 
 }

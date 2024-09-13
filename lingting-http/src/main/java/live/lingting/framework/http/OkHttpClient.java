@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static okhttp3.internal.http.HttpMethod.permitsRequestBody;
+
 /**
  * @author lingting 2024-09-02 15:36
  */
@@ -55,7 +57,8 @@ public class OkHttpClient extends HttpClient {
 
 		// 请求体
 		Optional<RequestBody> optional = request.bodyPublisher().map(publisher -> {
-			if (publisher.contentLength() < 1) {
+			// 不需要请求体则不携带
+			if (!permitsRequestBody(request.method().toUpperCase())) {
 				return null;
 			}
 			MediaType type = Optional.ofNullable(headers.contentType()).map(MediaType::parse).orElse(null);

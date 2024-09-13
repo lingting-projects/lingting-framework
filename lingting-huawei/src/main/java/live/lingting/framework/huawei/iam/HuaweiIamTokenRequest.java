@@ -32,8 +32,8 @@ public class HuaweiIamTokenRequest extends HuaweiIamRequest {
 	}
 
 	@Override
-	public HttpUrlBuilder urlBuilder() {
-		return HttpUrlBuilder.builder().uri("v3/auth/tokens").addParam("nocatalog", true);
+	public void configure(HttpUrlBuilder builder) {
+		builder.uri("v3/auth/tokens");
 	}
 
 	@Override

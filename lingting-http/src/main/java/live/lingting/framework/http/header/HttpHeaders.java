@@ -25,6 +25,10 @@ public interface HttpHeaders extends MultiValue<String, String, Collection<Strin
 
 	// region get
 
+	default String authorization() {
+		return first("Authorization");
+	}
+
 	default String contentType() {
 		return first("Content-Type");
 	}
@@ -34,9 +38,18 @@ public interface HttpHeaders extends MultiValue<String, String, Collection<Strin
 		return Long.parseLong(first);
 	}
 
+	default String etag() {
+		return first("ETag");
+	}
+
 	// endregion
 
 	// region set
+
+	default HttpHeaders authorization(String authorization) {
+		put("Authorization", authorization);
+		return this;
+	}
 
 	default HttpHeaders contentType(String contentType) {
 		put("Content-Type", contentType);
@@ -45,6 +58,11 @@ public interface HttpHeaders extends MultiValue<String, String, Collection<Strin
 
 	default HttpHeaders contentLength(long contentLength) {
 		put("Content-Length", String.valueOf(contentLength));
+		return this;
+	}
+
+	default HttpHeaders etag(String etag) {
+		put("ETag", etag);
 		return this;
 	}
 

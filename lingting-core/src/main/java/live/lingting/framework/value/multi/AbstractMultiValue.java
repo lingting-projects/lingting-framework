@@ -142,6 +142,11 @@ public abstract class AbstractMultiValue<K, V, C extends Collection<V>> implemen
 	}
 
 	@Override
+	public int size() {
+		return map.size();
+	}
+
+	@Override
 	public boolean hasKey(K key) {
 		key = convert(key);
 		return map.containsKey(key);
