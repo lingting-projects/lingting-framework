@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import live.lingting.framework.jackson.module.BooleanModule;
 import live.lingting.framework.jackson.module.EnumModule;
 import live.lingting.framework.jackson.module.JavaTimeModule;
@@ -31,7 +32,10 @@ public class JacksonUtils {
 	@Getter
 	static ObjectMapper mapper = defaultConfig(new ObjectMapper());
 
-	public static ObjectMapper defaultConfig(ObjectMapper mapper) {
+	@Getter
+	static XmlMapper xmlMapper = defaultConfig(new XmlMapper());
+
+	public static <T extends ObjectMapper> T defaultConfig(T mapper) {
 		// 序列化时忽略未知属性
 		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 		// 单值元素可以被设置成 array, 防止处理 ["a"] 为 List<String> 时报错
@@ -68,6 +72,15 @@ public class JacksonUtils {
 		consumer.accept(mapper);
 	}
 
+	public static void configXml(XmlMapper xmlMapper) {
+		JacksonUtils.xmlMapper = xmlMapper;
+	}
+
+	public static void configXml(Consumer<XmlMapper> consumer) {
+		consumer.accept(xmlMapper);
+	}
+
+	// region json
 	@SneakyThrows
 	public static String toJson(Object obj) {
 		return mapper.writeValueAsString(obj);
@@ -124,5 +137,68 @@ public class JacksonUtils {
 	public static JsonNode toNode(String json) {
 		return mapper.readTree(json);
 	}
+
+	// endregion
+
+	// region xml
+
+	@SneakyThrows
+	public static String toXml(Object obj) {
+		return xmlMapper.writeValueAsString(obj);
+	}
+
+	@SneakyThrows
+	public static <T> T xmlToObj(String xml, Class<T> r) {
+		if (r.isAssignableFrom(String.class)) {
+			return (T) xml;
+		}
+		return xmlMapper.readValue(xml, r);
+	}
+
+	@SneakyThrows
+	public static <T> T xmlToObj(String xml, Type t) {
+		JavaType type = xmlMapper.constructType(t);
+		if (type.getRawClass().equals(String.class)) {
+			return (T) xml;
+		}
+		return xmlMapper.readValue(xml, type);
+	}
+
+	@SneakyThrows
+	public static <T> T xmlToObj(String xml, TypeReference<T> t) {
+		return xmlMapper.readValue(xml, t);
+	}
+
+	public static <T> T xmlToObj(String xml, TypeReference<T> t, T defaultVal) {
+		try {
+			return xmlMapper.readValue(xml, t);
+		}
+		catch (Exception e) {
+			return defaultVal;
+		}
+	}
+
+	@SneakyThrows
+	public static <T> T xmlToObj(JsonNode node, Class<T> r) {
+		return xmlMapper.treeToValue(node, r);
+	}
+
+	@SneakyThrows
+	public static <T> T xmlToObj(JsonNode node, Type t) {
+		return xmlMapper.treeToValue(node, xmlMapper.constructType(t));
+	}
+
+	@SneakyThrows
+	public static <T> T xmlToObj(JsonNode node, TypeReference<T> t) {
+		JavaType javaType = xmlMapper.constructType(t.getType());
+		return xmlMapper.treeToValue(node, javaType);
+	}
+
+	@SneakyThrows
+	public static JsonNode xmlToNode(String xml) {
+		return xmlMapper.readTree(xml);
+	}
+
+	// endregion
 
 }
