@@ -25,6 +25,7 @@ import java.util.function.Consumer;
  * @author lingting 2021/6/9 14:28
  */
 @UtilityClass
+@SuppressWarnings("unchecked")
 public class JacksonUtils {
 
 	@Getter
@@ -74,12 +75,19 @@ public class JacksonUtils {
 
 	@SneakyThrows
 	public static <T> T toObj(String json, Class<T> r) {
+		if (r.isAssignableFrom(String.class)) {
+			return (T) json;
+		}
 		return mapper.readValue(json, r);
 	}
 
 	@SneakyThrows
 	public static <T> T toObj(String json, Type t) {
-		return mapper.readValue(json, mapper.constructType(t));
+		JavaType type = mapper.constructType(t);
+		if (type.getRawClass().equals(String.class)) {
+			return (T) json;
+		}
+		return mapper.readValue(json, type);
 	}
 
 	@SneakyThrows
