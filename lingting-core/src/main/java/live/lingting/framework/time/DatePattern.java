@@ -17,9 +17,9 @@ public class DatePattern {
 
 	public static final ZoneId DEFAULT_ZONE_ID = DEFAULT_ZONE_OFFSET.normalized();
 
-	public static final ZoneOffset GZM_ZONE_OFFSET = ZoneOffset.of("+0");
+	public static final ZoneOffset GMT_ZONE_OFFSET = ZoneOffset.of("+0");
 
-	public static final ZoneId GZM_ZONE_ID = GZM_ZONE_OFFSET.normalized();
+	public static final ZoneId GMT_ZONE_ID = GMT_ZONE_OFFSET.normalized();
 
 	public static final ZoneId SYSTEM_ZONE_ID = ZoneId.systemDefault();
 

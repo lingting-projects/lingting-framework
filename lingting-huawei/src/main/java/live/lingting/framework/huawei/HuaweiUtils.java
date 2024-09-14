@@ -84,7 +84,7 @@ public class HuaweiUtils {
 
 	public static String date(LocalDateTime now) {
 		ZonedDateTime atZone = now.atZone(DatePattern.SYSTEM_ZONE_ID);
-		ZonedDateTime atGmt = atZone.withZoneSameInstant(DatePattern.GZM_ZONE_ID);
+		ZonedDateTime atGmt = atZone.withZoneSameInstant(DatePattern.GMT_ZONE_ID);
 		return RFC_1123_DATE_TIME.format(atGmt);
 	}
 
