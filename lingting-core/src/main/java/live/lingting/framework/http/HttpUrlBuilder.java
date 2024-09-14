@@ -58,19 +58,24 @@ public class HttpUrlBuilder {
 	}
 
 	public static String buildQuery(Map<String, Collection<String>> map) {
+		if (CollectionUtils.isEmpty(map)) {
+			return "";
+		}
+		List<String> keys = map.keySet().stream().sorted().toList();
+
 		StringBuilder builder = new StringBuilder();
-		for (Map.Entry<String, Collection<String>> entry : map.entrySet()) {
-			String field = entry.getKey();
-			Collection<String> list = entry.getValue();
+		for (String key : keys) {
+			Collection<String> list = map.get(key);
 			if (CollectionUtils.isEmpty(list)) {
-				builder.append(field).append("&");
+				builder.append(key).append("&");
 			}
 			else {
 				for (String v : list) {
-					builder.append(field).append("=").append(v).append("&");
+					builder.append(key).append("=").append(v).append("&");
 				}
 			}
 		}
+
 		int lastIndex = builder.length() - 1;
 		if (!builder.isEmpty() && builder.charAt(lastIndex) == '&') {
 			builder.deleteCharAt(lastIndex);

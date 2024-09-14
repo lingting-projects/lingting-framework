@@ -8,11 +8,9 @@ import live.lingting.framework.huawei.exception.HuaweiObsException;
 import live.lingting.framework.huawei.obs.HuaweiObsRequest;
 import live.lingting.framework.huawei.properties.HuaweiObsProperties;
 import live.lingting.framework.util.StringUtils;
-import live.lingting.framework.value.multi.StringMultiValue;
 import org.slf4j.Logger;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
 
 import static live.lingting.framework.huawei.HuaweiUtils.HEADER_DATE;
 
@@ -52,7 +50,7 @@ public abstract class HuaweiObs extends ApiClient<HuaweiObsRequest> {
 
 	@Override
 	protected void configure(HuaweiObsRequest request, HttpHeaders headers, HttpUrlBuilder urlBuilder) {
-		String authorization = authorization(request, headers, urlBuilder.buildPath(), urlBuilder.params());
+		String authorization = authorization(request, headers, urlBuilder.buildPath(), urlBuilder.buildQuery());
 		headers.authorization(authorization);
 	}
 
@@ -66,8 +64,7 @@ public abstract class HuaweiObs extends ApiClient<HuaweiObsRequest> {
 		return response;
 	}
 
-	protected String authorization(HuaweiObsRequest request, HttpHeaders headers, String path,
-			StringMultiValue params) {
+	protected String authorization(HuaweiObsRequest request, HttpHeaders headers, String path, String query) {
 		String method = request.method().name().toUpperCase();
 		String md5 = "";
 		String type = request.contentType();
@@ -88,15 +85,8 @@ public abstract class HuaweiObs extends ApiClient<HuaweiObsRequest> {
 			resourceBuilder.append(path, 1, path.length());
 		}
 
-		if (!params.isEmpty()) {
-			resourceBuilder.append("?");
-			LinkedHashMap<String, Collection<String>> map = new LinkedHashMap<>(params.size());
-			params.keys().stream().sorted().forEach(k -> {
-				Collection<String> collection = params.get(k);
-				map.put(k, collection);
-			});
-			String query = HttpUrlBuilder.buildQuery(map);
-			resourceBuilder.append(query);
+		if (StringUtils.hasText(query)) {
+			resourceBuilder.append("?").append(query);
 		}
 		String source = method + "\n" + md5 + "\n" + type + "\n" + date + "\n" + headersBuilder + resourceBuilder;
 		return HuaweiUtils.authorization(properties.getAk(), properties.getSk(), source);
