@@ -18,7 +18,6 @@ import live.lingting.framework.value.WaitValue;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -34,7 +33,6 @@ import static live.lingting.framework.huawei.HuaweiUtils.TOKEN_EARLY_EXPIRE;
 /**
  * @author lingting 2024-09-12 21:27
  */
-@Slf4j
 public class HuaweiIam extends ApiClient<HuaweiIamRequest> {
 
 	protected final HuaweiIamProperties properties;

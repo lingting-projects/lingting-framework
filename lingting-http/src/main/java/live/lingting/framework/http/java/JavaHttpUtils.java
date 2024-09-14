@@ -2,11 +2,14 @@ package live.lingting.framework.http.java;
 
 import live.lingting.framework.flow.FutureSubscriber;
 import live.lingting.framework.util.FileUtils;
+import live.lingting.framework.util.StreamUtils;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.http.HttpRequest;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -40,6 +43,13 @@ public class JavaHttpUtils {
 
 		publisher.subscribe(subscriber);
 		return subscriber.get();
+	}
+
+	public static String toString(HttpRequest.BodyPublisher publisher) throws IOException {
+		File file = write(publisher);
+		try (FileInputStream stream = new FileInputStream(file)) {
+			return StreamUtils.toString(stream);
+		}
 	}
 
 }

@@ -31,10 +31,14 @@ public class DatePattern {
 
 	public static final String NORM_TIME_PATTERN = "HH:mm:ss";
 
+	public static final String ISO_8601_DATETIME_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+
 	public static final DateTimeFormatter FORMATTER_YMD_HMS = DateTimeFormatter.ofPattern(NORM_DATETIME_PATTERN);
 
 	public static final DateTimeFormatter FORMATTER_YMD = DateTimeFormatter.ofPattern(NORM_DATE_PATTERN);
 
 	public static final DateTimeFormatter FORMATTER_HMS = DateTimeFormatter.ofPattern(NORM_TIME_PATTERN);
+
+	public static final DateTimeFormatter FORMATTER_ISO_8601 = DateTimeFormatter.ofPattern(ISO_8601_DATETIME_PATTERN);
 
 }

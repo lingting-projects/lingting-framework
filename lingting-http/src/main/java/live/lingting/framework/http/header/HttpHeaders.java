@@ -5,6 +5,9 @@ import live.lingting.framework.value.MultiValue;
 import java.util.Collection;
 import java.util.Map;
 
+import static live.lingting.framework.util.HttpUtils.HEADER_AUTHORIZATION;
+import static live.lingting.framework.util.HttpUtils.HEADER_HOST;
+
 /**
  * @author lingting 2024-09-12 23:38
  */
@@ -25,8 +28,12 @@ public interface HttpHeaders extends MultiValue<String, String, Collection<Strin
 
 	// region get
 
+	default String host() {
+		return first(HEADER_HOST);
+	}
+
 	default String authorization() {
-		return first("Authorization");
+		return first(HEADER_AUTHORIZATION);
 	}
 
 	default String contentType() {
@@ -46,8 +53,13 @@ public interface HttpHeaders extends MultiValue<String, String, Collection<Strin
 
 	// region set
 
+	default HttpHeaders host(String host) {
+		put(HEADER_HOST, host);
+		return this;
+	}
+
 	default HttpHeaders authorization(String authorization) {
-		put("Authorization", authorization);
+		put(HEADER_AUTHORIZATION, authorization);
 		return this;
 	}
 

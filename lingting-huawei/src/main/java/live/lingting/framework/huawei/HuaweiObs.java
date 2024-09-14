@@ -8,7 +8,6 @@ import live.lingting.framework.huawei.exception.HuaweiObsException;
 import live.lingting.framework.huawei.obs.HuaweiObsRequest;
 import live.lingting.framework.huawei.properties.HuaweiObsProperties;
 import live.lingting.framework.util.StringUtils;
-import org.slf4j.Logger;
 
 import java.util.Collection;
 
@@ -24,8 +23,6 @@ public abstract class HuaweiObs extends ApiClient<HuaweiObsRequest> {
 	public static final String HEADER_ACL = "x-obs-acl";
 
 	public static final String HEADER_TOKEN = "x-obs-security-token";
-
-	protected final Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
 
 	protected final HuaweiObsProperties properties;
 
