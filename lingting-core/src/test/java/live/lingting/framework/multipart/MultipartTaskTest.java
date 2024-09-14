@@ -31,7 +31,7 @@ class MultipartTaskTest {
 		long size = bytes.length;
 		long partSize = 3;
 		long number = Multipart.calculate(size, partSize);
-		Multipart multipart = new Multipart(input, partSize);
+		Multipart multipart = Multipart.builder().source(input).partSize(partSize).build();
 
 		assertEquals(number, multipart.getParts().size());
 		assertEquals(size, multipart.getParts().stream().mapToLong(Part::getSize).sum());

@@ -3,7 +3,6 @@ package live.lingting.framework.multipart;
 import live.lingting.framework.stream.RandomAccessInputStream;
 import live.lingting.framework.util.FileUtils;
 import live.lingting.framework.util.StreamUtils;
-import live.lingting.framework.util.StringUtils;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
@@ -20,16 +19,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
-import static live.lingting.framework.util.ValueUtils.simpleUuid;
-
 /**
  * @author lingting 2024-09-05 14:47
  */
 public class Multipart {
 
 	public static final File TEMP_DIR = FileUtils.createTempDir("multipart");
-
-	public static final String TEMP_SUFFIX = ".source";
 
 	/**
 	 * 每个分片的最大大小: byte
@@ -63,66 +58,17 @@ public class Multipart {
 
 	protected final Map<Long, File> cache;
 
-	public Multipart(InputStream in, long partSize) throws IOException {
-		this(null, in, partSize);
-	}
-
-	public Multipart(String id, InputStream in, long partSize) throws IOException {
-		this(id, FileUtils.createTemp(in, TEMP_SUFFIX, TEMP_DIR), partSize);
-	}
-
-	protected Multipart(String id, File source, long partSize) {
-		this(id, source, source.length(), partSize);
-	}
-
-	public Multipart(long size, long partSize) {
-		this(null, size, partSize);
-	}
-
-	public Multipart(String id, long size, long partSize) {
-		this(id, null, size, partSize);
-	}
-
-	protected Multipart(String id, File source, long size, long partSize) {
+	protected Multipart(String id, File source, long size, long partSize, Collection<Part> parts) {
+		this.id = id;
 		this.source = source;
-		this.partSize = partSize;
-		this.id = StringUtils.hasText(id) ? id : simpleUuid();
 		this.size = size;
-		this.parts = split(size, partSize);
+		this.parts = parts;
+		this.partSize = partSize;
 		this.cache = new ConcurrentHashMap<>(parts.size());
 	}
 
-	public static Multipart of(File file, long partSize) throws IOException {
-		return of(file, partSize, null);
-	}
-
-	public static Multipart of(File file, long partSize, String id) throws IOException {
-		File temp = FileUtils.createTemp(TEMP_SUFFIX, TEMP_DIR);
-		FileUtils.copy(file, temp, true);
-		return new Multipart(id, temp, partSize);
-	}
-
-	/**
-	 * 生成有限制的 分片
-	 * @param id id
-	 * @param size 总大小
-	 * @param partSize 初始每片大小
-	 * @param maxPartSize 每片大小的最大值
-	 * @param maxPartCount 最多多少个分片
-	 * @return 符合限制的分片
-	 */
-	public static Multipart of(String id, long size, long partSize, long maxPartSize, long maxPartCount) {
-		if (partSize > maxPartSize) {
-			throw new IllegalArgumentException("Part size can not be greater than " + maxPartSize);
-		}
-		long number = calculate(size, partSize);
-		if (number > maxPartCount) {
-			long step = partSize / 2;
-			long newPartSize = partSize + step;
-			return of(id, size, newPartSize, maxPartSize, maxPartCount);
-		}
-
-		return new Multipart(id, size, partSize);
+	public static MultipartBuilder builder() {
+		return new MultipartBuilder();
 	}
 
 	/**
@@ -153,7 +99,7 @@ public class Multipart {
 	}
 
 	public Multipart usePartSize(long partSize, String id) {
-		return new Multipart(id, source, partSize);
+		return new Multipart(id, source, size, partSize, parts);
 	}
 
 	public File file(Part part) {

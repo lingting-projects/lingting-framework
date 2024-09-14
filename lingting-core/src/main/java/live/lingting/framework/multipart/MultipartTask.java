@@ -4,6 +4,7 @@ import live.lingting.framework.lock.JavaReentrantLock;
 import live.lingting.framework.thread.Async;
 import live.lingting.framework.util.ValueUtils;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 
@@ -21,7 +22,7 @@ import static live.lingting.framework.multipart.MultipartTaskStatus.WAIT;
 /**
  * @author lingting 2024-09-05 14:48
  */
-@SuppressWarnings({ "unchecked", "java:S1172", "java:S1181" ,"java:S112"})
+@SuppressWarnings({"unchecked", "java:S1172", "java:S1181", "java:S112"})
 public abstract class MultipartTask<I extends MultipartTask<I>> {
 
 	protected final Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
@@ -48,6 +49,10 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 
 	@Getter
 	protected int failedNumber = 0;
+
+	@Getter
+	@Setter
+	protected long maxRetryCount = 0L;
 
 	protected MultipartTask(Multipart multipart) {
 		this(multipart, new Async());
@@ -122,6 +127,7 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 			if (isCompleted && !currentCompleted) {
 				boolean isSet = reference.compareAndSet(RUNNING, COMPLETED);
 				if (isSet) {
+					log.debug("[{}] onCompleted", multipart.id);
 					onCompleted();
 				}
 			}
@@ -134,6 +140,7 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 		}
 
 		async.submit("MultipartInit-" + multipart.id, () -> {
+			log.debug("[{}] onStarted", multipart.id);
 			onStarted();
 			for (Part part : multipart.parts) {
 				doPart(part);
@@ -167,7 +174,11 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 	}
 
 	protected boolean allowRetry(PartTask task, Throwable t) {
-		return false;
+		return !isInterrupt(t) && task.getRetryCount() < maxRetryCount;
+	}
+
+	public boolean isInterrupt(Throwable throwable) {
+		return throwable instanceof InterruptedException;
 	}
 
 	protected void onStarted() {

@@ -99,8 +99,12 @@ public abstract class MultipartDownload<D extends MultipartDownload<D>> implemen
 		async.submit("download-" + id, () -> {
 			try {
 				long fileSize = size == null || size < 1 ? size() : size;
-				// 不使用多分配下载时, 只设置一个分片
-				Multipart multipart = new Multipart(id, fileSize, multi ? partSize : fileSize);
+				Multipart multipart = Multipart.builder()
+					.id(id)
+					.size(fileSize)
+					// 不使用多分配下载时, 只设置一个分片
+					.partSize(multi ? partSize : fileSize)
+					.build();
 				DownloadFileMultipartTask task = new DownloadFileMultipartTask(multipart, maxRetryCount, async, file,
 						this::download);
 				task.start().await(timeout);

@@ -21,7 +21,6 @@ public class CloneInputStream extends InputStream {
 
 	public static final File TEMP_DIR = FileUtils.createTempDir("clone");
 
-
 	protected final File file;
 
 	/**
@@ -97,6 +96,10 @@ public class CloneInputStream extends InputStream {
 
 	public long size() {
 		return size;
+	}
+
+	public File file() {
+		return file;
 	}
 
 	public FileInputStream copy() throws FileNotFoundException {
