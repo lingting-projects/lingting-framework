@@ -1,8 +1,8 @@
 package live.lingting.framework.http;
 
-import live.lingting.framework.flow.FutureSubscriber;
 import live.lingting.framework.function.ThrowingFunction;
 import live.lingting.framework.http.header.HttpHeaders;
+import live.lingting.framework.http.java.JavaHttpUtils;
 import live.lingting.framework.http.okhttp.OkHttpCookie;
 import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.util.StreamUtils;
@@ -21,10 +21,10 @@ import okhttp3.ResponseBody;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.http.HttpRequest;
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,34 +55,16 @@ public class OkHttpClient extends HttpClient {
 		// 请求地址
 		builder.url(request.uri().toURL());
 
+		MediaType type = Optional.ofNullable(headers.contentType()).map(MediaType::parse).orElse(null);
+
 		// 请求体
 		Optional<RequestBody> optional = request.bodyPublisher().map(publisher -> {
 			// 不需要请求体则不携带
 			if (!permitsRequestBody(request.method().toUpperCase())) {
 				return null;
 			}
-			MediaType type = Optional.ofNullable(headers.contentType()).map(MediaType::parse).orElse(null);
-
-			FutureSubscriber<RequestBody, ByteBuffer> subscriber = new FutureSubscriber<>() {
-
-				@Override
-				public RequestBody convert(List<ByteBuffer> list) {
-					int size = list.stream().mapToInt(ByteBuffer::remaining).sum();
-					byte[] bytes = new byte[size];
-
-					int offset = 0;
-					for (ByteBuffer buffer : list) {
-						int remaining = buffer.remaining();
-						buffer.get(bytes, offset, remaining);
-						offset += remaining;
-					}
-
-					return RequestBody.create(bytes, type);
-				}
-			};
-
-			publisher.subscribe(subscriber);
-			return subscriber.get();
+			File file = JavaHttpUtils.write(publisher);
+			return RequestBody.create(file, type);
 		});
 
 		builder.method(request.method(), optional.orElse(null));
