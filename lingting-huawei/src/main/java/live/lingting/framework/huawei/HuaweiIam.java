@@ -1,6 +1,7 @@
 package live.lingting.framework.huawei;
 
 import live.lingting.framework.http.HttpResponse;
+import live.lingting.framework.http.api.ApiClient;
 import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.huawei.exception.HuaweiIamException;
 import live.lingting.framework.huawei.iam.HuaweiIamCredentialRequest;
@@ -34,7 +35,7 @@ import static live.lingting.framework.huawei.HuaweiUtils.TOKEN_EARLY_EXPIRE;
  * @author lingting 2024-09-12 21:27
  */
 @Slf4j
-public class HuaweiIam extends HuaweiClient<HuaweiIamRequest> {
+public class HuaweiIam extends ApiClient<HuaweiIamRequest> {
 
 	protected final HuaweiIamProperties properties;
 

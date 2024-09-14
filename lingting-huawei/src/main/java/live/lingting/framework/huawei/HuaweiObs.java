@@ -2,6 +2,7 @@ package live.lingting.framework.huawei;
 
 import live.lingting.framework.http.HttpResponse;
 import live.lingting.framework.http.HttpUrlBuilder;
+import live.lingting.framework.http.api.ApiClient;
 import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.huawei.exception.HuaweiObsException;
 import live.lingting.framework.huawei.obs.HuaweiObsRequest;
@@ -18,7 +19,7 @@ import static live.lingting.framework.huawei.HuaweiUtils.HEADER_DATE;
 /**
  * @author lingting 2024-09-13 13:45
  */
-public abstract class HuaweiObs extends HuaweiClient<HuaweiObsRequest> {
+public abstract class HuaweiObs extends ApiClient<HuaweiObsRequest> {
 
 	public static final String HEADER_PREFIX = "x-obs";
 
