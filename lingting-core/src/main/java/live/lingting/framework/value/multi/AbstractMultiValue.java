@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -51,6 +52,15 @@ public abstract class AbstractMultiValue<K, V, C extends Collection<V>> implemen
 	}
 
 	// region fill
+
+	@Override
+	public void add(K key) {
+		if (!allowModify) {
+			throw new UnsupportedOperationException();
+		}
+		absent(key);
+	}
+
 	@Override
 	public void add(K key, V value) {
 		if (!allowModify) {
@@ -125,6 +135,18 @@ public abstract class AbstractMultiValue<K, V, C extends Collection<V>> implemen
 			throw new UnsupportedOperationException();
 		}
 		value.forEach((this::putAll));
+	}
+
+	protected void from(MultiValue<K, V, ? extends Collection<V>> value) {
+		from(value, vs -> {
+			C c = supplier.get();
+			c.addAll(vs);
+			return c;
+		});
+	}
+
+	protected <S extends Collection<V>> void from(MultiValue<K, V, S> value, Function<S, C> function) {
+		value.forEach(((k, vs) -> map.put(k, function.apply(vs))));
 	}
 
 	// endregion

@@ -11,7 +11,7 @@ public class UnmodifiableMultiValue<K, V> extends AbstractMultiValue<K, V, Colle
 
 	public UnmodifiableMultiValue(AbstractMultiValue<K, V, ?> value) {
 		super(false, ArrayList::new);
-		value.forEach(((k, vs) -> map.put(k, Collections.unmodifiableCollection(vs))));
+		from(value, Collections::unmodifiableCollection);
 	}
 
 }

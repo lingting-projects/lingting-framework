@@ -3,7 +3,7 @@ package live.lingting.framework.http;
 import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.value.MultiValue;
-import live.lingting.framework.value.multi.ListMultiValue;
+import live.lingting.framework.value.multi.StringMultiValue;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -20,7 +20,7 @@ import java.util.Map;
 @SuppressWarnings("unchecked")
 public class HttpUrlBuilder {
 
-	protected final ListMultiValue<String, String> params = new ListMultiValue<>();
+	protected final StringMultiValue params = new StringMultiValue();
 
 	protected String scheme = "https";
 
@@ -78,7 +78,7 @@ public class HttpUrlBuilder {
 		return builder.toString();
 	}
 
-	public MultiValue<String, String, Collection<String>> params() {
+	public StringMultiValue params() {
 		return params.unmodifiable();
 	}
 

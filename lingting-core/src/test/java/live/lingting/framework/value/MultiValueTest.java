@@ -1,8 +1,9 @@
 package live.lingting.framework.value;
 
 import live.lingting.framework.value.multi.ListMultiValue;
-import live.lingting.framework.value.multi.UnmodifiableMultiValue;
 import org.junit.jupiter.api.Test;
+
+import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -39,11 +40,11 @@ class MultiValueTest {
 		assertTrue(value.remove(1, 1));
 		assertFalse(value.remove(2, 1));
 		assertTrue(value.remove(2).isEmpty());
-		UnmodifiableMultiValue<Object, Object> unmodifiable = value.unmodifiable();
+		MultiValue<Object, Object, Collection<Object>> unmodifiable = value.unmodifiable();
 		assertUnmodifiable(unmodifiable);
 	}
 
-	void assertUnmodifiable(UnmodifiableMultiValue<Object, Object> unmodifiable) {
+	void assertUnmodifiable(MultiValue<Object, Object, Collection<Object>> unmodifiable) {
 		assertThrows(UnsupportedOperationException.class, () -> unmodifiable.add(1, 4));
 		assertThrows(UnsupportedOperationException.class, () -> unmodifiable.clear());
 		assertThrows(UnsupportedOperationException.class, () -> unmodifiable.ifAbsent(2));

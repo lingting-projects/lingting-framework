@@ -12,7 +12,7 @@ public class UnmodifiableHttpHeaders extends AbstractHttpHeaders implements Http
 
 	public UnmodifiableHttpHeaders(AbstractMultiValue<String, String, ?> value) {
 		super(false, ArrayList::new);
-		value.forEach(((k, vs) -> map.put(k, Collections.unmodifiableCollection(vs))));
+		from(value, Collections::unmodifiableCollection);
 	}
 
 	@Override

@@ -20,6 +20,8 @@ public interface MultiValue<K, V, C extends Collection<V>> {
 	 */
 	void ifAbsent(K key);
 
+	void add(K key);
+
 	void add(K key, V value);
 
 	void addAll(K key, Collection<V> values);
