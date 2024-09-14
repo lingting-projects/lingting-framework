@@ -1,5 +1,6 @@
 package live.lingting.framework.http;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.lock.JavaReentrantLock;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.http.HttpRequest;
+import java.util.function.Function;
 
 /**
  * @author lingting 2024-09-12 23:37
@@ -87,6 +89,16 @@ public class HttpResponse {
 	public <T> T convert(Type type) {
 		String json = string();
 		return JacksonUtils.toObj(json, type);
+	}
+
+	public <T> T convert(TypeReference<T> reference) {
+		String json = string();
+		return JacksonUtils.toObj(json, reference);
+	}
+
+	public <T> T convert(Function<String, T> function) {
+		String json = string();
+		return function.apply(json);
 	}
 
 	public boolean isRange(int start, int end) {

@@ -3,10 +3,10 @@ package live.lingting.framework.huawei.obs;
 import live.lingting.framework.http.HttpMethod;
 import live.lingting.framework.http.HttpUrlBuilder;
 import live.lingting.framework.multipart.Part;
-import live.lingting.framework.stream.CloneInputStream;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.InputStream;
 import java.net.http.HttpRequest;
 
 /**
@@ -16,7 +16,7 @@ import java.net.http.HttpRequest;
 public class HuaweiObsObjectPutRequest extends HuaweiObsRequest {
 
 	@Setter
-	protected CloneInputStream stream;
+	protected InputStream stream;
 
 	protected String uploadId;
 

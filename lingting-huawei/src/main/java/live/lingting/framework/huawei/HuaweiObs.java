@@ -8,7 +8,7 @@ import live.lingting.framework.huawei.exception.HuaweiObsException;
 import live.lingting.framework.huawei.obs.HuaweiObsRequest;
 import live.lingting.framework.huawei.properties.HuaweiObsProperties;
 import live.lingting.framework.util.StringUtils;
-import live.lingting.framework.value.MultiValue;
+import live.lingting.framework.value.multi.StringMultiValue;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
@@ -44,7 +44,7 @@ public abstract class HuaweiObs {
 	protected HuaweiObs(HuaweiObsProperties properties) {
 		this.properties = properties;
 		this.host = "%s://%s.obs.%s.%s".formatted(properties.getScheme(), properties.getBucket(),
-				properties.getRegion(), properties.getEndpoint());
+			properties.getRegion(), properties.getEndpoint());
 	}
 
 	protected void fillHeaders(HuaweiObsRequest request) {
@@ -77,12 +77,12 @@ public abstract class HuaweiObs {
 		});
 
 		StringBuilder resourceBuilder = new StringBuilder();
-		resourceBuilder.append("/").append(properties.getBucket());
+		resourceBuilder.append("/").append(properties.getBucket()).append("/");
 		String path = urlBuilder.buildPath();
-		MultiValue<String, String, Collection<String>> params = urlBuilder.params();
+		StringMultiValue params = urlBuilder.params();
 		if (StringUtils.hasText(path) || !params.isEmpty()) {
 			if (StringUtils.hasText(path)) {
-				resourceBuilder.append(path);
+				resourceBuilder.append(path, 1, path.length());
 			}
 			if (!params.isEmpty()) {
 				resourceBuilder.append("?");

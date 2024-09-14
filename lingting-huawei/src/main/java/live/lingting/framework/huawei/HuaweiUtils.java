@@ -25,7 +25,7 @@ public class HuaweiUtils {
 
 	public static final HttpClient CLIENT = HttpClient.okhttp()
 		.disableSsl()
-		.timeout(Duration.ofSeconds(5), Duration.ofSeconds(5))
+		.timeout(Duration.ofSeconds(15), Duration.ofSeconds(30))
 		.build();
 
 	public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
@@ -37,6 +37,23 @@ public class HuaweiUtils {
 	public static final Charset CHARSET = StandardCharsets.UTF_8;
 
 	public static final String HEADER_DATE = "Date";
+
+	/**
+	 * 10M
+	 */
+	public static final long MULTIPART_DEFAULT_PART_SIZE = 10485760;
+
+	/**
+	 * 5G
+	 */
+	public static final long MULTIPART_MAX_PART_SIZE = 5368709120L;
+
+	/**
+	 * 100K
+	 */
+	public static final long MULTIPART_MIN_PART_SIZE = 102400;
+
+	public static final long MULTIPART_MAX_PART_COUNT = 1000;
 
 	public static LocalDateTime parse(String str, ZoneOffset zone) {
 		LocalDateTime parse = LocalDateTime.parse(str, FORMATTER);
