@@ -11,6 +11,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -169,17 +170,16 @@ public class HttpUrlBuilder {
 	}
 
 	public HttpUrlBuilder addParam(String name, Object value) {
+		params.ifAbsent(name);
 		if (value instanceof Map<?, ?> map) {
 			map.forEach((k, v) -> addParam(k.toString(), v));
 		}
 		else if (CollectionUtils.isMulti(value)) {
-			CollectionUtils.multiToList(value).forEach(o -> addParam(name, o));
+			List<Object> list = CollectionUtils.multiToList(value);
+			list.forEach(o -> addParam(name, o));
 		}
-		else {
-			params.ifAbsent(name);
-			if (value != null) {
-				params.add(name, value.toString());
-			}
+		else if (value != null) {
+			params.add(name, value.toString());
 		}
 		return this;
 	}
@@ -190,7 +190,7 @@ public class HttpUrlBuilder {
 	}
 
 	public HttpUrlBuilder addParams(MultiValue<String, ?, ?> params) {
-		params.each(this::addParam);
+		params.forEach(this::addParam);
 		return this;
 	}
 
