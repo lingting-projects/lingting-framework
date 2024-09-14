@@ -1,6 +1,5 @@
 package live.lingting.framework.value.multi;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -10,7 +9,7 @@ import java.util.Collections;
 public class UnmodifiableMultiValue<K, V> extends AbstractMultiValue<K, V, Collection<V>> {
 
 	public UnmodifiableMultiValue(AbstractMultiValue<K, V, ?> value) {
-		super(false, ArrayList::new);
+		super(false, Collections::emptyList);
 		from(value, Collections::unmodifiableCollection);
 	}
 

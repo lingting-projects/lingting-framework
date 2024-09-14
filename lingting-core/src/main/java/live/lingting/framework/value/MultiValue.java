@@ -3,6 +3,7 @@ package live.lingting.framework.value;
 import live.lingting.framework.value.multi.AbstractMultiValue;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -52,7 +53,7 @@ public interface MultiValue<K, V, C extends Collection<V>> {
 
 	boolean hasKey(K key);
 
-	Collection<V> get(K key);
+	C get(K key);
 
 	Iterator<V> iterator(K key);
 
@@ -85,9 +86,26 @@ public interface MultiValue<K, V, C extends Collection<V>> {
 	// endregion
 
 	// region function
+
 	void forEach(BiConsumer<K, C> consumer);
 
 	void each(BiConsumer<K, V> consumer);
+
+	default void forEachSorted(BiConsumer<K, C> consumer) {
+		keys().stream().sorted().forEach(key -> consumer.accept(key, get(key)));
+	}
+
+	default void forEachSorted(BiConsumer<K, C> consumer, Comparator<K> comparator) {
+		keys().stream().sorted(comparator).forEach(key -> consumer.accept(key, get(key)));
+	}
+
+	default void eachSorted(BiConsumer<K, V> consumer) {
+		forEachSorted((k, c) -> c.forEach(v -> consumer.accept(k, v)));
+	}
+
+	default void eachSorted(BiConsumer<K, V> consumer, Comparator<K> comparator) {
+		forEachSorted((k, c) -> c.forEach(v -> consumer.accept(k, v)), comparator);
+	}
 
 	// endregion
 

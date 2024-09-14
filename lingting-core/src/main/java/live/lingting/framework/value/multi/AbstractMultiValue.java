@@ -175,9 +175,9 @@ public abstract class AbstractMultiValue<K, V, C extends Collection<V>> implemen
 	}
 
 	@Override
-	public Collection<V> get(K key) {
+	public C get(K key) {
 		if (!allowModify && !hasKey(key)) {
-			return Collections.emptyList();
+			return supplier.get();
 		}
 		return absent(key);
 	}
