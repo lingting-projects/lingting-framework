@@ -25,4 +25,28 @@ class DigestUtilsTest {
 		assertEquals(hex, DigestUtils.md5Hex(new ByteArrayInputStream(bytes), 1));
 	}
 
+	@Test
+	void sha1Hex() throws NoSuchAlgorithmException, IOException {
+		String source = "hello sha1, digest to hex.";
+		byte[] bytes = source.getBytes();
+		String hex = "1bc582ed92e12f1f16c59118fe6d4f4122db7d61";
+
+		assertEquals(hex, DigestUtils.sha1Hex(source));
+		assertEquals(hex, DigestUtils.sha1Hex(bytes));
+		assertEquals(hex, DigestUtils.sha1Hex(new ByteArrayInputStream(bytes)));
+		assertEquals(hex, DigestUtils.sha1Hex(new ByteArrayInputStream(bytes), 1));
+	}
+
+	@Test
+	void sha256Hex() throws NoSuchAlgorithmException, IOException {
+		String source = "hello sha256, digest to hex.";
+		byte[] bytes = source.getBytes();
+		String hex = "2723b92c190589606102a284b82f2715b0314a27fc5f9fd5865d66da51a8ac52";
+
+		assertEquals(hex, DigestUtils.sha256Hex(source));
+		assertEquals(hex, DigestUtils.sha256Hex(bytes));
+		assertEquals(hex, DigestUtils.sha256Hex(new ByteArrayInputStream(bytes)));
+		assertEquals(hex, DigestUtils.sha256Hex(new ByteArrayInputStream(bytes), 1));
+	}
+
 }

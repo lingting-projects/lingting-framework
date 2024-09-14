@@ -51,4 +51,78 @@ public class DigestUtils {
 		return StringUtils.hex(bytes);
 	}
 
+	public static byte[] sha1(String input) throws NoSuchAlgorithmException {
+		return sha1(input.getBytes(StandardCharsets.UTF_8));
+	}
+
+	public static byte[] sha1(byte[] input) throws NoSuchAlgorithmException {
+		MessageDigest digest = MessageDigest.getInstance("SHA-1");
+		return digest.digest(input);
+	}
+
+	public static byte[] sha1(InputStream input) throws NoSuchAlgorithmException, IOException {
+		return sha1(input, StreamUtils.getReadSize());
+	}
+
+	public static byte[] sha1(InputStream input, int size) throws NoSuchAlgorithmException, IOException {
+		MessageDigest digest = MessageDigest.getInstance("SHA-1");
+		StreamUtils.read(input, size, (buffer, len) -> digest.update(buffer, 0, len));
+		return digest.digest();
+	}
+
+	public static String sha1Hex(String input) throws NoSuchAlgorithmException {
+		return sha1Hex(input.getBytes(StandardCharsets.UTF_8));
+	}
+
+	public static String sha1Hex(byte[] input) throws NoSuchAlgorithmException {
+		byte[] bytes = sha1(input);
+		return StringUtils.hex(bytes);
+	}
+
+	public static String sha1Hex(InputStream input) throws NoSuchAlgorithmException, IOException {
+		return sha1Hex(input, StreamUtils.getReadSize());
+	}
+
+	public static String sha1Hex(InputStream input, int size) throws NoSuchAlgorithmException, IOException {
+		byte[] bytes = sha1(input, size);
+		return StringUtils.hex(bytes);
+	}
+
+	public static byte[] sha256(String input) throws NoSuchAlgorithmException {
+		return sha256(input.getBytes(StandardCharsets.UTF_8));
+	}
+
+	public static byte[] sha256(byte[] input) throws NoSuchAlgorithmException {
+		MessageDigest digest = MessageDigest.getInstance("SHA-256");
+		return digest.digest(input);
+	}
+
+	public static byte[] sha256(InputStream input) throws NoSuchAlgorithmException, IOException {
+		return sha256(input, StreamUtils.getReadSize());
+	}
+
+	public static byte[] sha256(InputStream input, int size) throws NoSuchAlgorithmException, IOException {
+		MessageDigest digest = MessageDigest.getInstance("SHA-256");
+		StreamUtils.read(input, size, (buffer, len) -> digest.update(buffer, 0, len));
+		return digest.digest();
+	}
+
+	public static String sha256Hex(String input) throws NoSuchAlgorithmException {
+		return sha256Hex(input.getBytes(StandardCharsets.UTF_8));
+	}
+
+	public static String sha256Hex(byte[] input) throws NoSuchAlgorithmException {
+		byte[] bytes = sha256(input);
+		return StringUtils.hex(bytes);
+	}
+
+	public static String sha256Hex(InputStream input) throws NoSuchAlgorithmException, IOException {
+		return sha256Hex(input, StreamUtils.getReadSize());
+	}
+
+	public static String sha256Hex(InputStream input, int size) throws NoSuchAlgorithmException, IOException {
+		byte[] bytes = sha256(input, size);
+		return StringUtils.hex(bytes);
+	}
+
 }
