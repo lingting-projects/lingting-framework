@@ -43,10 +43,9 @@ public class HuaweiObsObject extends HuaweiObs {
 	}
 
 	@Override
-	protected void fillHeaders(HuaweiObsRequest request) {
+	protected void configure(HuaweiObsRequest request) {
 		request.setKey(key);
 		request.setAclIfAbsent(properties.getAcl());
-		super.fillHeaders(request);
 	}
 
 	// region get

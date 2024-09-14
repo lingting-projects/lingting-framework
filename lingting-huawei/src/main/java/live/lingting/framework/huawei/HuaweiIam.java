@@ -1,6 +1,5 @@
 package live.lingting.framework.huawei;
 
-import live.lingting.framework.http.HttpClient;
 import live.lingting.framework.http.HttpResponse;
 import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.huawei.exception.HuaweiIamException;
@@ -16,13 +15,10 @@ import live.lingting.framework.s3.Credential;
 import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.value.WaitValue;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.URI;
-import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,7 +27,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static live.lingting.framework.huawei.HuaweiUtils.CLIENT;
 import static live.lingting.framework.huawei.HuaweiUtils.CREDENTIAL_EXPIRE;
 import static live.lingting.framework.huawei.HuaweiUtils.TOKEN_EARLY_EXPIRE;
 
@@ -39,13 +34,9 @@ import static live.lingting.framework.huawei.HuaweiUtils.TOKEN_EARLY_EXPIRE;
  * @author lingting 2024-09-12 21:27
  */
 @Slf4j
-@RequiredArgsConstructor
-public class HuaweiIam {
+public class HuaweiIam extends HuaweiClient<HuaweiIamRequest> {
 
 	protected final HuaweiIamProperties properties;
-
-	@Setter
-	protected HttpClient client = CLIENT;
 
 	/**
 	 * token 提前多久过期
@@ -60,28 +51,31 @@ public class HuaweiIam {
 	@Getter
 	protected WaitValue<HuaweiIamToken> tokenValue = WaitValue.of();
 
-	@SneakyThrows
-	protected HttpResponse call(HuaweiIamRequest iamRequest) {
-		URI uri = iamRequest.urlBuilder().https().host(properties.getHost()).buildUri();
-		HttpRequest.Builder builder = iamRequest.builder();
-		if (iamRequest.usingToken()) {
-			HuaweiIamToken token = getTokenValue().notNull();
-			builder.header("X-Auth-Token", token.getValue());
-		}
-		HttpHeaders headers = iamRequest.getHeaders();
-		headers.each(builder::header);
-		HttpRequest request = builder.uri(uri).build();
-		HttpResponse response = client.request(request);
+	public HuaweiIam(HuaweiIamProperties properties) {
+		super(properties.getHost());
+		this.properties = properties;
+	}
 
+	@SneakyThrows
+	@Override
+	protected void configure(HuaweiIamRequest request, HttpHeaders headers) {
+		if (request.usingToken()) {
+			HuaweiIamToken token = getTokenValue().notNull();
+			headers.put("X-Auth-Token", token.getValue());
+		}
+	}
+
+	@Override
+	protected HttpResponse checkout(HuaweiIamRequest request, HttpResponse response) {
 		if (response.code() == 401) {
 			log.debug("HuaweiIam token expired!");
 			refreshToken(true);
-			return call(iamRequest);
+			return call(request);
 		}
 
-		String body = response.string();
+		String string = response.string();
 		if (!response.is2xx()) {
-			log.error("HuaweiIam request error! uri: {}; code: {}; body:\n{}", request.uri(), response.code(), body);
+			log.error("HuaweiIam request error! uri: {}; code: {}; body:\n{}", response.uri(), response.code(), string);
 			throw new HuaweiIamException("request error! code: " + response.code());
 		}
 		return response;

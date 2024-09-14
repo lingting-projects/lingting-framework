@@ -11,6 +11,7 @@ import lombok.SneakyThrows;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.net.http.HttpRequest;
 import java.util.function.Function;
 
@@ -40,6 +41,10 @@ public class HttpResponse {
 
 	public HttpRequest request() {
 		return request;
+	}
+
+	public URI uri() {
+		return request.uri();
 	}
 
 	public int code() {

@@ -1,7 +1,7 @@
 package live.lingting.framework.huawei.obs;
 
 import live.lingting.framework.http.HttpUrlBuilder;
-import live.lingting.framework.huawei.iam.HuaweiIamRequest;
+import live.lingting.framework.huawei.HuaweiRequest;
 import live.lingting.framework.s3.Acl;
 import live.lingting.framework.util.StringUtils;
 import lombok.Getter;
@@ -12,7 +12,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public abstract class HuaweiObsRequest extends HuaweiIamRequest {
+public abstract class HuaweiObsRequest extends HuaweiRequest {
 
 	protected Acl acl;
 
