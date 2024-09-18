@@ -16,7 +16,7 @@ import static live.lingting.framework.http.HttpMethod.GET;
  */
 public class HuaweiObsBucket extends HuaweiObs {
 
-	protected HuaweiObsBucket(HuaweiObsProperties properties) {
+	public HuaweiObsBucket(HuaweiObsProperties properties) {
 		super(properties);
 	}
 

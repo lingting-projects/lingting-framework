@@ -37,7 +37,7 @@ public class HuaweiObsObject extends HuaweiObs {
 
 	protected final String key;
 
-	protected HuaweiObsObject(HuaweiObsProperties properties, String key) {
+	public HuaweiObsObject(HuaweiObsProperties properties, String key) {
 		super(properties);
 		this.key = key;
 	}

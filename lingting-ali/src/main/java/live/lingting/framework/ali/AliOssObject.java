@@ -26,7 +26,7 @@ public class AliOssObject extends AliOss {
 
 	private final String key;
 
-	protected AliOssObject(AliOssProperties properties, String key) {
+	public AliOssObject(AliOssProperties properties, String key) {
 		super(properties);
 		this.key = key;
 	}

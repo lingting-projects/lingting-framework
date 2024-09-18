@@ -7,7 +7,7 @@ import live.lingting.framework.ali.properties.AliOssProperties;
  */
 public class AliOssBucket extends AliOss {
 
-	protected AliOssBucket(AliOssProperties properties) {
+	public AliOssBucket(AliOssProperties properties) {
 		super(properties);
 	}
 
