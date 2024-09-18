@@ -8,7 +8,7 @@ import lombok.SneakyThrows;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -27,7 +27,7 @@ public class Await<S> {
 
 	private final Duration timeout;
 
-	private final ThreadPoolExecutor executor;
+	private final ExecutorService executor;
 
 	@SneakyThrows
 	public S await() {
@@ -79,7 +79,7 @@ public class Await<S> {
 
 		private Duration timeout;
 
-		private ThreadPoolExecutor executor = ThreadUtils.executor();
+		private ExecutorService executor = VirtualThread.executor();
 
 		public AwaitBuilder<S> supplier(Supplier<S> supplier) {
 			this.supplier = supplier;
@@ -101,9 +101,17 @@ public class Await<S> {
 			return this;
 		}
 
-		public AwaitBuilder<S> executor(ThreadPoolExecutor executor) {
+		public AwaitBuilder<S> executor(ExecutorService executor) {
 			this.executor = executor;
 			return this;
+		}
+
+		public AwaitBuilder<S> useThreadPool() {
+			return executor(ThreadUtils.executor());
+		}
+
+		public AwaitBuilder<S> useThreadVirtual() {
+			return executor(VirtualThread.executor());
 		}
 
 		public Await<S> build() {

@@ -1,9 +1,11 @@
 package live.lingting.framework.thread;
 
 import live.lingting.framework.time.StopWatch;
+import live.lingting.framework.util.ThreadUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
@@ -16,14 +18,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Slf4j
 class AsyncTest {
 
+	Executor executor;
+
 	@Test
 	void test() {
+		executor = ThreadUtils.executor();
+		doTest();
+		executor = VirtualThread.executor();
+		doTest();
+	}
+
+	void doTest() {
 		int max = 10;
 
 		StopWatch watch = new StopWatch();
 		watch.start();
 
-		Async async = new Async();
+		Async async = new Async(executor);
 		for (int i = 0; i < max; i++) {
 			async.submit("Async-" + i, () -> LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(500)));
 		}
@@ -37,9 +48,16 @@ class AsyncTest {
 
 	@Test
 	void testLimit() {
+		executor = ThreadUtils.executor();
+		doTestLimit();
+		executor = VirtualThread.executor();
+		doTestLimit();
+	}
+
+	void doTestLimit() {
 		long limit = 5;
 		int max = 10;
-		Async async = new Async(limit);
+		Async async = new Async(executor, limit);
 		for (int i = 0; i < max; i++) {
 			async.submit("Async-" + i, () -> LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(500)));
 		}
@@ -55,8 +73,15 @@ class AsyncTest {
 
 	@Test
 	void testMulti() {
+		executor = ThreadUtils.executor();
+		doTestMulti();
+		executor = VirtualThread.executor();
+		doTestMulti();
+	}
+
+	void doTestMulti() {
 		int max = 100000;
-		Async async = new Async();
+		Async async = new Async(executor);
 		for (int i = 0; i < max; i++) {
 			async.submit("Async-" + i, () -> LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1)));
 		}

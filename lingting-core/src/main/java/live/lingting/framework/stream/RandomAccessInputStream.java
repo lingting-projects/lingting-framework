@@ -19,7 +19,6 @@ public class RandomAccessInputStream extends InputStream {
 
 	public static final File TEMP_DIR = RandomAccessOutputStream.TEMP_DIR;
 
-
 	protected final RandomAccessFile file;
 
 	@Getter
@@ -77,7 +76,7 @@ public class RandomAccessInputStream extends InputStream {
 	}
 
 	@Override
-	public synchronized void reset() throws IOException {
+	public void reset() throws IOException {
 		file.seek(0);
 	}
 

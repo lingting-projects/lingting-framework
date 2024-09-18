@@ -2,6 +2,8 @@ package live.lingting.framework.util;
 
 import live.lingting.framework.function.InterruptedRunnable;
 import live.lingting.framework.thread.Await;
+import live.lingting.framework.thread.VirtualThread;
+import lombok.Setter;
 import lombok.experimental.UtilityClass;
 
 import java.lang.reflect.Array;
@@ -9,6 +11,7 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -18,12 +21,18 @@ import java.util.function.Supplier;
 @UtilityClass
 public class ValueUtils {
 
+	/**
+	 * 默认使用虚拟线程
+	 */
+	@Setter
+	static ExecutorService executor = VirtualThread.executor();
+
 	public static void awaitTrue(Supplier<Boolean> supplier) {
 		awaitTrue(null, supplier);
 	}
 
 	public static void awaitTrue(Duration timeout, Supplier<Boolean> supplier) {
-		Await.builder(supplier, Boolean.TRUE::equals).timeout(timeout).await();
+		Await.builder(supplier, Boolean.TRUE::equals).timeout(timeout).executor(executor).await();
 	}
 
 	public static void awaitFalse(Supplier<Boolean> supplier) {
@@ -31,7 +40,7 @@ public class ValueUtils {
 	}
 
 	public static void awaitFalse(Duration timeout, Supplier<Boolean> supplier) {
-		Await.builder(supplier, Boolean.FALSE::equals).timeout(timeout).await();
+		Await.builder(supplier, Boolean.FALSE::equals).timeout(timeout).executor(executor).await();
 	}
 
 	/**
@@ -63,7 +72,7 @@ public class ValueUtils {
 
 	public static <T> T await(Duration timeout, Supplier<T> supplier, Predicate<T> predicate,
 			InterruptedRunnable sleep) {
-		return Await.builder(supplier, predicate).sleep(sleep).timeout(timeout).await();
+		return Await.builder(supplier, predicate).sleep(sleep).timeout(timeout).executor(executor).await();
 	}
 
 	/**

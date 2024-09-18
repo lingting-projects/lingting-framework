@@ -68,7 +68,7 @@ public class ThreadPool {
 	 * 线程池是否运行中
 	 */
 	public boolean isRunning() {
-		return !executor.isShutdown() && !executor.isTerminated() && !executor.isTerminating();
+		return !executor.isShutdown() && !executor.isTerminated();
 	}
 
 	/**

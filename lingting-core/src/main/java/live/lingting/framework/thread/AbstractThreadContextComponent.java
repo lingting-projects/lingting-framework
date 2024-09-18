@@ -10,6 +10,7 @@ import lombok.SneakyThrows;
 import org.slf4j.Logger;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -22,6 +23,8 @@ public abstract class AbstractThreadContextComponent implements ContextComponent
 	protected final Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
 
 	protected final WaitValue<Thread> threadValue = WaitValue.of();
+
+	private ExecutorService executor = VirtualThread.executor();
 
 	protected void thread(Consumer<Thread> consumer) {
 		thread(thread -> {
@@ -39,7 +42,7 @@ public abstract class AbstractThreadContextComponent implements ContextComponent
 	}
 
 	protected long threadId() {
-		return thread(Thread::getId, -1L);
+		return thread(Thread::threadId, -1L);
 	}
 
 	@SneakyThrows
@@ -62,14 +65,22 @@ public abstract class AbstractThreadContextComponent implements ContextComponent
 	}
 
 	protected Executor executor() {
-		return ThreadUtils.executor();
+		return executor;
+	}
+
+	public void useThreadPool() {
+		executor = ThreadUtils.executor();
+	}
+
+	public void useThreadVirtual() {
+		executor = VirtualThread.executor();
 	}
 
 	@Override
 	public void onApplicationStart() {
 		String name = getSimpleName();
-		Executor executor = executor();
-		executor.execute(new KeepRunnable(name) {
+		Executor current = executor();
+		current.execute(new KeepRunnable(name) {
 			@Override
 			protected void process() throws Throwable {
 				Thread thread = Thread.currentThread();

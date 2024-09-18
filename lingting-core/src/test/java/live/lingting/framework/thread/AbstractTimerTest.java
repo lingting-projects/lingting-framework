@@ -1,10 +1,12 @@
 package live.lingting.framework.thread;
 
 import live.lingting.framework.context.ContextHolder;
+import live.lingting.framework.util.ThreadUtils;
 import live.lingting.framework.util.ValueUtils;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,12 +19,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class AbstractTimerTest {
 
+	Executor executor;
+
 	@Test
 	void test() throws InterruptedException {
+		executor = ThreadUtils.executor();
+		doTest();
+		executor = VirtualThread.executor();
+		doTest();
+	}
+
+	void doTest() throws InterruptedException {
 		ContextHolder.start();
 		AtomicInteger atomic = new AtomicInteger(0);
 
 		AbstractTimer timer = new AbstractTimer() {
+			@Override
+			protected Executor executor() {
+				return executor;
+			}
 
 			@Override
 			public Duration getTimeout() {

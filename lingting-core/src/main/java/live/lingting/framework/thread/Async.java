@@ -28,6 +28,8 @@ public class Async {
 
 	public static final long UNLIMITED = -1;
 
+	protected final JavaReentrantLock lock = new JavaReentrantLock();
+
 	/**
 	 * 所有异步任务列表
 	 */
@@ -42,8 +44,6 @@ public class Async {
 	 * 已完成异步任务列表
 	 */
 	protected final List<StateKeepRunnable> completed = new CopyOnWriteArrayList<>();
-
-	protected final JavaReentrantLock lock = new JavaReentrantLock();
 
 	/**
 	 * 待执行任务队列
@@ -76,6 +76,24 @@ public class Async {
 	public Async(Executor executor, long limit) {
 		this.executor = executor;
 		this.limit = limit;
+	}
+
+	public static Async pool() {
+		return pool(UNLIMITED);
+	}
+
+	public static Async pool(long limit) {
+		Executor e = ThreadUtils.executor();
+		return new Async(e, limit);
+	}
+
+	public static Async virtual() {
+		return virtual(UNLIMITED);
+	}
+
+	public static Async virtual(long limit) {
+		Executor e = VirtualThread.executor();
+		return new Async(e, limit);
 	}
 
 	/**
