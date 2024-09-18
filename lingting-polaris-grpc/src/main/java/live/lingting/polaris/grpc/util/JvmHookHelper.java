@@ -1,9 +1,12 @@
 
 package live.lingting.polaris.grpc.util;
 
+import lombok.experimental.UtilityClass;
+
 /**
  * @author lixiaoshuang
  */
+@UtilityClass
 public class JvmHookHelper {
 
 	/**

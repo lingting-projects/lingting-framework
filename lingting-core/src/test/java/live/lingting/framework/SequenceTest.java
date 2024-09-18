@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * @author lingting 2024-01-30 11:38
  */
+@SuppressWarnings("java:S117")
 class SequenceTest {
 
 	@Test

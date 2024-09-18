@@ -19,6 +19,7 @@ import java.util.function.Supplier;
  * @author lingting 2023-05-23 09:12
  */
 @Slf4j
+@SuppressWarnings("java:S1181")
 public abstract class AbstractFileValue<T> {
 
 	protected final File file;

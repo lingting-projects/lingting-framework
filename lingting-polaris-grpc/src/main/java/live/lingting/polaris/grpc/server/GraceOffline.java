@@ -40,7 +40,7 @@ public final class GraceOffline {
 
 		try {
 			// 等待 4 个 pull 时间间隔
-			TimeUnit.SECONDS.sleep(4 * 2);
+			TimeUnit.SECONDS.sleep(8);
 		}
 		catch (InterruptedException ignore) {
 			Thread.currentThread().interrupt();

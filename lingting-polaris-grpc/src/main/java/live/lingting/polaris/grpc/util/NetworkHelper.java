@@ -2,6 +2,7 @@
 package live.lingting.polaris.grpc.util;
 
 import com.tencent.polaris.api.utils.StringUtils;
+import lombok.experimental.UtilityClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +17,8 @@ import java.util.Map;
 /**
  * @author lixiaoshuang
  */
+@UtilityClass
+@SuppressWarnings("java:S1181")
 public class NetworkHelper {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(NetworkHelper.class);
@@ -54,10 +57,8 @@ public class NetworkHelper {
 				NetworkInterface iface = networkInterfaces.nextElement();
 				for (Enumeration<InetAddress> inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements();) {
 					InetAddress inetAddr = inetAddrs.nextElement();
-					if (!inetAddr.isLoopbackAddress()) {
-						if (inetAddr.isSiteLocalAddress()) {
-							return inetAddr.getHostAddress();
-						}
+					if (!inetAddr.isLoopbackAddress() && inetAddr.isSiteLocalAddress()) {
+						return inetAddr.getHostAddress();
 					}
 				}
 			}
@@ -89,13 +90,13 @@ public class NetworkHelper {
 	}
 
 	public static Map<String, String> getUrlParams(String param) {
-		Map<String, String> map = new HashMap<String, String>(0);
+		Map<String, String> map = new HashMap<>();
 		if (StringUtils.isBlank(param)) {
 			return map;
 		}
 		String[] params = param.split("&");
-		for (int i = 0; i < params.length; i++) {
-			String[] p = params[i].split("=");
+		for (String s : params) {
+			String[] p = s.split("=");
 			if (p.length == 2) {
 				map.put(p[0], p[1]);
 			}

@@ -23,7 +23,7 @@ public class PolarisClientStreamTracerFactory extends Factory {
 
 	@Override
 	public ClientStreamTracer newClientStreamTracer(StreamInfo info, Metadata headers) {
-		return new PolarisClientStreamTracer(info, headers, callInfo);
+		return new PolarisClientStreamTracer(callInfo);
 	}
 
 }

@@ -5,7 +5,6 @@ import com.tencent.polaris.api.exception.PolarisException;
 import com.tencent.polaris.api.pojo.RetStatus;
 import com.tencent.polaris.api.rpc.ServiceCallResult;
 import io.grpc.ClientStreamTracer;
-import io.grpc.Metadata;
 import io.grpc.Status;
 import live.lingting.polaris.grpc.util.ClientCallInfo;
 import org.slf4j.Logger;
@@ -14,26 +13,24 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * grpc 调用的 tracer 信息，记录每次 grpc 调用的情况 1. 每次请求的相应时间 2. 每次请求的结果，记录成功或者失败
  *
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
+@SuppressWarnings("java:S1874")
 public class PolarisClientStreamTracer extends ClientStreamTracer {
 
 	private static final Logger LOG = LoggerFactory.getLogger(PolarisClientStreamTracer.class);
 
 	private final ClientCallInfo info;
 
-	private final Map<Integer, Long> perStreamRequestStartTimes = new ConcurrentHashMap<Integer, Long>();
-
-	private final AtomicBoolean reported = new AtomicBoolean(false);
+	private final Map<Integer, Long> perStreamRequestStartTimes = new ConcurrentHashMap<>();
 
 	private final ServiceCallResult result;
 
-	public PolarisClientStreamTracer(StreamInfo info, Metadata headers, ClientCallInfo callInfo) {
+	public PolarisClientStreamTracer(ClientCallInfo callInfo) {
 		this.info = callInfo;
 		this.result = new ServiceCallResult();
 

@@ -6,8 +6,6 @@ import com.tencent.polaris.client.api.SDKContext;
 import com.tencent.polaris.factory.api.DiscoveryAPIFactory;
 import io.grpc.NameResolver;
 import io.grpc.NameResolverProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 
@@ -18,13 +16,9 @@ import java.net.URI;
  */
 public class PolarisNameResolverProvider extends NameResolverProvider {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(PolarisNameResolverProvider.class);
-
 	private static final int DEFAULT_PRIORITY = 5;
 
 	private static final String DEFAULT_SCHEME = "polaris";
-
-	private static final String PATTERN = "polaris://[a-zA-Z0-9_:.-]{1,128}";
 
 	private final SDKContext context;
 

@@ -29,6 +29,7 @@ import io.grpc.Status;
 import live.lingting.polaris.grpc.interceptor.PolarisServerInterceptor;
 import live.lingting.polaris.grpc.util.Common;
 import live.lingting.polaris.grpc.util.PolarisHelper;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,13 +58,11 @@ public class PolarisRateLimitServerInterceptor extends PolarisServerInterceptor 
 
 	private String applicationName = "";
 
+	@Setter
 	private BiFunction<QuotaResponse, String, Status> rateLimitCallback;
 
 	public PolarisRateLimitServerInterceptor() {
-	}
-
-	public void setRateLimitCallback(BiFunction<QuotaResponse, String, Status> rateLimitCallback) {
-		this.rateLimitCallback = rateLimitCallback;
+		//
 	}
 
 	@Override
@@ -75,12 +74,10 @@ public class PolarisRateLimitServerInterceptor extends PolarisServerInterceptor 
 	}
 
 	@Override
-	public <ReqT, RespT> Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call, Metadata headers,
-			ServerCallHandler<ReqT, RespT> next) {
-		final String applicationName = this.applicationName;
-		final boolean applicationRegisterMode = StringUtils.isNotBlank(applicationName);
-		final String serviceName = applicationRegisterMode ? applicationName
-				: call.getMethodDescriptor().getServiceName();
+	public <R, P> Listener<R> interceptCall(ServerCall<R, P> call, Metadata headers, ServerCallHandler<R, P> next) {
+		final String aname = this.applicationName;
+		final boolean applicationRegisterMode = StringUtils.isNotBlank(aname);
+		final String serviceName = applicationRegisterMode ? aname : call.getMethodDescriptor().getServiceName();
 		final String method = applicationRegisterMode ? call.getMethodDescriptor().getFullMethodName()
 				: call.getMethodDescriptor().getBareMethodName();
 
@@ -102,12 +99,12 @@ public class PolarisRateLimitServerInterceptor extends PolarisServerInterceptor 
 
 		Status errStatus = rateLimitCallback.apply(response, call.getMethodDescriptor().getFullMethodName());
 		call.close(errStatus, headers);
-		return new Listener<ReqT>() {
+		return new Listener<R>() {
 		};
 	}
 
-	private <ReqT, RespT> Set<Argument> buildArguments(RateLimitResp rateLimitResp, ServerCall<ReqT, RespT> call,
-			Metadata headers) {
+	private <R, P> Set<Argument> buildArguments(RateLimitResp rateLimitResp, ServerCall<R, P> call,
+												Metadata headers) {
 		final Set<Argument> arguments = new HashSet<>();
 		final Set<MatchArgument> matchArguments = new HashSet<>();
 
@@ -141,11 +138,12 @@ public class PolarisRateLimitServerInterceptor extends PolarisServerInterceptor 
 					String callerService = headers.get(Common.CALLER_SERVICE_KEY);
 					arguments.add(Argument.buildCallerService(callerNamespace, callerService));
 					break;
+				default:
+					break;
 			}
 		});
 
-		Set<Argument> finalArguments = PolarisHelper.getLabelsInject().modifyRateLimit(arguments);
-		return finalArguments;
+		return PolarisHelper.getLabelsInject().modifyRateLimit(arguments);
 	}
 
 	private RateLimitResp loadRateLimitRule(ServiceKey target) {

@@ -20,6 +20,7 @@ import java.util.Map;
  * @author lingting 2022/8/22 9:41
  */
 @Slf4j
+@SuppressWarnings("java:S6485")
 public class LocalDateTimeTypeHandler extends BaseTypeHandler<LocalDateTime>implements AutoRegisterTypeHandler<LocalDateTime> {
 
 	public static final String MICROSECONDS_DELIMITER = ".";

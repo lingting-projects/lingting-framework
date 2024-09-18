@@ -43,8 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import static com.tencent.polaris.api.utils.RuleUtils.MATCH_ALL;
 
@@ -241,7 +239,7 @@ public class PolarisPicker extends SubchannelPicker {
 		}
 
 		List<Route> doFilter() {
-			List<Route> newRule = rule.stream().filter((Predicate<Route>) route -> {
+			return rule.stream().filter(route -> {
 				for (Source source : route.getSourcesList()) {
 
 					if (Objects.equals(source.getNamespace().getValue(), MATCH_ALL)
@@ -261,9 +259,7 @@ public class PolarisPicker extends SubchannelPicker {
 				}
 
 				return false;
-			}).collect(Collectors.toList());
-
-			return newRule;
+			}).toList();
 		}
 
 	}

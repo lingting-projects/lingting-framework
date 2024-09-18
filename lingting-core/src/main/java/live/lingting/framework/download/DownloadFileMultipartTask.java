@@ -23,7 +23,6 @@ public class DownloadFileMultipartTask extends FileMultipartTask<DownloadFileMul
 
 	protected final ThrowableFunction<Part, InputStream> download;
 
-	protected final long maxRetryCount;
 
 	protected DownloadFileMultipartTask(Multipart multipart, long maxRetryCount,
 			ThrowableFunction<Part, InputStream> download, File target) {

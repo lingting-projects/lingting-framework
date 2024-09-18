@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class JavaReentrantLockTest {
 
 	@Test
-	void test() throws InterruptedException {
+	void test() {
 		JavaReentrantLock lock = new JavaReentrantLock();
 
 		AtomicInteger value = new AtomicInteger();

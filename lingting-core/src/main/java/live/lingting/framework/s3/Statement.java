@@ -16,6 +16,7 @@ import java.util.Map;
 @Getter
 @Setter
 @RequiredArgsConstructor
+@SuppressWarnings("java:S6485")
 public class Statement {
 
 	protected final boolean allow;

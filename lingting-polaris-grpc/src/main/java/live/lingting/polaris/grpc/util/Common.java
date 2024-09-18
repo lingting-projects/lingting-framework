@@ -5,10 +5,12 @@ import com.tencent.polaris.api.pojo.Instance;
 import com.tencent.polaris.api.pojo.ServiceKey;
 import io.grpc.Attributes.Key;
 import io.grpc.Metadata;
+import lombok.experimental.UtilityClass;
 
 /**
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
+@UtilityClass
 public class Common {
 
 	public static final Metadata.Key<String> CALLER_SERVICE_KEY = Metadata.Key.of("polaris.request.caller.service",

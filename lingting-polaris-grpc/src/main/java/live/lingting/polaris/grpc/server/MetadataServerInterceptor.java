@@ -21,11 +21,9 @@ import static live.lingting.polaris.grpc.metadata.MetadataContext.METADATA_CONTE
 public class MetadataServerInterceptor implements ServerInterceptor {
 
 	@Override
-	public <ReqT, RespT> Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> serverCall, Metadata metadata,
-			ServerCallHandler<ReqT, RespT> next) {
-
+	public <R, P> Listener<R> interceptCall(ServerCall<R, P> serverCall, Metadata metadata,
+			ServerCallHandler<R, P> next) {
 		Context newCtx = copyMetadataToMetadataContext(metadata);
-
 		return Contexts.interceptCall(newCtx, serverCall, metadata, next);
 	}
 

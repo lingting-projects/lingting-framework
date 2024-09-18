@@ -54,11 +54,8 @@ public final class MetadataContext {
 	}
 
 	private void putHeaderFragment(final String fragment, final String key, final String value) {
-		Map<String, String> fragmentContext = fragmentContexts.get(fragment);
-		if (fragmentContext == null) {
-			fragmentContext = new ConcurrentHashMap<>();
-			fragmentContexts.put(fragment, fragmentContext);
-		}
+		Map<String, String> fragmentContext = fragmentContexts.computeIfAbsent(fragment,
+				k -> new ConcurrentHashMap<>());
 		fragmentContext.put(key, value);
 	}
 
