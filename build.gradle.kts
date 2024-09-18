@@ -11,7 +11,7 @@ val dependencyProjects = subprojects.filter { it.name.endsWith("dependencies") }
 // java 项目
 val javaProjects = subprojects.filter { it.name.startsWith("lingting-") && !dependencyProjects.contains(it) }
 // 使用的java版本
-val javaVersion = JavaVersion.VERSION_17
+val javaVersion = JavaVersion.VERSION_21
 // 字符集
 val encoding = "UTF-8"
 val ideaLanguageLevel = IdeaLanguageLevel(javaVersion);
