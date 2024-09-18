@@ -7,6 +7,7 @@ import lombok.experimental.UtilityClass;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static live.lingting.framework.time.DatePattern.FORMATTER_ISO_8601;
 
@@ -23,6 +24,10 @@ public class AliUtils {
 
 	public static final Duration CREDENTIAL_EXPIRE = Duration.ofHours(1);
 
+	public static final String ISO_8601_DATETIME_PATTERN_I = "yyyyMMdd'T'HHmmss'Z'";
+
+	public static final DateTimeFormatter FORMATTER_ISO_8601_D = DateTimeFormatter.ofPattern(ISO_8601_DATETIME_PATTERN_I);
+
 	public static LocalDateTime parse(String str) {
 		LocalDateTime parse = LocalDateTime.parse(str, FORMATTER_ISO_8601);
 		ZonedDateTime atGmt = parse.atZone(DatePattern.GMT_ZONE_ID);
@@ -30,14 +35,10 @@ public class AliUtils {
 		return atSystem.toLocalDateTime();
 	}
 
-	public static String date() {
-		return format(LocalDateTime.now());
-	}
-
-	public static String format(LocalDateTime dateTime) {
+	public static String format(LocalDateTime dateTime, DateTimeFormatter formatter) {
 		ZonedDateTime atZone = dateTime.atZone(DatePattern.SYSTEM_ZONE_ID);
 		ZonedDateTime atGmt = atZone.withZoneSameInstant(DatePattern.GMT_ZONE_ID);
-		return FORMATTER_ISO_8601.format(atGmt);
+		return formatter.format(atGmt);
 	}
 
 }

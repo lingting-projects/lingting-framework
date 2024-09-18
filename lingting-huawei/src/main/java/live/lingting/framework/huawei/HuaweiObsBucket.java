@@ -26,12 +26,11 @@ public class HuaweiObsBucket extends HuaweiObs {
 
 	/**
 	 * 列举所有未完成的分片上传
-	 *
 	 * @return k: key, v: uploadId
 	 */
 	public Map<String, String> multipartList() {
 		HuaweiObsEmptyRequest request = new HuaweiObsEmptyRequest(GET);
-		request.getParams().add("uploads");
+		request.configure(params -> params.add("uploads"));
 		HttpResponse response = call(request);
 		return response.convert(xml -> {
 			Map<String, String> map = new HashMap<>();

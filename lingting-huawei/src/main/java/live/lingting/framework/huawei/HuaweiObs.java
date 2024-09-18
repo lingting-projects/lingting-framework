@@ -62,7 +62,7 @@ public abstract class HuaweiObs extends ApiClient<HuaweiObsRequest> {
 	}
 
 	protected String authorization(HuaweiObsRequest request, HttpHeaders headers, String path, String query) {
-		String method = request.method().name().toUpperCase();
+		String method = request.method().name();
 		String md5 = "";
 		String type = request.contentType();
 		String date = headers.first(HEADER_DATE);

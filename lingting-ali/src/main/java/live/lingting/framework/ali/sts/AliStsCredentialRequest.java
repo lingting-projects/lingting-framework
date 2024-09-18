@@ -1,6 +1,5 @@
 package live.lingting.framework.ali.sts;
 
-import live.lingting.framework.ali.AliRequest;
 import live.lingting.framework.http.HttpUrlBuilder;
 import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.s3.Statement;
@@ -16,7 +15,7 @@ import java.util.Map;
  */
 @Getter
 @Setter
-public class AliStsCredentialRequest extends AliRequest {
+public class AliStsCredentialRequest extends AliStsRequest {
 
 	/**
 	 * 过期时长, 单位: 秒
@@ -46,7 +45,8 @@ public class AliStsCredentialRequest extends AliRequest {
 
 	@Override
 	public HttpRequest.BodyPublisher body() {
-		Map<String, Object> policy = Map.of("Statement", statements.stream().map(Statement::map).toList());
+		Map<String, Object> policy = Map.of("Version", "1", "Statement",
+				statements.stream().map(Statement::map).toList());
 		Map<String, Object> map = Map.of("RoleArn", roleArn, "RoleSessionName", roleSessionName, "DurationSeconds",
 				timeout, "Policy", policy);
 		String json = JacksonUtils.toJson(map);

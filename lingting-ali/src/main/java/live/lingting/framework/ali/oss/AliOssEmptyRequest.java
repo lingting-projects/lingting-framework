@@ -1,4 +1,4 @@
-package live.lingting.framework.huawei.obs;
+package live.lingting.framework.ali.oss;
 
 import live.lingting.framework.http.HttpMethod;
 import live.lingting.framework.http.HttpUrlBuilder;
@@ -14,7 +14,7 @@ import java.util.function.Consumer;
  */
 @Getter
 @RequiredArgsConstructor
-public class HuaweiObsEmptyRequest extends HuaweiObsRequest {
+public class AliOssEmptyRequest extends AliOssRequest {
 
 	protected final HttpMethod method;
 
@@ -31,10 +31,11 @@ public class HuaweiObsEmptyRequest extends HuaweiObsRequest {
 		builder.addParams(params);
 	}
 
-	public HuaweiObsEmptyRequest configure(Consumer<StringMultiValue> consumer) {
+	public AliOssEmptyRequest configure(Consumer<StringMultiValue> consumer) {
 		consumer.accept(params);
 		return this;
 	}
+
 	@Override
 	public HttpRequest.BodyPublisher body() {
 		return HttpRequest.BodyPublishers.noBody();

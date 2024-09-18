@@ -1,13 +1,24 @@
 package live.lingting.framework.ali;
 
 import live.lingting.framework.ali.exception.AliStsException;
+import live.lingting.framework.ali.properties.AliOssProperties;
 import live.lingting.framework.ali.properties.AliStsProperties;
 import live.lingting.framework.ali.sts.AliStsCredentialRequest;
 import live.lingting.framework.ali.sts.AliStsCredentialResponse;
+import live.lingting.framework.ali.sts.AliStsRequest;
+import live.lingting.framework.crypto.mac.Mac;
 import live.lingting.framework.http.HttpResponse;
+import live.lingting.framework.http.HttpUrlBuilder;
+import live.lingting.framework.http.header.HttpHeaders;
+import live.lingting.framework.http.java.JavaHttpUtils;
 import live.lingting.framework.s3.Credential;
 import live.lingting.framework.s3.Statement;
+import live.lingting.framework.time.DatePattern;
+import live.lingting.framework.util.ArrayUtils;
+import live.lingting.framework.util.DigestUtils;
+import live.lingting.framework.util.StringUtils;
 
+import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,13 +32,89 @@ import static live.lingting.framework.ali.AliUtils.CREDENTIAL_EXPIRE;
 /**
  * @author lingting 2024-09-14 11:52
  */
-public class AliSts extends AliClient {
+public class AliSts extends AliClient<AliStsRequest> {
+
+	public static final String ALGORITHM = "ACS3-HMAC-SHA256";
+
+	public static final String HEADER_PREFIX = "x-acs";
 
 	protected final AliStsProperties properties;
 
 	public AliSts(AliStsProperties properties) {
 		super(properties);
 		this.properties = properties;
+	}
+
+	@Override
+	protected void configure(AliStsRequest request, HttpHeaders headers) {
+		String name = request.name();
+		String version = request.version();
+		String nonce = request.nonce();
+
+		headers.put("x-acs-action", name);
+		headers.put("x-acs-version", version);
+		headers.put("x-acs-signature-nonce", nonce);
+
+		if (StringUtils.hasText(token)) {
+			headers.put("x-acs-security-token", token);
+		}
+	}
+
+	@Override
+	protected HttpResponse checkout(AliStsRequest request, HttpResponse response) {
+		if (!response.is2xx()) {
+			String string = response.string();
+			log.error("AliSts call error! uri: {}; code: {}; body:\n{}", response.uri(), response.code(), string);
+			throw new AliStsException("request error! code: " + response.code());
+		}
+		return response;
+	}
+
+	@Override
+	protected void authorization(AliStsRequest request, HttpHeaders headers, HttpRequest.Builder builder,
+			HttpUrlBuilder urlBuilder) throws Exception {
+		LocalDateTime now = LocalDateTime.now();
+		String date = AliUtils.format(now, DatePattern.FORMATTER_ISO_8601);
+		headers.put("x-acs-date", date);
+
+		String method = request.method().name();
+		String path = urlBuilder.buildPath();
+		String uri = StringUtils.hasText(path) ? path : "/";
+		String query = urlBuilder.buildQuery();
+		HttpRequest.BodyPublisher publisher = request.body();
+		String body = publisher == null ? "" : JavaHttpUtils.toString(publisher);
+		String bodySha = DigestUtils.sha256Hex(body);
+
+		headers.put("x-acs-content-sha256", bodySha);
+
+		StringBuilder headerBuilder = new StringBuilder();
+		StringBuilder signHeaderBuilder = new StringBuilder();
+		headers.forEachSorted((k, vs) -> {
+			if (!k.startsWith(HEADER_PREFIX) && !ArrayUtils.containsIgnoreCase(HEADER_INCLUDE, k)) {
+				return;
+			}
+
+			for (String v : vs) {
+				headerBuilder.append(k).append(":").append(v).append("\n");
+			}
+			signHeaderBuilder.append(k).append(";");
+		});
+		if (!signHeaderBuilder.isEmpty()) {
+			signHeaderBuilder.deleteCharAt(signHeaderBuilder.length() - 1);
+		}
+		String header = headerBuilder.toString();
+		String signHeader = signHeaderBuilder.toString();
+
+		String requestString = method + "\n" + uri + "\n" + query + "\n" + header + "\n" + signHeader + "\n" + bodySha;
+		String requestSha = DigestUtils.sha256Hex(requestString);
+
+		String source = ALGORITHM + "\n" + requestSha;
+		String sourceHmacSha = Mac.hmacBuilder().sha256().secret(sk).build().calculateHex(source);
+
+		String authorization = ALGORITHM + " Credential=" + ak + ",SignedHeaders=" + signHeader + ",Signature="
+				+ sourceHmacSha;
+
+		headers.authorization(authorization);
 	}
 
 	public Credential credential(Statement statement) {
@@ -60,14 +147,67 @@ public class AliSts extends AliClient {
 		return new Credential(ak, sk, token, expire);
 	}
 
-	@Override
-	protected HttpResponse checkout(AliRequest request, HttpResponse response) {
-		if (!response.is2xx()) {
-			String string = response.string();
-			log.error("AliSts call error! uri: {}; code: {}; body:\n{}", response.uri(), response.code(), string);
-			throw new AliStsException("request error! code: " + response.code());
-		}
-		return response;
+	// region oss
+
+	public AliOssBucket ossBucket(String region, String bucket) {
+		AliOssProperties s = new AliOssProperties();
+		s.setRegion(region);
+		s.setBucket(bucket);
+		return ossBucket(s);
 	}
+
+	public AliOssBucket ossBucket(String region, String bucket, Collection<String> actions) {
+		AliOssProperties s = new AliOssProperties();
+		s.setRegion(region);
+		s.setBucket(bucket);
+		return ossBucket(s, actions);
+	}
+
+	public AliOssBucket ossBucket(AliOssProperties properties) {
+		return ossBucket(properties, AliActions.OSS_BUCKET_DEFAULT);
+	}
+
+	public AliOssBucket ossBucket(AliOssProperties properties, Collection<String> actions) {
+		String bucket = StringUtils.hasText(properties.getBucket()) ? properties.getBucket() : "*";
+		Statement statement = Statement.allow();
+		statement.addAction(actions);
+		statement.addResource("acs:oss:*:*:%s".formatted(bucket));
+		statement.addResource("acs:oss:*:*:%s/*".formatted(bucket));
+		Credential credential = credential(statement);
+		AliOssProperties copy = properties.copy();
+		copy.useCredential(credential);
+		return new AliOssBucket(copy);
+	}
+
+	public AliOssObject ossObject(String region, String bucket, String key) {
+		AliOssProperties s = new AliOssProperties();
+		s.setRegion(region);
+		s.setBucket(bucket);
+		return ossObject(s, key);
+	}
+
+	public AliOssObject ossObject(String region, String bucket, String key, Collection<String> actions) {
+		AliOssProperties s = new AliOssProperties();
+		s.setRegion(region);
+		s.setBucket(bucket);
+		return ossObject(s, key, actions);
+	}
+
+	public AliOssObject ossObject(AliOssProperties properties, String key) {
+		return ossObject(properties, key, AliActions.OSS_OBJECT_DEFAULT);
+	}
+
+	public AliOssObject ossObject(AliOssProperties properties, String key, Collection<String> actions) {
+		String bucket = properties.getBucket();
+		Statement statement = Statement.allow();
+		statement.addAction(actions);
+		statement.addResource("acs:oss:*:*:%s/%s".formatted(bucket, key));
+		Credential credential = credential(statement);
+		AliOssProperties copy = properties.copy();
+		copy.useCredential(credential);
+		return new AliOssObject(copy, key);
+	}
+
+	// endregion
 
 }

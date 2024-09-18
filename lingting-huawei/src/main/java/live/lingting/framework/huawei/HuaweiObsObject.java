@@ -107,7 +107,7 @@ public class HuaweiObsObject extends HuaweiObs {
 	public String multipartInit(Acl acl) {
 		HuaweiObsEmptyRequest request = new HuaweiObsEmptyRequest(POST);
 		request.setAcl(acl);
-		request.getParams().add("uploads");
+		request.configure(params -> params.add("uploads"));
 		HttpResponse response = call(request);
 		String xml = response.string();
 		JsonNode node = JacksonUtils.xmlToNode(xml);
@@ -161,7 +161,7 @@ public class HuaweiObsObject extends HuaweiObs {
 
 	public void multipartCancel(String uploadId) {
 		HuaweiObsEmptyRequest request = new HuaweiObsEmptyRequest(DELETE);
-		request.getParams().add("uploadId", uploadId);
+		request.configure(params -> params.add("uploadId", uploadId));
 		call(request);
 	}
 
