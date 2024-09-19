@@ -7,10 +7,8 @@ import live.lingting.framework.http.api.ApiRequest;
  */
 public abstract class AliRequest extends ApiRequest {
 
-
 	public String contentType() {
 		return "application/json;charset=utf8";
 	}
-
 
 }

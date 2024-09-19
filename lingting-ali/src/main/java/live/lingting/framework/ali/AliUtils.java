@@ -28,6 +28,23 @@ public class AliUtils {
 
 	public static final DateTimeFormatter FORMATTER_ISO_8601_D = DateTimeFormatter.ofPattern(ISO_8601_DATETIME_PATTERN_I);
 
+	/**
+	 * 10M
+	 */
+	public static final long MULTIPART_DEFAULT_PART_SIZE = 10485760;
+
+	/**
+	 * 5G
+	 */
+	public static final long MULTIPART_MAX_PART_SIZE = 5368709120L;
+
+	/**
+	 * 100K
+	 */
+	public static final long MULTIPART_MIN_PART_SIZE = 102400;
+
+	public static final long MULTIPART_MAX_PART_COUNT = 1000;
+
 	public static LocalDateTime parse(String str) {
 		LocalDateTime parse = LocalDateTime.parse(str, FORMATTER_ISO_8601);
 		ZonedDateTime atGmt = parse.atZone(DatePattern.GMT_ZONE_ID);

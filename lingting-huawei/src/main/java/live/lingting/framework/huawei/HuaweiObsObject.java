@@ -85,10 +85,12 @@ public class HuaweiObsObject extends HuaweiObs {
 	}
 
 	public void put(CloneInputStream in, Acl acl) {
-		HuaweiObsObjectPutRequest request = new HuaweiObsObjectPutRequest();
-		request.setStream(in);
-		request.setAcl(acl);
-		call(request);
+		try (in) {
+			HuaweiObsObjectPutRequest request = new HuaweiObsObjectPutRequest();
+			request.setStream(in);
+			request.setAcl(acl);
+			call(request);
+		}
 	}
 
 	public void delete() {
@@ -137,6 +139,7 @@ public class HuaweiObsObject extends HuaweiObs {
 
 	/**
 	 * 上传分片
+	 *
 	 * @return 合并用的 etag
 	 */
 	public String multipartUpload(String uploadId, Part part, InputStream in) {
@@ -150,6 +153,7 @@ public class HuaweiObsObject extends HuaweiObs {
 
 	/**
 	 * 合并分片
+	 *
 	 * @param map key: part. value: etag
 	 */
 	public void multipartMerge(String uploadId, Map<Part, String> map) {

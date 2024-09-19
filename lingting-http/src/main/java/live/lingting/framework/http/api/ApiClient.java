@@ -5,6 +5,7 @@ import live.lingting.framework.http.HttpMethod;
 import live.lingting.framework.http.HttpResponse;
 import live.lingting.framework.http.HttpUrlBuilder;
 import live.lingting.framework.http.header.HttpHeaders;
+import live.lingting.framework.util.StringUtils;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
@@ -76,7 +77,10 @@ public abstract class ApiClient<R extends ApiRequest> {
 		HttpMethod method = r.method();
 		HttpRequest.BodyPublisher body = r.body();
 
-		HttpHeaders headers = HttpHeaders.empty().contentType(contentType);
+		HttpHeaders headers = HttpHeaders.empty();
+		if (StringUtils.hasText(contentType)) {
+			headers.contentType(contentType);
+		}
 		configure(headers);
 		configure(r, headers);
 

@@ -18,16 +18,21 @@ public abstract class AliOssRequest extends AliRequest {
 
 	protected String key;
 
-	public void setAclIfAbsent(Acl acl) {
-		if (this.acl == null) {
-			this.acl = acl;
-		}
+	@Override
+	public String contentType() {
+		return null;
 	}
 
 	@Override
 	public void configure(HttpUrlBuilder builder) {
 		if (StringUtils.hasText(key)) {
 			builder.uri(key);
+		}
+	}
+
+	public void setAclIfAbsent(Acl acl) {
+		if (this.acl == null) {
+			this.acl = acl;
 		}
 	}
 

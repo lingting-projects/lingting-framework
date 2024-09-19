@@ -40,6 +40,13 @@ public abstract class AliOss extends AliClient<AliOssRequest> {
 	}
 
 	@Override
+	protected void configure(AliOssRequest request, HttpHeaders headers) {
+		if (request.getAcl() != null) {
+			headers.put("x-oss-object-acl", request.getAcl().getValue());
+		}
+	}
+
+	@Override
 	protected HttpResponse checkout(AliOssRequest request, HttpResponse response) {
 		if (!response.is2xx()) {
 			HttpHeaders headers = response.headers();
@@ -75,7 +82,12 @@ public abstract class AliOss extends AliClient<AliOssRequest> {
 		}
 
 		String method = request.method().name();
-		String uri = "/" + properties.getBucket() + urlBuilder.buildPath();
+		StringBuilder uriBuilder = new StringBuilder("/").append(properties.getBucket()).append("/");
+		String path = urlBuilder.buildPath();
+		if (StringUtils.hasText(path)) {
+			uriBuilder.append(path, 1, path.length());
+		}
+		String uri = uriBuilder.toString();
 		String query = urlBuilder.buildQuery();
 
 		StringBuilder canonicalBuilder = new StringBuilder();
@@ -96,11 +108,8 @@ public abstract class AliOss extends AliClient<AliOssRequest> {
 			additionalBuilder.deleteCharAt(additionalBuilder.length() - 1);
 		}
 
-		String canonical = canonicalBuilder.toString();
-		String additional = additionalBuilder.toString();
-
-		String requestSource = method + "\n" + uri + "\n" + query + "\n" + canonical + "\n" + additional + "\n"
-				+ BODY_EMPTY;
+		String requestSource = method + "\n" + uri + "\n" + query + "\n" + canonicalBuilder + "\n" + additionalBuilder
+				+ "\n" + BODY_EMPTY;
 		String requestSha = DigestUtils.sha256Hex(requestSource);
 
 		String scopeDate = "%d%02d%02d".formatted(now.getYear(), now.getMonthValue(), now.getDayOfMonth());
@@ -121,8 +130,8 @@ public abstract class AliOss extends AliClient<AliOssRequest> {
 			.append(scope)
 			.append(", ");
 
-		if (StringUtils.hasText(additional)) {
-			authorizationBuilder.append("AdditionalHeaders=").append(additional).append(", ");
+		if (!additionalBuilder.isEmpty()) {
+			authorizationBuilder.append("AdditionalHeaders=").append(additionalBuilder).append(", ");
 		}
 
 		authorizationBuilder.append("Signature=").append(sourceHmacSha);

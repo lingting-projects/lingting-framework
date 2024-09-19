@@ -1,7 +1,6 @@
 package live.lingting.framework.huawei;
 
 import live.lingting.framework.crypto.mac.Mac;
-import live.lingting.framework.http.HttpClient;
 import live.lingting.framework.time.DatePattern;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
@@ -22,11 +21,6 @@ import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
  */
 @UtilityClass
 public class HuaweiUtils {
-
-	public static final HttpClient CLIENT = HttpClient.okhttp()
-		.disableSsl()
-		.timeout(Duration.ofSeconds(15), Duration.ofSeconds(30))
-		.build();
 
 	public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
