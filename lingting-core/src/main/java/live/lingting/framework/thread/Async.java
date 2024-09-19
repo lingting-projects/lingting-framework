@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 public class Async {
 
 	@Setter
-	protected static Executor defaultExecutor = ThreadUtils.executor();
+	protected static Executor defaultExecutor = VirtualThread.executor();
 
 	public static final long UNLIMITED = -1;
 
