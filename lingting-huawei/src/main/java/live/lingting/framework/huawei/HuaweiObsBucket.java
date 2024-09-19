@@ -20,7 +20,7 @@ public class HuaweiObsBucket extends HuaweiObs {
 		super(properties);
 	}
 
-	public HuaweiObsObject obsObject(String key) {
+	public HuaweiObsObject use(String key) {
 		return new HuaweiObsObject(properties, key);
 	}
 

@@ -75,7 +75,7 @@ class HuaweiObsTest {
 		Map<String, String> map = obsBucket.multipartList();
 		if (!CollectionUtils.isEmpty(map)) {
 			map.forEach((k, v) -> {
-				HuaweiObsObject obsObject = obsBucket.obsObject(k);
+				HuaweiObsObject obsObject = obsBucket.use(k);
 				obsObject.multipartCancel(v);
 			});
 		}

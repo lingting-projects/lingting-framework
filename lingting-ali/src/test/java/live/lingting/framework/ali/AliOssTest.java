@@ -2,8 +2,6 @@ package live.lingting.framework.ali;
 
 import live.lingting.framework.ali.exception.AliException;
 import live.lingting.framework.ali.properties.AliOssProperties;
-import live.lingting.framework.aws.AwsS3Bucket;
-import live.lingting.framework.aws.AwsS3Object;
 import live.lingting.framework.aws.s3.AwsS3MultipartTask;
 import live.lingting.framework.aws.s3.response.AwsS3MultipartItem;
 import live.lingting.framework.http.download.HttpDownload;
@@ -55,7 +53,7 @@ class AliOssTest {
 		Snowflake snowflake = new Snowflake(0, 0);
 		String key = "test/s_" + snowflake.nextId();
 		log.info("key: {}", key);
-		AwsS3Object ossObject = sts.ossObject(properties, key);
+		AliOssObject ossObject = sts.ossObject(properties, key);
 		assertThrows(AliException.class, ossObject::head);
 		String source = "hello world";
 		byte[] bytes = source.getBytes();
@@ -74,8 +72,8 @@ class AliOssTest {
 	@SneakyThrows
 	@Test
 	void multipart() {
-		AwsS3Bucket ossBucket = sts.ossBucket(properties);
-		AwsS3Object bo = ossBucket.s3Object("ali/b_t");
+		AliOssBucket ossBucket = sts.ossBucket(properties);
+		AliOssObject bo = ossBucket.use("ali/b_t");
 		String uploadId = bo.multipartInit();
 		List<AwsS3MultipartItem> bm = ossBucket.multipartList(r -> {
 			StringMultiValue params = r.getParams();
@@ -88,14 +86,14 @@ class AliOssTest {
 		List<AwsS3MultipartItem> list = ossBucket.multipartList();
 		if (!CollectionUtils.isEmpty(list)) {
 			list.forEach(i -> {
-				AwsS3Object ossObject = ossBucket.s3Object(i.key());
+				AliOssObject ossObject = ossBucket.use(i.key());
 				ossObject.multipartCancel(i.uploadId());
 			});
 		}
 
 		Snowflake snowflake = new Snowflake(0, 1);
 		String key = "ali/m_" + snowflake.nextId();
-		AwsS3Object ossObject = sts.ossObject(properties, key);
+		AliOssObject ossObject = sts.ossObject(properties, key);
 		assertThrows(AliException.class, ossObject::head);
 		String source = "hello world\n".repeat(10000);
 		byte[] bytes = source.getBytes();

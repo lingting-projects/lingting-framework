@@ -5,6 +5,7 @@ import live.lingting.framework.aws.policy.Acl;
 import live.lingting.framework.aws.s3.AwsS3MultipartTask;
 import live.lingting.framework.aws.s3.AwsS3Properties;
 import live.lingting.framework.aws.s3.AwsS3Request;
+import live.lingting.framework.aws.s3.interfaces.AwsS3ObjectInterface;
 import live.lingting.framework.aws.s3.request.AwsS3MultipartMergeRequest;
 import live.lingting.framework.aws.s3.request.AwsS3ObjectPutRequest;
 import live.lingting.framework.aws.s3.request.AwsS3SimpleRequest;
@@ -35,7 +36,7 @@ import static live.lingting.framework.http.HttpMethod.POST;
  * @author lingting 2024-09-19 15:09
  */
 @Getter
-public class AwsS3Object extends AwsS3Client {
+public class AwsS3Object extends AwsS3Client implements AwsS3ObjectInterface {
 
 	protected final String key;
 
@@ -55,10 +56,12 @@ public class AwsS3Object extends AwsS3Client {
 
 	// region get
 
+	@Override
 	public String publicUrl() {
 		return publicUrl;
 	}
 
+	@Override
 	public HttpHeaders head() {
 		AwsS3SimpleRequest request = new AwsS3SimpleRequest(HttpMethod.HEAD);
 		HttpResponse response = call(request);
@@ -69,26 +72,32 @@ public class AwsS3Object extends AwsS3Client {
 
 	// region put
 
+	@Override
 	public void put(File file) throws IOException {
 		put(file, null);
 	}
 
+	@Override
 	public void put(File file, Acl acl) throws IOException {
 		put(new CloneInputStream(file), acl);
 	}
 
+	@Override
 	public void put(InputStream in) throws IOException {
 		put(in, null);
 	}
 
+	@Override
 	public void put(InputStream in, Acl acl) throws IOException {
 		put(new CloneInputStream(in), acl);
 	}
 
+	@Override
 	public void put(CloneInputStream in) {
 		put(in, null);
 	}
 
+	@Override
 	public void put(CloneInputStream in, Acl acl) {
 		try (in) {
 			AwsS3ObjectPutRequest request = new AwsS3ObjectPutRequest();
@@ -98,6 +107,7 @@ public class AwsS3Object extends AwsS3Client {
 		}
 	}
 
+	@Override
 	public void delete() {
 		AwsS3SimpleRequest request = new AwsS3SimpleRequest(DELETE);
 		call(request);
@@ -107,10 +117,12 @@ public class AwsS3Object extends AwsS3Client {
 
 	// region multipart
 
+	@Override
 	public String multipartInit() {
 		return multipartInit(null);
 	}
 
+	@Override
 	public String multipartInit(Acl acl) {
 		AwsS3SimpleRequest request = new AwsS3SimpleRequest(POST);
 		request.setAcl(acl);
@@ -121,10 +133,12 @@ public class AwsS3Object extends AwsS3Client {
 		return node.get("UploadId").asText();
 	}
 
+	@Override
 	public AwsS3MultipartTask multipart(InputStream source) throws IOException {
 		return multipart(source, MULTIPART_DEFAULT_PART_SIZE, new Async(20));
 	}
 
+	@Override
 	public AwsS3MultipartTask multipart(InputStream source, long parSize, Async async) throws IOException {
 		String uploadId = multipartInit();
 
@@ -146,6 +160,7 @@ public class AwsS3Object extends AwsS3Client {
 	 * 上传分片
 	 * @return 合并用的 etag
 	 */
+	@Override
 	public String multipartUpload(String uploadId, Part part, InputStream in) {
 		AwsS3ObjectPutRequest request = new AwsS3ObjectPutRequest();
 		request.setStream(in);
@@ -159,6 +174,7 @@ public class AwsS3Object extends AwsS3Client {
 	 * 合并分片
 	 * @param map key: part. value: etag
 	 */
+	@Override
 	public void multipartMerge(String uploadId, Map<Part, String> map) {
 		AwsS3MultipartMergeRequest request = new AwsS3MultipartMergeRequest();
 		request.setUploadId(uploadId);
@@ -166,6 +182,7 @@ public class AwsS3Object extends AwsS3Client {
 		call(request);
 	}
 
+	@Override
 	public void multipartCancel(String uploadId) {
 		AwsS3SimpleRequest request = new AwsS3SimpleRequest(DELETE);
 		request.getParams().add("uploadId", uploadId);
