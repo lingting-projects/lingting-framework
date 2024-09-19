@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.jar.JarEntry;
@@ -57,7 +58,7 @@ public class ResourceUtils {
 		if (protocol.startsWith(PROTOCOL_FILE)) {
 			URI uri = resource.toURI();
 			File dir = new File(uri);
-			return new Resource(protocol, dir);
+			return Resource.of(protocol, dir);
 		}
 
 		if (protocol.startsWith(PROTOCOL_JAR)) {
@@ -108,11 +109,11 @@ public class ResourceUtils {
 			URI uri = resource.toURI();
 			File dir = new File(uri);
 			if (!dir.isDirectory()) {
-				fill(result, () -> new Resource(protocol, dir), predicate);
+				fill(result, () -> Resource.of(protocol, dir), predicate);
 				return;
 			}
 			try (Stream<Path> walk = Files.walk(dir.toPath())) {
-				walk.forEach(path -> fill(result, () -> new Resource(protocol, path.toFile()), predicate));
+				walk.forEach(path -> fill(result, () -> Resource.of(protocol, path.toFile()), predicate));
 			}
 			return;
 		}
@@ -185,11 +186,11 @@ public class ResourceUtils {
 			this.path = this.paths.stream().collect(Collectors.joining(DELIMITER_FILE, "", delimiter + suffix));
 		}
 
-		public Resource(String protocol, File file) {
-			this(protocol,
-					Arrays.stream(file.getParentFile().getAbsoluteFile().toURI().toString().split(DELIMITER_FILE))
-						.toList(),
-					file.getName(), file.isDirectory());
+		public static Resource of(String protocol, File file) {
+			List<String> paths = Arrays
+				.stream(file.getParentFile().getAbsoluteFile().toURI().toString().split(DELIMITER_FILE))
+				.toList();
+			return new Resource(protocol, paths, file.getName(), file.isDirectory());
 		}
 
 		public URI getUri() {
