@@ -22,7 +22,7 @@ import static live.lingting.framework.multipart.MultipartTaskStatus.WAIT;
 /**
  * @author lingting 2024-09-05 14:48
  */
-@SuppressWarnings({"unchecked", "java:S1172", "java:S1181", "java:S112"})
+@SuppressWarnings({ "unchecked", "java:S1172", "java:S1181", "java:S112" })
 public abstract class MultipartTask<I extends MultipartTask<I>> {
 
 	protected final Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
@@ -139,11 +139,12 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 			return (I) this;
 		}
 
-		async.submit("MultipartInit-" + multipart.id, () -> {
+		String name = "Multipart-" + multipart.id;
+		async.submit(name, () -> {
 			log.debug("[{}] onStarted", multipart.id);
 			onStarted();
 			for (Part part : multipart.parts) {
-				doPart(part);
+				async.submit(name + "-" + part.getIndex(), () -> doPart(part));
 			}
 		});
 		return (I) this;
