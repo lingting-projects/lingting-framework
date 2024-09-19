@@ -1,5 +1,6 @@
 package live.lingting.framework.huawei;
 
+import live.lingting.framework.aws.policy.Credential;
 import live.lingting.framework.http.HttpResponse;
 import live.lingting.framework.http.api.ApiClient;
 import live.lingting.framework.http.header.HttpHeaders;
@@ -12,7 +13,6 @@ import live.lingting.framework.huawei.iam.HuaweiIamTokenRequest;
 import live.lingting.framework.huawei.iam.HuaweiIamTokenResponse;
 import live.lingting.framework.huawei.properties.HuaweiIamProperties;
 import live.lingting.framework.huawei.properties.HuaweiObsProperties;
-import live.lingting.framework.s3.Credential;
 import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.value.WaitValue;
 import lombok.Getter;
@@ -57,7 +57,7 @@ public class HuaweiIam extends ApiClient<HuaweiIamRequest> {
 
 	@SneakyThrows
 	@Override
-	protected void configure(HuaweiIamRequest request, HttpHeaders headers) {
+	protected void customize(HuaweiIamRequest request, HttpHeaders headers) {
 		if (request.usingToken()) {
 			HuaweiIamToken token = getTokenValue().notNull();
 			headers.put("X-Auth-Token", token.getValue());

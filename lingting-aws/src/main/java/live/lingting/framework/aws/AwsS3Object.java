@@ -1,13 +1,13 @@
-package live.lingting.framework.ali;
+package live.lingting.framework.aws;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import live.lingting.framework.ali.multipart.AliMultipartTask;
-import live.lingting.framework.ali.oss.AliOssEmptyRequest;
-import live.lingting.framework.ali.oss.AliOssHeaders;
-import live.lingting.framework.ali.oss.AliOssMultipartMergeRequest;
-import live.lingting.framework.ali.oss.AliOssObjectPutRequest;
-import live.lingting.framework.ali.oss.AliOssRequest;
-import live.lingting.framework.ali.properties.AliOssProperties;
+import live.lingting.framework.aws.policy.Acl;
+import live.lingting.framework.aws.s3.AwsS3MultipartTask;
+import live.lingting.framework.aws.s3.AwsS3Properties;
+import live.lingting.framework.aws.s3.AwsS3Request;
+import live.lingting.framework.aws.s3.request.AwsS3MultipartMergeRequest;
+import live.lingting.framework.aws.s3.request.AwsS3ObjectPutRequest;
+import live.lingting.framework.aws.s3.request.AwsS3SimpleRequest;
 import live.lingting.framework.http.HttpMethod;
 import live.lingting.framework.http.HttpResponse;
 import live.lingting.framework.http.HttpUrlBuilder;
@@ -15,7 +15,6 @@ import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.multipart.Multipart;
 import live.lingting.framework.multipart.Part;
-import live.lingting.framework.s3.Acl;
 import live.lingting.framework.stream.CloneInputStream;
 import live.lingting.framework.thread.Async;
 import lombok.Getter;
@@ -25,41 +24,45 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import static live.lingting.framework.ali.AliUtils.MULTIPART_MAX_PART_COUNT;
-import static live.lingting.framework.ali.AliUtils.MULTIPART_MAX_PART_SIZE;
-import static live.lingting.framework.ali.AliUtils.MULTIPART_MIN_PART_SIZE;
+import static live.lingting.framework.aws.s3.AwsS3Utils.MULTIPART_DEFAULT_PART_SIZE;
+import static live.lingting.framework.aws.s3.AwsS3Utils.MULTIPART_MAX_PART_COUNT;
+import static live.lingting.framework.aws.s3.AwsS3Utils.MULTIPART_MAX_PART_SIZE;
+import static live.lingting.framework.aws.s3.AwsS3Utils.MULTIPART_MIN_PART_SIZE;
 import static live.lingting.framework.http.HttpMethod.DELETE;
 import static live.lingting.framework.http.HttpMethod.POST;
 
 /**
- * @author lingting 2024-09-18 10:29
+ * @author lingting 2024-09-19 15:09
  */
 @Getter
-public class AliOssObject extends AliOss {
+public class AwsS3Object extends AwsS3Client {
 
-	private final String key;
+	protected final String key;
 
-	public AliOssObject(AliOssProperties properties, String key) {
+	protected final String publicUrl;
+
+	public AwsS3Object(AwsS3Properties properties, String key) {
 		super(properties);
 		this.key = key;
+		this.publicUrl = HttpUrlBuilder.builder().https().host(host).uri(key).build();
 	}
 
 	@Override
-	protected void configure(AliOssRequest request) {
+	protected void customize(AwsS3Request request) {
 		request.setKey(key);
-		request.setAclIfAbsent(properties.getAcl());
+		request.setAclIfAbsent(acl);
 	}
 
 	// region get
 
 	public String publicUrl() {
-		return HttpUrlBuilder.builder().https().host(host).uri(key).build();
+		return publicUrl;
 	}
 
-	public AliOssHeaders head() {
-		AliOssEmptyRequest request = new AliOssEmptyRequest(HttpMethod.HEAD);
+	public HttpHeaders head() {
+		AwsS3SimpleRequest request = new AwsS3SimpleRequest(HttpMethod.HEAD);
 		HttpResponse response = call(request);
-		return new AliOssHeaders(response.headers());
+		return response.headers();
 	}
 
 	// endregion
@@ -88,7 +91,7 @@ public class AliOssObject extends AliOss {
 
 	public void put(CloneInputStream in, Acl acl) {
 		try (in) {
-			AliOssObjectPutRequest request = new AliOssObjectPutRequest();
+			AwsS3ObjectPutRequest request = new AwsS3ObjectPutRequest();
 			request.setStream(in);
 			request.setAcl(acl);
 			call(request);
@@ -96,7 +99,7 @@ public class AliOssObject extends AliOss {
 	}
 
 	public void delete() {
-		AliOssEmptyRequest request = new AliOssEmptyRequest(DELETE);
+		AwsS3SimpleRequest request = new AwsS3SimpleRequest(DELETE);
 		call(request);
 	}
 
@@ -109,20 +112,20 @@ public class AliOssObject extends AliOss {
 	}
 
 	public String multipartInit(Acl acl) {
-		AliOssEmptyRequest request = new AliOssEmptyRequest(POST);
+		AwsS3SimpleRequest request = new AwsS3SimpleRequest(POST);
 		request.setAcl(acl);
-		request.configure(params -> params.add("uploads"));
+		request.getParams().add("uploads");
 		HttpResponse response = call(request);
 		String xml = response.string();
 		JsonNode node = JacksonUtils.xmlToNode(xml);
 		return node.get("UploadId").asText();
 	}
 
-	public AliMultipartTask multipart(InputStream source) throws IOException {
-		return multipart(source, AliUtils.MULTIPART_DEFAULT_PART_SIZE, new Async(20));
+	public AwsS3MultipartTask multipart(InputStream source) throws IOException {
+		return multipart(source, MULTIPART_DEFAULT_PART_SIZE, new Async(20));
 	}
 
-	public AliMultipartTask multipart(InputStream source, long parSize, Async async) throws IOException {
+	public AwsS3MultipartTask multipart(InputStream source, long parSize, Async async) throws IOException {
 		String uploadId = multipartInit();
 
 		Multipart multipart = Multipart.builder()
@@ -134,7 +137,7 @@ public class AliOssObject extends AliOss {
 			.minPartSize(MULTIPART_MIN_PART_SIZE)
 			.build();
 
-		AliMultipartTask task = new AliMultipartTask(multipart, async, this);
+		AwsS3MultipartTask task = new AwsS3MultipartTask(multipart, async, this);
 		task.start();
 		return task;
 	}
@@ -144,7 +147,7 @@ public class AliOssObject extends AliOss {
 	 * @return 合并用的 etag
 	 */
 	public String multipartUpload(String uploadId, Part part, InputStream in) {
-		AliOssObjectPutRequest request = new AliOssObjectPutRequest();
+		AwsS3ObjectPutRequest request = new AwsS3ObjectPutRequest();
 		request.setStream(in);
 		request.multipart(uploadId, part);
 		HttpResponse response = call(request);
@@ -157,15 +160,15 @@ public class AliOssObject extends AliOss {
 	 * @param map key: part. value: etag
 	 */
 	public void multipartMerge(String uploadId, Map<Part, String> map) {
-		AliOssMultipartMergeRequest request = new AliOssMultipartMergeRequest();
+		AwsS3MultipartMergeRequest request = new AwsS3MultipartMergeRequest();
 		request.setUploadId(uploadId);
 		request.setMap(map);
 		call(request);
 	}
 
 	public void multipartCancel(String uploadId) {
-		AliOssEmptyRequest request = new AliOssEmptyRequest(DELETE);
-		request.configure(params -> params.add("uploadId", uploadId));
+		AwsS3SimpleRequest request = new AwsS3SimpleRequest(DELETE);
+		request.getParams().add("uploadId", uploadId);
 		call(request);
 	}
 

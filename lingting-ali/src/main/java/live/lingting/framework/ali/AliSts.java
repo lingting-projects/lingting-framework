@@ -1,24 +1,31 @@
 package live.lingting.framework.ali;
 
+import live.lingting.framework.ali.exception.AliOssException;
 import live.lingting.framework.ali.exception.AliStsException;
 import live.lingting.framework.ali.properties.AliOssProperties;
 import live.lingting.framework.ali.properties.AliStsProperties;
 import live.lingting.framework.ali.sts.AliStsCredentialRequest;
 import live.lingting.framework.ali.sts.AliStsCredentialResponse;
 import live.lingting.framework.ali.sts.AliStsRequest;
+import live.lingting.framework.aws.AwsS3Bucket;
+import live.lingting.framework.aws.AwsS3Client;
+import live.lingting.framework.aws.AwsS3Object;
+import live.lingting.framework.aws.policy.Credential;
+import live.lingting.framework.aws.policy.Statement;
 import live.lingting.framework.crypto.mac.Mac;
 import live.lingting.framework.http.HttpResponse;
 import live.lingting.framework.http.HttpUrlBuilder;
 import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.http.java.JavaHttpUtils;
-import live.lingting.framework.s3.Credential;
-import live.lingting.framework.s3.Statement;
 import live.lingting.framework.time.DatePattern;
 import live.lingting.framework.util.ArrayUtils;
 import live.lingting.framework.util.DigestUtils;
 import live.lingting.framework.util.StringUtils;
+import live.lingting.framework.value.multi.StringMultiValue;
+import lombok.SneakyThrows;
 
 import java.net.http.HttpRequest;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -28,6 +35,8 @@ import java.util.Collections;
 import java.util.List;
 
 import static live.lingting.framework.ali.AliUtils.CREDENTIAL_EXPIRE;
+import static live.lingting.framework.ali.AliUtils.HEADER_EC;
+import static live.lingting.framework.ali.AliUtils.HEADER_ERR;
 
 /**
  * @author lingting 2024-09-14 11:52
@@ -46,7 +55,7 @@ public class AliSts extends AliClient<AliStsRequest> {
 	}
 
 	@Override
-	protected void configure(AliStsRequest request, HttpHeaders headers) {
+	protected void customize(AliStsRequest request, HttpHeaders headers) {
 		String name = request.name();
 		String version = request.version();
 		String nonce = request.nonce();
@@ -70,18 +79,18 @@ public class AliSts extends AliClient<AliStsRequest> {
 		return response;
 	}
 
+	@SneakyThrows
 	@Override
-	protected void authorization(AliStsRequest request, HttpHeaders headers, HttpRequest.Builder builder,
-			HttpUrlBuilder urlBuilder) throws Exception {
+	protected void customize(AliStsRequest request, HttpHeaders headers, HttpRequest.BodyPublisher publisher,
+			StringMultiValue params) {
 		LocalDateTime now = LocalDateTime.now();
 		String date = AliUtils.format(now, DatePattern.FORMATTER_ISO_8601);
 		headers.put("x-acs-date", date);
 
 		String method = request.method().name();
-		String path = urlBuilder.buildPath();
+		String path = request.path();
 		String uri = StringUtils.hasText(path) ? path : "/";
-		String query = urlBuilder.buildQuery();
-		HttpRequest.BodyPublisher publisher = request.body();
+		String query = HttpUrlBuilder.buildQuery(params);
 		String body = publisher == null ? "" : JavaHttpUtils.toString(publisher);
 		String bodySha = DigestUtils.sha256Hex(body);
 
@@ -149,25 +158,25 @@ public class AliSts extends AliClient<AliStsRequest> {
 
 	// region oss
 
-	public AliOssBucket ossBucket(String region, String bucket) {
+	public AwsS3Bucket ossBucket(String region, String bucket) {
 		AliOssProperties s = new AliOssProperties();
 		s.setRegion(region);
 		s.setBucket(bucket);
 		return ossBucket(s);
 	}
 
-	public AliOssBucket ossBucket(String region, String bucket, Collection<String> actions) {
+	public AwsS3Bucket ossBucket(String region, String bucket, Collection<String> actions) {
 		AliOssProperties s = new AliOssProperties();
 		s.setRegion(region);
 		s.setBucket(bucket);
 		return ossBucket(s, actions);
 	}
 
-	public AliOssBucket ossBucket(AliOssProperties properties) {
+	public AwsS3Bucket ossBucket(AliOssProperties properties) {
 		return ossBucket(properties, AliActions.OSS_BUCKET_DEFAULT);
 	}
 
-	public AliOssBucket ossBucket(AliOssProperties properties, Collection<String> actions) {
+	public AwsS3Bucket ossBucket(AliOssProperties properties, Collection<String> actions) {
 		String bucket = StringUtils.hasText(properties.getBucket()) ? properties.getBucket() : "*";
 		Statement statement = Statement.allow();
 		statement.addAction(actions);
@@ -176,28 +185,28 @@ public class AliSts extends AliClient<AliStsRequest> {
 		Credential credential = credential(statement);
 		AliOssProperties copy = properties.copy();
 		copy.useCredential(credential);
-		return new AliOssBucket(copy);
+		return onCreate(new AwsS3Bucket(copy.s3()));
 	}
 
-	public AliOssObject ossObject(String region, String bucket, String key) {
+	public AwsS3Object ossObject(String region, String bucket, String key) {
 		AliOssProperties s = new AliOssProperties();
 		s.setRegion(region);
 		s.setBucket(bucket);
 		return ossObject(s, key);
 	}
 
-	public AliOssObject ossObject(String region, String bucket, String key, Collection<String> actions) {
+	public AwsS3Object ossObject(String region, String bucket, String key, Collection<String> actions) {
 		AliOssProperties s = new AliOssProperties();
 		s.setRegion(region);
 		s.setBucket(bucket);
 		return ossObject(s, key, actions);
 	}
 
-	public AliOssObject ossObject(AliOssProperties properties, String key) {
+	public AwsS3Object ossObject(AliOssProperties properties, String key) {
 		return ossObject(properties, key, AliActions.OSS_OBJECT_DEFAULT);
 	}
 
-	public AliOssObject ossObject(AliOssProperties properties, String key, Collection<String> actions) {
+	public AwsS3Object ossObject(AliOssProperties properties, String key, Collection<String> actions) {
 		String bucket = properties.getBucket();
 		Statement statement = Statement.allow();
 		statement.addAction(actions);
@@ -205,7 +214,29 @@ public class AliSts extends AliClient<AliStsRequest> {
 		Credential credential = credential(statement);
 		AliOssProperties copy = properties.copy();
 		copy.useCredential(credential);
-		return new AliOssObject(copy, key);
+		return onCreate(new AwsS3Object(copy.s3(), key));
+	}
+
+	protected <C extends AwsS3Client> C onCreate(C c) {
+		c.setOnFailed((awsS3Request, response) -> {
+			HttpHeaders headers = response.headers();
+			String ec = headers.first(HEADER_EC, "");
+
+			String string = response.string();
+
+			if (!StringUtils.hasText(string)) {
+				String err = headers.first(HEADER_ERR, "");
+				if (StringUtils.hasText(err)) {
+					byte[] base64 = StringUtils.base64(err);
+					string = new String(base64, StandardCharsets.UTF_8);
+				}
+			}
+
+			log.error("AliOss call error! uri: {}; code: {}; ec: {}; body:\n{}", response.uri(), response.code(), ec,
+					string);
+			throw new AliOssException("request error! code: " + response.code());
+		});
+		return c;
 	}
 
 	// endregion

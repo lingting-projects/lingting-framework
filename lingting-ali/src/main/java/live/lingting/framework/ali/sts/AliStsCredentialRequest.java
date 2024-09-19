@@ -1,8 +1,7 @@
 package live.lingting.framework.ali.sts;
 
-import live.lingting.framework.http.HttpUrlBuilder;
+import live.lingting.framework.aws.policy.Statement;
 import live.lingting.framework.jackson.JacksonUtils;
-import live.lingting.framework.s3.Statement;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -38,9 +37,10 @@ public class AliStsCredentialRequest extends AliStsRequest {
 		return "2015-04-01";
 	}
 
+
 	@Override
-	public void configure(HttpUrlBuilder builder) {
-		builder.uri("");
+	public String path() {
+		return "";
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package live.lingting.framework.s3;
+package live.lingting.framework.aws.policy;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

@@ -8,7 +8,9 @@ import live.lingting.framework.huawei.exception.HuaweiObsException;
 import live.lingting.framework.huawei.obs.HuaweiObsRequest;
 import live.lingting.framework.huawei.properties.HuaweiObsProperties;
 import live.lingting.framework.util.StringUtils;
+import live.lingting.framework.value.multi.StringMultiValue;
 
+import java.net.http.HttpRequest;
 import java.util.Collection;
 
 import static live.lingting.framework.huawei.HuaweiUtils.HEADER_DATE;
@@ -33,7 +35,7 @@ public abstract class HuaweiObs extends ApiClient<HuaweiObsRequest> {
 	}
 
 	@Override
-	protected void configure(HuaweiObsRequest request, HttpHeaders headers) {
+	protected void customize(HuaweiObsRequest request, HttpHeaders headers) {
 		String date = HuaweiUtils.date();
 		headers.put(HEADER_DATE, date);
 		if (StringUtils.hasText(properties.getToken())) {
@@ -46,8 +48,9 @@ public abstract class HuaweiObs extends ApiClient<HuaweiObsRequest> {
 	}
 
 	@Override
-	protected void configure(HuaweiObsRequest request, HttpHeaders headers, HttpUrlBuilder urlBuilder) {
-		String authorization = authorization(request, headers, urlBuilder.buildPath(), urlBuilder.buildQuery());
+	protected void customize(HuaweiObsRequest request, HttpHeaders headers, HttpRequest.BodyPublisher publisher,
+			StringMultiValue params) {
+		String authorization = authorization(request, headers, request.path(), HttpUrlBuilder.buildQuery(params));
 		headers.authorization(authorization);
 	}
 
@@ -64,7 +67,7 @@ public abstract class HuaweiObs extends ApiClient<HuaweiObsRequest> {
 	protected String authorization(HuaweiObsRequest request, HttpHeaders headers, String path, String query) {
 		String method = request.method().name();
 		String md5 = "";
-		String type = request.contentType();
+		String type = headers.contentType();
 		String date = headers.first(HEADER_DATE);
 
 		StringBuilder headersBuilder = new StringBuilder();
@@ -79,7 +82,7 @@ public abstract class HuaweiObs extends ApiClient<HuaweiObsRequest> {
 		StringBuilder resourceBuilder = new StringBuilder();
 		resourceBuilder.append("/").append(properties.getBucket()).append("/");
 		if (StringUtils.hasText(path)) {
-			resourceBuilder.append(path, 1, path.length());
+			resourceBuilder.append(path, path.startsWith("/") ? 1 : 0, path.length());
 		}
 
 		if (StringUtils.hasText(query)) {

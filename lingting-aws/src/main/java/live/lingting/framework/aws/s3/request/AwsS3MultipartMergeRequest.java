@@ -1,6 +1,7 @@
-package live.lingting.framework.ali.oss;
+package live.lingting.framework.aws.s3.request;
 
-import live.lingting.framework.http.HttpUrlBuilder;
+import live.lingting.framework.aws.s3.AwsS3Request;
+import live.lingting.framework.http.HttpMethod;
 import live.lingting.framework.multipart.Part;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,16 +15,15 @@ import java.util.Map;
  */
 @Getter
 @Setter
-public class AliOssMultipartMergeRequest extends AliOssRequest {
+public class AwsS3MultipartMergeRequest extends AwsS3Request {
 
 	private String uploadId;
 
 	private Map<Part, String> map;
 
 	@Override
-	public void configure(HttpUrlBuilder builder) {
-		super.configure(builder);
-		builder.addParam("uploadId", uploadId);
+	public HttpMethod method() {
+		return HttpMethod.POST;
 	}
 
 	@Override
@@ -43,4 +43,8 @@ public class AliOssMultipartMergeRequest extends AliOssRequest {
 		return HttpRequest.BodyPublishers.ofString(builder.toString());
 	}
 
+	@Override
+	public void onParams() {
+		getParams().add("uploadId", uploadId);
+	}
 }

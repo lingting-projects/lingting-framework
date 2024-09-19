@@ -30,7 +30,7 @@ public class HuaweiObsBucket extends HuaweiObs {
 	 */
 	public Map<String, String> multipartList() {
 		HuaweiObsEmptyRequest request = new HuaweiObsEmptyRequest(GET);
-		request.configure(params -> params.add("uploads"));
+		request.getParams().add("uploads");
 		HttpResponse response = call(request);
 		return response.convert(xml -> {
 			Map<String, String> map = new HashMap<>();

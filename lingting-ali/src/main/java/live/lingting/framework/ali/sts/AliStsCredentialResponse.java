@@ -1,7 +1,6 @@
 package live.lingting.framework.ali.sts;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import live.lingting.framework.ali.AliResponse;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,7 +9,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class AliStsCredentialResponse extends AliResponse {
+public class AliStsCredentialResponse extends AliStsResponse {
 
 	@JsonProperty("Credentials")
 	private Credentials credentials;

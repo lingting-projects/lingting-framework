@@ -5,7 +5,7 @@ import live.lingting.framework.http.HttpMethod;
 import live.lingting.framework.http.HttpResponse;
 import live.lingting.framework.http.HttpUrlBuilder;
 import live.lingting.framework.http.header.HttpHeaders;
-import live.lingting.framework.util.StringUtils;
+import live.lingting.framework.value.multi.StringMultiValue;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
@@ -20,7 +20,8 @@ import java.util.Set;
  */
 public abstract class ApiClient<R extends ApiRequest> {
 
-	public static final HttpClient DEFAULT_CLIENT = HttpClient.okhttp()
+	@Setter
+	static HttpClient defaultClient = HttpClient.okhttp()
 		.disableSsl()
 		.timeout(Duration.ofSeconds(15), Duration.ofSeconds(30))
 		.build();
@@ -36,33 +37,34 @@ public abstract class ApiClient<R extends ApiRequest> {
 	protected final String host;
 
 	@Setter
-	protected HttpClient client = DEFAULT_CLIENT;
+	protected HttpClient client = defaultClient;
 
 	protected ApiClient(String host) {
 		this.host = host;
 	}
 
-	protected void configure(R request) {
+	protected void customize(R request) {
 		//
 	}
 
-	protected void configure(HttpHeaders headers) {
+	protected void customize(HttpHeaders headers) {
 		//
 	}
 
-	protected void configure(R request, HttpHeaders headers) {
+	protected void customize(R request, HttpHeaders headers) {
 		//
 	}
 
-	protected void configure(HttpUrlBuilder builder) {
+	protected void customize(HttpUrlBuilder builder) {
 		//
 	}
 
-	protected void configure(R request, HttpHeaders headers, HttpUrlBuilder urlBuilder) {
+	protected void customize(R request, HttpRequest.Builder builder) {
 		//
 	}
 
-	protected void configure(R request, HttpHeaders headers, HttpRequest.Builder builder, HttpUrlBuilder urlBuilder) {
+	protected void customize(R request, HttpHeaders headers, HttpRequest.BodyPublisher publisher,
+			StringMultiValue params) {
 		//
 	}
 
@@ -70,38 +72,35 @@ public abstract class ApiClient<R extends ApiRequest> {
 
 	@SneakyThrows
 	protected HttpResponse call(R r) {
-		HttpRequest.Builder builder = HttpRequest.newBuilder();
-		configure(r);
+		r.onCall();
+		customize(r);
 
-		String contentType = r.contentType();
 		HttpMethod method = r.method();
+		HttpHeaders headers = HttpHeaders.of(r.getHeaders());
 		HttpRequest.BodyPublisher body = r.body();
 
-		HttpHeaders headers = HttpHeaders.empty();
-		if (StringUtils.hasText(contentType)) {
-			headers.contentType(contentType);
-		}
-		configure(headers);
-		configure(r, headers);
+		customize(headers);
+		customize(r, headers);
 
-		HttpUrlBuilder urlBuilder = HttpUrlBuilder.builder().https().host(host);
-		configure(urlBuilder);
-		r.configure(urlBuilder);
-		configure(r, headers, urlBuilder);
+		String path = r.path();
+		r.onParams();
+		HttpUrlBuilder urlBuilder = HttpUrlBuilder.builder().https().host(host).uri(path).addParams(r.getParams());
+		customize(urlBuilder);
 
+		HttpRequest.Builder builder = HttpRequest.newBuilder();
 		URI uri = urlBuilder.buildUri();
 		builder.uri(uri);
 		headers.host(uri.getHost());
 
 		builder.method(method.name(), body);
-		configure(r, headers, builder, urlBuilder);
+		customize(r, builder);
+		customize(r, headers, body, urlBuilder.params());
 		headers.each((k, v) -> {
 			if (HEADERS_DISABLED.contains(k)) {
 				return;
 			}
 			builder.header(k, v);
 		});
-		r.configure(builder);
 
 		HttpRequest request = builder.build();
 		HttpResponse response = client.request(request);

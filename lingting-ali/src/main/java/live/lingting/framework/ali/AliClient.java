@@ -1,12 +1,7 @@
 package live.lingting.framework.ali;
 
 import live.lingting.framework.ali.properties.AliProperties;
-import live.lingting.framework.http.HttpUrlBuilder;
 import live.lingting.framework.http.api.ApiClient;
-import live.lingting.framework.http.header.HttpHeaders;
-import lombok.SneakyThrows;
-
-import java.net.http.HttpRequest;
 
 import static live.lingting.framework.util.HttpUtils.HEADER_HOST;
 
@@ -16,7 +11,6 @@ import static live.lingting.framework.util.HttpUtils.HEADER_HOST;
 @SuppressWarnings("java:S112")
 public abstract class AliClient<R extends AliRequest> extends ApiClient<R> {
 
-	public static final String BODY_EMPTY = "UNSIGNED-PAYLOAD";
 
 	protected static final String[] HEADER_INCLUDE = { HEADER_HOST, "content-type", "content-md5" };
 
@@ -33,13 +27,6 @@ public abstract class AliClient<R extends AliRequest> extends ApiClient<R> {
 		this.token = properties.getToken();
 	}
 
-	protected abstract void authorization(R request, HttpHeaders headers, HttpRequest.Builder builder,
-			HttpUrlBuilder urlBuilder) throws Exception;
 
-	@SneakyThrows
-	@Override
-	protected void configure(R request, HttpHeaders headers, HttpRequest.Builder builder, HttpUrlBuilder urlBuilder) {
-		authorization(request, headers, builder, urlBuilder);
-	}
 
 }

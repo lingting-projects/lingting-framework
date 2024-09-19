@@ -1,6 +1,7 @@
 package live.lingting.framework.huawei;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import live.lingting.framework.aws.policy.Acl;
 import live.lingting.framework.http.HttpResponse;
 import live.lingting.framework.http.HttpUrlBuilder;
 import live.lingting.framework.http.header.HttpHeaders;
@@ -14,7 +15,6 @@ import live.lingting.framework.huawei.properties.HuaweiObsProperties;
 import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.multipart.Multipart;
 import live.lingting.framework.multipart.Part;
-import live.lingting.framework.s3.Acl;
 import live.lingting.framework.stream.CloneInputStream;
 import live.lingting.framework.thread.Async;
 
@@ -43,7 +43,7 @@ public class HuaweiObsObject extends HuaweiObs {
 	}
 
 	@Override
-	protected void configure(HuaweiObsRequest request) {
+	protected void customize(HuaweiObsRequest request) {
 		request.setKey(key);
 		request.setAclIfAbsent(properties.getAcl());
 	}
@@ -109,7 +109,7 @@ public class HuaweiObsObject extends HuaweiObs {
 	public String multipartInit(Acl acl) {
 		HuaweiObsEmptyRequest request = new HuaweiObsEmptyRequest(POST);
 		request.setAcl(acl);
-		request.configure(params -> params.add("uploads"));
+		request.getParams().add("uploads");
 		HttpResponse response = call(request);
 		String xml = response.string();
 		JsonNode node = JacksonUtils.xmlToNode(xml);
@@ -139,7 +139,6 @@ public class HuaweiObsObject extends HuaweiObs {
 
 	/**
 	 * 上传分片
-	 *
 	 * @return 合并用的 etag
 	 */
 	public String multipartUpload(String uploadId, Part part, InputStream in) {
@@ -153,7 +152,6 @@ public class HuaweiObsObject extends HuaweiObs {
 
 	/**
 	 * 合并分片
-	 *
 	 * @param map key: part. value: etag
 	 */
 	public void multipartMerge(String uploadId, Map<Part, String> map) {
@@ -165,7 +163,7 @@ public class HuaweiObsObject extends HuaweiObs {
 
 	public void multipartCancel(String uploadId) {
 		HuaweiObsEmptyRequest request = new HuaweiObsEmptyRequest(DELETE);
-		request.configure(params -> params.add("uploadId", uploadId));
+		request.getParams().add("uploadId", uploadId);
 		call(request);
 	}
 

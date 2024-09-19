@@ -236,4 +236,12 @@ public class StringUtils {
 		return pos == -1 ? str : str.substring(pos + separator.length());
 	}
 
+	public static StringBuilder deleteLast(StringBuilder builder) {
+		if (builder == null || builder.isEmpty()) {
+			return builder;
+		}
+		int index = builder.length() - 1;
+		return builder.deleteCharAt(index);
+	}
+
 }

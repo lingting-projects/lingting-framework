@@ -1,6 +1,6 @@
 package live.lingting.framework.huawei;
 
-import live.lingting.framework.s3.Statement;
+import live.lingting.framework.aws.policy.Statement;
 import live.lingting.framework.util.CollectionUtils;
 import lombok.Getter;
 import lombok.Setter;

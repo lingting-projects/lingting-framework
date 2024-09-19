@@ -1,5 +1,6 @@
 package live.lingting.framework.huawei;
 
+import live.lingting.framework.http.HttpMethod;
 import live.lingting.framework.http.api.ApiRequest;
 import lombok.Getter;
 
@@ -9,8 +10,14 @@ import lombok.Getter;
 @Getter
 public abstract class HuaweiRequest extends ApiRequest {
 
-	public String contentType() {
-		return "application/json;charset=utf8";
+	@Override
+	public HttpMethod method() {
+		return HttpMethod.POST;
+	}
+
+	@Override
+	public void onCall() {
+		headers.contentType("application/json;charset=utf8");
 	}
 
 }

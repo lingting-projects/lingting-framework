@@ -1,9 +1,7 @@
 package live.lingting.framework.huawei.obs;
 
-import live.lingting.framework.http.HttpUrlBuilder;
+import live.lingting.framework.aws.policy.Acl;
 import live.lingting.framework.huawei.HuaweiRequest;
-import live.lingting.framework.s3.Acl;
-import live.lingting.framework.util.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,10 +23,8 @@ public abstract class HuaweiObsRequest extends HuaweiRequest {
 	}
 
 	@Override
-	public void configure(HttpUrlBuilder builder) {
-		if (StringUtils.hasText(key)) {
-			builder.uri(key);
-		}
+	public String path() {
+		return key;
 	}
 
 }

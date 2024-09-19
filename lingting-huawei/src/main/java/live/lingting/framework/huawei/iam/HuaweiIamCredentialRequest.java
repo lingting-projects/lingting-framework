@@ -1,6 +1,5 @@
 package live.lingting.framework.huawei.iam;
 
-import live.lingting.framework.http.HttpUrlBuilder;
 import live.lingting.framework.huawei.HuaweiStatement;
 import live.lingting.framework.jackson.JacksonUtils;
 import lombok.Getter;
@@ -26,8 +25,8 @@ public class HuaweiIamCredentialRequest extends HuaweiIamRequest {
 	protected Collection<HuaweiStatement> statements;
 
 	@Override
-	public void configure(HttpUrlBuilder builder) {
-		builder.uri("v3.0/OS-CREDENTIAL/securitytokens");
+	public String path() {
+		return "v3.0/OS-CREDENTIAL/securitytokens";
 	}
 
 	@Override

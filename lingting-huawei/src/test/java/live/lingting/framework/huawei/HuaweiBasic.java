@@ -1,8 +1,8 @@
 package live.lingting.framework.huawei;
 
+import live.lingting.framework.aws.policy.Acl;
 import live.lingting.framework.huawei.properties.HuaweiIamProperties;
 import live.lingting.framework.huawei.properties.HuaweiObsProperties;
-import live.lingting.framework.s3.Acl;
 
 import java.util.Map;
 

@@ -1,8 +1,8 @@
 package live.lingting.framework.ali.properties;
 
-import live.lingting.framework.s3.Acl;
-import live.lingting.framework.s3.Credential;
-import live.lingting.framework.s3.S3Properties;
+import live.lingting.framework.aws.policy.Acl;
+import live.lingting.framework.aws.policy.Credential;
+import live.lingting.framework.aws.s3.AwsS3Properties;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,8 +27,9 @@ public class AliOssProperties extends AliProperties {
 	}
 
 	@Override
-	public S3Properties s3() {
-		S3Properties s3 = super.s3();
+	public AwsS3Properties s3() {
+		AwsS3Properties s3 = super.s3();
+		s3.setPrefix("oss");
 		s3.setBucket(bucket);
 		s3.setAcl(acl);
 		return s3;

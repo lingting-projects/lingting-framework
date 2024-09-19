@@ -10,6 +10,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/lingting-ali" />
+            <option value="$PROJECT_DIR$/lingting-aws" />
             <option value="$PROJECT_DIR$/lingting-core" />
             <option value="$PROJECT_DIR$/lingting-datascope-jsql" />
             <option value="$PROJECT_DIR$/lingting-dependencies" />

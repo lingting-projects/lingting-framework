@@ -17,6 +17,10 @@ public interface HttpHeaders extends MultiValue<String, String, Collection<Strin
 		return new CollectionHttpHeaders();
 	}
 
+	static HttpHeaders of(MultiValue<String, String, ? extends Collection<String>> value) {
+		return of(value.map());
+	}
+
 	static HttpHeaders of(Map<String, ? extends Collection<String>> map) {
 		HttpHeaders empty = empty();
 		empty.addAll(map);

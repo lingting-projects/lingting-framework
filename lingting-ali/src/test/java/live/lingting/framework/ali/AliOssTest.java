@@ -1,16 +1,21 @@
 package live.lingting.framework.ali;
 
 import live.lingting.framework.ali.exception.AliException;
-import live.lingting.framework.ali.multipart.AliMultipartTask;
-import live.lingting.framework.ali.oss.AliOssHeaders;
 import live.lingting.framework.ali.properties.AliOssProperties;
+import live.lingting.framework.aws.AwsS3Bucket;
+import live.lingting.framework.aws.AwsS3Object;
+import live.lingting.framework.aws.s3.AwsS3MultipartTask;
+import live.lingting.framework.aws.s3.response.AwsS3MultipartItem;
 import live.lingting.framework.http.download.HttpDownload;
+import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.id.Snowflake;
 import live.lingting.framework.multipart.Multipart;
 import live.lingting.framework.multipart.PartTask;
 import live.lingting.framework.thread.Async;
+import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.DigestUtils;
 import live.lingting.framework.util.StreamUtils;
+import live.lingting.framework.value.multi.StringMultiValue;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,8 +23,9 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
+import java.util.List;
 
-import static live.lingting.framework.ali.AliUtils.MULTIPART_MIN_PART_SIZE;
+import static live.lingting.framework.aws.s3.AwsS3Utils.MULTIPART_MIN_PART_SIZE;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -49,13 +55,13 @@ class AliOssTest {
 		Snowflake snowflake = new Snowflake(0, 0);
 		String key = "test/s_" + snowflake.nextId();
 		log.info("key: {}", key);
-		AliOssObject ossObject = sts.ossObject(properties, key);
+		AwsS3Object ossObject = sts.ossObject(properties, key);
 		assertThrows(AliException.class, ossObject::head);
 		String source = "hello world";
 		byte[] bytes = source.getBytes();
 		String hex = DigestUtils.md5Hex(bytes);
 		assertDoesNotThrow(() -> ossObject.put(new ByteArrayInputStream(bytes)));
-		AliOssHeaders head = ossObject.head();
+		HttpHeaders head = ossObject.head();
 		assertNotNull(head);
 		assertEquals(bytes.length, head.contentLength());
 		assertTrue("\"%s\"".formatted(hex).equalsIgnoreCase(head.etag()));
@@ -68,14 +74,33 @@ class AliOssTest {
 	@SneakyThrows
 	@Test
 	void multipart() {
+		AwsS3Bucket ossBucket = sts.ossBucket(properties);
+		AwsS3Object bo = ossBucket.s3Object("ali/b_t");
+		String uploadId = bo.multipartInit();
+		List<AwsS3MultipartItem> bm = ossBucket.multipartList(r -> {
+			StringMultiValue params = r.getParams();
+			params.add("prefix", bo.getKey());
+		});
+		assertFalse(bm.isEmpty());
+		assertTrue(bm.stream().anyMatch(i -> i.key().equals(bo.getKey())));
+		assertTrue(bm.stream().anyMatch(i -> i.uploadId().equals(uploadId)));
+
+		List<AwsS3MultipartItem> list = ossBucket.multipartList();
+		if (!CollectionUtils.isEmpty(list)) {
+			list.forEach(i -> {
+				AwsS3Object ossObject = ossBucket.s3Object(i.key());
+				ossObject.multipartCancel(i.uploadId());
+			});
+		}
+
 		Snowflake snowflake = new Snowflake(0, 1);
 		String key = "ali/m_" + snowflake.nextId();
-		AliOssObject ossObject = sts.ossObject(properties, key);
+		AwsS3Object ossObject = sts.ossObject(properties, key);
 		assertThrows(AliException.class, ossObject::head);
 		String source = "hello world\n".repeat(10000);
 		byte[] bytes = source.getBytes();
 		String hex = DigestUtils.md5Hex(bytes);
-		AliMultipartTask task = assertDoesNotThrow(
+		AwsS3MultipartTask task = assertDoesNotThrow(
 				() -> ossObject.multipart(new ByteArrayInputStream(bytes), 1, new Async(10)));
 		assertTrue(task.isStarted());
 		task.await();
@@ -88,7 +113,7 @@ class AliOssTest {
 		assertFalse(task.hasFailed());
 		Multipart multipart = task.getMultipart();
 		assertTrue(multipart.getPartSize() >= MULTIPART_MIN_PART_SIZE);
-		AliOssHeaders head = ossObject.head();
+		HttpHeaders head = ossObject.head();
 		assertNotNull(head);
 		assertEquals(bytes.length, head.contentLength());
 		HttpDownload await = HttpDownload.single(ossObject.publicUrl()).build().start().await();

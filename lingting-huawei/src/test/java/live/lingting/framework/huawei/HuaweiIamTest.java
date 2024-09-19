@@ -1,7 +1,7 @@
 package live.lingting.framework.huawei;
 
+import live.lingting.framework.aws.policy.Credential;
 import live.lingting.framework.huawei.properties.HuaweiIamProperties;
-import live.lingting.framework.s3.Credential;
 import live.lingting.framework.util.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

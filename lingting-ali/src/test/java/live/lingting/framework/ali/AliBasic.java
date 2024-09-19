@@ -2,7 +2,7 @@ package live.lingting.framework.ali;
 
 import live.lingting.framework.ali.properties.AliOssProperties;
 import live.lingting.framework.ali.properties.AliStsProperties;
-import live.lingting.framework.s3.Acl;
+import live.lingting.framework.aws.policy.Acl;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 

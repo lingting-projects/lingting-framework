@@ -1,7 +1,6 @@
 package live.lingting.framework.huawei.obs;
 
 import live.lingting.framework.http.HttpMethod;
-import live.lingting.framework.http.HttpUrlBuilder;
 import live.lingting.framework.multipart.Part;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,27 +27,26 @@ public class HuaweiObsObjectPutRequest extends HuaweiObsRequest {
 	}
 
 	@Override
-	public String contentType() {
-		return "application/octet-stream";
-	}
-
-	@Override
 	public HttpMethod method() {
 		return HttpMethod.PUT;
 	}
 
 	@Override
-	public void configure(HttpUrlBuilder builder) {
-		super.configure(builder);
-		if (part != null) {
-			builder.addParam("partNumber", part.getIndex() + 1);
-			builder.addParam("uploadId", uploadId);
-		}
+	public HttpRequest.BodyPublisher body() {
+		return HttpRequest.BodyPublishers.ofInputStream(this::getStream);
 	}
 
 	@Override
-	public HttpRequest.BodyPublisher body() {
-		return HttpRequest.BodyPublishers.ofInputStream(this::getStream);
+	public void onCall() {
+		headers.contentType("application/octet-stream");
+	}
+
+	@Override
+	public void onParams() {
+		if (part != null) {
+			getParams().add("partNumber", Long.toString(part.getIndex() + 1));
+			getParams().add("uploadId", uploadId);
+		}
 	}
 
 }

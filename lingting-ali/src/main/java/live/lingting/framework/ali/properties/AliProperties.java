@@ -1,6 +1,6 @@
 package live.lingting.framework.ali.properties;
 
-import live.lingting.framework.s3.S3Properties;
+import live.lingting.framework.aws.s3.AwsS3Properties;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,9 +29,10 @@ public class AliProperties {
 		return "%s://%s.%s.%s".formatted(scheme, prefix, region, endpoint);
 	}
 
-	public S3Properties s3() {
-		S3Properties s3 = new S3Properties();
+	public AwsS3Properties s3() {
+		AwsS3Properties s3 = new AwsS3Properties();
 		s3.setScheme(scheme);
+		s3.setConnector("-");
 		s3.setRegion(region);
 		s3.setEndpoint(endpoint);
 		s3.setAk(ak);

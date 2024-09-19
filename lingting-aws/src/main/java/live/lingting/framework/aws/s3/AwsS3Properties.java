@@ -1,5 +1,7 @@
-package live.lingting.framework.s3;
+package live.lingting.framework.aws.s3;
 
+import live.lingting.framework.aws.policy.Acl;
+import live.lingting.framework.aws.policy.Credential;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,13 +10,17 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class S3Properties {
+public class AwsS3Properties {
 
 	protected String scheme = "https";
 
+	protected String prefix = "s3";
+
+	protected String connector = ".";
+
 	protected String region;
 
-	protected String endpoint;
+	protected String endpoint = "amazonaws.com";
 
 	protected String bucket;
 
@@ -26,7 +32,7 @@ public class S3Properties {
 
 	protected String token;
 
-	public <T extends S3Properties> T fill(T properties) {
+	public <T extends AwsS3Properties> T fill(T properties) {
 		properties.setScheme(getScheme());
 		properties.setRegion(getRegion());
 		properties.setEndpoint(getEndpoint());
@@ -38,8 +44,8 @@ public class S3Properties {
 		return properties;
 	}
 
-	public S3Properties copy() {
-		S3Properties properties = new S3Properties();
+	public AwsS3Properties copy() {
+		AwsS3Properties properties = new AwsS3Properties();
 		fill(properties);
 		return properties;
 	}
@@ -48,6 +54,10 @@ public class S3Properties {
 		setAk(credential.getAk());
 		setSk(credential.getSk());
 		setToken(credential.getToken());
+	}
+
+	public String host() {
+		return "%s://%s.%s%s%s.%s".formatted(scheme, bucket, prefix, connector, region, endpoint);
 	}
 
 }

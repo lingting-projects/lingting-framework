@@ -1,6 +1,6 @@
-package live.lingting.framework.ali.multipart;
+package live.lingting.framework.aws.s3;
 
-import live.lingting.framework.ali.AliOssObject;
+import live.lingting.framework.aws.AwsS3Object;
 import live.lingting.framework.multipart.Multipart;
 import live.lingting.framework.multipart.Part;
 import live.lingting.framework.multipart.file.FileMultipartTask;
@@ -12,24 +12,24 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author lingting 2024-09-13 20:37
+ * @author lingting 2024-09-19 20:26
  */
-public class AliMultipartTask extends FileMultipartTask<AliMultipartTask> {
+public class AwsS3MultipartTask extends FileMultipartTask<AwsS3MultipartTask> {
 
-	protected final AliOssObject obsObject;
+	protected final AwsS3Object s3;
 
 	protected final Map<Part, String> map;
 
 	@Getter
 	protected final String uploadId;
 
-	public AliMultipartTask(Multipart multipart, AliOssObject obsObject) {
-		this(multipart, new Async(), obsObject);
+	public AwsS3MultipartTask(Multipart multipart, AwsS3Object s3) {
+		this(multipart, new Async(), s3);
 	}
 
-	public AliMultipartTask(Multipart multipart, Async async, AliOssObject obsObject) {
+	public AwsS3MultipartTask(Multipart multipart, Async async, AwsS3Object s3) {
 		super(multipart, async);
-		this.obsObject = obsObject;
+		this.s3 = s3;
 		this.map = new ConcurrentHashMap<>(multipart.getParts().size());
 		this.uploadId = multipart.getId();
 		setMaxRetryCount(10);
@@ -40,7 +40,7 @@ public class AliMultipartTask extends FileMultipartTask<AliMultipartTask> {
 		log.debug("[{}] onMerge", uploadId);
 
 		try {
-			obsObject.multipartMerge(uploadId, map);
+			s3.multipartMerge(uploadId, map);
 		}
 		catch (Exception e) {
 			log.warn("[{}] onMerge exception", uploadId, e);
@@ -51,14 +51,14 @@ public class AliMultipartTask extends FileMultipartTask<AliMultipartTask> {
 	@Override
 	protected void onCancel() {
 		log.debug("[{}] onCancel", uploadId);
-		obsObject.multipartCancel(uploadId);
+		s3.multipartCancel(uploadId);
 	}
 
 	@Override
 	protected void onPart(Part part) throws Throwable {
 		log.debug("[{}] onPart {}", uploadId, part.getIndex());
 		try (InputStream in = multipart.stream(part)) {
-			String etag = obsObject.multipartUpload(uploadId, part, in);
+			String etag = s3.multipartUpload(uploadId, part, in);
 			map.put(part, etag);
 		}
 	}

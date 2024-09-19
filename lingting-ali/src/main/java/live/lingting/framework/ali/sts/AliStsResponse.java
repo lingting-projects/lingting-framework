@@ -1,4 +1,4 @@
-package live.lingting.framework.ali;
+package live.lingting.framework.ali.sts;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -9,8 +9,9 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public abstract class AliResponse {
+public abstract class AliStsResponse {
 
 	@JsonProperty("RequestId")
 	private String requestId;
+
 }

@@ -14,6 +14,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import static live.lingting.framework.util.StringUtils.deleteLast;
+
 /**
  * @author lingting 2024-01-29 16:13
  */
@@ -76,11 +78,7 @@ public class HttpUrlBuilder {
 			}
 		}
 
-		int lastIndex = builder.length() - 1;
-		if (!builder.isEmpty() && builder.charAt(lastIndex) == '&') {
-			builder.deleteCharAt(lastIndex);
-		}
-		return builder.toString();
+		return deleteLast(builder).toString();
 	}
 
 	public StringMultiValue params() {
@@ -134,6 +132,10 @@ public class HttpUrlBuilder {
 	}
 
 	public HttpUrlBuilder uri(String string) {
+		if (!StringUtils.hasText(string)) {
+			this.uri = new StringBuilder("/");
+			return this;
+		}
 		String newUri;
 		String query;
 		if (string.contains("?")) {

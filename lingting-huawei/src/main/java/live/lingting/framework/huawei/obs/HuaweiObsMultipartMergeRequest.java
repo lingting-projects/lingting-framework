@@ -1,6 +1,5 @@
 package live.lingting.framework.huawei.obs;
 
-import live.lingting.framework.http.HttpUrlBuilder;
 import live.lingting.framework.multipart.Part;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,12 +19,6 @@ public class HuaweiObsMultipartMergeRequest extends HuaweiObsRequest {
 	private Map<Part, String> map;
 
 	@Override
-	public void configure(HttpUrlBuilder builder) {
-		super.configure(builder);
-		builder.addParam("uploadId", uploadId);
-	}
-
-	@Override
 	public HttpRequest.BodyPublisher body() {
 		StringBuilder builder = new StringBuilder("<CompleteMultipartUpload>\n");
 
@@ -39,4 +32,9 @@ public class HuaweiObsMultipartMergeRequest extends HuaweiObsRequest {
 		return HttpRequest.BodyPublishers.ofString(builder.toString());
 	}
 
+	@Override
+	public void onCall() {
+		super.onCall();
+		getParams().add("uploadId", uploadId);
+	}
 }

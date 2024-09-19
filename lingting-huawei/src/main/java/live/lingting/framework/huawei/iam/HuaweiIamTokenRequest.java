@@ -1,6 +1,5 @@
 package live.lingting.framework.huawei.iam;
 
-import live.lingting.framework.http.HttpUrlBuilder;
 import live.lingting.framework.jackson.JacksonUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,9 +30,10 @@ public class HuaweiIamTokenRequest extends HuaweiIamRequest {
 		return false;
 	}
 
+
 	@Override
-	public void configure(HttpUrlBuilder builder) {
-		builder.uri("v3/auth/tokens");
+	public String path() {
+		return "v3/auth/tokens";
 	}
 
 	@Override
