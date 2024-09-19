@@ -146,7 +146,11 @@ public abstract class AbstractMultiValue<K, V, C extends Collection<V>> implemen
 	}
 
 	protected <S extends Collection<V>> void from(MultiValue<K, V, S> value, Function<S, C> function) {
-		value.forEach(((k, vs) -> map.put(k, function.apply(vs))));
+		value.forEach(((k, vs) -> {
+			K rk = convert(k);
+			C rv = function.apply(vs);
+			map.put(rk, rv);
+		}));
 	}
 
 	// endregion
