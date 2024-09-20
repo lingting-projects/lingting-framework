@@ -2,7 +2,7 @@ import com.vanniktech.maven.publish.SonatypeHost
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 
 val projectGroup = "live.lingting.framework"
-val projectVersion = "2024.01.24-Bata-3"
+val projectVersion = "2024.01.24-Bata-4"
 
 // 用于子模块获取包管理信息
 val catalogLibs = libs
