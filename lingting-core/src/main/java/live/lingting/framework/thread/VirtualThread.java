@@ -17,42 +17,98 @@ import java.util.function.Supplier;
 @SuppressWarnings("java:S1845")
 public class VirtualThread {
 
-	public static final ExecutorService EXECUTOR = Executors.newVirtualThreadPerTaskExecutor();
+	static final VirtualThread.Impl instance = new VirtualThread.Impl();
+
+	public static VirtualThread.Impl instance() {
+		return instance;
+	}
 
 	public static ExecutorService executor() {
-		return EXECUTOR;
+		return instance.executor();
+	}
+
+	public static VirtualThread.Impl update(ExecutorService executor) {
+		return instance().executor(executor);
 	}
 
 	/**
 	 * 线程池是否运行中
 	 */
 	public static boolean isRunning() {
-		return !EXECUTOR.isShutdown() && !EXECUTOR.isTerminated();
+		return instance.isRunning();
 	}
 
 	public static void execute(ThrowableRunnable runnable) {
-		execute(null, runnable);
+		instance.execute(runnable);
 	}
 
 	public static void execute(String name, ThrowableRunnable runnable) {
-		execute(new KeepRunnable(name) {
-			@Override
-			protected void process() throws Throwable {
-				runnable.run();
-			}
-		});
+		instance.execute(name, runnable);
 	}
 
 	public static void execute(KeepRunnable runnable) {
-		EXECUTOR.execute(runnable);
+		instance.execute(runnable);
 	}
 
 	public static <T> CompletableFuture<T> async(Supplier<T> supplier) {
-		return CompletableFuture.supplyAsync(supplier, EXECUTOR);
+		return instance.async(supplier);
 	}
 
 	public static <T> Future<T> submit(Callable<T> callable) {
-		return EXECUTOR.submit(callable);
+		return instance.submit(callable);
+	}
+
+	public static class Impl implements ThreadService {
+
+		protected ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+
+		public ExecutorService executor() {
+			return executor;
+		}
+
+		public VirtualThread.Impl executor(ExecutorService executor) {
+			this.executor = executor;
+			return this;
+		}
+
+		/**
+		 * 线程池是否运行中
+		 */
+		@Override
+		public boolean isRunning() {
+			return !executor.isShutdown() && !executor.isTerminated();
+		}
+
+		@Override
+		public void execute(ThrowableRunnable runnable) {
+			execute(null, runnable);
+		}
+
+		@Override
+		public void execute(String name, ThrowableRunnable runnable) {
+			execute(new KeepRunnable(name) {
+				@Override
+				protected void process() throws Throwable {
+					runnable.run();
+				}
+			});
+		}
+
+		@Override
+		public void execute(KeepRunnable runnable) {
+			executor.execute(runnable);
+		}
+
+		@Override
+		public <T> CompletableFuture<T> async(Supplier<T> supplier) {
+			return CompletableFuture.supplyAsync(supplier, executor);
+		}
+
+		@Override
+		public <T> Future<T> submit(Callable<T> callable) {
+			return executor.submit(callable);
+		}
+
 	}
 
 }

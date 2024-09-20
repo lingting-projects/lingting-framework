@@ -15,7 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ExecutorService;
 
 import static live.lingting.framework.download.DownloadStatus.COMPLETED;
 import static live.lingting.framework.download.DownloadStatus.RUNNING;
@@ -60,7 +60,7 @@ public abstract class MultipartDownload<D extends MultipartDownload<D>> implemen
 	@Getter
 	protected final Duration timeout;
 
-	protected final ThreadPoolExecutor executor;
+	protected final ExecutorService executor;
 
 	protected final String id;
 

@@ -26,20 +26,19 @@ class ThreadPoolTest {
 		String currentName = Thread.currentThread().getName();
 		ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 1, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<>(1),
 				new ThreadPoolExecutor.CallerRunsPolicy());
-		ThreadPool instance = ThreadPool.instance();
 		ThreadPool.update(executor);
 
-		instance.execute(() -> {
+		ThreadPool.execute(() -> {
 			Thread.sleep(Duration.ofSeconds(1).toMillis());
 			assertEquals(traceId, MdcUtils.getTraceId());
 			atomic.set(true);
 		});
-		instance.execute(() -> {
+		ThreadPool.execute(() -> {
 			Thread.sleep(Duration.ofSeconds(1).toMillis());
 			assertEquals(traceId, MdcUtils.getTraceId());
 			atomic.set(true);
 		});
-		instance.execute(() -> {
+		ThreadPool.execute(() -> {
 			assertEquals(currentName, Thread.currentThread().getName());
 			assertEquals(traceId, MdcUtils.getTraceId());
 		});

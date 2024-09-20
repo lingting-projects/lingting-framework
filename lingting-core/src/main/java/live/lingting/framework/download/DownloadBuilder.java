@@ -4,7 +4,7 @@ import live.lingting.framework.util.ThreadUtils;
 import lombok.Getter;
 
 import java.time.Duration;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author lingting 2024-01-16 19:33
@@ -31,7 +31,7 @@ public abstract class DownloadBuilder<B extends DownloadBuilder<B>> {
 
 	protected boolean multi = false;
 
-	protected ThreadPoolExecutor executor = ThreadUtils.executor();
+	protected ExecutorService executor = ThreadUtils.executor();
 
 	/**
 	 * 文件大小, 用于多线程下载时进行分片. 单位: bytes
@@ -59,7 +59,7 @@ public abstract class DownloadBuilder<B extends DownloadBuilder<B>> {
 		this.url = url;
 	}
 
-	public B executor(ThreadPoolExecutor executor) {
+	public B executor(ExecutorService executor) {
 		this.executor = executor;
 		return (B) this;
 	}

@@ -2,6 +2,7 @@ package live.lingting.framework.thread;
 
 import live.lingting.framework.function.ThrowableRunnable;
 import lombok.AllArgsConstructor;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.Callable;
@@ -16,11 +17,11 @@ import java.util.function.Supplier;
  * @author lingting 2022/11/17 20:15
  */
 @Slf4j
-@AllArgsConstructor
+@UtilityClass
 @SuppressWarnings("java:S6548")
 public class ThreadPool {
 
-	protected static final ThreadPool THREAD_POOL = new ThreadPool(newExecutor());
+	static final ThreadPool.Impl instance = new Impl(newExecutor());
 
 	public static ThreadPoolExecutor newExecutor() {
 		int core = Runtime.getRuntime().availableProcessors() * 10;
@@ -45,100 +46,177 @@ public class ThreadPool {
 				new ThreadPoolExecutor.CallerRunsPolicy());
 	}
 
-	protected ThreadPoolExecutor executor;
-
-	public static ThreadPool instance() {
-		return THREAD_POOL;
+	public static Impl instance() {
+		return instance;
 	}
 
-	public static ThreadPool update(ThreadPoolExecutor executor) {
+	public static ThreadPoolExecutor executor() {
+		return instance.executor();
+	}
+
+	public static Impl update(ThreadPoolExecutor executor) {
 		return instance().executor(executor);
-	}
-
-	public ThreadPoolExecutor executor() {
-		return executor;
-	}
-
-	public ThreadPool executor(ThreadPoolExecutor executor) {
-		this.executor = executor;
-		return this;
 	}
 
 	/**
 	 * 线程池是否运行中
 	 */
-	public boolean isRunning() {
-		return !executor.isShutdown() && !executor.isTerminated();
+	public static boolean isRunning() {
+		return instance.isRunning();
 	}
 
 	/**
 	 * 核心线程数
 	 */
-	public long getCorePoolSize() {
-		return executor.getCorePoolSize();
+	public static long getCorePoolSize() {
+		return instance.getCorePoolSize();
 	}
 
 	/**
 	 * 活跃线程数
 	 */
-	public long getActiveCount() {
-		return executor.getActiveCount();
+	public static long getActiveCount() {
+		return instance.getActiveCount();
 	}
 
 	/**
 	 * 已执行任务总数
 	 */
-	public long getTaskCount() {
-		return executor.getTaskCount();
+	public static long getTaskCount() {
+		return instance.getTaskCount();
 	}
 
 	/**
 	 * 允许的最大线程数量
 	 */
-	public long getMaximumPoolSize() {
-		return executor.getMaximumPoolSize();
+	public static long getMaximumPoolSize() {
+		return instance.getMaximumPoolSize();
 	}
 
 	/**
 	 * 是否可能触发拒绝策略, 仅为估算
 	 */
-	public boolean isReject() {
-		long activeCount = getActiveCount();
-		long size = getMaximumPoolSize();
+	public static boolean isReject() {
+		return instance.isReject();
+	}
 
-		// 活跃线程占比未达到 90% 不可能
-		long per = activeCount / size;
-		if (per <= 90) {
-			return false;
+	public static void execute(ThrowableRunnable runnable) {
+		instance.execute(runnable);
+	}
+
+	public static void execute(String name, ThrowableRunnable runnable) {
+		instance.execute(name, runnable);
+	}
+
+	public static void execute(KeepRunnable runnable) {
+		instance.execute(runnable);
+	}
+
+	public static <T> CompletableFuture<T> async(Supplier<T> supplier) {
+		return instance.async(supplier);
+	}
+
+	public static <T> Future<T> submit(Callable<T> callable) {
+		return instance.submit(callable);
+	}
+
+	@AllArgsConstructor
+	public static class Impl implements ThreadService {
+
+		protected ThreadPoolExecutor executor;
+
+		public ThreadPoolExecutor executor() {
+			return executor;
 		}
 
-		// 占比达到90%的情况下, 剩余可用线程数小于10 则可能触发拒绝
-		return size - activeCount < 10;
-	}
+		public Impl executor(ThreadPoolExecutor executor) {
+			this.executor = executor;
+			return this;
+		}
 
-	public void execute(ThrowableRunnable runnable) {
-		execute(null, runnable);
-	}
+		/**
+		 * 线程池是否运行中
+		 */
+		@Override
+		public boolean isRunning() {
+			return !executor.isShutdown() && !executor.isTerminated();
+		}
 
-	public void execute(String name, ThrowableRunnable runnable) {
-		execute(new KeepRunnable(name) {
-			@Override
-			protected void process() throws Throwable {
-				runnable.run();
+		/**
+		 * 核心线程数
+		 */
+		public long getCorePoolSize() {
+			return executor.getCorePoolSize();
+		}
+
+		/**
+		 * 活跃线程数
+		 */
+		public long getActiveCount() {
+			return executor.getActiveCount();
+		}
+
+		/**
+		 * 已执行任务总数
+		 */
+		public long getTaskCount() {
+			return executor.getTaskCount();
+		}
+
+		/**
+		 * 允许的最大线程数量
+		 */
+		public long getMaximumPoolSize() {
+			return executor.getMaximumPoolSize();
+		}
+
+		/**
+		 * 是否可能触发拒绝策略, 仅为估算
+		 */
+		public boolean isReject() {
+			long activeCount = getActiveCount();
+			long size = getMaximumPoolSize();
+
+			// 活跃线程占比未达到 90% 不可能
+			long per = activeCount / size;
+			if (per <= 90) {
+				return false;
 			}
-		});
-	}
 
-	public void execute(KeepRunnable runnable) {
-		executor.execute(runnable);
-	}
+			// 占比达到90%的情况下, 剩余可用线程数小于10 则可能触发拒绝
+			return size - activeCount < 10;
+		}
 
-	public <T> CompletableFuture<T> async(Supplier<T> supplier) {
-		return CompletableFuture.supplyAsync(supplier, executor);
-	}
+		@Override
+		public void execute(ThrowableRunnable runnable) {
+			execute(null, runnable);
+		}
 
-	public <T> Future<T> submit(Callable<T> callable) {
-		return executor.submit(callable);
+		@Override
+		public void execute(String name, ThrowableRunnable runnable) {
+			execute(new KeepRunnable(name) {
+				@Override
+				protected void process() throws Throwable {
+					runnable.run();
+				}
+			});
+		}
+
+		@Override
+		public void execute(KeepRunnable runnable) {
+			executor.execute(runnable);
+		}
+
+		@Override
+		public <T> CompletableFuture<T> async(Supplier<T> supplier) {
+			return CompletableFuture.supplyAsync(supplier, executor);
+		}
+
+		@Override
+		public <T> Future<T> submit(Callable<T> callable) {
+			return executor.submit(callable);
+		}
+
 	}
 
 }

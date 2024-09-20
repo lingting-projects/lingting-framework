@@ -2,13 +2,15 @@ package live.lingting.framework.util;
 
 import live.lingting.framework.function.ThrowableRunnable;
 import live.lingting.framework.thread.KeepRunnable;
-import live.lingting.framework.thread.ThreadPool;
+import live.lingting.framework.thread.ThreadService;
+import live.lingting.framework.thread.VirtualThread;
+import lombok.Setter;
 import lombok.experimental.UtilityClass;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Supplier;
 
 /**
@@ -17,11 +19,14 @@ import java.util.function.Supplier;
 @UtilityClass
 public class ThreadUtils {
 
-	public static ThreadPool instance() {
-		return ThreadPool.instance();
+	@Setter
+	static ThreadService instance = VirtualThread.instance();
+
+	public static ThreadService instance() {
+		return instance;
 	}
 
-	public static ThreadPoolExecutor executor() {
+	public static ExecutorService executor() {
 		return instance().executor();
 	}
 
