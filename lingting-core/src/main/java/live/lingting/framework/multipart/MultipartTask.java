@@ -139,9 +139,10 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 			return (I) this;
 		}
 
-		String name = "Multipart-" + multipart.id;
+		String id = multipart.id;
+		String name = "Multipart-" + id;
 		async.submit(name, () -> {
-			log.debug("[{}] onStarted", multipart.id);
+			log.debug("[{}] onStarted", id);
 			onStarted();
 			for (Part part : multipart.parts) {
 				async.submit(name + "-" + part.getIndex(), () -> doPart(part));
@@ -151,13 +152,19 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 	}
 
 	protected void doPart(Part part) {
+		String id = getId();
+		Long index = part.getIndex();
+
 		PartTask task = new PartTask(part);
 		tasks.add(task);
+
 		while (true) {
 			task.status = PartTaskStatus.RUNNING;
 			Throwable t = null;
 			try {
+				log.debug("[{}] onPart {}", id, index);
 				onPart(part);
+				log.debug("[{}] onPart completed {}", id, index);
 				task.status = PartTaskStatus.SUCCESSFUL;
 			}
 			catch (Throwable throwable) {
@@ -190,6 +197,10 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 
 	protected void onCompleted() {
 		//
+	}
+
+	public String getId() {
+		return getMultipart().getId();
 	}
 
 }

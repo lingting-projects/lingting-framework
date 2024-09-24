@@ -84,7 +84,7 @@ class HuaweiObsTest {
 		String key = "huawei/obs/test/" + snowflake.nextId();
 		HuaweiObsObject obsObject = iam.obsObject(properties, key);
 		assertThrows(HuaweiException.class, obsObject::head);
-		String source = "hello world";
+		String source = "hello world".repeat(90000);
 		byte[] bytes = source.getBytes();
 		String hex = DigestUtils.md5Hex(bytes);
 		HuaweiMultipartTask task = assertDoesNotThrow(

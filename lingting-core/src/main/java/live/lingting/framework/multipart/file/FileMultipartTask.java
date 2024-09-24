@@ -38,12 +38,17 @@ public abstract class FileMultipartTask<I extends FileMultipartTask<I>> extends 
 
 	@Override
 	protected void onCompleted() {
+		String id = getId();
 		if (failedNumber > 0) {
+			log.debug("[{}] onCancel", id);
 			onCancel();
+			log.debug("[{}] onCanceled", id);
 			taskStatus = CANCELED;
 		}
 		else {
+			log.debug("[{}] onMerge", id);
 			onMerge();
+			log.debug("[{}] onMerged", id);
 			taskStatus = MERGED;
 		}
 	}

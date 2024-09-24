@@ -37,26 +37,23 @@ public class AwsS3MultipartTask extends FileMultipartTask<AwsS3MultipartTask> {
 
 	@Override
 	protected void onMerge() {
-		log.debug("[{}] onMerge", uploadId);
-
 		try {
 			s3.multipartMerge(uploadId, map);
 		}
 		catch (Exception e) {
 			log.warn("[{}] onMerge exception", uploadId, e);
 			onCancel();
+			log.debug("[{}] onCanceled", uploadId);
 		}
 	}
 
 	@Override
 	protected void onCancel() {
-		log.debug("[{}] onCancel", uploadId);
 		s3.multipartCancel(uploadId);
 	}
 
 	@Override
 	protected void onPart(Part part) throws Throwable {
-		log.debug("[{}] onPart {}", uploadId, part.getIndex());
 		try (InputStream in = multipart.stream(part)) {
 			String etag = s3.multipartUpload(uploadId, part, in);
 			map.put(part, etag);

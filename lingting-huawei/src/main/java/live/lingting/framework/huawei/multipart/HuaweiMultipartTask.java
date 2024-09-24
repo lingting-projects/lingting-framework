@@ -69,18 +69,17 @@ public class HuaweiMultipartTask extends FileMultipartTask<HuaweiMultipartTask> 
 		catch (Exception e) {
 			log.warn("[{}] onMerge exception", uploadId, e);
 			onCancel();
+			log.debug("[{}] onCanceled", uploadId);
 		}
 	}
 
 	@Override
 	protected void onCancel() {
-		log.debug("[{}] onCancel", uploadId);
 		obsObject.multipartCancel(uploadId);
 	}
 
 	@Override
 	protected void onPart(Part part) throws Throwable {
-		log.debug("[{}] onPart {}", uploadId, part.getIndex());
 		try (InputStream in = multipart.stream(part)) {
 			String etag = obsObject.multipartUpload(uploadId, part, in);
 			map.put(part, etag);
