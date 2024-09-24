@@ -1,6 +1,7 @@
 package live.lingting.framework.thread;
 
 import live.lingting.framework.function.ThrowableRunnable;
+import lombok.Getter;
 import lombok.experimental.UtilityClass;
 
 import java.util.concurrent.Callable;
@@ -17,7 +18,26 @@ import java.util.function.Supplier;
 @SuppressWarnings("java:S1845")
 public class VirtualThread {
 
-	static final VirtualThread.Impl instance = new VirtualThread.Impl();
+	@Getter
+	static final boolean support;
+
+	static final VirtualThread.Impl instance;
+
+	static {
+		boolean flag = true;
+		try {
+			Thread thread = Thread.ofVirtual().name("TestVirtualSupport").start(() -> {
+				//
+			});
+			thread.start();
+			thread.join();
+		}
+		catch (Throwable e) {
+			flag = false;
+		}
+		support = flag;
+		instance = new VirtualThread.Impl();
+	}
 
 	public static VirtualThread.Impl instance() {
 		return instance;
@@ -60,7 +80,12 @@ public class VirtualThread {
 
 	public static class Impl implements ThreadService {
 
-		protected ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+		protected ExecutorService executor;
+
+		public Impl() {
+			// 如果不支持虚拟线程则使用线程池
+			this.executor = isSupport() ? Executors.newVirtualThreadPerTaskExecutor() : ThreadPool.executor();
+		}
 
 		public ExecutorService executor() {
 			return executor;
