@@ -1,6 +1,7 @@
 package live.lingting.framework.system;
 
 import live.lingting.framework.util.StreamUtils;
+import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.util.SystemUtils;
 import org.junit.jupiter.api.Test;
 
@@ -11,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -28,6 +30,10 @@ class CommandTest {
 			result = testLinux();
 		}
 		Command command = result.getCommand();
+		assertTrue(StringUtils.hasText(command.getInit()));
+		for (String c : command.history()) {
+			assertNotEquals(command.getEnter(), c);
+		}
 		File out = command.stdOut;
 		assertTrue(Files.size(out.toPath()) > 0);
 		String stdOut = result.getStdOut();

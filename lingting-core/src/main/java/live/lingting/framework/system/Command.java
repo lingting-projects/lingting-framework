@@ -3,6 +3,7 @@ package live.lingting.framework.system;
 import live.lingting.framework.util.FileUtils;
 import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.util.SystemUtils;
+import lombok.Getter;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +26,9 @@ public class Command {
 
 	public static final String EXIT = "exit";
 
+	@Getter
+	protected final String init;
+
 	protected final Process process;
 
 	protected final OutputStream stdIn;
@@ -36,12 +40,16 @@ public class Command {
 
 	protected final File stdErr;
 
+	@Getter
 	protected final String enter;
 
+	@Getter
 	protected final String exit;
 
+	@Getter
 	protected final Charset charset;
 
+	@Getter
 	protected final Long startTime;
 
 	protected final List<String> history = new ArrayList<>();
@@ -50,17 +58,18 @@ public class Command {
 		if (!StringUtils.hasText(init)) {
 			throw new IllegalArgumentException("Empty init");
 		}
+		this.init = init;
 		StringTokenizer st = new StringTokenizer(init);
-		String[] cmdArray = new String[st.countTokens()];
+		String[] array = new String[st.countTokens()];
 		for (int i = 0; st.hasMoreTokens(); i++) {
-			cmdArray[i] = st.nextToken();
+			array[i] = st.nextToken();
 		}
 
 		this.stdOut = FileUtils.createTemp(".out");
 		this.stdErr = FileUtils.createTemp(".err");
 
 		// 重定向标准输出和标准错误到文件, 避免写入到缓冲区然后占满导致 waitFor 死锁
-		ProcessBuilder builder = new ProcessBuilder(cmdArray).redirectError(stdErr).redirectOutput(stdOut);
+		ProcessBuilder builder = new ProcessBuilder(array).redirectError(stdErr).redirectOutput(stdOut);
 		this.process = builder.start();
 		this.stdIn = process.getOutputStream();
 		this.enter = enter;
@@ -97,7 +106,9 @@ public class Command {
 		byte[] bytes = str.getBytes(charset);
 		stdIn.write(bytes);
 		stdIn.flush();
-		history.add(str);
+		if (!enter.equals(str)) {
+			history.add(str);
+		}
 		return this;
 	}
 
@@ -176,6 +187,16 @@ public class Command {
 	public void clean() {
 		FileUtils.delete(stdOut);
 		FileUtils.delete(stdErr);
+	}
+
+	/**
+	 * 清空历史记录
+	 * @return 返回被清除的数据
+	 */
+	public List<String> cleanHistory() {
+		List<String> back = new ArrayList<>(history);
+		history.clear();
+		return back;
 	}
 
 }
