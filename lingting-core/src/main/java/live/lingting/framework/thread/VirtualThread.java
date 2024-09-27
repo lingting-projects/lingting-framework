@@ -1,9 +1,10 @@
 package live.lingting.framework.thread;
 
 import live.lingting.framework.function.ThrowableRunnable;
-import lombok.Getter;
+import live.lingting.framework.util.ClassUtils;
 import lombok.experimental.UtilityClass;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -18,24 +19,13 @@ import java.util.function.Supplier;
 @SuppressWarnings("java:S1845")
 public class VirtualThread {
 
-	@Getter
-	static final boolean support;
+	static final boolean SUPPORT;
 
 	static final VirtualThread.Impl instance;
 
 	static {
-		boolean flag = true;
-		try {
-			Thread thread = Thread.ofVirtual().name("TestVirtualSupport").start(() -> {
-				//
-			});
-			thread.start();
-			thread.join();
-		}
-		catch (Throwable e) {
-			flag = false;
-		}
-		support = flag;
+		Method method = ClassUtils.method(Thread.class, "ofVirtual");
+		SUPPORT = method != null;
 		instance = new VirtualThread.Impl();
 	}
 
@@ -49,6 +39,10 @@ public class VirtualThread {
 
 	public static VirtualThread.Impl update(ExecutorService executor) {
 		return instance().executor(executor);
+	}
+
+	public static boolean isSupport() {
+		return SUPPORT;
 	}
 
 	/**
