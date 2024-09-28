@@ -1,5 +1,6 @@
 package live.lingting.framework.util;
 
+import live.lingting.framework.value.LazyValue;
 import lombok.experimental.UtilityClass;
 
 import java.io.File;
@@ -40,11 +41,21 @@ public class SystemUtils {
 		return System.getProperty("os.name");
 	}
 
+	static final LazyValue<Charset> charset = new LazyValue<>(() -> {
+		try {
+			String name = System.getProperty("sun.jnu.encoding");
+			return Charset.forName(name);
+		}
+		catch (Exception e) {
+			return Charset.defaultCharset();
+		}
+	});
+
 	/**
 	 * 获取系统字符集
 	 */
 	public static Charset charset() {
-		return Charset.forName(System.getProperty("sun.jnu.encoding"));
+		return charset.get();
 	}
 
 	public static String lineSeparator() {
