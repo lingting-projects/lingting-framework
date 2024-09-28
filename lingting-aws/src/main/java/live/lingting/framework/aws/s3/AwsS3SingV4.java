@@ -2,8 +2,9 @@ package live.lingting.framework.aws.s3;
 
 import live.lingting.framework.crypto.mac.Mac;
 import live.lingting.framework.http.HttpMethod;
+import live.lingting.framework.http.HttpRequest;
+import live.lingting.framework.http.body.BodySource;
 import live.lingting.framework.http.header.HttpHeaders;
-import live.lingting.framework.http.java.JavaHttpUtils;
 import live.lingting.framework.util.ArrayUtils;
 import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.DigestUtils;
@@ -12,8 +13,6 @@ import live.lingting.framework.value.multi.StringMultiValue;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
-import java.io.IOException;
-import java.net.http.HttpRequest;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -120,9 +119,12 @@ public class AwsS3SingV4 {
 			return body(PAYLOAD_UNSIGNED);
 		}
 
-		public S3SingV4Builder body(HttpRequest.BodyPublisher publisher) throws IOException, NoSuchAlgorithmException {
-			String string = JavaHttpUtils.toString(publisher);
-			return body(string);
+		public S3SingV4Builder body(HttpRequest.Body body) throws NoSuchAlgorithmException {
+			return body(body.string());
+		}
+
+		public S3SingV4Builder body(BodySource body) throws NoSuchAlgorithmException {
+			return body(body.string());
 		}
 
 		public S3SingV4Builder body(String body) throws NoSuchAlgorithmException {
