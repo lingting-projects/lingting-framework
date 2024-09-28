@@ -46,17 +46,17 @@ public class ScriptBuilder<T> {
 
 	public static String fillEnd(String source) {
 		if (!source.endsWith(";")) {
-			return String.format("%s;",source);
+			return String.format("%s;", source);
 		}
 		return source;
 	}
 
 	public static String genSourceField(String field) {
-		return String.format("%s.%s",PREFIX_SOURCE, field);
+		return String.format("%s.%s", PREFIX_SOURCE, field);
 	}
 
 	public static String genParamsField(String field) {
-		return String.format("%s.%s",PREFIX_PARAMS, field);
+		return String.format("%s.%s", PREFIX_PARAMS, field);
 	}
 
 	public static String genSymbol(String field, String symbol) {
@@ -64,11 +64,11 @@ public class ScriptBuilder<T> {
 	}
 
 	public static String genSymbol(String field, String symbol, String value) {
-		return String.format("%s %s %s",genSourceField(field), symbol, value);
+		return String.format("%s %s %s", genSourceField(field), symbol, value);
 	}
 
 	public static String genIf(String condition, String script) {
-		return String.format("if(%s){%s}",condition, fillEnd(script));
+		return String.format("if(%s){%s}", condition, fillEnd(script));
 	}
 
 	public static String genSetNull(String field) {
@@ -81,7 +81,7 @@ public class ScriptBuilder<T> {
 
 	public static String genSetIfAbsent(String field) {
 		String sourceField = genSourceField(field);
-		String condition = String.format("%s==null || %s==''",sourceField, sourceField);
+		String condition = String.format("%s==null || %s==''", sourceField, sourceField);
 		String script = genSetParams(field);
 		return genIf(condition, script);
 	}
@@ -91,7 +91,7 @@ public class ScriptBuilder<T> {
 			return this;
 		}
 
-		if (!sourceBuilder.isEmpty()) {
+		if (sourceBuilder.length() > 0) {
 			sourceBuilder.append("\n");
 		}
 		sourceBuilder.append(fillEnd(script));

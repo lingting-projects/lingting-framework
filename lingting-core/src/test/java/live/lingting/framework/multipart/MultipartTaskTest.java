@@ -1,5 +1,6 @@
 package live.lingting.framework.multipart;
 
+import live.lingting.framework.util.StreamUtils;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
@@ -69,7 +70,8 @@ class TestMultipartTask extends MultipartTask<TestMultipartTask> {
 	@Override
 	protected void onPart(Part part) {
 		try (InputStream stream = multipart.stream(part)) {
-			cache.put(part.index, stream.readAllBytes());
+			byte[] bytes = StreamUtils.read(stream);
+			cache.put(part.index, bytes);
 		}
 	}
 

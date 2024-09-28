@@ -8,7 +8,6 @@ import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
@@ -78,7 +77,7 @@ public class VirtualThread {
 
 		public Impl() {
 			// 如果不支持虚拟线程则使用线程池
-			this.executor = isSupport() ? Executors.newVirtualThreadPerTaskExecutor() : ThreadPool.executor();
+			this.executor = ThreadPool.executor();
 		}
 
 		public ExecutorService executor() {

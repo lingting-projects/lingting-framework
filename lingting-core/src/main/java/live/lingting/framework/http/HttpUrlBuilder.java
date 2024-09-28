@@ -165,7 +165,7 @@ public class HttpUrlBuilder {
 	}
 
 	public HttpUrlBuilder uriSegment(String... segments) {
-		if (!uri.isEmpty() && !uri.substring(uri.length() - 1).equals("/")) {
+		if (uri.length() > 0 && !uri.substring(uri.length() - 1).equals("/")) {
 			uri.append("/");
 		}
 

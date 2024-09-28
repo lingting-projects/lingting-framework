@@ -42,7 +42,7 @@ public abstract class AbstractThreadContextComponent implements ContextComponent
 	}
 
 	protected long threadId() {
-		return thread(Thread::threadId, -1L);
+		return thread(Thread::getId, -1L);
 	}
 
 	@SneakyThrows

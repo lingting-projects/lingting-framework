@@ -1,5 +1,7 @@
 package live.lingting.framework;
 
+import live.lingting.framework.util.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -45,7 +47,6 @@ public class MarkdownBuilder {
 
 	/**
 	 * 添加自定义内容
-	 *
 	 * @param content 自定义内容
 	 */
 	public MarkdownBuilder append(Object content) {
@@ -55,7 +56,6 @@ public class MarkdownBuilder {
 
 	/**
 	 * 有序列表 自动生成 索引
-	 *
 	 * @param content 文本
 	 */
 	public MarkdownBuilder orderList(Object content) {
@@ -79,8 +79,7 @@ public class MarkdownBuilder {
 
 	/**
 	 * 有序列表
-	 *
-	 * @param index   索引
+	 * @param index 索引
 	 * @param content 文本
 	 */
 	public MarkdownBuilder orderList(int index, Object content) {
@@ -101,7 +100,6 @@ public class MarkdownBuilder {
 
 	/**
 	 * 图片
-	 *
 	 * @param url 图片链接
 	 */
 	public MarkdownBuilder pic(String url) {
@@ -110,9 +108,8 @@ public class MarkdownBuilder {
 
 	/**
 	 * 图片
-	 *
 	 * @param title 图片标题
-	 * @param url   图片路径
+	 * @param url 图片路径
 	 */
 	public MarkdownBuilder pic(Object title, String url) {
 		lineTextBuilder.append("![").append(title).append("](").append(url).append(")");
@@ -121,9 +118,8 @@ public class MarkdownBuilder {
 
 	/**
 	 * 链接
-	 *
 	 * @param title 标题
-	 * @param url   http 路径
+	 * @param url http 路径
 	 */
 	public MarkdownBuilder link(Object title, String url) {
 		lineTextBuilder.append("[").append(title).append("](").append(url).append(")");
@@ -148,7 +144,6 @@ public class MarkdownBuilder {
 
 	/**
 	 * 引用 > 文本
-	 *
 	 * @param content 文本
 	 */
 	public MarkdownBuilder quote(Object... content) {
@@ -209,7 +204,7 @@ public class MarkdownBuilder {
 	 * 换行 当已编辑文本长度不为0时换行
 	 */
 	public MarkdownBuilder lineBreak() {
-		if (!lineTextBuilder.isEmpty()) {
+		if (lineTextBuilder.length() > 0) {
 			return forceLineBreak();
 		}
 		return this;
@@ -223,7 +218,7 @@ public class MarkdownBuilder {
 	protected MarkdownBuilder title(int i, Object content) {
 		// 如果当前操作行已有字符，需要换行
 		lineBreak();
-		lineTextBuilder.append(TITLE_PREFIX.repeat(Math.max(0, i)));
+		lineTextBuilder.append(StringUtils.repeat(TITLE_PREFIX, Math.max(0, i)));
 		this.content.add(lineTextBuilder.append(" ").append(toString(content)).toString());
 		lineTextBuilder = new StringBuilder();
 		return this;
@@ -264,7 +259,7 @@ public class MarkdownBuilder {
 
 	public int lines() {
 		int size = content.size();
-		return lineTextBuilder.isEmpty() ? size : size + 1;
+		return lineTextBuilder.length() < 1 ? size : size + 1;
 	}
 
 	/**

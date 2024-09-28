@@ -7,7 +7,6 @@ import lombok.experimental.UtilityClass;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
@@ -90,16 +89,9 @@ public class SensitiveUtils {
 
 		try {
 			ServiceLoader<SensitiveProvider> loader = ServiceLoader.load(SensitiveProvider.class);
-
-			loader.stream().filter(Objects::nonNull).forEach(provider -> {
-				try {
-					SensitiveProvider p = provider.get();
-					if (p != null) {
-						providers.add(p);
-					}
-				}
-				catch (ServiceConfigurationError error) {
-					//
+			loader.iterator().forEachRemaining(p -> {
+				if (p != null) {
+					providers.add(p);
 				}
 			});
 		}

@@ -60,7 +60,7 @@ public class HttpResponse {
 
 	public byte[] bytes() throws IOException {
 		try (InputStream in = body()) {
-			return in.readAllBytes();
+			return StreamUtils.read(in);
 		}
 	}
 

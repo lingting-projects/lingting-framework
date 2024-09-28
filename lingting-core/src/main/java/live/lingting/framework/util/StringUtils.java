@@ -28,7 +28,7 @@ public class StringUtils {
 	 * @return boolean
 	 */
 	public static boolean hasText(CharSequence str) {
-		if (str == null || str.isEmpty()) {
+		if (str == null || str.length() < 1) {
 			return false;
 		}
 
@@ -205,7 +205,15 @@ public class StringUtils {
 	 * @return 追加完成后的字符串
 	 */
 	public static String append(String prefix, int count, String str) {
-		return prefix + str.repeat(Math.max(0, count));
+		return prefix + repeat(str, count);
+	}
+
+	public static String repeat(String str, int count) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < count; i++) {
+			sb.append(str);
+		}
+		return sb.toString();
 	}
 
 	public static String cleanBom(String string) {
@@ -237,7 +245,7 @@ public class StringUtils {
 	}
 
 	public static StringBuilder deleteLast(StringBuilder builder) {
-		if (builder == null || builder.isEmpty()) {
+		if (builder == null || builder.length() < 1) {
 			return builder;
 		}
 		int index = builder.length() - 1;

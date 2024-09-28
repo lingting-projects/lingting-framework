@@ -70,7 +70,9 @@ class SecurityGrpcTest {
 		SecurityDefaultResourceServiceImpl resourceService = new SecurityDefaultResourceServiceImpl(resolvers);
 		SecurityAuthorize authorize = new SecurityAuthorize(0);
 		SecurityGrpcExceptionInstance securityGrpcExceptionInstance = new SecurityGrpcExceptionInstance();
-		GrpcExceptionProcessor processor = new GrpcExceptionProcessor(List.of(securityGrpcExceptionInstance));
+		List<live.lingting.framework.grpc.exception.GrpcExceptionInstance> grpcExceptionInstances = new ArrayList<>();
+		grpcExceptionInstances.add(securityGrpcExceptionInstance);
+		GrpcExceptionProcessor processor = new GrpcExceptionProcessor(grpcExceptionInstances);
 		server = new GrpcServerBuilder().port(0)
 			.properties(serverProperties)
 			.service(endpoint)

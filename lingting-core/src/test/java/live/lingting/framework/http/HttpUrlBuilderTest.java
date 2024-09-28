@@ -28,7 +28,10 @@ class HttpUrlBuilderTest {
 		HttpUrlBuilder copy = builder.copy().https();
 		assertEquals("https://www.google.com:80/search?q1=q1&q2=q2", copy.build());
 
-		copy.addParam("q3", List.of("q31", "q32"));
+		List<String> lQ31 = new java.util.ArrayList<>();
+		lQ31.add("q31");
+		lQ31.add("q32");
+		copy.addParam("q3", lQ31);
 		assertEquals("https://www.google.com:80/search?q1=q1&q2=q2&q3=q31&q3=q32", copy.build());
 		copy.uriSegment("a").uriSegment("b", "c");
 		assertEquals("https://www.google.com:80/search/a/b/c?q1=q1&q2=q2&q3=q31&q3=q32", copy.build());

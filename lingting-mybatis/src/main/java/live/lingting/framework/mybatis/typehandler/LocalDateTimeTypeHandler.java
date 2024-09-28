@@ -21,7 +21,8 @@ import java.util.Map;
  */
 @Slf4j
 @SuppressWarnings("java:S6485")
-public class LocalDateTimeTypeHandler extends BaseTypeHandler<LocalDateTime>implements AutoRegisterTypeHandler<LocalDateTime> {
+public class LocalDateTimeTypeHandler extends BaseTypeHandler<LocalDateTime>
+		implements AutoRegisterTypeHandler<LocalDateTime> {
 
 	public static final String MICROSECONDS_DELIMITER = ".";
 
@@ -43,7 +44,8 @@ public class LocalDateTimeTypeHandler extends BaseTypeHandler<LocalDateTime>impl
 			int number = val.length() - val.indexOf(MICROSECONDS_DELIMITER) - 1;
 
 			DateTimeFormatter dateTimeFormatter = CACHE.computeIfAbsent(number, k -> {
-				String builder = STR_FORMAT_NORMAL + MICROSECONDS_DELIMITER + MICROSECONDS.repeat(Math.max(0, number));
+				String builder = STR_FORMAT_NORMAL + MICROSECONDS_DELIMITER
+						+ StringUtils.repeat(MICROSECONDS, Math.max(0, number));
 				return DateTimeFormatter.ofPattern(builder);
 			});
 

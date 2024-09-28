@@ -107,7 +107,7 @@ public class ElasticsearchApi<T> {
 		if (scroll != null) {
 			currentScrollSize = scroll.getSize();
 			if (scroll.getTimeout() != null) {
-				currentScrollTime = Time.of(t -> t.time(String.format("%ds",scroll.getTimeout().toSeconds())));
+				currentScrollTime = Time.of(t -> t.time(String.format("%ds", scroll.getTimeout().toMillis() / 1000)));
 			}
 		}
 
@@ -384,7 +384,10 @@ public class ElasticsearchApi<T> {
 
 		BulkResponse response = bulk(builder -> operator.apply(builder.refresh(Refresh.WaitFor)), operations);
 		if (response.errors()) {
-			List<BulkResponseItem> collect = response.items().stream().filter(item -> item.error() != null).collect(Collectors.toList());
+			List<BulkResponseItem> collect = response.items()
+				.stream()
+				.filter(item -> item.error() != null)
+				.collect(Collectors.toList());
 			boolean allError = collect.size() == collection.size();
 			for (int i = (allError ? 1 : 0); i < collect.size(); i++) {
 				ErrorCause error = collect.get(i).error();
@@ -482,7 +485,12 @@ public class ElasticsearchApi<T> {
 		}
 
 		SearchResponse<T> search = client.search(builder.build(), cls);
-		List<T> collect = search.hits().hits().stream().map(Hit::source).filter(Objects::nonNull).collect(Collectors.toList());
+		List<T> collect = search.hits()
+			.hits()
+			.stream()
+			.map(Hit::source)
+			.filter(Objects::nonNull)
+			.collect(Collectors.toList());
 
 		String nextScrollId = search.scrollId();
 

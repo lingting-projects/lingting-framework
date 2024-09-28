@@ -149,7 +149,7 @@ public class StreamUtils {
 	public static String toString(InputStream in, int size, Charset charset) throws IOException {
 		try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 			write(in, out, size);
-			return out.toString(charset);
+			return out.toString(charset.name());
 		}
 	}
 

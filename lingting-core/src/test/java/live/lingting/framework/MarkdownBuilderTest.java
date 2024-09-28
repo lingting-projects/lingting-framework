@@ -1,5 +1,6 @@
 package live.lingting.framework;
 
+import live.lingting.framework.util.StringUtils;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,7 +45,7 @@ class MarkdownBuilderTest {
 			.json("[1,2,3]");
 
 		String string = builder.build();
-		assertFalse(string.isBlank());
+		assertFalse(!StringUtils.hasText(string));
 		assertTrue(string.contains("####"));
 		assertTrue(string.contains("-"));
 		assertTrue(string.contains("```"));

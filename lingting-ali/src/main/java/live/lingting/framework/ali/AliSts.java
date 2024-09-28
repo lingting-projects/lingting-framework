@@ -100,7 +100,7 @@ public class AliSts extends AliClient<AliStsRequest> {
 			}
 			signHeaderBuilder.append(k).append(";");
 		});
-		if (!signHeaderBuilder.isEmpty()) {
+		if (signHeaderBuilder.length() > 0) {
 			signHeaderBuilder.deleteCharAt(signHeaderBuilder.length() - 1);
 		}
 		String header = headerBuilder.toString();
@@ -135,7 +135,7 @@ public class AliSts extends AliClient<AliStsRequest> {
 
 	public Credential credential(Duration timeout, Collection<Statement> statements) {
 		AliStsCredentialRequest request = new AliStsCredentialRequest();
-		request.setTimeout(timeout.toSeconds());
+		request.setTimeout(timeout.toMillis() / 1000);
 		request.setStatements(statements);
 		request.setRoleArn(properties.getRoleArn());
 		request.setRoleSessionName(properties.getRoleSessionName());
@@ -172,8 +172,8 @@ public class AliSts extends AliClient<AliStsRequest> {
 		String bucket = StringUtils.hasText(properties.getBucket()) ? properties.getBucket() : "*";
 		Statement statement = Statement.allow();
 		statement.addAction(actions);
-		statement.addResource(String.format("acs:oss:*:*:%s",bucket));
-		statement.addResource(String.format("acs:oss:*:*:%s/*",bucket));
+		statement.addResource(String.format("acs:oss:*:*:%s", bucket));
+		statement.addResource(String.format("acs:oss:*:*:%s/*", bucket));
 		Credential credential = credential(statement);
 		AliOssProperties copy = properties.copy();
 		copy.useCredential(credential);
@@ -202,7 +202,7 @@ public class AliSts extends AliClient<AliStsRequest> {
 		String bucket = properties.getBucket();
 		Statement statement = Statement.allow();
 		statement.addAction(actions);
-		statement.addResource(String.format("acs:oss:*:*:%s/%s",bucket, key));
+		statement.addResource(String.format("acs:oss:*:*:%s/%s", bucket, key));
 		Credential credential = credential(statement);
 		AliOssProperties copy = properties.copy();
 		copy.useCredential(credential);

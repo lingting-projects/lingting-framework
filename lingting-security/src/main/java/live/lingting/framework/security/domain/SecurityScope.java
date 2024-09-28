@@ -69,7 +69,7 @@ public class SecurityScope {
 	}
 
 	public <T> T attribute(String key, T defaultValue, Function<Object, T> func) {
-		return attribute(key, defaultValue, Optional::isEmpty, func);
+		return attribute(key, defaultValue, t -> !t.isPresent(), func);
 	}
 
 	/**

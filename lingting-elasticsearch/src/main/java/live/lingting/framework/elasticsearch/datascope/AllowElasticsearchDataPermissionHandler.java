@@ -1,5 +1,6 @@
 package live.lingting.framework.elasticsearch.datascope;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -9,12 +10,12 @@ public class AllowElasticsearchDataPermissionHandler implements ElasticsearchDat
 
 	@Override
 	public List<ElasticsearchDataScope> dataScopes() {
-		return List.of();
+		return new ArrayList<>();
 	}
 
 	@Override
 	public List<ElasticsearchDataScope> filterDataScopes(String index) {
-		return List.of();
+		return new ArrayList<>();
 	}
 
 	@Override

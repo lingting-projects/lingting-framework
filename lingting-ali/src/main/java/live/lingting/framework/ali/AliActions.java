@@ -2,6 +2,8 @@ package live.lingting.framework.ali;
 
 import lombok.experimental.UtilityClass;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -487,17 +489,43 @@ public class AliActions {
 	 */
 	public static final String OSS_OBJECT_REPLICATE_DELETE = "oss:ReplicateDelete";
 
-	public static final List<String> OSS_BUCKET_DEFAULT = List.of(OSS_OBJECT_GET, OSS_OBJECT_PUT, OSS_OBJECT_DELETE,
-			OSS_OBJECT_GET_ACL, OSS_OBJECT_PUT_ACL, OSS_OBJECT_GET_META, OSS_OBJECT_GET_TAGGING, OSS_OBJECT_PUT_TAGGING,
-			OSS_OBJECT_DELETE_TAGGING, OSS_OBJECT_INITIATE_MULTIPART_UPLOAD, OSS_OBJECT_COMPLETE_MULTIPART_UPLOAD,
-			OSS_OBJECT_ABORT_MULTIPART_UPLOAD,
+	public static final List<String> OSS_BUCKET_DEFAULT;
 
-			OSS_BUCKET_LIST, OSS_BUCKET_PUT_ACL, OSS_BUCKET_GET_TAGS, OSS_BUCKET_PUT_TAGS, OSS_BUCKET_DELETE_TAGS,
-			OSS_BUCKET_LIST_MULTIPART_UPLOADS);
+	static {
+		List<String> t = new ArrayList<>();
+		t.add(OSS_OBJECT_GET);
+		t.add(OSS_OBJECT_PUT);
+		t.add(OSS_OBJECT_DELETE);
+		t.add(OSS_OBJECT_GET_ACL);
+		t.add(OSS_OBJECT_PUT_ACL);
+		t.add(OSS_OBJECT_GET_META);
+		t.add(OSS_OBJECT_GET_TAGGING);
+		t.add(OSS_OBJECT_PUT_TAGGING);
+		t.add(OSS_OBJECT_DELETE_TAGGING);
+		t.add(OSS_OBJECT_INITIATE_MULTIPART_UPLOAD);
+		t.add(OSS_OBJECT_COMPLETE_MULTIPART_UPLOAD);
+		t.add(OSS_OBJECT_ABORT_MULTIPART_UPLOAD);
+		t.add(OSS_BUCKET_LIST);
+		t.add(OSS_BUCKET_PUT_ACL);
+		t.add(OSS_BUCKET_GET_TAGS);
+		t.add(OSS_BUCKET_PUT_TAGS);
+		t.add(OSS_BUCKET_DELETE_TAGS);
+		t.add(OSS_BUCKET_LIST_MULTIPART_UPLOADS);
+		OSS_BUCKET_DEFAULT = Collections.unmodifiableList(t);
+	}
 
 	public static final List<String> OSS_OBJECT_DEFAULT = OSS_BUCKET_DEFAULT;
 
-	public static final List<String> OSS_OBJECT_DEFAULT_PUT = List.of(OSS_OBJECT_PUT, OSS_OBJECT_PUT_ACL,
-			OSS_OBJECT_GET_META, OSS_OBJECT_PUT_TAGGING, OSS_OBJECT_ABORT_MULTIPART_UPLOAD);
+	public static final List<String> OSS_OBJECT_DEFAULT_PUT;
+
+	static {
+		List<String> t = new ArrayList<>();
+		t.add(OSS_OBJECT_PUT);
+		t.add(OSS_OBJECT_PUT_ACL);
+		t.add(OSS_OBJECT_GET_META);
+		t.add(OSS_OBJECT_PUT_TAGGING);
+		t.add(OSS_OBJECT_ABORT_MULTIPART_UPLOAD);
+		OSS_OBJECT_DEFAULT_PUT = Collections.unmodifiableList(t);
+	}
 
 }

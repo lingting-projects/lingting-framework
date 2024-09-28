@@ -17,7 +17,9 @@ class HuaweiBasic {
 		HuaweiIamProperties properties = new HuaweiIamProperties();
 		String name = System.getenv("HUAWEI_IAM_DOMAIN_NAME");
 		assertNotNull(name);
-		properties.setDomain(Map.of("name", name));
+		Map<String, Object> domain = new java.util.HashMap<>();
+		domain.put("name", name);
+		properties.setDomain(domain);
 		properties.setUsername(System.getenv("HUAWEI_IAM_USERNAME"));
 		properties.setPassword(System.getenv("HUAWEI_IAM_PASSWORD"));
 		assertNotNull(properties.getUsername());

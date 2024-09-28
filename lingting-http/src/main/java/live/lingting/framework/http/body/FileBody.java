@@ -29,7 +29,8 @@ public class FileBody extends BodySource {
 	@SneakyThrows
 	@Override
 	public byte[] bytes() {
-		return input.copy().readAllBytes();
+		CloneInputStream stream = input.copy();
+		return StreamUtils.read(stream);
 	}
 
 	@Override

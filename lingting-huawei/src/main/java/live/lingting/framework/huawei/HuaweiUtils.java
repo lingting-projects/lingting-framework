@@ -54,8 +54,9 @@ public class HuaweiUtils {
 		return parse.plusSeconds(zone.getTotalSeconds());
 	}
 
+	@SneakyThrows
 	public static String encode(String objectKey) {
-		return URLEncoder.encode(objectKey, CHARSET);
+		return URLEncoder.encode(objectKey, CHARSET.name());
 	}
 
 	/**

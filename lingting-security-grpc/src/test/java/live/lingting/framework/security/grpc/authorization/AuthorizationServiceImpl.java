@@ -37,8 +37,12 @@ public class AuthorizationServiceImpl implements SecurityAuthorizationService {
 		scope.setNickname(username);
 		scope.setEnabled(true);
 		scope.setExpireTime(expireTime());
-		scope.setRoles(new HashSet<>(List.of(username)));
-		scope.setPermissions(new HashSet<>(List.of(username)));
+		List<String> roles = new java.util.ArrayList<>();
+		roles.add(username);
+		scope.setRoles(new HashSet<>(roles));
+		List<String> permissions = new java.util.ArrayList<>();
+		permissions.add(username);
+		scope.setPermissions(new HashSet<>(permissions));
 		SecurityScopeAttributes attributes = new SecurityScopeAttributes();
 		attributes.put("expand", "true");
 		attributes.put("tag", MdcUtils.traceId());

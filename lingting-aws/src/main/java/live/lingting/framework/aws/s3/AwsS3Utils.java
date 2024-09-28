@@ -1,6 +1,7 @@
 package live.lingting.framework.aws.s3;
 
 import live.lingting.framework.time.DatePattern;
+import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
 import java.net.URLEncoder;
@@ -49,6 +50,7 @@ public class AwsS3Utils {
 		ZonedDateTime atGmt = atZone.withZoneSameInstant(DatePattern.GMT_ZONE_ID);
 		return formatter.format(atGmt);
 	}
+
 	public static LocalDateTime parse(String string, DateTimeFormatter formatter) {
 		LocalDateTime source = LocalDateTime.parse(string, formatter);
 		ZonedDateTime atGmt = source.atZone(DatePattern.GMT_ZONE_ID);
@@ -56,8 +58,9 @@ public class AwsS3Utils {
 		return atZone.toLocalDateTime();
 	}
 
+	@SneakyThrows
 	public static String encode(String s) {
-		return URLEncoder.encode(s, StandardCharsets.UTF_8);
+		return URLEncoder.encode(s, StandardCharsets.UTF_8.name());
 	}
 
 }

@@ -288,7 +288,7 @@ public class ClassUtils {
 						.findFirst();
 
 					// get 不存在则尝试获取 is 方法
-					if (optionalGet.isEmpty()) {
+					if (!optionalGet.isPresent()) {
 						String isMethodName = "is" + fieldName;
 						optionalGet = Arrays.stream(methods)
 							.filter(method -> method.getName().equals(isMethodName) && method.getParameterCount() == 0)
@@ -354,7 +354,7 @@ public class ClassUtils {
 	 * @return 返回设置后的对象
 	 */
 	public static <T extends AccessibleObject> T setAccessible(T object) {
-		if (!object.trySetAccessible()) {
+		if (!object.isAccessible()) {
 			object.setAccessible(true);
 		}
 		return object;

@@ -2,6 +2,8 @@ package live.lingting.framework.huawei;
 
 import lombok.experimental.UtilityClass;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -128,17 +130,42 @@ public class HuaweiActions {
 
 	public static final String OBS_BUCKET_LIST_MULTIPART_UPLOADS = "obs:bucket:ListBucketMultipartUploads";
 
-	public static final List<String> OBS_BUCKET_DEFAULT = List.of(OBS_OBJECT_GET, OBS_OBJECT_PUT, OBS_OBJECT_DELETE,
-			OBS_OBJECT_GET_ACL, OBS_OBJECT_PUT_ACL, OBS_OBJECT_MODIFY_META_DATA, OBS_OBJECT_GET_TAGGING,
-			OBS_OBJECT_PUT_TAGGING, OBS_OBJECT_DELETE_TAGGING, OBS_OBJECT_LIST_MULTIPART_UPLOAD_PARTS,
-			OBS_OBJECT_ABORT_MULTIPART_UPLOAD,
+	public static final List<String> OBS_BUCKET_DEFAULT;
 
-			OBS_BUCKET_LIST, OBS_BUCKET_PUT_ACL, OBS_BUCKET_GET_TAGGING, OBS_BUCKET_PUT_TAGGING,
-			OBS_BUCKET_DELETE_TAGGING, OBS_BUCKET_LIST_MULTIPART_UPLOADS);
+	static {
+		List<String> t = new ArrayList<>();
+		t.add(OBS_OBJECT_GET);
+		t.add(OBS_OBJECT_PUT);
+		t.add(OBS_OBJECT_DELETE);
+		t.add(OBS_OBJECT_GET_ACL);
+		t.add(OBS_OBJECT_PUT_ACL);
+		t.add(OBS_OBJECT_MODIFY_META_DATA);
+		t.add(OBS_OBJECT_GET_TAGGING);
+		t.add(OBS_OBJECT_PUT_TAGGING);
+		t.add(OBS_OBJECT_DELETE_TAGGING);
+		t.add(OBS_OBJECT_LIST_MULTIPART_UPLOAD_PARTS);
+		t.add(OBS_OBJECT_ABORT_MULTIPART_UPLOAD);
+		t.add(OBS_BUCKET_LIST);
+		t.add(OBS_BUCKET_PUT_ACL);
+		t.add(OBS_BUCKET_GET_TAGGING);
+		t.add(OBS_BUCKET_PUT_TAGGING);
+		t.add(OBS_BUCKET_DELETE_TAGGING);
+		t.add(OBS_BUCKET_LIST_MULTIPART_UPLOADS);
+		OBS_BUCKET_DEFAULT = Collections.unmodifiableList(t);
+	}
 
 	public static final List<String> OBS_OBJECT_DEFAULT = OBS_BUCKET_DEFAULT;
 
-	public static final List<String> OBS_OBJECT_DEFAULT_PUT = List.of(OBS_OBJECT_PUT, OBS_OBJECT_PUT_ACL,
-			OBS_OBJECT_MODIFY_META_DATA, OBS_OBJECT_PUT_TAGGING, OBS_OBJECT_ABORT_MULTIPART_UPLOAD);
+	public static final List<String> OBS_OBJECT_DEFAULT_PUT;
+
+	static {
+		List<String> t = new ArrayList<>();
+		t.add(OBS_OBJECT_PUT);
+		t.add(OBS_OBJECT_PUT_ACL);
+		t.add(OBS_OBJECT_MODIFY_META_DATA);
+		t.add(OBS_OBJECT_PUT_TAGGING);
+		t.add(OBS_OBJECT_ABORT_MULTIPART_UPLOAD);
+		OBS_OBJECT_DEFAULT_PUT = Collections.unmodifiableList(t);
+	}
 
 }

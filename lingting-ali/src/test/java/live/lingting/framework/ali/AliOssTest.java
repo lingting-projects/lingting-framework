@@ -13,6 +13,7 @@ import live.lingting.framework.thread.Async;
 import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.DigestUtils;
 import live.lingting.framework.util.StreamUtils;
+import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.value.multi.StringMultiValue;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -64,7 +65,7 @@ class AliOssTest {
 		HttpHeaders head = ossObject.head();
 		assertNotNull(head);
 		assertEquals(bytes.length, head.contentLength());
-		assertTrue(String.format("\"%s\"",hex).equalsIgnoreCase(head.etag()));
+		assertTrue(String.format("\"%s\"", hex).equalsIgnoreCase(head.etag()));
 		HttpDownload await = HttpDownload.single(ossObject.publicUrl()).build().start().await();
 		String string = StreamUtils.toString(Files.newInputStream(await.getFile().toPath()));
 		assertEquals(source, string);
@@ -97,7 +98,7 @@ class AliOssTest {
 		String key = "ali/m_" + snowflake.nextId();
 		AliOssObject ossObject = sts.ossObject(properties, key);
 		assertThrows(AliException.class, ossObject::head);
-		String source = "hello world\n".repeat(10000);
+		String source = StringUtils.repeat("hello world\n", 10000);
 		byte[] bytes = source.getBytes();
 		String hex = DigestUtils.md5Hex(bytes);
 		AwsS3MultipartTask task = assertDoesNotThrow(

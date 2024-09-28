@@ -43,10 +43,15 @@ public class HuaweiIamTokenRequest extends HuaweiIamRequest {
 		map.put("name", username);
 		map.put(KEY_PASSWORD, password);
 
-		Map<String, Object> pwd = Map.of("user", map);
-		Map<String, Object> identity = Map.of("methods", VALUE_METHODS, KEY_PASSWORD, pwd);
-		Map<String, Object> auth = Map.of("identity", identity);
-		Map<String, Object> params = Map.of("auth", auth);
+		Map<String, Object> pwd = new HashMap<>();
+		pwd.put("user", map);
+		Map<String, Object> identity = new HashMap<>();
+		identity.put("methods", VALUE_METHODS);
+		identity.put(KEY_PASSWORD, pwd);
+		Map<String, Object> auth = new HashMap<>();
+		auth.put("identity", identity);
+		Map<String, Object> params = new HashMap<>();
+		params.put("auth", auth);
 		String json = JacksonUtils.toJson(params);
 		return MemoryBody.of(json);
 	}

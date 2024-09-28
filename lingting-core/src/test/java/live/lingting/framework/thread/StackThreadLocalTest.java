@@ -33,7 +33,7 @@ class StackThreadLocalTest {
 	}
 
 	void assertStack() {
-		long id = Thread.currentThread().threadId();
+		long id = Thread.currentThread().getId();
 		assertNull(local.get());
 		local.put(id);
 		assertEquals(id, local.get());

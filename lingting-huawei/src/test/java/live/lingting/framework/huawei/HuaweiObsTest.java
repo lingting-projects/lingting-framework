@@ -12,6 +12,7 @@ import live.lingting.framework.thread.Async;
 import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.DigestUtils;
 import live.lingting.framework.util.StreamUtils;
+import live.lingting.framework.util.StringUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,7 +62,7 @@ class HuaweiObsTest {
 		HuaweiObsHeaders head = obsObject.head();
 		assertNotNull(head);
 		assertEquals(bytes.length, head.contentLength());
-		assertEquals(String.format("\"%s\"",hex), head.etag());
+		assertEquals(String.format("\"%s\"", hex), head.etag());
 		HttpDownload await = HttpDownload.single(obsObject.publicUrl()).build().start().await();
 		String string = StreamUtils.toString(Files.newInputStream(await.getFile().toPath()));
 		assertEquals(source, string);
@@ -84,7 +85,7 @@ class HuaweiObsTest {
 		String key = "huawei/obs/test/" + snowflake.nextId();
 		HuaweiObsObject obsObject = iam.obsObject(properties, key);
 		assertThrows(HuaweiException.class, obsObject::head);
-		String source = "hello world".repeat(90000);
+		String source = StringUtils.repeat("hello world\n", 90000);
 		byte[] bytes = source.getBytes();
 		String hex = DigestUtils.md5Hex(bytes);
 		HuaweiMultipartTask task = assertDoesNotThrow(

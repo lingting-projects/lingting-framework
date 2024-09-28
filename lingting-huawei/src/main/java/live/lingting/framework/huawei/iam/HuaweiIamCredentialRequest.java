@@ -37,11 +37,17 @@ public class HuaweiIamCredentialRequest extends HuaweiIamRequest {
 		policy.put("Version", "1.1");
 		policy.put("Statement", statements.stream().map(HuaweiStatement::map).collect(Collectors.toList()));
 
-		Map<String, Object> token = Map.of("duration_seconds", timeout.getSeconds());
+		Map<String, Object> token = new HashMap<>();
+		token.put("duration_seconds", timeout.getSeconds());
 
-		Map<String, Object> identity = Map.of("methods", VALUE_METHODS, "token", token, "policy", policy);
-		Map<String, Object> auth = Map.of("identity", identity);
-		Map<String, Object> params = Map.of("auth", auth);
+		Map<String, Object> identity = new HashMap<>();
+		identity.put("methods", VALUE_METHODS);
+		identity.put("token", token);
+		identity.put("policy", policy);
+		Map<String, Object> auth = new HashMap<>();
+		auth.put("identity", identity);
+		Map<String, Object> params = new HashMap<>();
+		params.put("auth", auth);
 		String json = JacksonUtils.toJson(params);
 		return MemoryBody.of(json);
 	}

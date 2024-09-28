@@ -29,7 +29,7 @@ import java.lang.reflect.Modifier;
 @Getter
 @ToString
 @EqualsAndHashCode
-@SuppressWarnings("java:S3011")
+@SuppressWarnings({ "java:S3011", "java:S1172" })
 public final class ClassField {
 
 	private final Field field;
@@ -108,10 +108,10 @@ public final class ClassField {
 	 */
 	public boolean canGet(Object o) {
 		if (methodGet != null) {
-			return methodGet.canAccess(o);
+			return methodGet.isAccessible();
 		}
 		if (field != null) {
-			return field.canAccess(o);
+			return field.isAccessible();
 		}
 		return false;
 	}
@@ -123,7 +123,7 @@ public final class ClassField {
 		if (methodSet == null) {
 			return false;
 		}
-		return methodSet.canAccess(o);
+		return methodSet.isAccessible();
 	}
 
 	/**
@@ -137,20 +137,20 @@ public final class ClassField {
 	}
 
 	public ClassField visibleGet() {
-		if (field != null && !field.trySetAccessible()) {
+		if (field != null && !field.isAccessible()) {
 			field.setAccessible(true);
 		}
-		if (methodGet != null && !methodGet.trySetAccessible()) {
+		if (methodGet != null && !methodGet.isAccessible()) {
 			methodGet.setAccessible(true);
 		}
 		return this;
 	}
 
 	public ClassField visibleSet() {
-		if (field != null && !field.trySetAccessible()) {
+		if (field != null && !field.isAccessible()) {
 			field.setAccessible(true);
 		}
-		if (methodSet != null && !methodSet.trySetAccessible()) {
+		if (methodSet != null && !methodSet.isAccessible()) {
 			methodSet.setAccessible(true);
 		}
 		return this;
