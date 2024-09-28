@@ -46,7 +46,7 @@ public class HttpUrlBuilder {
 		String query = u.getQuery();
 		if (StringUtils.hasText(query)) {
 			Arrays.stream(query.split("&")).forEach(s -> {
-				String[] split = s.split("=");
+				String[] split = s.split("=", 2);
 				String name = split[0];
 				builder.addParam(name, split.length == 1 ? null : split[1]);
 			});
