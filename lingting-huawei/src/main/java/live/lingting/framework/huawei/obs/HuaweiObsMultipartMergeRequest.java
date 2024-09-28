@@ -1,10 +1,10 @@
 package live.lingting.framework.huawei.obs;
 
+import live.lingting.framework.http.body.MemoryBody;
 import live.lingting.framework.multipart.Part;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.net.http.HttpRequest;
 import java.util.Comparator;
 import java.util.Map;
 
@@ -20,7 +20,7 @@ public class HuaweiObsMultipartMergeRequest extends HuaweiObsRequest {
 	private Map<Part, String> map;
 
 	@Override
-	public HttpRequest.BodyPublisher body() {
+	public MemoryBody body() {
 		StringBuilder builder = new StringBuilder("<CompleteMultipartUpload>\n");
 
 		map.keySet().stream().sorted(Comparator.comparing(Part::getIndex))
@@ -34,7 +34,7 @@ public class HuaweiObsMultipartMergeRequest extends HuaweiObsRequest {
 				});
 
 		builder.append("</CompleteMultipartUpload>");
-		return HttpRequest.BodyPublishers.ofString(builder.toString());
+		return MemoryBody.of(builder.toString());
 	}
 
 	@Override

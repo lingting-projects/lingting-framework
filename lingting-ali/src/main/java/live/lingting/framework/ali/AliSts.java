@@ -11,8 +11,8 @@ import live.lingting.framework.aws.policy.Statement;
 import live.lingting.framework.crypto.mac.Mac;
 import live.lingting.framework.http.HttpResponse;
 import live.lingting.framework.http.HttpUrlBuilder;
+import live.lingting.framework.http.body.BodySource;
 import live.lingting.framework.http.header.HttpHeaders;
-import live.lingting.framework.http.java.JavaHttpUtils;
 import live.lingting.framework.time.DatePattern;
 import live.lingting.framework.util.ArrayUtils;
 import live.lingting.framework.util.DigestUtils;
@@ -20,7 +20,6 @@ import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.value.multi.StringMultiValue;
 import lombok.SneakyThrows;
 
-import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -74,7 +73,7 @@ public class AliSts extends AliClient<AliStsRequest> {
 
 	@SneakyThrows
 	@Override
-	protected void customize(AliStsRequest request, HttpHeaders headers, HttpRequest.BodyPublisher publisher,
+	protected void customize(AliStsRequest request, HttpHeaders headers, BodySource requestBody,
 			StringMultiValue params) {
 		LocalDateTime now = LocalDateTime.now();
 		String date = AliUtils.format(now, DatePattern.FORMATTER_ISO_8601);
@@ -84,7 +83,7 @@ public class AliSts extends AliClient<AliStsRequest> {
 		String path = request.path();
 		String uri = StringUtils.hasText(path) ? path : "/";
 		String query = HttpUrlBuilder.buildQuery(params);
-		String body = publisher == null ? "" : JavaHttpUtils.toString(publisher);
+		String body = requestBody == null ? "" : requestBody.string();
 		String bodySha = DigestUtils.sha256Hex(body);
 
 		headers.put("x-acs-content-sha256", bodySha);

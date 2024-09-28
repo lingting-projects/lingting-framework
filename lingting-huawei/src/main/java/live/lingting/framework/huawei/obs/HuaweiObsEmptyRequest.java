@@ -1,10 +1,10 @@
 package live.lingting.framework.huawei.obs;
 
 import live.lingting.framework.http.HttpMethod;
+import live.lingting.framework.http.body.BodySource;
+import live.lingting.framework.http.body.MemoryBody;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import java.net.http.HttpRequest;
 
 /**
  * @author lingting 2024-09-13 16:46
@@ -21,8 +21,8 @@ public class HuaweiObsEmptyRequest extends HuaweiObsRequest {
 	}
 
 	@Override
-	public HttpRequest.BodyPublisher body() {
-		return HttpRequest.BodyPublishers.noBody();
+	public MemoryBody body() {
+		return BodySource.empty();
 	}
 
 }

@@ -3,6 +3,7 @@ package live.lingting.framework.http.download;
 import live.lingting.framework.download.MultipartDownload;
 import live.lingting.framework.exception.DownloadException;
 import live.lingting.framework.http.HttpClient;
+import live.lingting.framework.http.HttpRequest;
 import live.lingting.framework.http.HttpResponse;
 import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.multipart.Part;
@@ -12,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.http.HttpRequest;
 
 /**
  * @author lingting 2023-12-20 16:43
@@ -69,7 +69,7 @@ public class HttpDownload extends MultipartDownload<HttpDownload> {
 
 	@Override
 	public long size() throws IOException {
-		HttpRequest.Builder builder = HttpRequest.newBuilder().uri(uri).header("Accept-Encoding", "identity");
+		HttpRequest.Builder builder = HttpRequest.builder().url(uri).header("Accept-Encoding", "identity");
 		HttpResponse response = client.request(builder.build());
 		HttpHeaders headers = response.headers();
 		return headers.contentLength();
@@ -77,7 +77,7 @@ public class HttpDownload extends MultipartDownload<HttpDownload> {
 
 	@Override
 	public InputStream download(Part part) throws Exception {
-		HttpRequest.Builder builder = HttpRequest.newBuilder().GET().uri(uri);
+		HttpRequest.Builder builder = HttpRequest.builder().get().url(uri);
 		if (multi) {
 			builder.header("Range", String.format("bytes=%d-%d", part.getStart(), part.getEnd()));
 		}

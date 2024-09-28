@@ -1,7 +1,5 @@
 package live.lingting.framework.value;
 
-import live.lingting.framework.value.multi.AbstractMultiValue;
-
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -31,7 +29,7 @@ public interface MultiValue<K, V, C extends Collection<V>> {
 
 	void addAll(Map<K, ? extends Collection<V>> map);
 
-	void addAll(AbstractMultiValue<K, V, C> value);
+	void addAll(MultiValue<K, V, C> value);
 
 	void put(K key, V value);
 
@@ -39,7 +37,7 @@ public interface MultiValue<K, V, C extends Collection<V>> {
 
 	void putAll(Map<K, Collection<V>> map);
 
-	void putAll(AbstractMultiValue<K, V, C> value);
+	void putAll(MultiValue<K, V, C> value);
 
 	// endregion
 

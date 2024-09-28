@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -64,7 +64,7 @@ class StreamUtilsTest {
 	void testClone() throws IOException {
 		CloneInputStream clone = StreamUtils.clone(of(line3));
 		assertEquals(line3, StreamUtils.toString(clone));
-		FileInputStream copy = clone.copy();
+		InputStream copy = clone.copy();
 		assertEquals(line3, StreamUtils.toString(copy));
 	}
 

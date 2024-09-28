@@ -2,8 +2,8 @@ package live.lingting.framework.http;
 
 import live.lingting.framework.function.ThrowingFunction;
 import live.lingting.framework.http.header.HttpHeaders;
-import live.lingting.framework.http.java.JavaHttpUtils;
 import live.lingting.framework.http.okhttp.OkHttpCookie;
+import live.lingting.framework.http.okhttp.OkHttpRequestBody;
 import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.util.StreamUtils;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,6 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Dispatcher;
 import okhttp3.HttpUrl;
-import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -21,16 +20,12 @@ import okhttp3.ResponseBody;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.http.HttpRequest;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Supplier;
-
-import static okhttp3.internal.http.HttpMethod.permitsRequestBody;
 
 /**
  * @author lingting 2024-09-02 15:36
@@ -46,28 +41,22 @@ public class OkHttpClient extends HttpClient {
 	}
 
 	public static Request convert(HttpRequest request) throws IOException {
+		HttpMethod method = request.method();
+		URI uri = request.uri();
+		HttpHeaders headers = request.headers();
+		HttpRequest.Body body = request.body();
+
 		Request.Builder builder = new Request.Builder();
-
 		// 请求头
-		HttpHeaders headers = HttpHeaders.of(request.headers().map());
-		headers.each(builder::addHeader);
-
-		// 请求地址
-		builder.url(request.uri().toURL());
-
-		MediaType type = Optional.ofNullable(headers.contentType()).map(MediaType::parse).orElse(null);
-
-		// 请求体
-		Optional<RequestBody> optional = request.bodyPublisher().map(publisher -> {
-			// 不需要请求体则不携带
-			if (!permitsRequestBody(request.method().toUpperCase())) {
-				return null;
+		headers.each((k, v) -> {
+			if (HEADERS_DISABLED.contains(k)) {
+				return;
 			}
-			File file = JavaHttpUtils.write(publisher);
-			return RequestBody.create(file, type);
+			builder.header(k, v);
 		});
-
-		builder.method(request.method(), optional.orElse(null));
+		// 请求地址
+		builder.url(uri.toURL());
+		builder.method(method.name(), method.allowBody() ? new OkHttpRequestBody(body) : null);
 		return builder.build();
 	}
 
@@ -204,11 +193,12 @@ public class OkHttpClient extends HttpClient {
 
 		public OkHttpClient build(Supplier<okhttp3.OkHttpClient.Builder> supplier) {
 			okhttp3.OkHttpClient.Builder builder = supplier.get();
+			builder.followRedirects(redirects).followSslRedirects(redirects);
 			nonNull(socketFactory, builder::socketFactory);
 			nonNull(hostnameVerifier, builder::hostnameVerifier);
 
-			if (sslSocketFactory != null && trustManager != null) {
-				builder.sslSocketFactory(sslSocketFactory, trustManager);
+			if (sslContext != null && trustManager != null) {
+				builder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
 			}
 
 			nonNull(callTimeout, builder::callTimeout);

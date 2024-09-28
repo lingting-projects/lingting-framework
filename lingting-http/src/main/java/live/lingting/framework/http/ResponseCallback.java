@@ -1,6 +1,5 @@
 package live.lingting.framework.http;
 
-import java.net.http.HttpRequest;
 
 /**
  * @author lingting 2024-05-07 17:20

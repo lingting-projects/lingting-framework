@@ -1,19 +1,24 @@
 package live.lingting.framework.http;
 
+import live.lingting.framework.util.FileUtils;
 import live.lingting.framework.util.ThreadUtils;
+import lombok.SneakyThrows;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
+import java.io.File;
 import java.io.IOException;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.CookieStore;
 import java.net.ProxySelector;
 import java.net.URI;
-import java.net.http.HttpRequest;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
@@ -21,6 +26,13 @@ import java.util.function.Consumer;
  * @author lingting 2024-09-02 15:28
  */
 public abstract class HttpClient {
+
+	/**
+	 * @see jdk.internal.net.http.common.Utils#getDisallowedHeaders()
+	 */
+	protected static final Set<String> HEADERS_DISABLED = Set.of("connection", "content-length", "expect", "host",
+		"upgrade");
+	public static final File TEMP = FileUtils.createTempDir("http");
 
 	protected CookieStore cookie;
 
@@ -48,12 +60,14 @@ public abstract class HttpClient {
 	}
 
 	public HttpResponse get(URI uri) throws IOException {
-		return request(HttpRequest.newBuilder().GET().uri(uri).build());
+		return request(HttpRequest.builder().get().url(uri).build());
 	}
 
 	public abstract static class Builder<C extends HttpClient, B extends HttpClient.Builder<C, B>> {
 
 		protected ExecutorService executor = ThreadUtils.executor();
+
+		protected boolean redirects = true;
 
 		protected SocketFactory socketFactory;
 
@@ -63,9 +77,9 @@ public abstract class HttpClient {
 		protected HostnameVerifier hostnameVerifier;
 
 		/**
-		 * SSLSocketFactory，用于HTTPS安全连接
+		 * 用于HTTPS安全连接
 		 */
-		protected SSLSocketFactory sslSocketFactory;
+		protected SSLContext sslContext;
 
 		protected X509TrustManager trustManager;
 
@@ -91,22 +105,32 @@ public abstract class HttpClient {
 			return (B) this;
 		}
 
+		public B redirects(boolean redirects) {
+			this.redirects = redirects;
+			return (B) this;
+		}
+
 		public B hostnameVerifier(HostnameVerifier hostnameVerifier) {
 			this.hostnameVerifier = hostnameVerifier;
 			return (B) this;
 		}
 
-		public B ssl(SSLSocketFactory ssf, X509TrustManager trustManager) {
-			this.sslSocketFactory = ssf;
+		public B ssl(X509TrustManager trustManager) throws NoSuchAlgorithmException, KeyManagementException {
+			SSLContext context = Https.sslContext(trustManager);
+			return ssl(context, trustManager);
+		}
+
+		public B ssl(SSLContext context, X509TrustManager trustManager) {
+			this.sslContext = context;
 			this.trustManager = trustManager;
 			return (B) this;
 		}
 
+		@SneakyThrows
 		public B disableSsl() {
-			SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-			X509TrustAllManager manager = X509TrustAllManager.INSTANCE;
-			HostnameAllVerifier verifier = HostnameAllVerifier.INSTANCE;
-			return ssl(factory, manager).hostnameVerifier(verifier);
+			X509TrustManager manager = Https.SSL_DISABLED_TRUST_MANAGER;
+			HostnameVerifier verifier = Https.SSL_DISABLED_HOSTNAME_VERIFIER;
+			return ssl(manager).hostnameVerifier(verifier);
 		}
 
 		public B callTimeout(Duration callTimeout) {

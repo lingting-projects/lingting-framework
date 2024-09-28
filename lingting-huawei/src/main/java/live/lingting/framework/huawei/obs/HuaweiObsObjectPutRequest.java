@@ -1,12 +1,13 @@
 package live.lingting.framework.huawei.obs;
 
 import live.lingting.framework.http.HttpMethod;
+import live.lingting.framework.http.body.BodySource;
+import live.lingting.framework.http.body.FileBody;
 import live.lingting.framework.multipart.Part;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.InputStream;
-import java.net.http.HttpRequest;
 
 /**
  * @author lingting 2024-09-13 16:31
@@ -32,8 +33,9 @@ public class HuaweiObsObjectPutRequest extends HuaweiObsRequest {
 	}
 
 	@Override
-	public HttpRequest.BodyPublisher body() {
-		return HttpRequest.BodyPublishers.ofInputStream(this::getStream);
+	public BodySource body() {
+		InputStream inputStream = getStream();
+		return FileBody.of(inputStream);
 	}
 
 	@Override

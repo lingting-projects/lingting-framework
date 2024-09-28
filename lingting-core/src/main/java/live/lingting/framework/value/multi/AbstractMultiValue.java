@@ -95,7 +95,7 @@ public abstract class AbstractMultiValue<K, V, C extends Collection<V>> implemen
 	}
 
 	@Override
-	public void addAll(AbstractMultiValue<K, V, C> value) {
+	public void addAll(MultiValue<K, V, C> value) {
 		if (!allowModify) {
 			throw new UnsupportedOperationException();
 		}
@@ -130,7 +130,7 @@ public abstract class AbstractMultiValue<K, V, C extends Collection<V>> implemen
 	}
 
 	@Override
-	public void putAll(AbstractMultiValue<K, V, C> value) {
+	public void putAll(MultiValue<K, V, C> value) {
 		if (!allowModify) {
 			throw new UnsupportedOperationException();
 		}

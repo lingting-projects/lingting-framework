@@ -136,7 +136,11 @@ public class StreamUtils {
 	}
 
 	public static String toString(InputStream in) throws IOException {
-		return toString(in, readSize, StandardCharsets.UTF_8);
+		return toString(in, StandardCharsets.UTF_8);
+	}
+
+	public static String toString(InputStream in, Charset charset) throws IOException {
+		return toString(in, readSize, charset);
 	}
 
 	public static String toString(InputStream in, int size, Charset charset) throws IOException {

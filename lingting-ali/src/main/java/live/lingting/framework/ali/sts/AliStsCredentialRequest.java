@@ -1,11 +1,12 @@
 package live.lingting.framework.ali.sts;
 
 import live.lingting.framework.aws.policy.Statement;
+import live.lingting.framework.http.body.BodySource;
+import live.lingting.framework.http.body.MemoryBody;
 import live.lingting.framework.jackson.JacksonUtils;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.net.http.HttpRequest;
 import java.util.Collection;
 import java.util.Map;
 
@@ -44,13 +45,13 @@ public class AliStsCredentialRequest extends AliStsRequest {
 	}
 
 	@Override
-	public HttpRequest.BodyPublisher body() {
+	public BodySource body() {
 		Map<String, Object> policy = Map.of("Version", "1", "Statement",
 				statements.stream().map(Statement::map).toList());
 		Map<String, Object> map = Map.of("RoleArn", roleArn, "RoleSessionName", roleSessionName, "DurationSeconds",
 				timeout, "Policy", policy);
 		String json = JacksonUtils.toJson(map);
-		return HttpRequest.BodyPublishers.ofString(json);
+		return MemoryBody.of(json);
 	}
 
 }

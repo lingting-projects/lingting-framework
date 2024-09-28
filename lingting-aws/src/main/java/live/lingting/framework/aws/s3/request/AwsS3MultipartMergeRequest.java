@@ -2,11 +2,12 @@ package live.lingting.framework.aws.s3.request;
 
 import live.lingting.framework.aws.s3.AwsS3Request;
 import live.lingting.framework.http.HttpMethod;
+import live.lingting.framework.http.body.BodySource;
+import live.lingting.framework.http.body.MemoryBody;
 import live.lingting.framework.multipart.Part;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.net.http.HttpRequest;
 import java.util.Comparator;
 import java.util.Map;
 
@@ -27,7 +28,7 @@ public class AwsS3MultipartMergeRequest extends AwsS3Request {
 	}
 
 	@Override
-	public HttpRequest.BodyPublisher body() {
+	public BodySource body() {
 		StringBuilder builder = new StringBuilder("<CompleteMultipartUpload>\n");
 
 		map.keySet().stream().sorted(Comparator.comparing(Part::getIndex)).forEach(p -> {
@@ -40,7 +41,7 @@ public class AwsS3MultipartMergeRequest extends AwsS3Request {
 		});
 
 		builder.append("</CompleteMultipartUpload>");
-		return HttpRequest.BodyPublishers.ofString(builder.toString());
+		return MemoryBody.of(builder.toString());
 	}
 
 	@Override

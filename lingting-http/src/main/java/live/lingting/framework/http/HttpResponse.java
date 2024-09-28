@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.URI;
-import java.net.http.HttpRequest;
 import java.util.function.Function;
 
 /**

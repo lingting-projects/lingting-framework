@@ -1,11 +1,12 @@
 package live.lingting.framework.huawei.iam;
 
+import live.lingting.framework.http.body.BodySource;
+import live.lingting.framework.http.body.MemoryBody;
 import live.lingting.framework.huawei.HuaweiStatement;
 import live.lingting.framework.jackson.JacksonUtils;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,7 +31,7 @@ public class HuaweiIamCredentialRequest extends HuaweiIamRequest {
 	}
 
 	@Override
-	public HttpRequest.BodyPublisher body() {
+	public BodySource body() {
 		Map<String, Object> policy = new HashMap<>();
 		policy.put("Version", "1.1");
 		policy.put("Statement", statements.stream().map(HuaweiStatement::map).toList());
@@ -41,7 +42,7 @@ public class HuaweiIamCredentialRequest extends HuaweiIamRequest {
 		Map<String, Object> auth = Map.of("identity", identity);
 		Map<String, Object> params = Map.of("auth", auth);
 		String json = JacksonUtils.toJson(params);
-		return HttpRequest.BodyPublishers.ofString(json);
+		return MemoryBody.of(json);
 	}
 
 }

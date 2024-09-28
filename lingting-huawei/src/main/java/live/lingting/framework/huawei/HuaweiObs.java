@@ -3,6 +3,7 @@ package live.lingting.framework.huawei;
 import live.lingting.framework.http.HttpResponse;
 import live.lingting.framework.http.HttpUrlBuilder;
 import live.lingting.framework.http.api.ApiClient;
+import live.lingting.framework.http.body.BodySource;
 import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.huawei.exception.HuaweiObsException;
 import live.lingting.framework.huawei.obs.HuaweiObsRequest;
@@ -10,7 +11,6 @@ import live.lingting.framework.huawei.properties.HuaweiObsProperties;
 import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.value.multi.StringMultiValue;
 
-import java.net.http.HttpRequest;
 import java.util.Collection;
 
 import static live.lingting.framework.huawei.HuaweiUtils.HEADER_DATE;
@@ -48,7 +48,7 @@ public abstract class HuaweiObs extends ApiClient<HuaweiObsRequest> {
 	}
 
 	@Override
-	protected void customize(HuaweiObsRequest request, HttpHeaders headers, HttpRequest.BodyPublisher publisher,
+	protected void customize(HuaweiObsRequest request, HttpHeaders headers, BodySource requestBody,
 			StringMultiValue params) {
 		String authorization = authorization(request, headers, request.path(), HttpUrlBuilder.buildQuery(params));
 		headers.authorization(authorization);

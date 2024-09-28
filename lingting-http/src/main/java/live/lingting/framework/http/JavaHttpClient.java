@@ -5,15 +5,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Authenticator;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
-import java.net.http.HttpRequest;
+import java.net.URI;
+import java.net.http.HttpClient.Redirect;
+import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -26,12 +26,36 @@ public class JavaHttpClient extends HttpClient {
 
 	protected final java.net.http.HttpClient client;
 
-	public static HttpResponse convert(java.net.http.HttpResponse<InputStream> r) {
-		HttpRequest request = r.request();
+	public static HttpResponse convert(HttpRequest request, java.net.http.HttpResponse<InputStream> r) {
 		int code = r.statusCode();
 		Map<String, List<String>> map = r.headers().map();
 		HttpHeaders headers = HttpHeaders.of(map);
 		return new HttpResponse(request, code, headers, r.body());
+	}
+
+	public static java.net.http.HttpRequest convert(HttpRequest request) {
+		HttpMethod method = request.method();
+		URI uri = request.uri();
+		HttpHeaders headers = request.headers();
+		HttpRequest.Body body = request.body();
+
+		java.net.http.HttpRequest.Builder builder = java.net.http.HttpRequest.newBuilder().uri(uri);
+		java.net.http.HttpRequest.BodyPublisher publisher = convert(method, body);
+		builder.method(method.name(), publisher);
+		headers.each((k, v) -> {
+			if (HEADERS_DISABLED.contains(k)) {
+				return;
+			}
+			builder.header(k, v);
+		});
+		return builder.build();
+	}
+
+	public static java.net.http.HttpRequest.BodyPublisher convert(HttpMethod method, HttpRequest.Body body) {
+		if (body == null || !method.allowBody()) {
+			return BodyPublishers.noBody();
+		}
+		return BodyPublishers.ofInputStream(body::input);
 	}
 
 	@Override
@@ -42,15 +66,17 @@ public class JavaHttpClient extends HttpClient {
 	@SneakyThrows
 	@Override
 	public HttpResponse request(HttpRequest request) throws IOException {
-		java.net.http.HttpResponse<InputStream> r = client.send(request, BodyHandlers.ofInputStream());
-		return convert(r);
+		java.net.http.HttpRequest jr = convert(request);
+		java.net.http.HttpResponse<InputStream> r = client.send(jr, BodyHandlers.ofInputStream());
+		return convert(request, r);
 	}
 
 	@Override
 	public void request(HttpRequest request, ResponseCallback callback) {
-		client.sendAsync(request, BodyHandlers.ofInputStream()).whenComplete((r, throwable) -> {
+		java.net.http.HttpRequest jr = convert(request);
+		client.sendAsync(jr, BodyHandlers.ofInputStream()).whenComplete((r, throwable) -> {
 			try {
-				HttpResponse response = convert(r);
+				HttpResponse response = convert(request, r);
 
 				if (throwable != null) {
 					callback.onError(request, throwable);
@@ -84,9 +110,7 @@ public class JavaHttpClient extends HttpClient {
 			java.net.http.HttpClient.Builder builder = supplier.get();
 
 			if (trustManager != null) {
-				SSLContext context = SSLContext.getInstance("TLS");
-				SecureRandom random = new SecureRandom();
-				context.init(null, new TrustManager[] { trustManager }, random);
+				SSLContext context = Https.sslContext(trustManager);
 				builder.sslContext(context);
 			}
 
@@ -94,6 +118,8 @@ public class JavaHttpClient extends HttpClient {
 			nonNull(proxySelector, builder::proxy);
 			nonNull(executor, builder::executor);
 			nonNull(authenticator, builder::authenticator);
+
+			builder.followRedirects(redirects ? Redirect.ALWAYS : Redirect.NEVER);
 
 			if (cookie != null) {
 				builder.cookieHandler(new CookieManager(cookie, CookiePolicy.ACCEPT_ALL));

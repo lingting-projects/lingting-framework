@@ -47,9 +47,11 @@ public class HttpUrlBuilder {
 		if (StringUtils.hasText(query)) {
 			Arrays.stream(query.split("&")).forEach(s -> {
 				String[] split = s.split("=");
+				String name = split[0];
 				if (split.length == 2) {
-					builder.addParam(split[0], split[1]);
+					builder.addParam(name, split[1]);
 				}
+				builder.addParam(name, split.length == 1 ? null : split[1]);
 			});
 		}
 		return builder;

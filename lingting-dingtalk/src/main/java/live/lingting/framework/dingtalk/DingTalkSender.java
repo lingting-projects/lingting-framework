@@ -3,6 +3,7 @@ package live.lingting.framework.dingtalk;
 import live.lingting.framework.crypto.mac.Mac;
 import live.lingting.framework.dingtalk.message.DingTalkMessage;
 import live.lingting.framework.http.HttpClient;
+import live.lingting.framework.http.HttpRequest;
 import live.lingting.framework.util.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +12,6 @@ import lombok.experimental.Accessors;
 
 import java.net.URI;
 import java.net.URLEncoder;
-import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.function.Supplier;
@@ -114,10 +114,11 @@ public class DingTalkSender {
 
 		String requestUrl = isSecret ? secret(timestamp) : getUrl();
 
-		HttpRequest request = HttpRequest.newBuilder()
-			.POST(HttpRequest.BodyPublishers.ofString(message, StandardCharsets.UTF_8))
-			.uri(URI.create(requestUrl))
+		HttpRequest request = HttpRequest.builder()
+			.post()
+			.url(URI.create(requestUrl))
 			.header("Content-Type", "application/json")
+			.body(message)
 			.build();
 
 		String json = CLIENT.request(request, String.class);

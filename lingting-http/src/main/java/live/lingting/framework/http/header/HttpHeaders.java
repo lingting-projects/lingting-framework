@@ -1,5 +1,6 @@
 package live.lingting.framework.http.header;
 
+import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.value.MultiValue;
 
 import java.util.Collection;
@@ -68,7 +69,12 @@ public interface HttpHeaders extends MultiValue<String, String, Collection<Strin
 	}
 
 	default HttpHeaders contentType(String contentType) {
-		put("Content-Type", contentType);
+		if (StringUtils.hasText(contentType)) {
+			put("Content-Type", contentType);
+		}
+		else {
+			remove("Content-Type");
+		}
 		return this;
 	}
 

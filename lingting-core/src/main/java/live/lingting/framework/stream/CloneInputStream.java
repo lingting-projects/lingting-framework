@@ -2,10 +2,12 @@ package live.lingting.framework.stream;
 
 import live.lingting.framework.util.FileUtils;
 import live.lingting.framework.util.StreamUtils;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.SneakyThrows;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -29,6 +31,10 @@ public class CloneInputStream extends InputStream {
 	protected final long size;
 
 	protected final FileInputStream stream;
+
+	@Getter
+	@Setter
+	protected boolean closeAndDelete = false;
 
 	public CloneInputStream(InputStream input) throws IOException {
 		if (input instanceof CloneInputStream clone) {
@@ -72,6 +78,9 @@ public class CloneInputStream extends InputStream {
 	@Override
 	public void close() {
 		StreamUtils.close(stream);
+		if (isCloseAndDelete()) {
+			clear();
+		}
 	}
 
 	@Override
@@ -102,8 +111,9 @@ public class CloneInputStream extends InputStream {
 		return file;
 	}
 
-	public FileInputStream copy() throws FileNotFoundException {
-		return new FileInputStream(file);
+	@SneakyThrows
+	public CloneInputStream copy() {
+		return new CloneInputStream(this);
 	}
 
 	public void clear() {

@@ -45,6 +45,9 @@ public class CollectionUtils {
 	 * 是否是否可以存放多个数据
 	 */
 	public static boolean isMulti(Object obj) {
+		if (obj == null) {
+			return false;
+		}
 		return obj instanceof Iterable || obj instanceof Iterator || obj.getClass().isArray();
 	}
 

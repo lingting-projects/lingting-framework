@@ -8,12 +8,12 @@ import live.lingting.framework.aws.s3.AwsS3SingV4;
 import live.lingting.framework.aws.s3.AwsS3Utils;
 import live.lingting.framework.http.HttpResponse;
 import live.lingting.framework.http.api.ApiClient;
+import live.lingting.framework.http.body.BodySource;
 import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.value.multi.StringMultiValue;
 import lombok.Setter;
 
-import java.net.http.HttpRequest;
 import java.time.LocalDateTime;
 import java.util.function.BiConsumer;
 
@@ -59,7 +59,7 @@ public abstract class AwsS3Client extends ApiClient<AwsS3Request> {
 	}
 
 	@Override
-	protected void customize(AwsS3Request request, HttpHeaders headers, HttpRequest.BodyPublisher publisher,
+	protected void customize(AwsS3Request request, HttpHeaders headers, BodySource source,
 			StringMultiValue params) {
 		if (request.getAcl() != null) {
 			headers.put(HEADER_ACL, request.getAcl().getValue());
