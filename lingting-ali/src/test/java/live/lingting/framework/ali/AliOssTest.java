@@ -18,6 +18,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
@@ -35,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author lingting 2024-09-18 14:29
  */
 @Slf4j
+@EnabledIfSystemProperty(named = "framework.ali.oss.test", matches = "true")
 class AliOssTest {
 
 	AliSts sts;
