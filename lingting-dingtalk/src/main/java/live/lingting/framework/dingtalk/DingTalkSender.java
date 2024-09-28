@@ -98,7 +98,7 @@ public class DingTalkSender {
 		String source = timestamp + "\n" + secret;
 		String base64 = mac.calculateBase64(source);
 		String sign = URLEncoder.encode(base64, StandardCharsets.UTF_8);
-		return "%s&timestamp=%d&sign=%s".formatted(url, timestamp, sign);
+		return String.format("%s&timestamp=%d&sign=%s",url, timestamp, sign);
 	}
 
 	/**

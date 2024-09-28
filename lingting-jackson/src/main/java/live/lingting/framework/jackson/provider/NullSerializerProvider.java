@@ -6,14 +6,12 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.cfg.CacheProvider;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 import com.fasterxml.jackson.databind.ser.SerializerFactory;
 import live.lingting.framework.jackson.serializer.NullArrayJsonSerializer;
 import live.lingting.framework.jackson.serializer.NullMapJsonSerializer;
 import live.lingting.framework.jackson.serializer.NullStringJsonSerializer;
 
-import java.io.Serial;
 import java.util.Collection;
 import java.util.Map;
 
@@ -22,7 +20,6 @@ import java.util.Map;
  */
 public class NullSerializerProvider extends DefaultSerializerProvider {
 
-	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -52,21 +49,12 @@ public class NullSerializerProvider extends DefaultSerializerProvider {
 		super(src, config, f);
 	}
 
-	protected NullSerializerProvider(NullSerializerProvider provider, CacheProvider cacheProvider) {
-		super(provider, cacheProvider);
-	}
-
 	@Override
 	public DefaultSerializerProvider copy() {
 		if (getClass() != NullSerializerProvider.class) {
 			return super.copy();
 		}
 		return new NullSerializerProvider(this);
-	}
-
-	@Override
-	public DefaultSerializerProvider withCaches(CacheProvider cacheProvider) {
-		return new NullSerializerProvider(this, cacheProvider);
 	}
 
 	@Override

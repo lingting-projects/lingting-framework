@@ -34,6 +34,7 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author lingting 2024-01-19 16:01
@@ -76,10 +77,12 @@ public class DefaultDataScopeParser extends DataScopeParser {
 		}
 
 		// 普通查询
-		if (select instanceof PlainSelect plain) {
+		if (select instanceof PlainSelect) {
+			PlainSelect plain = (PlainSelect) select;
 			processPlainSelect(plain);
 		}
-		else if (select instanceof ParenthesedSelect parenthesed) {
+		else if (select instanceof ParenthesedSelect) {
+			ParenthesedSelect parenthesed = (ParenthesedSelect) select;
 			processSelect(parenthesed.getSelect());
 		}
 	}
@@ -109,7 +112,8 @@ public class DefaultDataScopeParser extends DataScopeParser {
 
 	void processSelectItem(SelectItem<?> item) {
 		Expression expression = item.getExpression();
-		if (expression instanceof Select select) {
+		if (expression instanceof Select) {
+			Select select = (Select) expression;
 			processSelect(select);
 		}
 	}
@@ -118,32 +122,39 @@ public class DefaultDataScopeParser extends DataScopeParser {
 		if (expression == null) {
 			return;
 		}
-		if (expression instanceof FromItem item) {
+		if (expression instanceof FromItem) {
+			FromItem item = (FromItem) expression;
 			processDeepFromItem(item);
 		}
 		boolean isSelect = expression.toString().contains("SELECT");
 		// 有子查询
 		if (isSelect) {
 			// 比较符号 , and , or , 等等
-			if (expression instanceof BinaryExpression binary) {
+			if (expression instanceof BinaryExpression) {
+				BinaryExpression binary = (BinaryExpression) expression;
 				processExpression(binary.getLeftExpression());
 				processExpression(binary.getRightExpression());
 			}
 			// in
-			else if (expression instanceof InExpression in) {
+			else if (expression instanceof InExpression) {
+				InExpression in = (InExpression) expression;
 				Expression right = in.getRightExpression();
-				if (right instanceof Select select) {
+				if (right instanceof Select) {
+					Select select = (Select) right;
 					processSelect(select);
 				}
 			}
 			// exists
-			else if (expression instanceof ExistsExpression exists) {
+			else if (expression instanceof ExistsExpression) {
+				ExistsExpression exists = (ExistsExpression) expression;
 				processExpression(exists.getRightExpression());
 			}
-			else if (expression instanceof NotExpression not) {
+			else if (expression instanceof NotExpression) {
+				NotExpression not = (NotExpression) expression;
 				processExpression(not.getExpression());
 			}
-			else if (expression instanceof Parenthesis parenthesis) {
+			else if (expression instanceof Parenthesis) {
+				Parenthesis parenthesis = (Parenthesis) expression;
 				processExpression(parenthesis.getExpression());
 			}
 		}
@@ -157,10 +168,12 @@ public class DefaultDataScopeParser extends DataScopeParser {
 	 */
 	List<Table> processFromItem(FromItem item, boolean isDeep) {
 		List<Table> list = new ArrayList<>();
-		if (item instanceof Table table) {
+		if (item instanceof Table) {
+			Table table = (Table) item;
 			list.add(table);
 		}
-		else if (item instanceof ParenthesedFromItem pfi) {
+		else if (item instanceof ParenthesedFromItem) {
+			ParenthesedFromItem pfi = (ParenthesedFromItem) item;
 			List<Table> lefts = processFromItem(pfi.getFromItem(), isDeep);
 			List<Table> tables = processJoins(lefts, pfi.getJoins());
 			list.addAll(tables);
@@ -172,7 +185,8 @@ public class DefaultDataScopeParser extends DataScopeParser {
 	}
 
 	void processDeepFromItem(FromItem item) {
-		if (item instanceof Select select) {
+		if (item instanceof Select) {
+			Select select = (Select) item;
 			processSelect(select);
 		}
 	}
@@ -290,7 +304,7 @@ public class DefaultDataScopeParser extends DataScopeParser {
 			List<JsqlDataScope> matchDataScopes = DataScopeHolder.peek()
 				.stream()
 				.filter(x -> x.includes(tableName))
-				.toList();
+				.collect(Collectors.toList());
 
 			// 存在匹配成功的
 			if (!CollectionUtils.isEmpty(matchDataScopes)) {

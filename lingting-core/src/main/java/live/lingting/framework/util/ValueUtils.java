@@ -84,13 +84,16 @@ public class ValueUtils {
 		if (value == null) {
 			return false;
 		}
-		if (value instanceof CharSequence sequence) {
+		if (value instanceof CharSequence) {
+			CharSequence sequence = (CharSequence) value;
 			return StringUtils.hasText(sequence);
 		}
-		if (value instanceof Collection<?> collection) {
+		if (value instanceof Collection<?>) {
+			Collection<?> collection = (Collection<?>) value;
 			return !collection.isEmpty();
 		}
-		if (value instanceof Map<?, ?> map) {
+		if (value instanceof Map<?, ?>) {
+			Map<?, ?> map = (Map<?, ?>) value;
 			return !map.isEmpty();
 		}
 		if (value.getClass().isArray()) {

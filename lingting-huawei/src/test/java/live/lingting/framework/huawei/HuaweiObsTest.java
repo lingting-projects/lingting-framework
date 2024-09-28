@@ -61,7 +61,7 @@ class HuaweiObsTest {
 		HuaweiObsHeaders head = obsObject.head();
 		assertNotNull(head);
 		assertEquals(bytes.length, head.contentLength());
-		assertEquals("\"%s\"".formatted(hex), head.etag());
+		assertEquals(String.format("\"%s\"",hex), head.etag());
 		HttpDownload await = HttpDownload.single(obsObject.publicUrl()).build().start().await();
 		String string = StreamUtils.toString(Files.newInputStream(await.getFile().toPath()));
 		assertEquals(source, string);

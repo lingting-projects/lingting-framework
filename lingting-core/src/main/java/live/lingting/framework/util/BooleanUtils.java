@@ -13,26 +13,32 @@ public class BooleanUtils {
 	private static final String[] STR_FALSE = { "0", "false", "no", "n", "f" };
 
 	public static boolean isTrue(Object obj) {
-		if (obj instanceof String string) {
+		if (obj instanceof String) {
+			String string = (String) obj;
 			return ArrayUtils.containsIgnoreCase(STR_TRUE, string);
 		}
-		if (obj instanceof Number number) {
+		if (obj instanceof Number) {
+			Number number = (Number) obj;
 			return number.doubleValue() > 0;
 		}
-		if (obj instanceof Boolean b) {
+		if (obj instanceof Boolean) {
+			Boolean b = (Boolean) obj;
 			return Boolean.TRUE.equals(b);
 		}
 		return false;
 	}
 
 	public static boolean isFalse(Object obj) {
-		if (obj instanceof String string) {
+		if (obj instanceof String) {
+			String string = (String) obj;
 			return ArrayUtils.containsIgnoreCase(STR_FALSE, string);
 		}
-		if (obj instanceof Number number) {
+		if (obj instanceof Number) {
+			Number number = (Number) obj;
 			return number.doubleValue() <= 0;
 		}
-		if (obj instanceof Boolean b) {
+		if (obj instanceof Boolean) {
+			Boolean b = (Boolean) obj;
 			return Boolean.FALSE.equals(b);
 		}
 		return false;

@@ -40,7 +40,13 @@ public class MultipartBuilder {
 	}
 
 	public MultipartBuilder source(InputStream source) throws IOException {
-		this.source = source instanceof CloneInputStream in ? in : new CloneInputStream(source);
+		if (source instanceof CloneInputStream) {
+			CloneInputStream in = (CloneInputStream) source;
+			this.source = in;
+		}
+		else {
+			this.source = new CloneInputStream(source);
+		}
 		return size(this.source.size());
 	}
 

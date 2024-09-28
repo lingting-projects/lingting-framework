@@ -31,7 +31,8 @@ public class RandomAccessInputStream extends InputStream {
 	private final long size;
 
 	public RandomAccessInputStream(InputStream in) throws IOException {
-		if (in instanceof RandomAccessInputStream stream) {
+		if (in instanceof RandomAccessInputStream) {
+			RandomAccessInputStream stream = (RandomAccessInputStream) in;
 			this.file = new RandomAccessFile(stream.path.toFile(), MODE);
 			this.path = stream.path;
 			this.size = stream.size;

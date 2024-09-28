@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author lingting 2023-06-27 11:06
@@ -23,7 +24,7 @@ public class DefaultElasticsearchDataPermissionHandler implements ElasticsearchD
 		if (scopes == null) {
 			return Collections.emptyList();
 		}
-		return dataScopes().stream().filter(scope -> scope.includes(index)).toList();
+		return dataScopes().stream().filter(scope -> scope.includes(index)).collect(Collectors.toList());
 	}
 
 	@Override

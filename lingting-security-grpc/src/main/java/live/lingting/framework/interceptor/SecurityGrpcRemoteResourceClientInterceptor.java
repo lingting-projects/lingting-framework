@@ -24,7 +24,7 @@ public class SecurityGrpcRemoteResourceClientInterceptor implements ClientInterc
 
 	@Override
 	public <S, R> ClientCall<S, R> interceptCall(MethodDescriptor<S, R> method, CallOptions callOptions, Channel next) {
-		return new ForwardingClientOnCall<>(method, callOptions, next) {
+		return new ForwardingClientOnCall<S,R>(method, callOptions, next) {
 			@Override
 			public void onStartBefore(Listener<R> responseListener, Metadata headers) {
 				SecurityToken securityToken = SecurityGrpcRemoteContent.get();

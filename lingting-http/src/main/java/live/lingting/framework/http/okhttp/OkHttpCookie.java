@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author lingting 2024-05-08 13:59
@@ -52,7 +53,7 @@ public class OkHttpCookie implements CookieJar {
 	@Override
 	public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
 		List<HttpCookie> cookies = store.get(httpUrl.uri());
-		return cookies.stream().map(this::of).toList();
+		return cookies.stream().map(this::of).collect(Collectors.toList());
 	}
 
 	@Override

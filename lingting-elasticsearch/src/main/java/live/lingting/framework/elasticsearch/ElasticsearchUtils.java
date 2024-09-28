@@ -146,7 +146,7 @@ public class ElasticsearchUtils {
 	}
 
 	public static FieldValue fieldValue(Object object) {
-		return object instanceof FieldValue fv ? fv : FieldValue.of(JsonData.of(object));
+		return object instanceof FieldValue ? (FieldValue) object : FieldValue.of(JsonData.of(object));
 	}
 
 	public static String fieldName(ElasticsearchFunction<?, ?> func) {

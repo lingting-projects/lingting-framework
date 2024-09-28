@@ -111,10 +111,10 @@ public abstract class DownloadBuilder<B extends DownloadBuilder<B>> {
 		if (t == null) {
 			return d;
 		}
-		if (t instanceof Number number && number.longValue() < 1) {
+		if (t instanceof Number && ((Number) t).longValue() < 1) {
 			return d;
 		}
-		if (t instanceof Duration duration && duration.isNegative()) {
+		if (t instanceof Duration && ((Duration) t).isNegative()) {
 			return d;
 		}
 		return t;

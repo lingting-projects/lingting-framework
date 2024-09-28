@@ -29,7 +29,7 @@ public abstract class HuaweiObs extends ApiClient<HuaweiObsRequest> {
 	protected final HuaweiObsProperties properties;
 
 	protected HuaweiObs(HuaweiObsProperties properties) {
-		super("%s://%s.obs.%s.%s".formatted(properties.getScheme(), properties.getBucket(), properties.getRegion(),
+		super(String.format("%s://%s.obs.%s.%s",properties.getScheme(), properties.getBucket(), properties.getRegion(),
 				properties.getEndpoint()));
 		this.properties = properties;
 	}

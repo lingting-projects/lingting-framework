@@ -17,19 +17,9 @@ class BooleanModuleTest {
 	@Test
 	void test() {
 		// language=JSON
-		String json = """
-				            {
-				  "bt1": true,
-				  "bt2": "t",
-				  "bt3": 4,
-				  "bt4": "4",
-				  "bf1": false,
-				  "bf2": "f",
-				  "bf3": 0,
-				  "bf4": "-1",
-				  "bn": null
-				}
-				""";
+		String json = "            {\n" + "  \"bt1\": true,\n" + "  \"bt2\": \"t\",\n" + "  \"bt3\": 4,\n"
+				+ "  \"bt4\": \"4\",\n" + "  \"bf1\": false,\n" + "  \"bf2\": \"f\",\n" + "  \"bf3\": 0,\n"
+				+ "  \"bf4\": \"-1\",\n" + "  \"bn\": null\n" + "}\n";
 
 		Entity obj = JacksonUtils.toObj(json, Entity.class);
 		assertTrue(obj.bt1);

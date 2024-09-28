@@ -62,6 +62,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 /**
  * @author lingting 2024-03-06 16:41
@@ -106,7 +107,7 @@ public class ElasticsearchApi<T> {
 		if (scroll != null) {
 			currentScrollSize = scroll.getSize();
 			if (scroll.getTimeout() != null) {
-				currentScrollTime = Time.of(t -> t.time("%ds".formatted(scroll.getTimeout().toSeconds())));
+				currentScrollTime = Time.of(t -> t.time(String.format("%ds",scroll.getTimeout().toSeconds())));
 			}
 		}
 
@@ -211,7 +212,7 @@ public class ElasticsearchApi<T> {
 		return sorts.stream().map(sort -> {
 			String field = StringUtils.underscoreToHump(sort.getField());
 			return SortComposer.sort(field, sort.getDesc());
-		}).toList();
+		}).collect(Collectors.toList());
 	}
 
 	public PaginationResult<T> page(PaginationParams params, QueryBuilder<T> queries) throws IOException {
@@ -222,7 +223,7 @@ public class ElasticsearchApi<T> {
 
 		HitsMetadata<T> hitsMetadata = search(builder -> builder.size(size).from(from).sort(sorts), queries);
 
-		List<T> list = hitsMetadata.hits().stream().map(Hit::source).toList();
+		List<T> list = hitsMetadata.hits().stream().map(Hit::source).collect(Collectors.toList());
 		long total = Optional.ofNullable(hitsMetadata.total()).map(TotalHits::value).orElse(0L);
 
 		return new PaginationResult<>(total, list);
@@ -332,7 +333,7 @@ public class ElasticsearchApi<T> {
 	}
 
 	public BulkResponse bulk(BulkOperation... operations) throws IOException {
-		return bulk(Arrays.stream(operations).toList());
+		return bulk(Arrays.stream(operations).collect(Collectors.toList()));
 	}
 
 	public BulkResponse bulk(List<BulkOperation> operations) throws IOException {
@@ -383,7 +384,7 @@ public class ElasticsearchApi<T> {
 
 		BulkResponse response = bulk(builder -> operator.apply(builder.refresh(Refresh.WaitFor)), operations);
 		if (response.errors()) {
-			List<BulkResponseItem> collect = response.items().stream().filter(item -> item.error() != null).toList();
+			List<BulkResponseItem> collect = response.items().stream().filter(item -> item.error() != null).collect(Collectors.toList());
 			boolean allError = collect.size() == collection.size();
 			for (int i = (allError ? 1 : 0); i < collect.size(); i++) {
 				ErrorCause error = collect.get(i).error();
@@ -481,7 +482,7 @@ public class ElasticsearchApi<T> {
 		}
 
 		SearchResponse<T> search = client.search(builder.build(), cls);
-		List<T> collect = search.hits().hits().stream().map(Hit::source).filter(Objects::nonNull).toList();
+		List<T> collect = search.hits().hits().stream().map(Hit::source).filter(Objects::nonNull).collect(Collectors.toList());
 
 		String nextScrollId = search.scrollId();
 
@@ -498,7 +499,7 @@ public class ElasticsearchApi<T> {
 		ScrollRequest.Builder builder = operator.apply(new ScrollRequest.Builder()).scrollId(scrollId);
 
 		ScrollResponse<T> response = client.scroll(builder.build(), cls);
-		List<T> collect = response.hits().hits().stream().map(Hit::source).toList();
+		List<T> collect = response.hits().hits().stream().map(Hit::source).collect(Collectors.toList());
 		String nextScrollId = response.scrollId();
 
 		if (CollectionUtils.isEmpty(collect)) {

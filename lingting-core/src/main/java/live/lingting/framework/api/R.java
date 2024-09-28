@@ -1,15 +1,35 @@
 package live.lingting.framework.api;
 
-import java.io.Serial;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
 import java.io.Serializable;
 
 /**
  * @author lingting 2024-01-25 11:12
  */
-public record R<T>(Integer code, T data, String message) implements Serializable {
+@Getter
+@ToString
+@EqualsAndHashCode
+@SuppressWarnings("java:S1948")
+public final class R<T> implements Serializable {
 
-	@Serial
 	private static final long serialVersionUID = 20240125;
+
+	private final Integer code;
+
+	private final T data;
+
+	private final String message;
+
+	/**
+	*/
+	public R(Integer code, T data, String message) {
+		this.code = code;
+		this.data = data;
+		this.message = message;
+	}
 
 	public static <T> R<T> of(int code, String message) {
 		return of(code, message, null);
@@ -45,6 +65,18 @@ public record R<T>(Integer code, T data, String message) implements Serializable
 
 	public static <T> R<T> of(Integer code, T data, String message) {
 		return new R<>(code, data, message);
+	}
+
+	public Integer code() {
+		return code;
+	}
+
+	public T data() {
+		return data;
+	}
+
+	public String message() {
+		return message;
 	}
 
 }

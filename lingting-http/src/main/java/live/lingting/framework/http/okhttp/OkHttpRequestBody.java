@@ -42,7 +42,7 @@ public class OkHttpRequestBody extends RequestBody {
 	}
 
 	public OkHttpRequestBody(InputStream input, MediaType mediaType) throws IOException {
-		CloneInputStream stream = input instanceof CloneInputStream clone ? clone : new CloneInputStream(input);
+		CloneInputStream stream = input instanceof CloneInputStream ? (CloneInputStream) input : new CloneInputStream(input);
 		this.source = new FileBody(stream);
 		this.mediaType = mediaType;
 	}

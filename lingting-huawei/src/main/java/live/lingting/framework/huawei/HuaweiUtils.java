@@ -69,7 +69,7 @@ public class HuaweiUtils {
 	public static String authorization(String ak, String sk, String string) {
 		Mac mac = Mac.hmacBuilder().sha1().secret(sk).charset(CHARSET).build();
 		String base64 = mac.calculateBase64(string);
-		return "OBS %s:%s".formatted(ak, base64);
+		return String.format("OBS %s:%s",ak, base64);
 	}
 
 	public static String date() {

@@ -99,11 +99,14 @@ public class AwsS3Object extends AwsS3Client implements AwsS3ObjectInterface {
 
 	@Override
 	public void put(CloneInputStream in, Acl acl) {
-		try (in) {
+		try {
 			AwsS3ObjectPutRequest request = new AwsS3ObjectPutRequest();
 			request.setStream(in);
 			request.setAcl(acl);
 			call(request);
+		}
+		finally {
+			in.close();
 		}
 	}
 

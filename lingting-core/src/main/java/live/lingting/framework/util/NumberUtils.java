@@ -25,7 +25,8 @@ public class NumberUtils {
 			return false;
 		}
 
-		if (v instanceof BigDecimal decimal) {
+		if (v instanceof BigDecimal) {
+			BigDecimal decimal = (BigDecimal) v;
 			return decimal.scale() <= 0 || decimal.stripTrailingZeros().scale() <= 0;
 		}
 
@@ -54,7 +55,8 @@ public class NumberUtils {
 			}
 
 			BigInteger bi;
-			if (v instanceof BigDecimal bd) {
+			if (v instanceof BigDecimal) {
+				BigDecimal bd = (BigDecimal) v;
 				bi = bd.toBigInteger();
 			}
 			else {
@@ -94,12 +96,14 @@ public class NumberUtils {
 	 * 指定数字是否为偶数
 	 */
 	public static boolean isEven(Number v) {
-		if (v instanceof BigDecimal bd) {
+		if (v instanceof BigDecimal) {
+			BigDecimal bd = (BigDecimal) v;
 			BigDecimal[] decimals = bd.divideAndRemainder(DECIMAL_TWO);
 			// 余数为0表示是偶数
 			return decimals[1].compareTo(BigDecimal.ZERO) == 0;
 		}
-		if (v instanceof BigInteger bi) {
+		if (v instanceof BigInteger) {
+			BigInteger bi = (BigInteger) v;
 			BigInteger[] integers = bi.divideAndRemainder(INTEGER_TWO);
 			// 余数为0表示是偶数
 			return integers[1].compareTo(BigInteger.ZERO) == 0;
@@ -120,7 +124,8 @@ public class NumberUtils {
 		// 大数处理
 		if (isBig(v)) {
 			BigInteger bi;
-			if (v instanceof BigDecimal bd) {
+			if (v instanceof BigDecimal) {
+				BigDecimal bd = (BigDecimal) v;
 				bi = bd.toBigInteger();
 			}
 			else {
@@ -140,11 +145,12 @@ public class NumberUtils {
 	 */
 	public static BigInteger nextPower2(Number v) {
 		if (isPower2(v)) {
-			if (v instanceof BigDecimal bd) {
+			if (v instanceof BigDecimal) {
+				BigDecimal bd = (BigDecimal) v;
 				return bd.toBigInteger();
 			}
-			else if (v instanceof BigInteger bi) {
-				return bi;
+			else if (v instanceof BigInteger) {
+				return (BigInteger) v;
 			}
 
 			return new BigInteger(Long.toString(v.longValue()));

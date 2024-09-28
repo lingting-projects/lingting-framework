@@ -50,7 +50,7 @@ public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterce
 		if (allowAuthority(headers, descriptor)) {
 			validAuthority(descriptor);
 		}
-		return new ForwardingServerOnCallListener<>(call, headers, next) {
+		return new ForwardingServerOnCallListener<S,R>(call, headers, next) {
 			@Override
 			public void onFinally() {
 				service.popScope();

@@ -172,8 +172,8 @@ public class AliSts extends AliClient<AliStsRequest> {
 		String bucket = StringUtils.hasText(properties.getBucket()) ? properties.getBucket() : "*";
 		Statement statement = Statement.allow();
 		statement.addAction(actions);
-		statement.addResource("acs:oss:*:*:%s".formatted(bucket));
-		statement.addResource("acs:oss:*:*:%s/*".formatted(bucket));
+		statement.addResource(String.format("acs:oss:*:*:%s",bucket));
+		statement.addResource(String.format("acs:oss:*:*:%s/*",bucket));
 		Credential credential = credential(statement);
 		AliOssProperties copy = properties.copy();
 		copy.useCredential(credential);
@@ -202,7 +202,7 @@ public class AliSts extends AliClient<AliStsRequest> {
 		String bucket = properties.getBucket();
 		Statement statement = Statement.allow();
 		statement.addAction(actions);
-		statement.addResource("acs:oss:*:*:%s/%s".formatted(bucket, key));
+		statement.addResource(String.format("acs:oss:*:*:%s/%s",bucket, key));
 		Credential credential = credential(statement);
 		AliOssProperties copy = properties.copy();
 		copy.useCredential(credential);

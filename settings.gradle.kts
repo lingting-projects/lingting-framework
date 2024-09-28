@@ -13,7 +13,7 @@ dependencyResolutionManagement {
 
     versionCatalogs {
         create("libs") {
-            version("springBoot", "3.3.3")
+            version("springBoot", "2.7.18")
             version("formatter", "0.0.41")
             version("mapstruct", "1.5.5.Final")
             version("lombok", "1.18.34")

@@ -10,7 +10,7 @@ public class MoneySetTypeHandler extends AbstractSetTypeHandler<Money> {
 
 	@Override
 	protected Set<Money> toObject(String json) {
-		return JacksonUtils.toObj(json, new TypeReference<>() {
+		return JacksonUtils.toObj(json, new TypeReference<Set<Money>>() {
 		});
 	}
 

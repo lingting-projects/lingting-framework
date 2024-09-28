@@ -23,7 +23,7 @@ public class AliOssProperties extends AliProperties {
 
 	@Override
 	public String host() {
-		return "%s://%s.%s-%s.%s".formatted(scheme, bucket, prefix, region, endpoint);
+		return String.format("%s://%s.%s-%s.%s",scheme, bucket, prefix, region, endpoint);
 	}
 
 	@Override

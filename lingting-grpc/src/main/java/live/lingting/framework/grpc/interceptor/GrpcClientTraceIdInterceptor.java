@@ -38,7 +38,7 @@ public class GrpcClientTraceIdInterceptor implements ClientInterceptor, Sequence
 	public <S, R> ClientCall<S, R> interceptCall(MethodDescriptor<S, R> method, CallOptions callOptions, Channel next) {
 		String traceId = traceId();
 
-		return new ForwardingClientOnCall<>(method, callOptions, next) {
+		return new ForwardingClientOnCall<S,R>(method, callOptions, next) {
 			@Override
 			public void onStartBefore(Listener<R> responseListener, Metadata headers) {
 				if (StringUtils.hasText(traceId)) {

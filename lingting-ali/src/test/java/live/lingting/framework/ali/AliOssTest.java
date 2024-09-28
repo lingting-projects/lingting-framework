@@ -64,7 +64,7 @@ class AliOssTest {
 		HttpHeaders head = ossObject.head();
 		assertNotNull(head);
 		assertEquals(bytes.length, head.contentLength());
-		assertTrue("\"%s\"".formatted(hex).equalsIgnoreCase(head.etag()));
+		assertTrue(String.format("\"%s\"",hex).equalsIgnoreCase(head.etag()));
 		HttpDownload await = HttpDownload.single(ossObject.publicUrl()).build().start().await();
 		String string = StreamUtils.toString(Files.newInputStream(await.getFile().toPath()));
 		assertEquals(source, string);

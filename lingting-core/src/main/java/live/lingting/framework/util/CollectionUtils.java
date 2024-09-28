@@ -65,7 +65,8 @@ public class CollectionUtils {
 		else if (obj instanceof List<?>) {
 			return (List<Object>) obj;
 		}
-		else if (obj instanceof Collection<?> collection) {
+		else if (obj instanceof Collection<?>) {
+			Collection<?> collection = (Collection<?>) obj;
 			return new ArrayList<>(collection);
 		}
 

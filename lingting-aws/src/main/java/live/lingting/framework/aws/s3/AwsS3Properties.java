@@ -57,7 +57,7 @@ public class AwsS3Properties {
 	}
 
 	public String host() {
-		return "%s://%s.%s%s%s.%s".formatted(scheme, bucket, prefix, connector, region, endpoint);
+		return String.format("%s://%s.%s%s%s.%s",scheme, bucket, prefix, connector, region, endpoint);
 	}
 
 }

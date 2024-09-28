@@ -321,16 +321,9 @@ class DefaultDataScopeParseTest {
 	 */
 	@Test
 	void testJsqlParseAlias() {
-		String sql = """
-				SELECT
-				r.id, r.name, r.code, r.type, r.scope_type, r.scope_resources
-				FROM
-				sys_user_role ur
-				left join
-				sys_role r
-				on r.code = ur.role_code
-				WHERE ur.user_id = ?
-				and r.deleted = 0""";
+		String sql = "SELECT\n" + "r.id, r.name, r.code, r.type, r.scope_type, r.scope_resources\n" + "FROM\n"
+				+ "sys_user_role ur\n" + "left join\n" + "sys_role r\n" + "on r.code = ur.role_code\n"
+				+ "WHERE ur.user_id = ?\n" + "and r.deleted = 0";
 		assertDoesNotThrow(() -> dataScopeSqlProcessor.parserSingle(sql, dataPermissionHandler.dataScopes()));
 
 	}

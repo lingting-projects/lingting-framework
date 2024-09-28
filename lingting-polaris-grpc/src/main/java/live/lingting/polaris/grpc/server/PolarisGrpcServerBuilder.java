@@ -223,7 +223,8 @@ public final class PolarisGrpcServerBuilder extends ServerBuilder<PolarisGrpcSer
 
 	@Override
 	public PolarisGrpcServerBuilder intercept(ServerInterceptor interceptor) {
-		if (interceptor instanceof PolarisServerInterceptor polarisServerInterceptor) {
+		if (interceptor instanceof PolarisServerInterceptor) {
+			PolarisServerInterceptor polarisServerInterceptor = (PolarisServerInterceptor) interceptor;
 			this.polarisInterceptors.add(polarisServerInterceptor);
 		}
 		else {

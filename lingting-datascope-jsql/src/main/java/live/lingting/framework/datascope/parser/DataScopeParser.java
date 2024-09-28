@@ -80,16 +80,20 @@ public abstract class DataScopeParser {
 		if (log.isDebugEnabled()) {
 			log.debug("SQL to parse, SQL: {}", sql);
 		}
-		if (statement instanceof Insert insert) {
+		if (statement instanceof Insert) {
+			Insert insert = (Insert) statement;
 			this.insert(insert, index, sql);
 		}
-		else if (statement instanceof Select select) {
+		else if (statement instanceof Select) {
+			Select select = (Select) statement;
 			this.select(select, index, sql);
 		}
-		else if (statement instanceof Update update) {
+		else if (statement instanceof Update) {
+			Update update = (Update) statement;
 			this.update(update, index, sql);
 		}
-		else if (statement instanceof Delete delete) {
+		else if (statement instanceof Delete) {
+			Delete delete = (Delete) statement;
 			this.delete(delete, index, sql);
 		}
 		sql = statement.toString();

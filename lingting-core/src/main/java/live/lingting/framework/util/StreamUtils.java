@@ -47,7 +47,7 @@ public class StreamUtils {
 		byte[] bytes = new byte[size];
 		int len;
 
-		try (in) {
+		try {
 			while (true) {
 				len = in.read(bytes);
 				// 已读取长度小于1 或者 消费数据, 返回标志位为false
@@ -56,6 +56,9 @@ public class StreamUtils {
 					break;
 				}
 			}
+		}
+		finally {
+			in.close();
 		}
 
 	}

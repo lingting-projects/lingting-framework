@@ -26,7 +26,7 @@ public class AliProperties {
 	protected String token;
 
 	public String host() {
-		return "%s://%s.%s.%s".formatted(scheme, prefix, region, endpoint);
+		return String.format("%s://%s.%s.%s",scheme, prefix, region, endpoint);
 	}
 
 	public AwsS3Properties s3() {

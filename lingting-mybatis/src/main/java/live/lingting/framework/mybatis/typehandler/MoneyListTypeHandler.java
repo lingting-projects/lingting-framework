@@ -13,7 +13,7 @@ public class MoneyListTypeHandler extends AbstractListTypeHandler<Money> {
 
 	@Override
 	protected List<Money> toObject(String json) {
-		return JacksonUtils.toObj(json, new TypeReference<>() {
+		return JacksonUtils.toObj(json, new TypeReference<List<Money>>() {
 		});
 	}
 

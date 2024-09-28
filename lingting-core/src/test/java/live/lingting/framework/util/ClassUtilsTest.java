@@ -21,16 +21,19 @@ class ClassUtilsTest {
 	@Test
 	void test() {
 		String className = "live.lingting.framework.util.ClassUtilsTest";
-		assertTrue(isPresent(className));
-		assertTrue(isPresent(className, ClassLoader.getSystemClassLoader(), ClassUtils.class.getClassLoader()));
-		assertTrue(isPresent(className, ClassUtilsTest.class.getClassLoader()));
-		assertFalse(isPresent("live.lingting.framework.mybatis.typehandler.EnumTypeHandler"));
-		assertEquals(2, ClassUtils.CACHE_CLASS_PRESENT.size());
-		Map<ClassLoader, Boolean> map = ClassUtils.CACHE_CLASS_PRESENT.get(className);
+		ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+		ClassLoader cuClassLoader = ClassUtils.class.getClassLoader();
+		ClassLoader tzClassLoader = ClassUtilsTest.class.getClassLoader();
 		Set<ClassLoader> loaders = new HashSet<>(3);
-		loaders.add(ClassLoader.getSystemClassLoader());
-		loaders.add(ClassUtils.class.getClassLoader());
-		loaders.add(ClassUtilsTest.class.getClassLoader());
+		loaders.add(systemClassLoader);
+		loaders.add(cuClassLoader);
+		loaders.add(tzClassLoader);
+
+		assertTrue(isPresent(className));
+		assertTrue(isPresent(className, systemClassLoader, cuClassLoader));
+		assertTrue(isPresent(className, tzClassLoader));
+		assertFalse(isPresent("live.lingting.framework.mybatis.typehandler.EnumTypeHandler"));
+		Map<ClassLoader, Boolean> map = ClassUtils.CACHE_CLASS_PRESENT.get(className);
 		assertEquals(loaders, map.keySet());
 		assertThrows(IllegalArgumentException.class, () -> ClassUtils.isPresent(className, null, null));
 		Set<Class<Object>> scan = assertDoesNotThrow(() -> ClassUtils.scan("live.lingting.framework"));

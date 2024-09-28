@@ -18,6 +18,7 @@ import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
@@ -30,15 +31,20 @@ public abstract class HttpClient {
 	/**
 	 * @see jdk.internal.net.http.common.Utils#getDisallowedHeaders()
 	 */
-	protected static final Set<String> HEADERS_DISABLED = Set.of("connection", "content-length", "expect", "host",
-		"upgrade");
+	protected static final Set<String> HEADERS_DISABLED;
+
+	static {
+		HEADERS_DISABLED = new HashSet<>();
+		HEADERS_DISABLED.add("connection");
+		HEADERS_DISABLED.add("content-length");
+		HEADERS_DISABLED.add("expect");
+		HEADERS_DISABLED.add("host");
+		HEADERS_DISABLED.add("upgrade");
+	}
+
 	public static final File TEMP = FileUtils.createTempDir("http");
 
 	protected CookieStore cookie;
-
-	public static JavaHttpClient.Builder java() {
-		return new JavaHttpClient.Builder();
-	}
 
 	public static OkHttpClient.Builder okhttp() {
 		return new OkHttpClient.Builder();

@@ -63,10 +63,11 @@ public class ResourceUtils {
 
 		if (protocol.startsWith(PROTOCOL_JAR)) {
 			URLConnection connection = resource.openConnection();
-			if (connection instanceof JarURLConnection jar) {
+			if (connection instanceof JarURLConnection) {
+				JarURLConnection jar = (JarURLConnection) connection;
 				String[] split = url.split(Resource.DELIMITER_JAR);
 				int size = split.length - 1;
-				Collection<String> paths = Arrays.stream(split).limit(size).toList();
+				Collection<String> paths = Arrays.stream(split).limit(size).collect(Collectors.toList());
 				JarEntry entry = jar.getJarEntry();
 				return new Resource(protocol, paths, entry.getName(), entry.isDirectory());
 			}
@@ -120,10 +121,11 @@ public class ResourceUtils {
 
 		if (protocol.startsWith(PROTOCOL_JAR)) {
 			URLConnection connection = resource.openConnection();
-			if (connection instanceof JarURLConnection jar) {
+			if (connection instanceof JarURLConnection) {
+				JarURLConnection jar = (JarURLConnection) connection;
 				String[] split = url.split(Resource.DELIMITER_JAR);
 				int size = split.length - 1;
-				Collection<String> paths = Arrays.stream(split).limit(size).toList();
+				Collection<String> paths = Arrays.stream(split).limit(size).collect(Collectors.toList());
 				JarFile file = jar.getJarFile();
 				Enumeration<JarEntry> entries = file.entries();
 				while (entries.hasMoreElements()) {
@@ -189,7 +191,7 @@ public class ResourceUtils {
 		public static Resource of(String protocol, File file) {
 			List<String> paths = Arrays
 				.stream(file.getParentFile().getAbsoluteFile().toURI().toString().split(DELIMITER_FILE))
-				.toList();
+				.collect(Collectors.toList());
 			return new Resource(protocol, paths, file.getName(), file.isDirectory());
 		}
 
@@ -230,7 +232,7 @@ public class ResourceUtils {
 
 		@Override
 		public boolean equals(Object obj) {
-			return obj instanceof Resource r && Objects.equals(r.path, path);
+			return obj instanceof Resource && Objects.equals(((Resource) obj).path, path);
 		}
 
 	}

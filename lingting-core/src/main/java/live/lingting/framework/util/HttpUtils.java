@@ -1,7 +1,8 @@
 package live.lingting.framework.util;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.experimental.UtilityClass;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author lingting 2022/10/28 17:54

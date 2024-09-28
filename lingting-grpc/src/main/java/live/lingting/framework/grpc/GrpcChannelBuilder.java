@@ -33,12 +33,12 @@ public class GrpcChannelBuilder {
 
 	public GrpcChannelBuilder address(String host, Integer port) {
 		if (!StringUtils.hasText(host)) {
-			throw new IllegalArgumentException("Host [%s] is invalid!".formatted(host));
+			throw new IllegalArgumentException(String.format("Host [%s] is invalid!",host));
 		}
 		if (port == null || port < 0 || port > 65535) {
-			throw new IllegalArgumentException("Port [%d] is invalid!".formatted(port));
+			throw new IllegalArgumentException(String.format("Port [%d] is invalid!",port));
 		}
-		this.target = "%s:%d".formatted(host, port);
+		this.target = String.format("%s:%d",host, port);
 		return this;
 	}
 

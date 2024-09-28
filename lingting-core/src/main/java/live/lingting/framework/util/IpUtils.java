@@ -1,9 +1,9 @@
 package live.lingting.framework.util;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -84,10 +84,15 @@ public class IpUtils {
 		if (!StringUtils.hasText(ip)) {
 			return false;
 		}
-		return switch (ip) {
-			case "[0:0:0:0:0:0:0:1]", "0:0:0:0:0:0:0:1", LOCALHOST, "localhost" -> true;
-			default -> false;
-		};
+		switch (ip) {
+			case "[0:0:0:0:0:0:0:1]":
+			case "0:0:0:0:0:0:0:1":
+			case LOCALHOST:
+			case "localhost":
+				return true;
+			default:
+				return false;
+		}
 	}
 
 	/**

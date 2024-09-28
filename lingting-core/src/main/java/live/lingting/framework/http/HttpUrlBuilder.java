@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static live.lingting.framework.util.StringUtils.deleteLast;
 
@@ -62,7 +63,7 @@ public class HttpUrlBuilder {
 		if (CollectionUtils.isEmpty(map)) {
 			return "";
 		}
-		List<String> keys = map.keySet().stream().sorted().toList();
+		List<String> keys = map.keySet().stream().sorted().collect(Collectors.toList());
 
 		StringBuilder builder = new StringBuilder();
 		for (String key : keys) {
@@ -177,7 +178,8 @@ public class HttpUrlBuilder {
 
 	public HttpUrlBuilder addParam(String name, Object value) {
 		params.ifAbsent(name);
-		if (value instanceof Map<?, ?> map) {
+		if (value instanceof Map<?, ?>) {
+			Map<?, ?> map = (Map<?, ?>) value;
 			map.forEach((k, v) -> addParam(k.toString(), v));
 		}
 		else if (CollectionUtils.isMulti(value)) {
@@ -202,10 +204,10 @@ public class HttpUrlBuilder {
 
 	public String build() {
 		if (!StringUtils.hasText(host)) {
-			throw new IllegalArgumentException("Host [%s] is invalid!".formatted(host));
+			throw new IllegalArgumentException(String.format("Host [%s] is invalid!", host));
 		}
 		if (port != null && (port < 0 || port > 65535)) {
-			throw new IllegalArgumentException("Port [%d] is invalid!".formatted(port));
+			throw new IllegalArgumentException(String.format("Port [%d] is invalid!", port));
 		}
 
 		StringBuilder builder = new StringBuilder();

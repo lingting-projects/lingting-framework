@@ -3,6 +3,7 @@ package live.lingting.framework.id;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.LockSupport;
+import java.util.stream.Collectors;
 
 /**
  * @author lingting 2024-04-18 20:23
@@ -149,7 +150,7 @@ public class Snowflake {
 		if (timestamp < lastTimestamp) {
 			if (!allowClockBackwards(timestamp)) {
 				throw new IllegalStateException(
-						"Clock moved backwards! current: %d; last: %d".formatted(timestamp, lastTimestamp));
+						String.format("Clock moved backwards! current: %d; last: %d",timestamp, lastTimestamp));
 			}
 			// 允许回拨, 使用上次的时间
 			timestamp = lastTimestamp;
@@ -171,7 +172,7 @@ public class Snowflake {
 	}
 
 	public List<String> nextStr(int count) {
-		return nextIds(count).stream().map(String::valueOf).toList();
+		return nextIds(count).stream().map(String::valueOf).collect(Collectors.toList());
 	}
 
 	/**

@@ -8,7 +8,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author lingting 2024-09-14 13:45
@@ -38,7 +40,6 @@ public class AliStsCredentialRequest extends AliStsRequest {
 		return "2015-04-01";
 	}
 
-
 	@Override
 	public String path() {
 		return "";
@@ -46,10 +47,14 @@ public class AliStsCredentialRequest extends AliStsRequest {
 
 	@Override
 	public BodySource body() {
-		Map<String, Object> policy = Map.of("Version", "1", "Statement",
-				statements.stream().map(Statement::map).toList());
-		Map<String, Object> map = Map.of("RoleArn", roleArn, "RoleSessionName", roleSessionName, "DurationSeconds",
-				timeout, "Policy", policy);
+		Map<String, Object> policy = new HashMap<>();
+		policy.put("Version", "1");
+		policy.put("Statement", statements.stream().map(Statement::map).collect(Collectors.toList()));
+		Map<String, Object> map = new HashMap<>();
+		map.put("RoleArn", roleArn);
+		map.put("RoleSessionName", roleSessionName);
+		map.put("DurationSeconds", timeout);
+		map.put("Policy", policy);
 		String json = JacksonUtils.toJson(map);
 		return MemoryBody.of(json);
 	}

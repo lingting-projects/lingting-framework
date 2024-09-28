@@ -8,6 +8,7 @@ import org.springframework.core.annotation.Order;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 排序用
@@ -25,7 +26,7 @@ public interface Sequence {
 	}
 
 	static <T> List<T> asc(Collection<T> collection) {
-		return collection.stream().sorted(INSTANCE_ASC).toList();
+		return collection.stream().sorted(INSTANCE_ASC).collect(Collectors.toList());
 	}
 
 	static <T> void desc(List<T> list) {
@@ -33,7 +34,7 @@ public interface Sequence {
 	}
 
 	static <T> List<T> desc(Collection<T> collection) {
-		return collection.stream().sorted(INSTANCE_DESC).toList();
+		return collection.stream().sorted(INSTANCE_DESC).collect(Collectors.toList());
 	}
 
 	int getSequence();
@@ -90,7 +91,7 @@ public interface Sequence {
 				return defaultSequence;
 			}
 
-			Integer orderSequence = obj instanceof Sequence sequence ? sequence.getSequence() : null;
+			Integer orderSequence = obj instanceof Sequence ? ((Sequence) obj).getSequence() : null;
 			Integer orderSpring = findBySpring(obj);
 			return high(orderSequence, orderSpring);
 		}
@@ -103,7 +104,7 @@ public interface Sequence {
 			// 注解上的排序值
 			Integer oa = annotation != null ? annotation.value() : null;
 			// 类方法上的排序值
-			Integer om = obj instanceof Ordered ordered ? ordered.getOrder() : null;
+			Integer om = obj instanceof Ordered ? ((Ordered) obj).getOrder() : null;
 			// 均为null则返回null
 			if (oa == null && om == null) {
 				return null;

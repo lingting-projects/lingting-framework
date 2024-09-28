@@ -27,7 +27,7 @@ public class GrpcServerBuilder {
 
 	public GrpcServerBuilder port(Integer port) {
 		if (port == null || port < 0 || port > 65535) {
-			throw new IllegalArgumentException("Port [%d] is invalid!".formatted(port));
+			throw new IllegalArgumentException(String.format("Port [%d] is invalid!",port));
 		}
 		this.port = port;
 		return this;

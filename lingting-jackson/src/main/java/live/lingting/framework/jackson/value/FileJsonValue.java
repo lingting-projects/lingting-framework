@@ -37,8 +37,8 @@ public class FileJsonValue<T> extends AbstractFileValue<T> {
 
 	@Override
 	public String fillFilename(Object filename) {
-		if (filename instanceof String string && string.endsWith(SUFFIX)) {
-			return string;
+		if (filename instanceof String && ((String) filename).endsWith(SUFFIX)) {
+			return (String) filename;
 		}
 		return String.format("%s%s", filename, SUFFIX);
 	}

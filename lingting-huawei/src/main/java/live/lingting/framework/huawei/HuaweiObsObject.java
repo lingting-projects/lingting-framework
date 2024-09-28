@@ -85,11 +85,14 @@ public class HuaweiObsObject extends HuaweiObs {
 	}
 
 	public void put(CloneInputStream in, Acl acl) {
-		try (in) {
+		try {
 			HuaweiObsObjectPutRequest request = new HuaweiObsObjectPutRequest();
 			request.setStream(in);
 			request.setAcl(acl);
 			call(request);
+		}
+		finally {
+			in.close();
 		}
 	}
 

@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static live.lingting.framework.elasticsearch.ElasticsearchUtils.fieldName;
 import static live.lingting.framework.elasticsearch.ElasticsearchUtils.fieldValue;
@@ -108,7 +109,7 @@ public class QueryComposer {
 	}
 
 	public static Query should(Query... queries) {
-		return should(Arrays.stream(queries).filter(Objects::nonNull).toList());
+		return should(Arrays.stream(queries).filter(Objects::nonNull).collect(Collectors.toList()));
 	}
 
 	public static Query should(List<Query> queries) {
@@ -116,7 +117,7 @@ public class QueryComposer {
 	}
 
 	public static Query must(Query... queries) {
-		return must(Arrays.stream(queries).filter(Objects::nonNull).toList());
+		return must(Arrays.stream(queries).filter(Objects::nonNull).collect(Collectors.toList()));
 	}
 
 	public static Query must(List<Query> queries) {
@@ -134,7 +135,7 @@ public class QueryComposer {
 	}
 
 	public static Query not(Query... queries) {
-		return not(Arrays.stream(queries).filter(Objects::nonNull).toList());
+		return not(Arrays.stream(queries).filter(Objects::nonNull).collect(Collectors.toList()));
 	}
 
 	public static Query not(List<Query> queries) {

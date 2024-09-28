@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static live.lingting.framework.multipart.MultipartTaskStatus.COMPLETED;
 import static live.lingting.framework.multipart.MultipartTaskStatus.RUNNING;
@@ -86,7 +87,7 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 	}
 
 	public List<PartTask> tasksFailed() {
-		return tasks.stream().filter(PartTask::isFailed).toList();
+		return tasks.stream().filter(PartTask::isFailed).collect(Collectors.toList());
 	}
 
 	public I await() {

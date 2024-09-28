@@ -46,7 +46,8 @@ public class GrpcServer implements ContextComponent {
 		// 服务端是最后注册的拦截器最先执行, 所以要倒序注册
 		while (iterator.hasPrevious()) {
 			ServerInterceptor previous = iterator.previous();
-			if (previous instanceof AbstractServerInterceptor interceptor) {
+			if (previous instanceof AbstractServerInterceptor) {
+				AbstractServerInterceptor interceptor = (AbstractServerInterceptor) previous;
 				interceptor.setServer(this);
 			}
 			builder.intercept(previous);

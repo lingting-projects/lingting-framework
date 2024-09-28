@@ -21,7 +21,7 @@ class RModuleTest {
 		String json = JacksonUtils.toJson(r);
 		System.out.println(json);
 		Assertions.assertEquals("{\"code\":200,\"data\":{\"p1\":\"p1\",\"p2\":\"p2\"},\"message\":\"Success\"}", json);
-		TypeReference<R<REntity>> reference = new TypeReference<>() {
+		TypeReference<R<REntity>> reference = new TypeReference<R<REntity>>() {
 		};
 
 		R<REntity> o1 = JacksonUtils

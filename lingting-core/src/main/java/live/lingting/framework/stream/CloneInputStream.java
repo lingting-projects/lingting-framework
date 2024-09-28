@@ -37,7 +37,8 @@ public class CloneInputStream extends InputStream {
 	protected boolean closeAndDelete = false;
 
 	public CloneInputStream(InputStream input) throws IOException {
-		if (input instanceof CloneInputStream clone) {
+		if (input instanceof CloneInputStream) {
+			CloneInputStream clone = (CloneInputStream) input;
 			this.file = clone.file;
 			this.size = clone.size;
 		}

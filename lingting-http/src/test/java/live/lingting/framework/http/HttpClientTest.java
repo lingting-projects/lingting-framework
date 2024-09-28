@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.ProxySelector;
+import java.net.SocketAddress;
 import java.net.URI;
 import java.util.List;
 
@@ -21,27 +23,30 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class HttpClientTest {
 
-	java.net.http.HttpClient client;
-
 	ProxySelector selector;
 
 	boolean useCharles = false;
 
 	@BeforeEach
 	void before() {
-		client = java.net.http.HttpClient.newBuilder().build();
-		selector = !useCharles ? null : ProxySelector.of(new InetSocketAddress("127.0.0.1", 9999));
+		selector = !useCharles ? null : new ProxySelector() {
+			@Override
+			public List<Proxy> select(URI uri) {
+				Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 8888));
+				List<Proxy> proxies = new java.util.ArrayList<>();
+				proxies.add(proxy);
+				return proxies;
+			}
+
+			@Override
+			public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
+				//
+			}
+		};
 	}
 
 	@Test
 	void test() throws IOException {
-		JavaHttpClient java = HttpClient.java()
-			.disableSsl()
-			.infiniteTimeout()
-			.memoryCookie()
-			.proxySelector(selector)
-			.build();
-		assertClient(java);
 		OkHttpClient okhttp = HttpClient.okhttp()
 			.disableSsl()
 			.infiniteTimeout()

@@ -132,10 +132,10 @@ public class NtpFactory {
 			return ntp - system;
 		}
 		catch (SocketTimeoutException e) {
-			throw new NtpException("Ntp get diff timeout! host: %s".formatted(host), e);
+			throw new NtpException(String.format("Ntp get diff timeout! host: %s",host), e);
 		}
 		catch (Exception e) {
-			throw new NtpException("Ntp get diff error! host: %s".formatted(host), e);
+			throw new NtpException(String.format("Ntp get diff error! host: %s",host), e);
 		}
 	}
 

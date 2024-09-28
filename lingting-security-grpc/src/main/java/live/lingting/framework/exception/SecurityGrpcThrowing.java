@@ -17,7 +17,8 @@ public class SecurityGrpcThrowing {
 
 	public static Exception convert(Exception e) {
 		if (e instanceof StatusException || e instanceof StatusRuntimeException) {
-			Status status = e instanceof StatusException se ? se.getStatus() : ((StatusRuntimeException) e).getStatus();
+			Status status = e instanceof StatusException ? ((StatusException) e).getStatus()
+					: ((StatusRuntimeException) e).getStatus();
 			switch (status.getCode()) {
 				case UNAUTHENTICATED:
 					return new AuthorizationException(status.getDescription(), e);
@@ -33,11 +34,11 @@ public class SecurityGrpcThrowing {
 	public static void throwing(Exception ex, Consumer<Exception> consumer)
 			throws AuthorizationException, PermissionsException {
 		Exception e = convert(ex);
-		if (e instanceof AuthorizationException ae) {
-			throw ae;
+		if (e instanceof AuthorizationException) {
+			throw (AuthorizationException) e;
 		}
-		if (e instanceof PermissionsException pe) {
-			throw pe;
+		if (e instanceof PermissionsException) {
+			throw (PermissionsException) e;
 		}
 
 		consumer.accept(e);

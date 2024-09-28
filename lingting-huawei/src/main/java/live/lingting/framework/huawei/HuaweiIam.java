@@ -163,8 +163,8 @@ public class HuaweiIam extends ApiClient<HuaweiIamRequest> {
 		String bucket = StringUtils.hasText(properties.getBucket()) ? properties.getBucket() : "*";
 		HuaweiStatement statement = HuaweiStatement.allow();
 		statement.addAction(actions);
-		statement.addResource("obs:*:*:bucket:%s".formatted(bucket));
-		statement.addResource("obs:*:*:object:%s/*".formatted(bucket));
+		statement.addResource(String.format("obs:*:*:bucket:%s",bucket));
+		statement.addResource(String.format("obs:*:*:object:%s/*",bucket));
 		Credential credential = credential(statement);
 		HuaweiObsProperties copy = properties.copy();
 		copy.useCredential(credential);
@@ -193,7 +193,7 @@ public class HuaweiIam extends ApiClient<HuaweiIamRequest> {
 		String bucket = properties.getBucket();
 		HuaweiStatement statement = HuaweiStatement.allow();
 		statement.addAction(actions);
-		statement.addResource("obs:*:*:object:%s/%s".formatted(bucket, key));
+		statement.addResource(String.format("obs:*:*:object:%s/%s",bucket, key));
 		Credential credential = credential(statement);
 		HuaweiObsProperties copy = properties.copy();
 		copy.useCredential(credential);

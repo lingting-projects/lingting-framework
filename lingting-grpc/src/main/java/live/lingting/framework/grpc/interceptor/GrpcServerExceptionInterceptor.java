@@ -28,7 +28,7 @@ public class GrpcServerExceptionInterceptor implements ServerInterceptor, Sequen
 		ServerCall.Listener<S> listener;
 		try {
 			ServerCall.Listener<S> nextCall = next.startCall(call, headers);
-			listener = new SimpleForwardingServerCallListener<>(nextCall) {
+			listener = new SimpleForwardingServerCallListener<S>(nextCall) {
 				@Override
 				public void onHalfClose() {
 					try {
@@ -42,7 +42,7 @@ public class GrpcServerExceptionInterceptor implements ServerInterceptor, Sequen
 		}
 		catch (Exception e) {
 			process(e, call, headers);
-			listener = new ServerCall.Listener<>() {
+			listener = new ServerCall.Listener<S>() {
 			};
 		}
 		return listener;
@@ -56,7 +56,8 @@ public class GrpcServerExceptionInterceptor implements ServerInterceptor, Sequen
 	void process(Exception e, ServerCall<?, ?> call, Metadata headers) {
 		GrpcExceptionInvoke invoke = processor.find(e);
 		Object object = invoke.invoke(e, call, headers);
-		if (object instanceof Status status) {
+		if (object instanceof Status) {
+			Status status = (Status) object;
 			call.close(status, headers);
 		}
 	}

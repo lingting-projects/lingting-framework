@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author lingting 2024-09-13 13:53
@@ -34,7 +35,7 @@ public class HuaweiIamCredentialRequest extends HuaweiIamRequest {
 	public BodySource body() {
 		Map<String, Object> policy = new HashMap<>();
 		policy.put("Version", "1.1");
-		policy.put("Statement", statements.stream().map(HuaweiStatement::map).toList());
+		policy.put("Statement", statements.stream().map(HuaweiStatement::map).collect(Collectors.toList()));
 
 		Map<String, Object> token = Map.of("duration_seconds", timeout.getSeconds());
 

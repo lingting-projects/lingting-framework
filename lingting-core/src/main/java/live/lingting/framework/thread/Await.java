@@ -31,7 +31,7 @@ public class Await<S> {
 
 	@SneakyThrows
 	public S await() {
-		Supplier<S> supply = new Supplier<>() {
+		Supplier<S> supply = new Supplier<S>() {
 			@SneakyThrows
 			@Override
 			public S get() {
@@ -52,9 +52,8 @@ public class Await<S> {
 
 		try {
 			// 设置超时
-			CompletableFuture<S> future = CompletableFuture.supplyAsync(supply, executor)
-				.orTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS);
-			return future.get();
+			CompletableFuture<S> future = CompletableFuture.supplyAsync(supply, executor);
+			return future.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
 		}
 		catch (ExecutionException e) {
 			throw e.getCause();

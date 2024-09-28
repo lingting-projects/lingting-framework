@@ -1,6 +1,9 @@
 package live.lingting.framework.reflect;
 
 import live.lingting.framework.util.AnnotationUtils;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
@@ -23,8 +26,25 @@ import java.lang.reflect.Modifier;
  *
  * @author lingting 2022/12/6 13:04
  */
+@Getter
+@ToString
+@EqualsAndHashCode
 @SuppressWarnings("java:S3011")
-public record ClassField(Field field, Method methodGet, Method methodSet) {
+public final class ClassField {
+
+	private final Field field;
+
+	private final Method methodGet;
+
+	private final Method methodSet;
+
+	/**
+	*/
+	public ClassField(Field field, Method methodGet, Method methodSet) {
+		this.field = field;
+		this.methodGet = methodGet;
+		this.methodSet = methodSet;
+	}
 
 	public String getFiledName() {
 		return field.getName();
@@ -150,6 +170,18 @@ public record ClassField(Field field, Method methodGet, Method methodSet) {
 
 	public boolean isFinalField() {
 		return field != null && Modifier.isFinal(field.getModifiers());
+	}
+
+	public Field field() {
+		return field;
+	}
+
+	public Method methodGet() {
+		return methodGet;
+	}
+
+	public Method methodSet() {
+		return methodSet;
 	}
 
 	// endregion
