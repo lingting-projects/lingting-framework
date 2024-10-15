@@ -90,44 +90,6 @@ public class VirtualThread {
 			return this;
 		}
 
-		/**
-		 * 线程池是否运行中
-		 */
-		@Override
-		public boolean isRunning() {
-			return !executor.isShutdown() && !executor.isTerminated();
-		}
-
-		@Override
-		public void execute(ThrowableRunnable runnable) {
-			execute(null, runnable);
-		}
-
-		@Override
-		public void execute(String name, ThrowableRunnable runnable) {
-			execute(new KeepRunnable(name) {
-				@Override
-				protected void process() throws Throwable {
-					runnable.run();
-				}
-			});
-		}
-
-		@Override
-		public void execute(KeepRunnable runnable) {
-			executor.execute(runnable);
-		}
-
-		@Override
-		public <T> CompletableFuture<T> async(Supplier<T> supplier) {
-			return CompletableFuture.supplyAsync(supplier, executor);
-		}
-
-		@Override
-		public <T> Future<T> submit(Callable<T> callable) {
-			return executor.submit(callable);
-		}
-
 	}
 
 }

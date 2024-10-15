@@ -135,14 +135,6 @@ public class ThreadPool {
 		}
 
 		/**
-		 * 线程池是否运行中
-		 */
-		@Override
-		public boolean isRunning() {
-			return !executor.isShutdown() && !executor.isTerminated();
-		}
-
-		/**
 		 * 核心线程数
 		 */
 		public long getCorePoolSize() {
@@ -185,36 +177,6 @@ public class ThreadPool {
 
 			// 占比达到90%的情况下, 剩余可用线程数小于10 则可能触发拒绝
 			return size - activeCount < 10;
-		}
-
-		@Override
-		public void execute(ThrowableRunnable runnable) {
-			execute(null, runnable);
-		}
-
-		@Override
-		public void execute(String name, ThrowableRunnable runnable) {
-			execute(new KeepRunnable(name) {
-				@Override
-				protected void process() throws Throwable {
-					runnable.run();
-				}
-			});
-		}
-
-		@Override
-		public void execute(KeepRunnable runnable) {
-			executor.execute(runnable);
-		}
-
-		@Override
-		public <T> CompletableFuture<T> async(Supplier<T> supplier) {
-			return CompletableFuture.supplyAsync(supplier, executor);
-		}
-
-		@Override
-		public <T> Future<T> submit(Callable<T> callable) {
-			return executor.submit(callable);
 		}
 
 	}
