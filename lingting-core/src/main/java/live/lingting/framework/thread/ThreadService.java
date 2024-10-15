@@ -15,15 +15,36 @@ public interface ThreadService {
 
 	ExecutorService executor();
 
-	boolean isRunning();
+	default boolean isRunning() {
+		ExecutorService executor = executor();
+		return executor != null && !executor.isShutdown() && !executor.isTerminated();
+	}
 
-	void execute(ThrowableRunnable runnable);
+	default void execute(ThrowableRunnable runnable) {
+		execute(null, runnable);
+	}
 
-	void execute(String name, ThrowableRunnable runnable);
+	default void execute(String name, ThrowableRunnable runnable) {
+		execute(new KeepRunnable(name) {
+			@Override
+			protected void process() throws Throwable {
+				runnable.run();
+			}
+		});
+	}
 
-	void execute(KeepRunnable runnable);
+	default void execute(KeepRunnable runnable) {
+		executor().execute(runnable);
+	}
 
-	<T> CompletableFuture<T> async(Supplier<T> supplier);
+	default <T> CompletableFuture<T> async(Supplier<T> supplier) {
+		ExecutorService executor = executor();
+		return CompletableFuture.supplyAsync(supplier, executor);
+	}
 
-	<T> Future<T> submit(Callable<T> callable);
+	default <T> Future<T> submit(Callable<T> callable) {
+		ExecutorService executor = executor();
+		return executor.submit(callable);
+	}
+
 }
