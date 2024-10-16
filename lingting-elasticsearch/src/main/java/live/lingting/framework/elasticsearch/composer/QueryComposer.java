@@ -44,6 +44,9 @@ public class QueryComposer {
 
 		if (!CollectionUtils.isEmpty(objects)) {
 			for (Object object : objects) {
+				if (object == null) {
+					continue;
+				}
 				FieldValue value = fieldValue(object);
 				values.add(value);
 			}
@@ -108,19 +111,19 @@ public class QueryComposer {
 	}
 
 	public static Query should(Query... queries) {
-		return should(Arrays.stream(queries).filter(Objects::nonNull).toList());
+		return should(Arrays.asList(queries));
 	}
 
 	public static Query should(List<Query> queries) {
-		return Query.of(q -> q.bool(b -> b.should(queries)));
+		return Query.of(q -> q.bool(b -> b.should(queries.stream().filter(Objects::nonNull).toList())));
 	}
 
 	public static Query must(Query... queries) {
-		return must(Arrays.stream(queries).filter(Objects::nonNull).toList());
+		return must(Arrays.asList(queries));
 	}
 
 	public static Query must(List<Query> queries) {
-		return Query.of(q -> q.bool(b -> b.must(queries)));
+		return Query.of(q -> q.bool(b -> b.must(queries.stream().filter(Objects::nonNull).toList())));
 	}
 
 	public static <T> Query wildcardAll(String field, T obj) {
@@ -134,11 +137,11 @@ public class QueryComposer {
 	}
 
 	public static Query not(Query... queries) {
-		return not(Arrays.stream(queries).filter(Objects::nonNull).toList());
+		return not(Arrays.asList(queries));
 	}
 
 	public static Query not(List<Query> queries) {
-		return Query.of(q -> q.bool(b -> b.mustNot(queries)));
+		return Query.of(q -> q.bool(b -> b.mustNot(queries.stream().filter(Objects::nonNull).toList())));
 	}
 	// endregion
 
@@ -149,12 +152,12 @@ public class QueryComposer {
 
 	public static <T> Query term(ElasticsearchFunction<?, T> func, T obj, TermOperator operator) {
 		String field = fieldName(func);
-		return QueryComposer.term(field, obj, operator);
+		return term(field, obj, operator);
 	}
 
 	public static <T> Query terms(ElasticsearchFunction<?, T> func, Collection<T> objects) {
 		String field = fieldName(func);
-		return QueryComposer.terms(field, objects);
+		return terms(field, objects);
 	}
 
 	/**
@@ -162,7 +165,7 @@ public class QueryComposer {
 	 */
 	public static <T> Query lt(ElasticsearchFunction<?, T> func, T obj) {
 		String field = fieldName(func);
-		return QueryComposer.lt(field, obj);
+		return lt(field, obj);
 	}
 
 	/**
@@ -170,7 +173,7 @@ public class QueryComposer {
 	 */
 	public static <T> Query le(ElasticsearchFunction<?, T> func, T obj) {
 		String field = fieldName(func);
-		return QueryComposer.le(field, obj);
+		return le(field, obj);
 	}
 
 	/**
@@ -178,7 +181,7 @@ public class QueryComposer {
 	 */
 	public static <T> Query gt(ElasticsearchFunction<?, T> func, T obj) {
 		String field = fieldName(func);
-		return QueryComposer.gt(field, obj);
+		return gt(field, obj);
 	}
 
 	/**
@@ -186,7 +189,7 @@ public class QueryComposer {
 	 */
 	public static <T> Query ge(ElasticsearchFunction<?, T> func, T obj) {
 		String field = fieldName(func);
-		return QueryComposer.ge(field, obj);
+		return ge(field, obj);
 	}
 
 	/**
@@ -194,16 +197,17 @@ public class QueryComposer {
 	 */
 	public static <T> Query between(ElasticsearchFunction<?, T> func, T start, T end) {
 		String field = fieldName(func);
-		return QueryComposer.between(field, start, end);
+		return between(field, start, end);
 	}
 
 	public static <T> Query wildcardAll(ElasticsearchFunction<?, T> func, T obj) {
-		return wildcard(func, obj);
+		String field = fieldName(func);
+		return wildcardAll(field, obj);
 	}
 
 	public static <T> Query wildcard(ElasticsearchFunction<?, T> func, T obj) {
 		String field = fieldName(func);
-		return QueryComposer.wildcard(field, obj);
+		return wildcard(field, obj);
 	}
 
 	// endregion
