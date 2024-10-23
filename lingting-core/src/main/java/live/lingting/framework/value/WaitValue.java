@@ -21,6 +21,9 @@ public class WaitValue<T> {
 
 	protected final JavaReentrantLock lock = new JavaReentrantLock();
 
+	/**
+	 * 如果直接调用 set 方法是不会触发 {@link JavaReentrantLock#signalAll()}. 会导致在set之前挂起的等待线程不会被唤醒
+	 */
 	@Getter
 	@Setter
 	protected T value;
@@ -48,6 +51,7 @@ public class WaitValue<T> {
 
 	/**
 	 * 进行运算, 同时仅允许一个线程获取
+	 *
 	 * @param operator 运行行为
 	 */
 	public T compute(UnaryOperator<T> operator) throws InterruptedException {

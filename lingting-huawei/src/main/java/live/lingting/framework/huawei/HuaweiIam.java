@@ -84,6 +84,7 @@ public class HuaweiIam extends ApiClient<HuaweiIamRequest> {
 		refreshToken(false);
 	}
 
+	@SneakyThrows
 	public void refreshToken(boolean force) {
 		if (!force) {
 			HuaweiIamToken value = getTokenValue().getValue();
@@ -93,7 +94,7 @@ public class HuaweiIam extends ApiClient<HuaweiIamRequest> {
 		}
 
 		HuaweiIamToken token = token();
-		tokenValue.setValue(token);
+		tokenValue.update(token);
 	}
 
 	public HuaweiIamToken token() {
