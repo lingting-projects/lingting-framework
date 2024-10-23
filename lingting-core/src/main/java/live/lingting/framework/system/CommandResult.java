@@ -4,6 +4,7 @@ import live.lingting.framework.util.StreamUtils;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -13,7 +14,7 @@ import java.time.Duration;
  * @author lingting 2022/6/25 12:01
  */
 @Getter
-public class CommandResult {
+public class CommandResult implements Closeable {
 
 	protected final Command command;
 
@@ -64,4 +65,10 @@ public class CommandResult {
 		command.clean();
 	}
 
+	@Override
+	public void close() throws IOException {
+		getStdOut();
+		getStdErr();
+		clean();
+	}
 }
