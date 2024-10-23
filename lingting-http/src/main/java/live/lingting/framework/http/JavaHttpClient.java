@@ -1,5 +1,7 @@
 package live.lingting.framework.http;
 
+import live.lingting.framework.http.body.BodySource;
+import live.lingting.framework.http.body.MemoryBody;
 import live.lingting.framework.http.header.HttpHeaders;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -55,7 +57,11 @@ public class JavaHttpClient extends HttpClient {
 		if (body == null || !method.allowBody()) {
 			return BodyPublishers.noBody();
 		}
-		return BodyPublishers.ofInputStream(body::input);
+		BodySource source = body.source();
+		if (source instanceof MemoryBody) {
+			return BodyPublishers.ofByteArray(source.bytes());
+		}
+		return BodyPublishers.ofInputStream(source::openInput);
 	}
 
 	@Override

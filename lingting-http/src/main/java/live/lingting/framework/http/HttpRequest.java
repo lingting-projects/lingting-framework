@@ -223,6 +223,10 @@ public class HttpRequest {
 			return source.length();
 		}
 
+		public BodySource source() {
+			return source;
+		}
+
 		public byte[] bytes() {
 			return source.bytes();
 		}

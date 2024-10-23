@@ -3,10 +3,9 @@ package live.lingting.framework.http.okhttp;
 import live.lingting.framework.http.HttpRequest;
 import live.lingting.framework.http.body.BodySource;
 import live.lingting.framework.http.body.FileBody;
+import live.lingting.framework.http.body.MemoryBody;
 import live.lingting.framework.stream.CloneInputStream;
 import live.lingting.framework.util.StreamUtils;
-import live.lingting.framework.util.StringUtils;
-import lombok.RequiredArgsConstructor;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.BufferedSink;
@@ -17,10 +16,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static live.lingting.framework.http.okhttp.OkHttpUtils.mediaType;
+
 /**
  * @author lingting 2024-09-02 16:20
  */
-@RequiredArgsConstructor
 public class OkHttpRequestBody extends RequestBody {
 
 	public static final MediaType MEDIA_STREAM = MediaType.parse("application/octet-stream");
@@ -33,22 +33,29 @@ public class OkHttpRequestBody extends RequestBody {
 		this(new CloneInputStream(file), MEDIA_STREAM);
 	}
 
-	public OkHttpRequestBody(InputStream stream) throws IOException {
+	public OkHttpRequestBody(InputStream stream) {
 		this(stream, MEDIA_STREAM);
 	}
 
 	public OkHttpRequestBody(InputStream input, String contentType) throws IOException {
-		this(input, StringUtils.hasText(contentType) ? MediaType.parse(contentType) : null);
+		this(input, mediaType(contentType));
 	}
 
-	public OkHttpRequestBody(InputStream input, MediaType mediaType) throws IOException {
-		CloneInputStream stream = input instanceof CloneInputStream clone ? clone : new CloneInputStream(input);
-		this.source = new FileBody(stream);
+	public OkHttpRequestBody(InputStream input, MediaType mediaType) {
+		this(FileBody.of(input), mediaType);
+	}
+
+	public OkHttpRequestBody(BodySource source, String contentType) {
+		this(source, mediaType(contentType));
+	}
+
+	public OkHttpRequestBody(BodySource source, MediaType mediaType) {
+		this.source = source;
 		this.mediaType = mediaType;
 	}
 
 	public OkHttpRequestBody(HttpRequest.Body body) throws IOException {
-		this(body.input(), body.contentType());
+		this(body.source(), body.contentType());
 	}
 
 	@Nullable
@@ -64,6 +71,11 @@ public class OkHttpRequestBody extends RequestBody {
 
 	@Override
 	public void writeTo(@NotNull BufferedSink bufferedSink) throws IOException {
+		if (source instanceof MemoryBody) {
+			bufferedSink.write(source.bytes());
+			return;
+		}
+
 		StreamUtils.read(source.openInput(), (buffer, len) -> bufferedSink.write(buffer, 0, len));
 	}
 

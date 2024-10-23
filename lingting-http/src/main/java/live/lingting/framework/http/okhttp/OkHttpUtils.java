@@ -1,6 +1,9 @@
 package live.lingting.framework.http.okhttp;
 
+import live.lingting.framework.http.HttpRequest;
+import live.lingting.framework.util.StringUtils;
 import lombok.experimental.UtilityClass;
+import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.Buffer;
 
@@ -34,6 +37,14 @@ public class OkHttpUtils {
 			return new byte[0];
 		}
 		return buffer.readByteArray();
+	}
+
+	public static MediaType mediaType(HttpRequest.Body body) {
+		return mediaType(body == null ? null : body.contentType());
+	}
+
+	public static MediaType mediaType(String contentType) {
+		return StringUtils.hasText(contentType) ? MediaType.parse(contentType) : null;
 	}
 
 }
