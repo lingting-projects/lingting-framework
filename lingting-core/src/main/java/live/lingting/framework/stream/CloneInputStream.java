@@ -19,9 +19,12 @@ import java.io.InputStream;
  *
  * @author lingting 2024-01-09 15:41
  */
+@SuppressWarnings("java:S1170")
 public class CloneInputStream extends InputStream {
 
 	public static final File TEMP_DIR = FileUtils.createTempDir("clone");
+
+	protected final Object lock = "";
 
 	protected final File file;
 
@@ -53,8 +56,15 @@ public class CloneInputStream extends InputStream {
 		this.size = file.length();
 	}
 
-	protected synchronized FileInputStream stream() throws IOException {
-		if (stream == null) {
+	protected FileInputStream getStream() throws IOException {
+		if (stream != null) {
+			return stream;
+		}
+
+		synchronized (lock) {
+			if (stream != null) {
+				return stream;
+			}
 			stream = new FileInputStream(file);
 		}
 		return stream;
@@ -62,22 +72,22 @@ public class CloneInputStream extends InputStream {
 
 	@Override
 	public int read(byte[] b) throws IOException {
-		return stream().read(b);
+		return getStream().read(b);
 	}
 
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
-		return stream().read(b, off, len);
+		return getStream().read(b, off, len);
 	}
 
 	@Override
 	public long skip(long n) throws IOException {
-		return stream().skip(n);
+		return getStream().skip(n);
 	}
 
 	@Override
 	public int available() throws IOException {
-		return stream().available();
+		return getStream().available();
 	}
 
 	@Override
@@ -105,12 +115,12 @@ public class CloneInputStream extends InputStream {
 	@SneakyThrows
 	@Override
 	public boolean markSupported() {
-		return stream().markSupported();
+		return getStream().markSupported();
 	}
 
 	@Override
 	public int read() throws IOException {
-		return stream().read();
+		return getStream().read();
 	}
 
 	public long size() {
