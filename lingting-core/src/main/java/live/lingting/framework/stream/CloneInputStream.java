@@ -30,7 +30,7 @@ public class CloneInputStream extends InputStream {
 	 */
 	protected final long size;
 
-	protected final FileInputStream stream;
+	protected FileInputStream stream;
 
 	@Getter
 	@Setter
@@ -46,33 +46,38 @@ public class CloneInputStream extends InputStream {
 			this.file = temp;
 			this.size = temp.length();
 		}
-		this.stream = new FileInputStream(file);
 	}
 
-	public CloneInputStream(File file) throws IOException {
+	public CloneInputStream(File file) {
 		this.file = file;
 		this.size = file.length();
-		this.stream = new FileInputStream(file);
+	}
+
+	protected synchronized FileInputStream stream() throws IOException {
+		if (stream == null) {
+			stream = new FileInputStream(file);
+		}
+		return stream;
 	}
 
 	@Override
 	public int read(byte[] b) throws IOException {
-		return stream.read(b);
+		return stream().read(b);
 	}
 
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
-		return stream.read(b, off, len);
+		return stream().read(b, off, len);
 	}
 
 	@Override
 	public long skip(long n) throws IOException {
-		return stream.skip(n);
+		return stream().skip(n);
 	}
 
 	@Override
 	public int available() throws IOException {
-		return stream.available();
+		return stream().available();
 	}
 
 	@Override
@@ -84,23 +89,28 @@ public class CloneInputStream extends InputStream {
 	}
 
 	@Override
-	public void mark(int readlimit) {
-		stream.mark(readlimit);
+	public void mark(int limit) {
+		if (stream != null) {
+			stream.mark(limit);
+		}
 	}
 
 	@Override
 	public void reset() throws IOException {
-		stream.reset();
+		if (stream != null) {
+			stream.reset();
+		}
 	}
 
+	@SneakyThrows
 	@Override
 	public boolean markSupported() {
-		return stream.markSupported();
+		return stream().markSupported();
 	}
 
 	@Override
 	public int read() throws IOException {
-		return stream.read();
+		return stream().read();
 	}
 
 	public long size() {
