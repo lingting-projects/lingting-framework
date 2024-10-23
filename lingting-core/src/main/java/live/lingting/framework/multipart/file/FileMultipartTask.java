@@ -51,6 +51,7 @@ public abstract class FileMultipartTask<I extends FileMultipartTask<I>> extends 
 			log.debug("[{}] onMerged", id);
 			taskStatus = MERGED;
 		}
+		multipart.clear();
 	}
 
 	protected abstract void onMerge();

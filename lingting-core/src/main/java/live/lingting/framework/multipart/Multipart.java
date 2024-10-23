@@ -1,5 +1,6 @@
 package live.lingting.framework.multipart;
 
+import live.lingting.framework.stream.CloneInputStream;
 import live.lingting.framework.stream.RandomAccessInputStream;
 import live.lingting.framework.util.FileUtils;
 import live.lingting.framework.util.StreamUtils;
@@ -9,8 +10,6 @@ import lombok.SneakyThrows;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -120,9 +119,9 @@ public class Multipart {
 		});
 	}
 
-	public InputStream stream(Part part) throws IOException {
+	public CloneInputStream stream(Part part) throws IOException {
 		File file = file(part);
-		return Files.newInputStream(file.toPath());
+		return new CloneInputStream(file);
 	}
 
 	public void clear() {
