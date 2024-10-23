@@ -1,5 +1,6 @@
 package live.lingting.framework.huawei;
 
+import live.lingting.framework.aws.s3.response.AwsS3MultipartItem;
 import live.lingting.framework.http.download.HttpDownload;
 import live.lingting.framework.huawei.exception.HuaweiException;
 import live.lingting.framework.huawei.multipart.HuaweiMultipartTask;
@@ -20,7 +21,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
-import java.util.Map;
+import java.util.List;
 
 import static live.lingting.framework.huawei.HuaweiUtils.MULTIPART_MIN_PART_SIZE;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -72,9 +73,11 @@ class HuaweiObsTest {
 	@Test
 	void multipart() {
 		HuaweiObsBucket obsBucket = iam.obsBucket(properties);
-		Map<String, String> map = obsBucket.multipartList();
-		if (!CollectionUtils.isEmpty(map)) {
-			map.forEach((k, v) -> {
+		List<AwsS3MultipartItem> items = obsBucket.multipartList();
+		if (!CollectionUtils.isEmpty(items)) {
+			items.forEach(item -> {
+				String k = item.key();
+				String v = item.uploadId();
 				HuaweiObsObject obsObject = obsBucket.use(k);
 				obsObject.multipartCancel(v);
 			});
@@ -88,7 +91,7 @@ class HuaweiObsTest {
 		byte[] bytes = source.getBytes();
 		String hex = DigestUtils.md5Hex(bytes);
 		HuaweiMultipartTask task = assertDoesNotThrow(
-				() -> obsObject.multipart(new ByteArrayInputStream(bytes), 1, new Async(10)));
+			() -> obsObject.multipart(new ByteArrayInputStream(bytes), 1, new Async(10)));
 		assertTrue(task.isStarted());
 		task.await();
 		if (task.hasFailed()) {
