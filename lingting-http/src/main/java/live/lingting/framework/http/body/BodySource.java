@@ -1,6 +1,9 @@
 package live.lingting.framework.http.body;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -24,5 +27,9 @@ public abstract class BodySource {
 	}
 
 	public abstract String string(Charset charset);
+
+	public abstract long transferTo(OutputStream output) throws IOException;
+
+	public abstract long transferTo(WritableByteChannel channel) throws IOException;
 
 }

@@ -5,7 +5,11 @@ import live.lingting.framework.util.StreamUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 
 /**
@@ -18,6 +22,9 @@ public class FileBody extends BodySource {
 
 	@SneakyThrows
 	public static BodySource of(InputStream inputStream) {
+		if (inputStream instanceof CloneInputStream clone) {
+			return new FileBody(clone);
+		}
 		return new FileBody(new CloneInputStream(inputStream));
 	}
 
@@ -40,7 +47,19 @@ public class FileBody extends BodySource {
 	@SneakyThrows
 	@Override
 	public String string(Charset charset) {
-		return StreamUtils.toString(input);
+		return StreamUtils.toString(input.copy(), charset);
+	}
+
+	@Override
+	public long transferTo(OutputStream output) throws IOException {
+		StreamUtils.write(input.copy(), output);
+		return input.size();
+	}
+
+	@Override
+	public long transferTo(WritableByteChannel channel) throws IOException {
+		StreamUtils.read(input.copy(), (bytes, len) -> channel.write(ByteBuffer.wrap(bytes, 0, len)));
+		return input.size();
 	}
 
 }

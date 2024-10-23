@@ -3,7 +3,11 @@ package live.lingting.framework.http.body;
 import lombok.RequiredArgsConstructor;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -41,6 +45,18 @@ public class MemoryBody extends BodySource {
 	@Override
 	public String string(Charset charset) {
 		return new String(bytes, charset);
+	}
+
+	@Override
+	public long transferTo(OutputStream output) throws IOException {
+		output.write(bytes);
+		return bytes.length;
+	}
+
+	@Override
+	public long transferTo(WritableByteChannel channel) throws IOException {
+		channel.write(ByteBuffer.wrap(bytes));
+		return bytes.length;
 	}
 
 }
