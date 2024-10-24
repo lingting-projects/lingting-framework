@@ -167,6 +167,17 @@ public class StreamUtils {
 		return ret;
 	}
 
+	public static void close(AutoCloseable closeable) {
+		try {
+			if (closeable != null) {
+				closeable.close();
+			}
+		}
+		catch (Exception e) {
+			//
+		}
+	}
+
 	public static void close(Closeable closeable) {
 		try {
 			if (closeable != null) {

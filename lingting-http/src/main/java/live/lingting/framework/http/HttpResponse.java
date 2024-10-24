@@ -5,9 +5,11 @@ import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.lock.JavaReentrantLock;
 import live.lingting.framework.lock.LockRunnable;
+import live.lingting.framework.stream.CloneInputStream;
 import live.lingting.framework.util.StreamUtils;
 import lombok.SneakyThrows;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
@@ -17,7 +19,7 @@ import java.util.function.Function;
 /**
  * @author lingting 2024-09-12 23:37
  */
-public class HttpResponse {
+public class HttpResponse implements Closeable {
 
 	protected final JavaReentrantLock lock = new JavaReentrantLock();
 
@@ -112,6 +114,14 @@ public class HttpResponse {
 
 	public boolean is2xx() {
 		return isRange(200, 299);
+	}
+
+	@Override
+	public void close() throws IOException {
+		if (body instanceof CloneInputStream clone) {
+			clone.setCloseAndDelete(true);
+		}
+		StreamUtils.close(body);
 	}
 
 }
