@@ -19,7 +19,6 @@ public class RandomAccessOutputStream extends OutputStream {
 
 	public static final File TEMP_DIR = FileUtils.createTempDir("random");
 
-
 	protected final RandomAccessFile file;
 
 	@Getter
