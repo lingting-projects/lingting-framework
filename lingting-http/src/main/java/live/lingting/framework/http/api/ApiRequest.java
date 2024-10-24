@@ -24,7 +24,7 @@ public abstract class ApiRequest {
 
 	public BodySource body() {
 		String json = JacksonUtils.toJson(this);
-		return MemoryBody.of(json);
+		return new MemoryBody(json);
 	}
 
 	/**

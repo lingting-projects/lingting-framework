@@ -51,7 +51,7 @@ public class AliStsCredentialRequest extends AliStsRequest {
 		Map<String, Object> map = Map.of("RoleArn", roleArn, "RoleSessionName", roleSessionName, "DurationSeconds",
 				timeout, "Policy", policy);
 		String json = JacksonUtils.toJson(map);
-		return MemoryBody.of(json);
+		return new MemoryBody(json);
 	}
 
 }

@@ -48,7 +48,7 @@ public class HuaweiIamTokenRequest extends HuaweiIamRequest {
 		Map<String, Object> auth = Map.of("identity", identity);
 		Map<String, Object> params = Map.of("auth", auth);
 		String json = JacksonUtils.toJson(params);
-		return MemoryBody.of(json);
+		return new MemoryBody(json);
 	}
 
 }

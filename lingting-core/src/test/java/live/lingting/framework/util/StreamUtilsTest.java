@@ -1,6 +1,6 @@
 package live.lingting.framework.util;
 
-import live.lingting.framework.stream.CloneInputStream;
+import live.lingting.framework.stream.FileCloneInputStream;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -62,7 +62,7 @@ class StreamUtilsTest {
 
 	@Test
 	void testClone() throws IOException {
-		CloneInputStream clone = StreamUtils.clone(of(line3));
+		FileCloneInputStream clone = StreamUtils.clone(of(line3));
 		assertEquals(line3, StreamUtils.toString(clone));
 		InputStream copy = clone.copy();
 		assertEquals(line3, StreamUtils.toString(copy));

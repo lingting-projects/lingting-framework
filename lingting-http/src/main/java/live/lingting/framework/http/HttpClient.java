@@ -1,15 +1,23 @@
 package live.lingting.framework.http;
 
+import live.lingting.framework.stream.BytesInputStream;
+import live.lingting.framework.stream.FileCloneInputStream;
 import live.lingting.framework.util.FileUtils;
+import live.lingting.framework.util.StreamUtils;
 import live.lingting.framework.util.ThreadUtils;
+import live.lingting.framework.value.LazyValue;
 import lombok.SneakyThrows;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.CookieStore;
@@ -20,6 +28,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 /**
@@ -31,8 +40,14 @@ public abstract class HttpClient {
 	 * @see jdk.internal.net.http.common.Utils#getDisallowedHeaders()
 	 */
 	protected static final Set<String> HEADERS_DISABLED = Set.of("connection", "content-length", "expect", "host",
-		"upgrade");
-	public static final File TEMP = FileUtils.createTempDir("http");
+			"upgrade");
+
+	public static final File TEMP_DIR = FileUtils.createTempDir("http");
+
+	/**
+	 * 默认大小以内文件直接放内存里面
+	 */
+	public static final long MAX_BYTES = 5242880;
 
 	protected CookieStore cookie;
 
@@ -42,6 +57,41 @@ public abstract class HttpClient {
 
 	public static OkHttpClient.Builder okhttp() {
 		return new OkHttpClient.Builder();
+	}
+
+	public static InputStream wrap(InputStream source) throws IOException {
+		return wrap(source, MAX_BYTES);
+	}
+
+	public static InputStream wrap(InputStream source, long maxBytes) throws IOException {
+		if (source == null) {
+			return new ByteArrayInputStream(new byte[0]);
+		}
+		AtomicLong size = new AtomicLong(0);
+
+		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+		LazyValue<FileOutputStream> fileOutValue = new LazyValue<>(() -> null);
+		LazyValue<File> fileValue = new LazyValue<>(() -> {
+			File file = FileUtils.createTemp(".wrap", TEMP_DIR);
+			fileOutValue.set(new FileOutputStream(file));
+			return file;
+		});
+		StreamUtils.read(source, (bytes, len) -> {
+			if (!fileValue.isFirst() || size.addAndGet(len) > maxBytes) {
+				if (fileValue.isFirst()) {
+					fileValue.get();
+					fileOutValue.get().write(byteOut.toByteArray());
+				}
+				fileOutValue.get().write(bytes, 0, len);
+			}
+			else {
+				byteOut.write(bytes, 0, len);
+			}
+		});
+		if (fileValue.isFirst()) {
+			return new BytesInputStream(byteOut.toByteArray());
+		}
+		return new FileCloneInputStream(fileValue.get());
 	}
 
 	public CookieStore cookie() {
@@ -63,7 +113,7 @@ public abstract class HttpClient {
 		return request(HttpRequest.builder().get().url(uri).build());
 	}
 
-	public abstract static class Builder<C extends HttpClient, B extends HttpClient.Builder<C, B>> {
+	public abstract static class Builder<C extends HttpClient, B extends Builder<C, B>> {
 
 		protected ExecutorService executor = ThreadUtils.executor();
 

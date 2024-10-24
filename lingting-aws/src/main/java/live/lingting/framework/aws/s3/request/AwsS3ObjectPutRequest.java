@@ -7,6 +7,7 @@ import live.lingting.framework.http.body.FileBody;
 import live.lingting.framework.multipart.Part;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 
 import java.io.InputStream;
 
@@ -33,10 +34,11 @@ public class AwsS3ObjectPutRequest extends AwsS3Request {
 		return HttpMethod.PUT;
 	}
 
+	@SneakyThrows
 	@Override
 	public BodySource body() {
 		InputStream inputStream = getStream();
-		return FileBody.of(inputStream);
+		return new FileBody(inputStream);
 	}
 
 	@Override

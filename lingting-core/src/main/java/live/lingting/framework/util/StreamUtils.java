@@ -4,6 +4,7 @@ import live.lingting.framework.function.ThrowingBiConsumerE;
 import live.lingting.framework.function.ThrowingBiFunctionE;
 import live.lingting.framework.function.ThrowingConsumerE;
 import live.lingting.framework.stream.CloneInputStream;
+import live.lingting.framework.stream.FileCloneInputStream;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.UtilityClass;
@@ -186,16 +187,16 @@ public class StreamUtils {
 	 * @return 返回指定数量的从源流复制出来的只读流
 	 * @author lingting 2021-04-16 16:18
 	 */
-	public static CloneInputStream clone(InputStream stream) throws IOException {
+	public static FileCloneInputStream clone(InputStream stream) throws IOException {
 		return clone(stream, readSize);
 	}
 
-	public static CloneInputStream clone(InputStream input, int size) throws IOException {
+	public static FileCloneInputStream clone(InputStream input, int size) throws IOException {
 		File file = FileUtils.createTemp(".clone", CloneInputStream.TEMP_DIR);
 		try (FileOutputStream output = new FileOutputStream(file)) {
 			write(input, output, size);
 		}
-		return new CloneInputStream(file);
+		return new FileCloneInputStream(file);
 	}
 
 	/**

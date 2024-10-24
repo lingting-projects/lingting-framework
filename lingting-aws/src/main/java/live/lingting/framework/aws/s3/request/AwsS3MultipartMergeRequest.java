@@ -41,7 +41,7 @@ public class AwsS3MultipartMergeRequest extends AwsS3Request {
 		});
 
 		builder.append("</CompleteMultipartUpload>");
-		return MemoryBody.of(builder.toString());
+		return new MemoryBody(builder.toString());
 	}
 
 	@Override

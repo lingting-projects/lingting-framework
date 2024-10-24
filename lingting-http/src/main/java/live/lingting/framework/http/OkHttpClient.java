@@ -5,7 +5,6 @@ import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.http.okhttp.OkHttpCookie;
 import live.lingting.framework.http.okhttp.OkHttpRequestBody;
 import live.lingting.framework.jackson.JacksonUtils;
-import live.lingting.framework.util.StreamUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import okhttp3.Authenticator;
@@ -19,7 +18,6 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -63,15 +61,7 @@ public class OkHttpClient extends HttpClient {
 	public static HttpResponse convert(HttpRequest request, Response response) throws IOException {
 		int code = response.code();
 		ResponseBody body = response.body();
-		InputStream stream;
-		if (body != null) {
-			InputStream source = body.byteStream();
-			stream = StreamUtils.clone(source);
-		}
-		else {
-			stream = new ByteArrayInputStream(new byte[0]);
-		}
-
+		InputStream stream = wrap(body == null ? null : body.byteStream());
 		Map<String, List<String>> map = response.headers().toMultimap();
 		HttpHeaders headers = HttpHeaders.of(map);
 		return new HttpResponse(request, code, headers, stream);

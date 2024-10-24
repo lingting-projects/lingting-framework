@@ -168,7 +168,7 @@ public class HttpRequest {
 		}
 
 		public Builder body(String body) {
-			return body(MemoryBody.of(body));
+			return body(new MemoryBody(body));
 		}
 
 		public Builder jsonBody(Object obj) {

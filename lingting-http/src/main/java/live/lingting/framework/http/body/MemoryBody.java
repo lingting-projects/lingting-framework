@@ -1,6 +1,6 @@
 package live.lingting.framework.http.body;
 
-import lombok.RequiredArgsConstructor;
+import live.lingting.framework.stream.BytesInputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -14,17 +14,28 @@ import java.nio.charset.StandardCharsets;
 /**
  * @author lingting 2024-09-28 14:04
  */
-@RequiredArgsConstructor
 public class MemoryBody extends BodySource {
 
 	private final byte[] bytes;
 
-	public static MemoryBody of(String string) {
-		return of(string, StandardCharsets.UTF_8);
+	public MemoryBody(byte[] bytes) {
+		this.bytes = bytes;
 	}
 
-	private static MemoryBody of(String string, Charset charset) {
-		return new MemoryBody(string.getBytes(charset));
+	public MemoryBody(String string) {
+		this(string, StandardCharsets.UTF_8);
+	}
+
+	public MemoryBody(String string, Charset charset) {
+		this(string.getBytes(charset));
+	}
+
+	public MemoryBody(BytesInputStream stream) {
+		this(stream.source());
+	}
+
+	public MemoryBody(InputStream stream) throws IOException {
+		this(stream.readAllBytes());
 	}
 
 	@Override

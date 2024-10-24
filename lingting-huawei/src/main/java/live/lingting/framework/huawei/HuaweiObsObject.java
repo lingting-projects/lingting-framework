@@ -15,7 +15,7 @@ import live.lingting.framework.huawei.properties.HuaweiObsProperties;
 import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.multipart.Multipart;
 import live.lingting.framework.multipart.Part;
-import live.lingting.framework.stream.CloneInputStream;
+import live.lingting.framework.stream.FileCloneInputStream;
 import live.lingting.framework.thread.Async;
 
 import java.io.File;
@@ -69,7 +69,7 @@ public class HuaweiObsObject extends HuaweiObs {
 	}
 
 	public void put(File file, Acl acl) throws IOException {
-		put(new CloneInputStream(file), acl);
+		put(new FileCloneInputStream(file), acl);
 	}
 
 	public void put(InputStream in) throws IOException {
@@ -77,14 +77,14 @@ public class HuaweiObsObject extends HuaweiObs {
 	}
 
 	public void put(InputStream in, Acl acl) throws IOException {
-		put(new CloneInputStream(in), acl);
+		put(new FileCloneInputStream(in), acl);
 	}
 
-	public void put(CloneInputStream in) {
+	public void put(FileCloneInputStream in) {
 		put(in, null);
 	}
 
-	public void put(CloneInputStream in, Acl acl) {
+	public void put(FileCloneInputStream in, Acl acl) {
 		try (in) {
 			HuaweiObsObjectPutRequest request = new HuaweiObsObjectPutRequest();
 			request.setStream(in);

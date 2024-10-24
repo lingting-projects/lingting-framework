@@ -3,60 +3,39 @@ package live.lingting.framework.stream;
 import live.lingting.framework.util.FileUtils;
 import live.lingting.framework.util.StreamUtils;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * 克隆输入流, 可直接读取, 也可以克隆出一个新流然后读取
- * <p>
- * 当直接读取时, 所有行为和文件流一致
- * </p>
- *
- * @author lingting 2024-01-09 15:41
+ * @author lingting 2024/10/24 11:00
  */
+@RequiredArgsConstructor
 @SuppressWarnings("java:S1170")
-public class CloneInputStream extends InputStream {
+public abstract class CloneInputStream extends InputStream {
 
 	public static final File TEMP_DIR = FileUtils.createTempDir("clone");
 
 	protected final Object lock = "";
 
-	protected final File file;
+	protected final Object source;
 
 	/**
 	 * 字节数
 	 */
 	protected final long size;
 
-	protected FileInputStream stream;
+	protected InputStream stream;
 
 	@Getter
 	@Setter
 	protected boolean closeAndDelete = false;
 
-	public CloneInputStream(InputStream input) throws IOException {
-		if (input instanceof CloneInputStream clone) {
-			this.file = clone.file;
-			this.size = clone.size;
-		}
-		else {
-			File temp = FileUtils.createTemp(input, ".clone", TEMP_DIR);
-			this.file = temp;
-			this.size = temp.length();
-		}
-	}
-
-	public CloneInputStream(File file) {
-		this.file = file;
-		this.size = file.length();
-	}
-
-	protected FileInputStream getStream() throws IOException {
+	protected InputStream getStream() throws IOException {
 		if (stream != null) {
 			return stream;
 		}
@@ -65,10 +44,12 @@ public class CloneInputStream extends InputStream {
 			if (stream != null) {
 				return stream;
 			}
-			stream = new FileInputStream(file);
+			stream = newStream();
 		}
 		return stream;
 	}
+
+	protected abstract InputStream newStream() throws IOException;
 
 	@Override
 	public int read(byte[] b) throws IOException {
@@ -127,17 +108,12 @@ public class CloneInputStream extends InputStream {
 		return size;
 	}
 
-	public File file() {
-		return file;
+	public Object source() {
+		return source;
 	}
 
-	@SneakyThrows
-	public CloneInputStream copy() {
-		return new CloneInputStream(this);
-	}
+	public abstract CloneInputStream copy();
 
-	public void clear() {
-		FileUtils.delete(file);
-	}
+	public abstract void clear();
 
 }

@@ -1,8 +1,7 @@
 package live.lingting.framework.http.body;
 
-import live.lingting.framework.stream.CloneInputStream;
+import live.lingting.framework.stream.FileCloneInputStream;
 import live.lingting.framework.util.StreamUtils;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
 import java.io.IOException;
@@ -15,17 +14,16 @@ import java.nio.charset.Charset;
 /**
  * @author lingting 2024-09-28 14:04
  */
-@RequiredArgsConstructor
 public class FileBody extends BodySource {
 
-	private final CloneInputStream input;
+	private final FileCloneInputStream input;
 
-	@SneakyThrows
-	public static BodySource of(InputStream inputStream) {
-		if (inputStream instanceof CloneInputStream clone) {
-			return new FileBody(clone);
-		}
-		return new FileBody(new CloneInputStream(inputStream));
+	public FileBody(FileCloneInputStream input) {
+		this.input = input;
+	}
+
+	public FileBody(InputStream input) throws IOException {
+		this(new FileCloneInputStream(input));
 	}
 
 	@Override

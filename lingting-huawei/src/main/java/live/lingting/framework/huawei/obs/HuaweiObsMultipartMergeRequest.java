@@ -34,7 +34,7 @@ public class HuaweiObsMultipartMergeRequest extends HuaweiObsRequest {
 				});
 
 		builder.append("</CompleteMultipartUpload>");
-		return MemoryBody.of(builder.toString());
+		return new MemoryBody(builder.toString());
 	}
 
 	@Override

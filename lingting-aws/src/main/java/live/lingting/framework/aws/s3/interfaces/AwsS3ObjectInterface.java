@@ -4,7 +4,7 @@ import live.lingting.framework.aws.policy.Acl;
 import live.lingting.framework.aws.s3.AwsS3MultipartTask;
 import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.multipart.Part;
-import live.lingting.framework.stream.CloneInputStream;
+import live.lingting.framework.stream.FileCloneInputStream;
 import live.lingting.framework.thread.Async;
 
 import java.io.File;
@@ -35,9 +35,9 @@ public interface AwsS3ObjectInterface  {
 
 	void put(InputStream in, Acl acl) throws IOException;
 
-	void put(CloneInputStream in);
+	void put(FileCloneInputStream in);
 
-	void put(CloneInputStream in, Acl acl);
+	void put(FileCloneInputStream in, Acl acl);
 
 	void delete();
 

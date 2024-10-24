@@ -1,6 +1,6 @@
 package live.lingting.framework.multipart;
 
-import live.lingting.framework.stream.CloneInputStream;
+import live.lingting.framework.stream.FileCloneInputStream;
 import live.lingting.framework.util.ValueUtils;
 import lombok.Getter;
 
@@ -19,7 +19,7 @@ public class MultipartBuilder {
 
 	private String id = ValueUtils.simpleUuid();
 
-	private CloneInputStream source;
+	private FileCloneInputStream source;
 
 	private long size;
 
@@ -40,12 +40,12 @@ public class MultipartBuilder {
 	}
 
 	public MultipartBuilder source(InputStream source) throws IOException {
-		this.source = source instanceof CloneInputStream in ? in : new CloneInputStream(source);
+		this.source = source instanceof FileCloneInputStream in ? in : new FileCloneInputStream(source);
 		return size(this.source.size());
 	}
 
 	public MultipartBuilder source(File file) throws IOException {
-		return source(new CloneInputStream(file));
+		return source(new FileCloneInputStream(file));
 	}
 
 	public MultipartBuilder size(long size) {
@@ -83,7 +83,7 @@ public class MultipartBuilder {
 
 	public Multipart build() {
 		Collection<Part> parts = parts();
-		File file = source == null ? null : source.file();
+		File file = source == null ? null : source.source();
 		return new Multipart(id, file, size, partSize, parts);
 	}
 

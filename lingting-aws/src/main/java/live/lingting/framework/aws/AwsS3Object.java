@@ -16,7 +16,7 @@ import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.multipart.Multipart;
 import live.lingting.framework.multipart.Part;
-import live.lingting.framework.stream.CloneInputStream;
+import live.lingting.framework.stream.FileCloneInputStream;
 import live.lingting.framework.thread.Async;
 import lombok.Getter;
 
@@ -79,7 +79,7 @@ public class AwsS3Object extends AwsS3Client implements AwsS3ObjectInterface {
 
 	@Override
 	public void put(File file, Acl acl) throws IOException {
-		put(new CloneInputStream(file), acl);
+		put(new FileCloneInputStream(file), acl);
 	}
 
 	@Override
@@ -89,16 +89,16 @@ public class AwsS3Object extends AwsS3Client implements AwsS3ObjectInterface {
 
 	@Override
 	public void put(InputStream in, Acl acl) throws IOException {
-		put(new CloneInputStream(in), acl);
+		put(new FileCloneInputStream(in), acl);
 	}
 
 	@Override
-	public void put(CloneInputStream in) {
+	public void put(FileCloneInputStream in) {
 		put(in, null);
 	}
 
 	@Override
-	public void put(CloneInputStream in, Acl acl) {
+	public void put(FileCloneInputStream in, Acl acl) {
 		try (in) {
 			AwsS3ObjectPutRequest request = new AwsS3ObjectPutRequest();
 			request.setStream(in);

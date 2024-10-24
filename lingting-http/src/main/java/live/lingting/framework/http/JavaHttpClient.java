@@ -32,7 +32,8 @@ public class JavaHttpClient extends HttpClient {
 		int code = r.statusCode();
 		Map<String, List<String>> map = r.headers().map();
 		HttpHeaders headers = HttpHeaders.of(map);
-		return new HttpResponse(request, code, headers, r.body());
+		InputStream body = r.body();
+		return new HttpResponse(request, code, headers, body);
 	}
 
 	public static java.net.http.HttpRequest convert(HttpRequest request) {

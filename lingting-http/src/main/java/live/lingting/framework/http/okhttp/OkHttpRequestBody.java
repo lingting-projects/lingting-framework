@@ -4,7 +4,7 @@ import live.lingting.framework.http.HttpRequest;
 import live.lingting.framework.http.body.BodySource;
 import live.lingting.framework.http.body.FileBody;
 import live.lingting.framework.http.body.MemoryBody;
-import live.lingting.framework.stream.CloneInputStream;
+import live.lingting.framework.stream.FileCloneInputStream;
 import live.lingting.framework.util.StreamUtils;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -30,10 +30,10 @@ public class OkHttpRequestBody extends RequestBody {
 	protected final MediaType mediaType;
 
 	public OkHttpRequestBody(File file) throws IOException {
-		this(new CloneInputStream(file), MEDIA_STREAM);
+		this(new FileCloneInputStream(file), MEDIA_STREAM);
 	}
 
-	public OkHttpRequestBody(InputStream stream) {
+	public OkHttpRequestBody(InputStream stream) throws IOException {
 		this(stream, MEDIA_STREAM);
 	}
 
@@ -41,8 +41,8 @@ public class OkHttpRequestBody extends RequestBody {
 		this(input, mediaType(contentType));
 	}
 
-	public OkHttpRequestBody(InputStream input, MediaType mediaType) {
-		this(FileBody.of(input), mediaType);
+	public OkHttpRequestBody(InputStream input, MediaType mediaType) throws IOException {
+		this(new FileBody(input), mediaType);
 	}
 
 	public OkHttpRequestBody(BodySource source, String contentType) {
@@ -54,7 +54,7 @@ public class OkHttpRequestBody extends RequestBody {
 		this.mediaType = mediaType;
 	}
 
-	public OkHttpRequestBody(HttpRequest.Body body) throws IOException {
+	public OkHttpRequestBody(HttpRequest.Body body) {
 		this(body.source(), body.contentType());
 	}
 
