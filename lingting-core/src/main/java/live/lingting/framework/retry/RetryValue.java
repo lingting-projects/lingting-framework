@@ -13,7 +13,7 @@ public record RetryValue<T>(T value, boolean success, List<RetryLog<T>> logs) {
 		if (success()) {
 			return value;
 		}
-		throw logs.get(0).getException();
+		throw logs.getLast().getException();
 	}
 
 }
