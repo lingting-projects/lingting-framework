@@ -191,7 +191,7 @@ public class StreamUtils {
 	}
 
 	public static CloneInputStream clone(InputStream input, int size) throws IOException {
-		File file = FileUtils.createTemp(".clone");
+		File file = FileUtils.createTemp(".clone", CloneInputStream.TEMP_DIR);
 		try (FileOutputStream output = new FileOutputStream(file)) {
 			write(input, output, size);
 		}
