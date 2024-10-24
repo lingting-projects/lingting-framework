@@ -1,12 +1,10 @@
 package live.lingting.framework.stream;
 
 import live.lingting.framework.util.FileUtils;
-import live.lingting.framework.util.StreamUtils;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -35,16 +33,18 @@ public class RandomAccessInputStream extends InputStream {
 
 	@Getter
 	@Setter
-	protected boolean closeAndDelete = true;
+	protected boolean closeAndDelete = false;
 
 	public RandomAccessInputStream(InputStream in) throws IOException {
-		File temp = FileUtils.createTemp(".input", TEMP_DIR);
+		File temp;
 
 		if (in instanceof RandomAccessInputStream stream) {
-			Files.copy(stream.path, temp.toPath());
+			this.closeAndDelete = false;
+			temp = stream.path.toFile();
 		}
 		else {
-			StreamUtils.write(in, new FileOutputStream(temp));
+			this.closeAndDelete = true;
+			temp = FileUtils.createTemp(in, ".input", TEMP_DIR);
 		}
 
 		this.file = new RandomAccessFile(temp, MODE);
@@ -57,15 +57,13 @@ public class RandomAccessInputStream extends InputStream {
 	}
 
 	public RandomAccessInputStream(File file) throws IOException {
-		this(file.toPath());
+		this.file = new RandomAccessFile(file, MODE);
+		this.path = file.toPath();
+		this.size = file.length();
 	}
 
 	public RandomAccessInputStream(Path path) throws IOException {
-		File temp = FileUtils.createTemp(".input", TEMP_DIR);
-		Files.copy(path, temp.toPath());
-		this.file = new RandomAccessFile(temp, MODE);
-		this.path = temp.toPath();
-		this.size = temp.length();
+		this(path.toFile());
 	}
 
 	public void seek(long pos) throws IOException {
