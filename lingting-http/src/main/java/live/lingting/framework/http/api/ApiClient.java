@@ -26,7 +26,6 @@ public abstract class ApiClient<R extends ApiRequest> {
 		.timeout(Duration.ofSeconds(15), Duration.ofSeconds(30))
 		.build();
 
-
 	protected final Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
 
 	protected final String host;
@@ -58,8 +57,7 @@ public abstract class ApiClient<R extends ApiRequest> {
 		//
 	}
 
-	protected void customize(R request, HttpHeaders headers, BodySource source,
-			StringMultiValue params) {
+	protected void customize(R request, HttpHeaders headers, BodySource source, StringMultiValue params) {
 		//
 	}
 

@@ -6,6 +6,8 @@ import live.lingting.framework.util.FileUtils;
 import live.lingting.framework.util.StreamUtils;
 import live.lingting.framework.util.ThreadUtils;
 import live.lingting.framework.value.LazyValue;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 
 import javax.net.SocketFactory;
@@ -45,9 +47,11 @@ public abstract class HttpClient {
 	public static final File TEMP_DIR = FileUtils.createTempDir("http");
 
 	/**
-	 * 默认大小以内文件直接放内存里面
+	 * 默认大小以内文件直接放内存里面, 单位: bytes
 	 */
-	public static final long MAX_BYTES = 5242880;
+	@Getter
+	@Setter
+	static long defaultMaxBytes = 1048576;
 
 	protected CookieStore cookie;
 
@@ -60,7 +64,7 @@ public abstract class HttpClient {
 	}
 
 	public static InputStream wrap(InputStream source) throws IOException {
-		return wrap(source, MAX_BYTES);
+		return wrap(source, defaultMaxBytes);
 	}
 
 	public static InputStream wrap(InputStream source, long maxBytes) throws IOException {
