@@ -2,7 +2,6 @@ package live.lingting.framework.huawei.obs;
 
 import live.lingting.framework.http.HttpMethod;
 import live.lingting.framework.http.body.BodySource;
-import live.lingting.framework.http.body.FileBody;
 import live.lingting.framework.multipart.Part;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,7 +36,7 @@ public class HuaweiObsObjectPutRequest extends HuaweiObsRequest {
 	@Override
 	public BodySource body() {
 		InputStream inputStream = getStream();
-		return new FileBody(inputStream);
+		return BodySource.of(inputStream);
 	}
 
 	@Override

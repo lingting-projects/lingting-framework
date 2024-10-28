@@ -1,5 +1,7 @@
 package live.lingting.framework.http.body;
 
+import live.lingting.framework.stream.BytesInputStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,6 +16,13 @@ public abstract class BodySource {
 
 	public static MemoryBody empty() {
 		return new MemoryBody(new byte[0]);
+	}
+
+	public static BodySource of(InputStream stream) throws IOException {
+		if (stream instanceof BytesInputStream in) {
+			return new MemoryBody(in.source());
+		}
+		return new FileBody(stream);
 	}
 
 	public abstract long length();

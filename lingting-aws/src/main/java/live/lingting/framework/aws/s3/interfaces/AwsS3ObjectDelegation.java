@@ -5,7 +5,7 @@ import live.lingting.framework.aws.policy.Acl;
 import live.lingting.framework.aws.s3.AwsS3MultipartTask;
 import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.multipart.Part;
-import live.lingting.framework.stream.FileCloneInputStream;
+import live.lingting.framework.stream.CloneInputStream;
 import live.lingting.framework.thread.Async;
 
 import java.io.File;
@@ -54,12 +54,12 @@ public interface AwsS3ObjectDelegation extends AwsS3ObjectInterface, AwsS3Delega
 	}
 
 	@Override
-	default void put(FileCloneInputStream in) {
+	default void put(CloneInputStream in) {
 		delegation().put(in);
 	}
 
 	@Override
-	default void put(FileCloneInputStream in, Acl acl) {
+	default void put(CloneInputStream in, Acl acl) {
 		delegation().put(in, acl);
 	}
 

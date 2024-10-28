@@ -3,7 +3,6 @@ package live.lingting.framework.aws.s3.request;
 import live.lingting.framework.aws.s3.AwsS3Request;
 import live.lingting.framework.http.HttpMethod;
 import live.lingting.framework.http.body.BodySource;
-import live.lingting.framework.http.body.FileBody;
 import live.lingting.framework.multipart.Part;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,7 +37,7 @@ public class AwsS3ObjectPutRequest extends AwsS3Request {
 	@Override
 	public BodySource body() {
 		InputStream inputStream = getStream();
-		return new FileBody(inputStream);
+		return BodySource.of(inputStream);
 	}
 
 	@Override

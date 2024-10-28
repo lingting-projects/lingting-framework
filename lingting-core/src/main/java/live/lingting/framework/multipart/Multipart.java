@@ -1,5 +1,6 @@
 package live.lingting.framework.multipart;
 
+import live.lingting.framework.stream.CloneInputStream;
 import live.lingting.framework.stream.FileCloneInputStream;
 import live.lingting.framework.stream.RandomAccessInputStream;
 import live.lingting.framework.util.FileUtils;
@@ -119,7 +120,7 @@ public class Multipart {
 		});
 	}
 
-	public FileCloneInputStream stream(Part part) throws IOException {
+	public CloneInputStream stream(Part part) throws IOException {
 		File file = file(part);
 		return new FileCloneInputStream(file);
 	}

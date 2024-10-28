@@ -16,6 +16,7 @@ import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.multipart.Multipart;
 import live.lingting.framework.multipart.Part;
+import live.lingting.framework.stream.CloneInputStream;
 import live.lingting.framework.stream.FileCloneInputStream;
 import live.lingting.framework.thread.Async;
 import lombok.Getter;
@@ -93,12 +94,12 @@ public class AwsS3Object extends AwsS3Client implements AwsS3ObjectInterface {
 	}
 
 	@Override
-	public void put(FileCloneInputStream in) {
+	public void put(CloneInputStream in) {
 		put(in, null);
 	}
 
 	@Override
-	public void put(FileCloneInputStream in, Acl acl) {
+	public void put(CloneInputStream in, Acl acl) {
 		try (in) {
 			AwsS3ObjectPutRequest request = new AwsS3ObjectPutRequest();
 			request.setStream(in);
