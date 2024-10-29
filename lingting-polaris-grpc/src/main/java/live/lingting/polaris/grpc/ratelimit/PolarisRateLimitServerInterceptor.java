@@ -103,8 +103,7 @@ public class PolarisRateLimitServerInterceptor extends PolarisServerInterceptor 
 		};
 	}
 
-	private <R, P> Set<Argument> buildArguments(RateLimitResp rateLimitResp, ServerCall<R, P> call,
-												Metadata headers) {
+	private <R, P> Set<Argument> buildArguments(RateLimitResp rateLimitResp, ServerCall<R, P> call, Metadata headers) {
 		final Set<Argument> arguments = new HashSet<>();
 		final Set<MatchArgument> matchArguments = new HashSet<>();
 

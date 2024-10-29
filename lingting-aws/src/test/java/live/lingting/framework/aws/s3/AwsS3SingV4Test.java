@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author lingting 2024-09-19 20:37
  */
 class AwsS3SingV4Test {
+
 	@SneakyThrows
 	@Test
 	void test() {

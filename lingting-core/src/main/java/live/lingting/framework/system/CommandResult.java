@@ -71,4 +71,5 @@ public class CommandResult implements Closeable {
 		getStdErr();
 		clean();
 	}
+
 }

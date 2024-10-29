@@ -21,6 +21,7 @@ class HmacTest {
 		assertEquals("URIFXAX5RPhXVe/FzYlw4ZTp9Fs=", mac.calculateBase64(source));
 		assertEquals("5112055c05f944f85755efc5cd8970e194e9f45b", mac.calculateHex(source));
 	}
+
 	@SneakyThrows
 	@Test
 	void sha256() {

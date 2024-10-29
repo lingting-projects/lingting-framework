@@ -48,4 +48,5 @@ public class AwsS3MultipartMergeRequest extends AwsS3Request {
 	public void onParams() {
 		getParams().add("uploadId", uploadId);
 	}
+
 }

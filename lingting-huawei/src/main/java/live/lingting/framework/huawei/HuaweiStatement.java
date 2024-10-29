@@ -23,7 +23,6 @@ public class HuaweiStatement extends Statement {
 		super(allow);
 	}
 
-
 	public static HuaweiStatement allow() {
 		return new HuaweiStatement(true);
 	}
@@ -31,7 +30,6 @@ public class HuaweiStatement extends Statement {
 	public static HuaweiStatement deny() {
 		return new HuaweiStatement(false);
 	}
-
 
 	public void putCondition(String operator, Map<String, Collection<String>> value) {
 		LinkedHashMap<String, LinkedHashSet<String>> map = new LinkedHashMap<>();

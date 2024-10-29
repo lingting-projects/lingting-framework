@@ -91,7 +91,7 @@ class HuaweiObsTest {
 		byte[] bytes = source.getBytes();
 		String hex = DigestUtils.md5Hex(bytes);
 		HuaweiMultipartTask task = assertDoesNotThrow(
-			() -> obsObject.multipart(new ByteArrayInputStream(bytes), 1, new Async(10)));
+				() -> obsObject.multipart(new ByteArrayInputStream(bytes), 1, new Async(10)));
 		assertTrue(task.isStarted());
 		task.await();
 		if (task.hasFailed()) {

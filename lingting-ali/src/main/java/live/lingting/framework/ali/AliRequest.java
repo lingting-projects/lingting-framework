@@ -7,6 +7,7 @@ import live.lingting.framework.http.api.ApiRequest;
  * @author lingting 2024-09-14 13:49
  */
 public abstract class AliRequest extends ApiRequest {
+
 	@Override
 	public HttpMethod method() {
 		return HttpMethod.POST;

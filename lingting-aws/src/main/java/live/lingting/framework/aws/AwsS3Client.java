@@ -59,8 +59,7 @@ public abstract class AwsS3Client extends ApiClient<AwsS3Request> {
 	}
 
 	@Override
-	protected void customize(AwsS3Request request, HttpHeaders headers, BodySource source,
-			StringMultiValue params) {
+	protected void customize(AwsS3Request request, HttpHeaders headers, BodySource source, StringMultiValue params) {
 		if (request.getAcl() != null) {
 			headers.put(HEADER_ACL, request.getAcl().getValue());
 		}

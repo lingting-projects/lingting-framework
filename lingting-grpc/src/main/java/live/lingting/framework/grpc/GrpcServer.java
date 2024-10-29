@@ -38,7 +38,8 @@ public class GrpcServer implements ContextComponent {
 
 	private final Map<String, Method> fullMethodNameMap;
 
-	public GrpcServer(ServerBuilder<?> builder, Collection<ServerInterceptor> interceptors, Collection<BindableService> services) {
+	public GrpcServer(ServerBuilder<?> builder, Collection<ServerInterceptor> interceptors,
+			Collection<BindableService> services) {
 		// 升序排序
 		List<ServerInterceptor> asc = Sequence.asc(interceptors);
 		// 获取一个游标在尾部的迭代器

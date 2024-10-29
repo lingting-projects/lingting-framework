@@ -60,7 +60,6 @@ public class Money {
 
 	/**
 	 * 通过指定金额值和上下文的配置进行构建
-	 *
 	 * @param value 金额值
 	 * @return 金额实例
 	 */
@@ -70,7 +69,6 @@ public class Money {
 
 	/**
 	 * 通过指定金额值和上下文的配置进行构建
-	 *
 	 * @param value 金额值
 	 * @return 金额实例
 	 */
@@ -80,7 +78,6 @@ public class Money {
 
 	/**
 	 * 通过指定金额值和上下文的配置进行构建
-	 *
 	 * @param value 金额值
 	 * @return 金额实例
 	 */
@@ -90,7 +87,6 @@ public class Money {
 
 	/**
 	 * 通过指定金额值和上下文的配置进行构建
-	 *
 	 * @param value 金额值
 	 * @return 金额实例
 	 */
@@ -105,8 +101,7 @@ public class Money {
 
 	/**
 	 * 通过指定金额值和金额配置进行校验
-	 *
-	 * @param value  金额值
+	 * @param value 金额值
 	 * @param config 金额配置
 	 * @return 金额实例
 	 */
@@ -119,15 +114,14 @@ public class Money {
 	 * <p>
 	 * 会进行参数校验
 	 * </p>
-	 *
-	 * @param value         金额值
-	 * @param decimalLimit  小数位限制数量
-	 * @param decimalType   小数位处理方案
+	 * @param value 金额值
+	 * @param decimalLimit 小数位限制数量
+	 * @param decimalType 小数位处理方案
 	 * @param quantileLimit 分位间隔数量
 	 * @return 金额实例
 	 */
 	public static Money of(BigDecimal value, Integer decimalLimit, RoundingMode decimalType, Integer quantileLimit,
-						   String quantileSymbol) {
+			String quantileSymbol) {
 		if (value == null) {
 			throw new BizException(MoneyResultCode.VALUE_ERROR);
 		}
@@ -152,24 +146,22 @@ public class Money {
 	 * <p>
 	 * 不进行参数校验
 	 * </p>
-	 *
-	 * @param value         金额值
-	 * @param decimalLimit  小数位限制数量
-	 * @param decimalType   小数位处理方案
+	 * @param value 金额值
+	 * @param decimalLimit 小数位限制数量
+	 * @param decimalType 小数位处理方案
 	 * @param quantileLimit 分位间隔数量
 	 * @return 金额实例
 	 */
 	private static Money ofPrivate(BigDecimal value, Integer decimalLimit, RoundingMode decimalType,
-								   Integer quantileLimit, String quantileSymbol) {
+			Integer quantileLimit, String quantileSymbol) {
 		return new Money(decimalLimit, decimalType, quantileLimit, quantileSymbol,
-			value.setScale(decimalLimit, decimalType));
+				value.setScale(decimalLimit, decimalType));
 	}
 
 	// region 金额变动操作
 
 	/**
 	 * 切换金额
-	 *
 	 * @param value 值
 	 * @return this
 	 */
@@ -179,7 +171,6 @@ public class Money {
 
 	/**
 	 * 增加
-	 *
 	 * @param money 金额
 	 * @return 增加指定金额后的新金额
 	 */
@@ -189,7 +180,6 @@ public class Money {
 
 	/**
 	 * 增加
-	 *
 	 * @param money 金额
 	 * @return 增加指定金额后的新金额
 	 */
@@ -199,7 +189,6 @@ public class Money {
 
 	/**
 	 * 增加
-	 *
 	 * @param money 金额
 	 * @return 增加指定金额后的新金额
 	 */
@@ -209,7 +198,6 @@ public class Money {
 
 	/**
 	 * 增加
-	 *
 	 * @param money 金额
 	 * @return 增加指定金额后的新金额
 	 */
@@ -219,7 +207,6 @@ public class Money {
 
 	/**
 	 * 减少
-	 *
 	 * @param money 金额
 	 * @return 减少指定金额后的新金额
 	 */
@@ -229,7 +216,6 @@ public class Money {
 
 	/**
 	 * 减少
-	 *
 	 * @param money 金额
 	 * @return 减少指定金额后的新金额
 	 */
@@ -239,7 +225,6 @@ public class Money {
 
 	/**
 	 * 减少
-	 *
 	 * @param money 金额
 	 * @return 减少指定金额后的新金额
 	 */
@@ -249,7 +234,6 @@ public class Money {
 
 	/**
 	 * 减少
-	 *
 	 * @param money 金额
 	 * @return 减少指定金额后的新金额
 	 */
@@ -259,7 +243,6 @@ public class Money {
 
 	/**
 	 * 乘以
-	 *
 	 * @param money 金额
 	 * @return 乘以指定金额后的新金额
 	 */
@@ -269,7 +252,6 @@ public class Money {
 
 	/**
 	 * 乘以
-	 *
 	 * @param money 金额
 	 * @return 乘以指定金额后的新金额
 	 */
@@ -279,7 +261,6 @@ public class Money {
 
 	/**
 	 * 乘以
-	 *
 	 * @param money 金额
 	 * @return 乘以指定金额后的新金额
 	 */
@@ -289,7 +270,6 @@ public class Money {
 
 	/**
 	 * 乘以
-	 *
 	 * @param money 金额
 	 * @return 乘以指定金额后的新金额
 	 */
@@ -299,7 +279,6 @@ public class Money {
 
 	/**
 	 * 除以
-	 *
 	 * @param money 金额
 	 * @return 除以指定金额后的新金额
 	 */
@@ -309,7 +288,6 @@ public class Money {
 
 	/**
 	 * 除以
-	 *
 	 * @param money 金额
 	 * @return 除以指定金额后的新金额
 	 */
@@ -319,7 +297,6 @@ public class Money {
 
 	/**
 	 * 除以
-	 *
 	 * @param money 金额
 	 * @return 除以指定金额后的新金额
 	 */
@@ -329,7 +306,6 @@ public class Money {
 
 	/**
 	 * 除以
-	 *
 	 * @param money 金额
 	 * @return 除以指定金额后的新金额
 	 */
@@ -350,7 +326,6 @@ public class Money {
 
 	/**
 	 * 是否为0
-	 *
 	 * @return boolean
 	 */
 	public boolean isZero() {
@@ -359,7 +334,6 @@ public class Money {
 
 	/**
 	 * 是否为负数
-	 *
 	 * @return boolean
 	 */
 	public boolean isNegative() {
@@ -368,7 +342,6 @@ public class Money {
 
 	/**
 	 * 大于
-	 *
 	 * @param money 金额
 	 * @return boolean true 表示大于目标金额
 	 */
@@ -378,7 +351,6 @@ public class Money {
 
 	/**
 	 * 大于
-	 *
 	 * @param money 金额
 	 * @return boolean true 表示大于目标金额
 	 */
@@ -388,7 +360,6 @@ public class Money {
 
 	/**
 	 * 大于等于
-	 *
 	 * @param money 金额
 	 * @return boolean true 表示大于等于目标金额
 	 */
@@ -398,7 +369,6 @@ public class Money {
 
 	/**
 	 * 大于等于
-	 *
 	 * @param money 金额
 	 * @return boolean true 表示大于等于目标金额
 	 */
@@ -408,7 +378,6 @@ public class Money {
 
 	/**
 	 * 等于
-	 *
 	 * @param money 金额
 	 * @return boolean true 表示等于目标金额
 	 */
@@ -418,7 +387,6 @@ public class Money {
 
 	/**
 	 * 等于
-	 *
 	 * @param money 金额
 	 * @return boolean true 表示等于目标金额
 	 */
@@ -428,7 +396,6 @@ public class Money {
 
 	/**
 	 * 小于
-	 *
 	 * @param money 金额
 	 * @return boolean true 表示小于目标金额
 	 */
@@ -438,7 +405,6 @@ public class Money {
 
 	/**
 	 * 小于
-	 *
 	 * @param money 金额
 	 * @return boolean true 表示小于目标金额
 	 */
@@ -448,7 +414,6 @@ public class Money {
 
 	/**
 	 * 小于等于
-	 *
 	 * @param money 金额
 	 * @return boolean true 表示小于等于目标金额
 	 */
@@ -458,7 +423,6 @@ public class Money {
 
 	/**
 	 * 小于等于
-	 *
 	 * @param money 金额
 	 * @return boolean true 表示小于等于目标金额
 	 */
@@ -482,7 +446,6 @@ public class Money {
 	 * <p>
 	 * 存在分位配置则加入嵌入分位
 	 * </p>
-	 *
 	 * @return java.lang.String 字符串值
 	 */
 	public String toPlainString() {
@@ -521,7 +484,6 @@ public class Money {
 
 	/**
 	 * 返回数据的值
-	 *
 	 * @return java.lang.String
 	 */
 	@Override

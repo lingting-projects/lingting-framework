@@ -30,7 +30,6 @@ public class HuaweiIamTokenRequest extends HuaweiIamRequest {
 		return false;
 	}
 
-
 	@Override
 	public String path() {
 		return "v3/auth/tokens";

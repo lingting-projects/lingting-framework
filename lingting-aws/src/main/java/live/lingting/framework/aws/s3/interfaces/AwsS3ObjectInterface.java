@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * @author lingting 2024-09-19 21:59
  */
-public interface AwsS3ObjectInterface  {
+public interface AwsS3ObjectInterface {
 
 	// region get
 

@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 /**
  * @author lingting 2024-09-19 21:57
  */
-public interface AwsS3BucketInterface  {
+public interface AwsS3BucketInterface {
 
 	AwsS3ObjectInterface use(String key);
 

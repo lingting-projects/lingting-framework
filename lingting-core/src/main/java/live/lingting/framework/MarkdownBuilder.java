@@ -45,7 +45,6 @@ public class MarkdownBuilder {
 
 	/**
 	 * 添加自定义内容
-	 *
 	 * @param content 自定义内容
 	 */
 	public MarkdownBuilder append(Object content) {
@@ -55,7 +54,6 @@ public class MarkdownBuilder {
 
 	/**
 	 * 有序列表 自动生成 索引
-	 *
 	 * @param content 文本
 	 */
 	public MarkdownBuilder orderList(Object content) {
@@ -79,8 +77,7 @@ public class MarkdownBuilder {
 
 	/**
 	 * 有序列表
-	 *
-	 * @param index   索引
+	 * @param index 索引
 	 * @param content 文本
 	 */
 	public MarkdownBuilder orderList(int index, Object content) {
@@ -101,7 +98,6 @@ public class MarkdownBuilder {
 
 	/**
 	 * 图片
-	 *
 	 * @param url 图片链接
 	 */
 	public MarkdownBuilder pic(String url) {
@@ -110,9 +106,8 @@ public class MarkdownBuilder {
 
 	/**
 	 * 图片
-	 *
 	 * @param title 图片标题
-	 * @param url   图片路径
+	 * @param url 图片路径
 	 */
 	public MarkdownBuilder pic(Object title, String url) {
 		lineTextBuilder.append("![").append(title).append("](").append(url).append(")");
@@ -121,9 +116,8 @@ public class MarkdownBuilder {
 
 	/**
 	 * 链接
-	 *
 	 * @param title 标题
-	 * @param url   http 路径
+	 * @param url http 路径
 	 */
 	public MarkdownBuilder link(Object title, String url) {
 		lineTextBuilder.append("[").append(title).append("](").append(url).append(")");
@@ -148,7 +142,6 @@ public class MarkdownBuilder {
 
 	/**
 	 * 引用 > 文本
-	 *
 	 * @param content 文本
 	 */
 	public MarkdownBuilder quote(Object... content) {

@@ -23,15 +23,14 @@ public class HuaweiObsMultipartMergeRequest extends HuaweiObsRequest {
 	public MemoryBody body() {
 		StringBuilder builder = new StringBuilder("<CompleteMultipartUpload>\n");
 
-		map.keySet().stream().sorted(Comparator.comparing(Part::getIndex))
-				.forEach(p->{
-					String e = map.get(p);
-					builder.append("<Part><PartNumber>")
-						.append(p.getIndex() + 1)
-						.append("</PartNumber><ETag>")
-						.append(e)
-						.append("</ETag></Part>\n");
-				});
+		map.keySet().stream().sorted(Comparator.comparing(Part::getIndex)).forEach(p -> {
+			String e = map.get(p);
+			builder.append("<Part><PartNumber>")
+				.append(p.getIndex() + 1)
+				.append("</PartNumber><ETag>")
+				.append(e)
+				.append("</ETag></Part>\n");
+		});
 
 		builder.append("</CompleteMultipartUpload>");
 		return new MemoryBody(builder.toString());

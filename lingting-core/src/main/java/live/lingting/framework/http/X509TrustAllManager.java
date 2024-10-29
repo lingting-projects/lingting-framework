@@ -7,7 +7,7 @@ import java.security.cert.X509Certificate;
 /**
  * @author lingting 2024-01-29 16:27
  */
-@SuppressWarnings({"java:S4830", "java:S6548"})
+@SuppressWarnings({ "java:S4830", "java:S6548" })
 public class X509TrustAllManager implements X509TrustManager {
 
 	public static final X509TrustAllManager INSTANCE = new X509TrustAllManager();

@@ -29,9 +29,9 @@ public class ListCycleValue<T> extends AbstractConcurrentCycleValue<T> {
 		return doNext();
 	}
 
-
 	@Override
 	public void doReset() {
 		index = -1;
 	}
+
 }

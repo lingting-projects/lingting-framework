@@ -49,6 +49,7 @@ public class AwsS3Utils {
 		ZonedDateTime atGmt = atZone.withZoneSameInstant(DatePattern.GMT_ZONE_ID);
 		return formatter.format(atGmt);
 	}
+
 	public static LocalDateTime parse(String string, DateTimeFormatter formatter) {
 		LocalDateTime source = LocalDateTime.parse(string, formatter);
 		ZonedDateTime atGmt = source.atZone(DatePattern.GMT_ZONE_ID);

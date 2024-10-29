@@ -38,7 +38,6 @@ public class AliStsCredentialRequest extends AliStsRequest {
 		return "2015-04-01";
 	}
 
-
 	@Override
 	public String path() {
 		return "";

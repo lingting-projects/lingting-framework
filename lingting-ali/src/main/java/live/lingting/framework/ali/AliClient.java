@@ -11,7 +11,6 @@ import static live.lingting.framework.util.HttpUtils.HEADER_HOST;
 @SuppressWarnings("java:S112")
 public abstract class AliClient<R extends AliRequest> extends ApiClient<R> {
 
-
 	protected static final String[] HEADER_INCLUDE = { HEADER_HOST, "content-type", "content-md5" };
 
 	protected final String ak;
@@ -26,7 +25,5 @@ public abstract class AliClient<R extends AliRequest> extends ApiClient<R> {
 		this.sk = properties.getSk();
 		this.token = properties.getToken();
 	}
-
-
 
 }

@@ -83,7 +83,6 @@ public class Command {
 	/**
 	 * 获取命令操作实例. 此实例默认使用系统字符集, 如果发现部分带非英文字符和特殊符号命令执行异常, 建议使用
 	 * {@link Command#of(String, Charset)} 自定义对应的字符集
-	 *
 	 * @param init 初始命令
 	 */
 	public static Command of(String init) throws IOException {
@@ -132,7 +131,6 @@ public class Command {
 
 	/**
 	 * 写入并执行一行指令
-	 *
 	 * @param str 单行指令
 	 */
 	public Command exec(String str) throws IOException {
@@ -168,7 +166,6 @@ public class Command {
 	 * <p>
 	 * 即便是先读取返回结果在调用此方法也可能会导致卡死. 比如: 先读取标准输出流, 还没读完, 缓冲区被错误输出流写满了.
 	 * </p>
-	 *
 	 * @param millis 等待时间, 单位: 毫秒
 	 * @return live.lingting.tools.system.CommandResult
 	 */
@@ -196,7 +193,6 @@ public class Command {
 
 	/**
 	 * 清空历史记录
-	 *
 	 * @return 返回被清除的数据
 	 */
 	public List<String> cleanHistory() {

@@ -51,7 +51,6 @@ public class WaitValue<T> {
 
 	/**
 	 * 进行运算, 同时仅允许一个线程获取
-	 *
 	 * @param operator 运行行为
 	 */
 	public T compute(UnaryOperator<T> operator) throws InterruptedException {
