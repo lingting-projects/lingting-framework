@@ -1,9 +1,9 @@
 package live.lingting.framework.huawei;
 
+import live.lingting.framework.aws.s3.AwsS3MultipartTask;
 import live.lingting.framework.aws.s3.response.AwsS3MultipartItem;
 import live.lingting.framework.http.download.HttpDownload;
 import live.lingting.framework.huawei.exception.HuaweiException;
-import live.lingting.framework.huawei.multipart.HuaweiMultipartTask;
 import live.lingting.framework.huawei.obs.HuaweiObsHeaders;
 import live.lingting.framework.huawei.properties.HuaweiObsProperties;
 import live.lingting.framework.id.Snowflake;
@@ -23,7 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.util.List;
 
-import static live.lingting.framework.huawei.HuaweiUtils.MULTIPART_MIN_PART_SIZE;
+import static live.lingting.framework.aws.s3.AwsS3Utils.MULTIPART_MIN_PART_SIZE;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -90,7 +90,7 @@ class HuaweiObsTest {
 		String source = "hello world".repeat(90000);
 		byte[] bytes = source.getBytes();
 		String hex = DigestUtils.md5Hex(bytes);
-		HuaweiMultipartTask task = assertDoesNotThrow(
+		AwsS3MultipartTask task = assertDoesNotThrow(
 				() -> obsObject.multipart(new ByteArrayInputStream(bytes), 1, new Async(10)));
 		assertTrue(task.isStarted());
 		task.await();

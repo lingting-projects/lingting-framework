@@ -1,17 +1,13 @@
 package live.lingting.framework.huawei;
 
-import live.lingting.framework.crypto.mac.Mac;
-import live.lingting.framework.time.DatePattern;
-import lombok.SneakyThrows;
+import live.lingting.framework.aws.s3.AwsS3Utils;
 import lombok.experimental.UtilityClass;
 
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
@@ -32,54 +28,17 @@ public class HuaweiUtils {
 
 	public static final String HEADER_DATE = "Date";
 
-	/**
-	 * 10M
-	 */
-	public static final long MULTIPART_DEFAULT_PART_SIZE = 10485760;
-
-	/**
-	 * 5G
-	 */
-	public static final long MULTIPART_MAX_PART_SIZE = 5368709120L;
-
-	/**
-	 * 100K
-	 */
-	public static final long MULTIPART_MIN_PART_SIZE = 102400;
-
-	public static final long MULTIPART_MAX_PART_COUNT = 1000;
-
 	public static LocalDateTime parse(String str, ZoneOffset zone) {
 		LocalDateTime parse = LocalDateTime.parse(str, FORMATTER);
 		return parse.plusSeconds(zone.getTotalSeconds());
 	}
 
-	public static String encode(String objectKey) {
-		return URLEncoder.encode(objectKey, CHARSET);
+	public static String format(LocalDateTime dateTime) {
+		return AwsS3Utils.format(dateTime, RFC_1123_DATE_TIME);
 	}
 
-	/**
-	 * <a href=
-	 * "https://obs-community.obs.cn-north-1.myhuaweicloud.com/sign/header_signature.html">在线计算签名</a>
-	 * </p>
-	 * <a href=
-	 * "https://support.huaweicloud.com/api-obs/obs_04_0010.html#obs_04_0010__section822416395814">签名携带方式</a>
-	 */
-	@SneakyThrows
-	public static String authorization(String ak, String sk, String string) {
-		Mac mac = Mac.hmacBuilder().sha1().secret(sk).charset(CHARSET).build();
-		String base64 = mac.calculateBase64(string);
-		return "OBS %s:%s".formatted(ak, base64);
-	}
-
-	public static String date() {
-		return date(LocalDateTime.now());
-	}
-
-	public static String date(LocalDateTime now) {
-		ZonedDateTime atZone = now.atZone(DatePattern.SYSTEM_ZONE_ID);
-		ZonedDateTime atGmt = atZone.withZoneSameInstant(DatePattern.GMT_ZONE_ID);
-		return RFC_1123_DATE_TIME.format(atGmt);
+	public static LocalDateTime parse(String string) {
+		return AwsS3Utils.parse(string, RFC_1123_DATE_TIME);
 	}
 
 }

@@ -39,6 +39,8 @@ public interface MultiValue<K, V, C extends Collection<V>> {
 
 	void putAll(MultiValue<K, V, C> value);
 
+	void replace(K oldKey, K newKey);
+
 	// endregion
 
 	// region get

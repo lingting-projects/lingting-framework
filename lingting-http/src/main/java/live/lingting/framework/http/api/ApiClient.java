@@ -8,6 +8,7 @@ import live.lingting.framework.http.HttpUrlBuilder;
 import live.lingting.framework.http.body.BodySource;
 import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.value.multi.StringMultiValue;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ public abstract class ApiClient<R extends ApiRequest> {
 		.timeout(Duration.ofSeconds(15), Duration.ofSeconds(30))
 		.build();
 
+	@Getter
 	protected final Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
 
 	protected final String host;

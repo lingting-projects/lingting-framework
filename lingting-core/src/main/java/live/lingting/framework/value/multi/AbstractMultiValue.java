@@ -137,6 +137,17 @@ public abstract class AbstractMultiValue<K, V, C extends Collection<V>> implemen
 		value.forEach((this::putAll));
 	}
 
+	@Override
+	public void replace(K oldKey, K newKey) {
+		if (!allowModify) {
+			throw new UnsupportedOperationException();
+		}
+		C c = map.remove(oldKey);
+		if (c != null) {
+			map.put(newKey, c);
+		}
+	}
+
 	protected void from(MultiValue<K, V, ? extends Collection<V>> value) {
 		from(value, vs -> {
 			C c = supplier.get();
