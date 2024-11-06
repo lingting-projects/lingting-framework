@@ -42,6 +42,10 @@ public abstract class AbstractQueueThread<E> extends AbstractThreadContextCompon
 
 	/**
 	 * 用于子类自定义等待时长
+	 * <p>
+	 * 不要和 {@link #getPollTimeout()}值相差过大, 否则会导致等待时间不是预期的值, 而是
+	 * {@link #getPollTimeout() }的值
+	 * </p>
 	 * @return 返回时长，单位毫秒
 	 */
 	public Duration getBatchTimeout() {
