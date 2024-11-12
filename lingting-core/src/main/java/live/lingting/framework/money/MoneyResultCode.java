@@ -1,14 +1,10 @@
 package live.lingting.framework.money;
 
 import live.lingting.framework.api.ResultCode;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 /**
  * @author lingting 2023-05-07 18:02
  */
-@Getter
-@AllArgsConstructor
 public enum MoneyResultCode implements ResultCode {
 
 	/**
@@ -26,4 +22,12 @@ public enum MoneyResultCode implements ResultCode {
 
 	private final String message;
 
+	private MoneyResultCode(Integer code, String message) {
+		this.code = code;
+		this.message = message;
+	}
+
+	public Integer getCode() {return this.code;}
+
+	public String getMessage() {return this.message;}
 }

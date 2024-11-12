@@ -5,9 +5,6 @@ import live.lingting.framework.function.ThrowingBiFunctionE;
 import live.lingting.framework.function.ThrowingConsumerE;
 import live.lingting.framework.stream.CloneInputStream;
 import live.lingting.framework.stream.FileCloneInputStream;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.UtilityClass;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -32,19 +29,19 @@ import static live.lingting.framework.util.ByteUtils.trimEndLine;
 /**
  * @author lingting
  */
-@UtilityClass
-public class StreamUtils {
+public final class StreamUtils {
 
-	@Getter
-	@Setter
 	static int readSize = 1024 * 1024 * 10;
+
+	private StreamUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	/**
 	 * 读取流, 如果 function 返回 false 则结束读取
+	 *
 	 * @param function 消费读取到的数据, byte[] 数据, 读取长度. 返回false 则结束读取
 	 */
 	public static void readByFlag(InputStream in, int size,
-			ThrowingBiFunctionE<byte[], Integer, Boolean, IOException> function) throws IOException {
+								  ThrowingBiFunctionE<byte[], Integer, Boolean, IOException> function) throws IOException {
 		byte[] bytes = new byte[size];
 		int len;
 
@@ -73,19 +70,20 @@ public class StreamUtils {
 	}
 
 	public static void read(InputStream in, ThrowingBiConsumerE<byte[], Integer, IOException> consumer)
-			throws IOException {
+		throws IOException {
 		read(in, readSize, consumer);
 	}
 
 	/**
 	 * 读取流
-	 * @param in 流
-	 * @param size 缓冲区大小
+	 *
+	 * @param in       流
+	 * @param size     缓冲区大小
 	 * @param consumer 消费读取到的数据, byte[] 数据, 读取长度
 	 * @throws IOException 读取异常
 	 */
 	public static void read(InputStream in, int size, ThrowingBiConsumerE<byte[], Integer, IOException> consumer)
-			throws IOException {
+		throws IOException {
 		readByFlag(in, size, (bytes, length) -> {
 			consumer.accept(bytes, length);
 			return true;
@@ -97,7 +95,7 @@ public class StreamUtils {
 	}
 
 	public static void readCopy(InputStream in, int size, ThrowingConsumerE<byte[], IOException> consumer)
-			throws IOException {
+		throws IOException {
 		read(in, size, (bytes, length) -> {
 			byte[] copy = Arrays.copyOf(bytes, length);
 			consumer.accept(copy);
@@ -194,6 +192,7 @@ public class StreamUtils {
 	 * <p color="red">
 	 * 注意: 在使用后及时关闭复制流
 	 * </p>
+	 *
 	 * @param stream 源流
 	 * @return 返回指定数量的从源流复制出来的只读流
 	 * @author lingting 2021-04-16 16:18
@@ -212,25 +211,27 @@ public class StreamUtils {
 
 	/**
 	 * 读取流, 当读取完一行数据时, 消费该数据
-	 * @param in 流
-	 * @param charset 字符集
+	 *
+	 * @param in       流
+	 * @param charset  字符集
 	 * @param consumer 行数据消费, int: 行索引
 	 * @throws IOException 异常
 	 */
 	public static void readLine(InputStream in, Charset charset, BiConsumer<Integer, String> consumer)
-			throws IOException {
+		throws IOException {
 		readLine(in, charset, readSize, consumer);
 	}
 
 	/**
 	 * 读取流, 当读取完一行数据时, 消费该数据
-	 * @param in 流
-	 * @param charset 字符集
+	 *
+	 * @param in       流
+	 * @param charset  字符集
 	 * @param consumer 行数据消费, int: 行索引
 	 * @throws IOException 异常
 	 */
 	public static void readLine(InputStream in, Charset charset, int size, BiConsumer<Integer, String> consumer)
-			throws IOException {
+		throws IOException {
 		readLine(in, size, (index, bytes) -> {
 			String string = new String(bytes, charset);
 			String clean = StringUtils.cleanBom(string);
@@ -240,7 +241,8 @@ public class StreamUtils {
 
 	/**
 	 * 读取流, 当读取完一行数据时, 消费该数据
-	 * @param in 流
+	 *
+	 * @param in       流
 	 * @param consumer 行数据消费, int: 行索引
 	 * @throws IOException 异常
 	 */
@@ -250,8 +252,9 @@ public class StreamUtils {
 
 	/**
 	 * 读取流, 当读取完一行数据时, 消费该数据
-	 * @param in 流
-	 * @param size 一次读取数据大小
+	 *
+	 * @param in       流
+	 * @param size     一次读取数据大小
 	 * @param consumer 行数据消费, int: 行索引
 	 * @throws IOException 异常
 	 */
@@ -287,4 +290,7 @@ public class StreamUtils {
 
 	}
 
+	public static int getReadSize() {return StreamUtils.readSize;}
+
+	public static void setReadSize(int readSize) {StreamUtils.readSize = readSize;}
 }

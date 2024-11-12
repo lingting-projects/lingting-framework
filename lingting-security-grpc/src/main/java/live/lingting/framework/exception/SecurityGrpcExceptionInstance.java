@@ -6,15 +6,16 @@ import live.lingting.framework.grpc.exception.GrpcExceptionHandler;
 import live.lingting.framework.grpc.exception.GrpcExceptionInstance;
 import live.lingting.framework.security.exception.AuthorizationException;
 import live.lingting.framework.security.exception.PermissionsException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 /**
  * @author lingting 2023-12-15 17:15
  */
-@Slf4j
-@RequiredArgsConstructor
 public class SecurityGrpcExceptionInstance implements GrpcExceptionInstance {
+
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(SecurityGrpcExceptionInstance.class);
+
+	public SecurityGrpcExceptionInstance() {}
 
 	/**
 	 * 鉴权异常

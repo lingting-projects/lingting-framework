@@ -13,7 +13,7 @@ import live.lingting.framework.security.domain.SecurityScope;
 import live.lingting.framework.security.domain.SecurityToken;
 import live.lingting.framework.security.resource.SecurityResourceService;
 import live.lingting.framework.util.StringUtils;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.lang.reflect.Method;
 
@@ -22,10 +22,10 @@ import static live.lingting.framework.exception.SecurityGrpcThrowing.throwing;
 /**
  * @author lingting 2023-12-14 16:28
  */
-@Slf4j
 @SuppressWarnings("java:S1172")
 public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterceptor implements Sequence {
 
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(SecurityGrpcResourceServerInterceptor.class);
 	private final Metadata.Key<String> authorizationKey;
 
 	private final SecurityResourceService service;
@@ -33,7 +33,7 @@ public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterce
 	private final SecurityAuthorize authorize;
 
 	public SecurityGrpcResourceServerInterceptor(Metadata.Key<String> authorizationKey, SecurityResourceService service,
-			SecurityAuthorize authorize) {
+												 SecurityAuthorize authorize) {
 		this.authorizationKey = authorizationKey;
 		this.service = service;
 		this.authorize = authorize;
@@ -41,7 +41,7 @@ public class SecurityGrpcResourceServerInterceptor extends AbstractServerInterce
 
 	@Override
 	public <S, R> ServerCall.Listener<S> interceptCall(ServerCall<S, R> call, Metadata headers,
-			ServerCallHandler<S, R> next) {
+													   ServerCallHandler<S, R> next) {
 		SecurityScope scope = getScope(headers);
 		service.putScope(scope);
 

@@ -1,7 +1,6 @@
 package live.lingting.framework.mybatis.typehandler;
 
 import live.lingting.framework.util.EnumUtils;
-import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
@@ -14,10 +13,13 @@ import java.util.Objects;
 /**
  * @author lingting 2022/12/14 16:06
  */
-@RequiredArgsConstructor
 public class EnumTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> implements AutoRegisterTypeHandler<E> {
 
 	private final Class<E> type;
+
+	public EnumTypeHandler(Class<E> type) {
+		this.type = type;
+	}
 
 	@Override
 	public void setNonNullParameter(PreparedStatement ps, int i, E parameter, JdbcType jdbcType) throws SQLException {
@@ -52,8 +54,8 @@ public class EnumTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> imple
 		for (E e : type.getEnumConstants()) {
 			Object value = EnumUtils.getValue(e);
 			if (
-			// 值匹配
-			Objects.equals(val, value)
+				// 值匹配
+				Objects.equals(val, value)
 					// 字符串值匹配
 					|| (value != null && value.toString().equals(val))) {
 				return e;

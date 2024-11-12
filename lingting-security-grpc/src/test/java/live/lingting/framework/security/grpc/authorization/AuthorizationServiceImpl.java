@@ -7,7 +7,6 @@ import live.lingting.framework.security.exception.AuthorizationException;
 import live.lingting.framework.security.store.SecurityStore;
 import live.lingting.framework.util.LocalDateTimeUtils;
 import live.lingting.framework.util.MdcUtils;
-import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -17,10 +16,13 @@ import java.util.Objects;
 /**
  * @author lingting 2024-01-30 20:30
  */
-@RequiredArgsConstructor
 public class AuthorizationServiceImpl implements SecurityAuthorizationService {
 
 	private final SecurityStore store;
+
+	public AuthorizationServiceImpl(SecurityStore store) {
+		this.store = store;
+	}
 
 	@Override
 	public SecurityScope validAndBuildScope(String username, String password) throws AuthorizationException {

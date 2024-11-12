@@ -1,7 +1,6 @@
 package live.lingting.framework.retry;
 
 import live.lingting.framework.function.ThrowingSupplier;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 class RetryTest {
 
-	@SneakyThrows
+
 	@Test
 	void test() {
 		int expected = 3;

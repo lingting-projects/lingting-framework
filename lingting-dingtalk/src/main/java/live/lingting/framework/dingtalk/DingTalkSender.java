@@ -6,10 +6,6 @@ import live.lingting.framework.http.HttpClient;
 import live.lingting.framework.http.HttpRequest;
 import live.lingting.framework.http.HttpUrlBuilder;
 import live.lingting.framework.util.StringUtils;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
-import lombok.experimental.Accessors;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -21,8 +17,7 @@ import java.util.function.Supplier;
  *
  * @author lingting 2020/6/10 21:25
  */
-@Getter
-@Accessors(chain = true)
+
 public class DingTalkSender {
 
 	protected static final HttpClient CLIENT = HttpClient.okhttp()
@@ -41,7 +36,6 @@ public class DingTalkSender {
 
 	protected Mac mac;
 
-	@Setter
 	private Supplier<Long> currentTimeMillisSupplier = System::currentTimeMillis;
 
 	public DingTalkSender(String url) {
@@ -91,9 +85,10 @@ public class DingTalkSender {
 
 	/**
 	 * 获取签名后的请求路径
+	 *
 	 * @param timestamp 当前时间戳
 	 */
-	@SneakyThrows
+
 	public String secret(long timestamp) {
 		String source = timestamp + "\n" + secret;
 		String base64 = mac.calculateBase64(source);
@@ -103,11 +98,12 @@ public class DingTalkSender {
 
 	/**
 	 * 发起消息请求
+	 *
 	 * @param dingTalkMessage 消息内容
-	 * @param isSecret 是否签名 true 签名
+	 * @param isSecret        是否签名 true 签名
 	 * @return java.lang.String
 	 */
-	@SneakyThrows
+
 	public DingTalkResponse request(DingTalkMessage dingTalkMessage, boolean isSecret) {
 		String message = dingTalkMessage.generate();
 		Long timestamp = getCurrentTimeMillisSupplier().get();
@@ -126,4 +122,16 @@ public class DingTalkSender {
 		return DingTalkResponse.of(json);
 	}
 
+	public String getUrl() {return this.url;}
+
+	public String getSecret() {return this.secret;}
+
+	public Mac getMac() {return this.mac;}
+
+	public Supplier<Long> getCurrentTimeMillisSupplier() {return this.currentTimeMillisSupplier;}
+
+	public DingTalkSender setCurrentTimeMillisSupplier(Supplier<Long> currentTimeMillisSupplier) {
+		this.currentTimeMillisSupplier = currentTimeMillisSupplier;
+		return this;
+	}
 }

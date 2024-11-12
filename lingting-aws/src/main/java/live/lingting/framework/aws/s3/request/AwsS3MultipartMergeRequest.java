@@ -5,8 +5,6 @@ import live.lingting.framework.http.HttpMethod;
 import live.lingting.framework.http.body.BodySource;
 import live.lingting.framework.http.body.MemoryBody;
 import live.lingting.framework.multipart.Part;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Comparator;
 import java.util.Map;
@@ -14,8 +12,6 @@ import java.util.Map;
 /**
  * @author lingting 2024-09-13 16:54
  */
-@Getter
-@Setter
 public class AwsS3MultipartMergeRequest extends AwsS3Request {
 
 	private String uploadId;
@@ -49,4 +45,11 @@ public class AwsS3MultipartMergeRequest extends AwsS3Request {
 		getParams().add("uploadId", uploadId);
 	}
 
+	public String getUploadId() {return this.uploadId;}
+
+	public Map<Part, String> getMap() {return this.map;}
+
+	public void setUploadId(String uploadId) {this.uploadId = uploadId;}
+
+	public void setMap(Map<Part, String> map) {this.map = map;}
 }

@@ -15,9 +15,6 @@ import live.lingting.framework.huawei.properties.HuaweiIamProperties;
 import live.lingting.framework.huawei.properties.HuaweiObsProperties;
 import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.value.WaitValue;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -40,14 +37,11 @@ public class HuaweiIam extends ApiClient<HuaweiIamRequest> {
 	/**
 	 * token 提前多久过期
 	 */
-	@Getter
-	@Setter
 	protected Duration tokenEarlyExpire = TOKEN_EARLY_EXPIRE;
 
 	/**
 	 * token 需要外部维护
 	 */
-	@Getter
 	protected WaitValue<HuaweiIamToken> tokenValue = WaitValue.of();
 
 	public HuaweiIam(HuaweiIamProperties properties) {
@@ -55,7 +49,7 @@ public class HuaweiIam extends ApiClient<HuaweiIamRequest> {
 		this.properties = properties;
 	}
 
-	@SneakyThrows
+
 	@Override
 	protected void customize(HuaweiIamRequest request, HttpHeaders headers) {
 		if (request.usingToken()) {
@@ -84,7 +78,7 @@ public class HuaweiIam extends ApiClient<HuaweiIamRequest> {
 		refreshToken(false);
 	}
 
-	@SneakyThrows
+
 	public void refreshToken(boolean force) {
 		if (!force) {
 			HuaweiIamToken value = getTokenValue().getValue();
@@ -200,6 +194,12 @@ public class HuaweiIam extends ApiClient<HuaweiIamRequest> {
 		copy.useCredential(credential);
 		return new HuaweiObsObject(copy, key);
 	}
+
+	public Duration getTokenEarlyExpire() {return this.tokenEarlyExpire;}
+
+	public WaitValue<HuaweiIamToken> getTokenValue() {return this.tokenValue;}
+
+	public void setTokenEarlyExpire(Duration tokenEarlyExpire) {this.tokenEarlyExpire = tokenEarlyExpire;}
 
 	// endregion
 

@@ -1,9 +1,6 @@
 package live.lingting.framework.util;
 
 import live.lingting.framework.function.ThrowingSupplier;
-import lombok.Getter;
-import lombok.SneakyThrows;
-import lombok.experimental.UtilityClass;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,8 +31,9 @@ import static live.lingting.framework.util.ResourceUtils.Resource.PROTOCOL_JAR;
 /**
  * @author lingting 2024-09-11 17:20
  */
-@UtilityClass
-public class ResourceUtils {
+public final class ResourceUtils {
+
+	private ResourceUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static ClassLoader currentClassLoader() {
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -47,7 +45,7 @@ public class ResourceUtils {
 		return get(loader, name);
 	}
 
-	@SneakyThrows
+
 	public static Resource get(ClassLoader loader, String name) throws IOException {
 		URL resource = loader.getResource(name);
 		if (resource == null) {
@@ -80,7 +78,8 @@ public class ResourceUtils {
 
 	/**
 	 * 扫描资源
-	 * @param name 名称
+	 *
+	 * @param name      名称
 	 * @param predicate 是否返回该资源
 	 * @return 所有满足条件的资源对象
 	 */
@@ -90,7 +89,7 @@ public class ResourceUtils {
 	}
 
 	public static Collection<Resource> scan(ClassLoader loader, String name, Predicate<Resource> predicate)
-			throws IOException {
+		throws IOException {
 		Enumeration<URL> resources = loader.getResources(name);
 		Collection<Resource> result = new LinkedHashSet<>();
 		while (resources.hasMoreElements()) {
@@ -100,7 +99,7 @@ public class ResourceUtils {
 		return result;
 	}
 
-	@SneakyThrows
+
 	static void handler(Collection<Resource> result, URL resource, Predicate<Resource> predicate) {
 		String url = resource.toString();
 		String protocol = StringUtils.substringBefore(url, ":/");
@@ -134,16 +133,15 @@ public class ResourceUtils {
 		}
 	}
 
-	@SneakyThrows
+
 	static void fill(Collection<Resource> resources, ThrowingSupplier<Resource> supplier,
-			Predicate<Resource> predicate) {
+					 Predicate<Resource> predicate) {
 		Resource resource = supplier.get();
 		if (predicate.test(resource)) {
 			resources.add(resource);
 		}
 	}
 
-	@Getter
 	public static class Resource {
 
 		public static final String DELIMITER_JAR = "!";
@@ -233,6 +231,21 @@ public class ResourceUtils {
 			return obj instanceof Resource r && Objects.equals(r.path, path);
 		}
 
+		public String getProtocol() {return this.protocol;}
+
+		public Collection<String> getPaths() {return this.paths;}
+
+		public String getName() {return this.name;}
+
+		public boolean isDirectory() {return this.directory;}
+
+		public boolean isJar() {return this.jar;}
+
+		public boolean isFile() {return this.file;}
+
+		public String getDelimiter() {return this.delimiter;}
+
+		public String getPath() {return this.path;}
 	}
 
 }

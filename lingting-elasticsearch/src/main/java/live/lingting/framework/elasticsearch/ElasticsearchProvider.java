@@ -8,7 +8,6 @@ import co.elastic.clients.transport.rest_client.RestClientTransport;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataPermissionHandler;
 import live.lingting.framework.jackson.JacksonUtils;
-import lombok.experimental.UtilityClass;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 
@@ -18,8 +17,9 @@ import java.util.function.Function;
 /**
  * @author lingting 2024-03-06 20:00
  */
-@UtilityClass
-public class ElasticsearchProvider {
+public final class ElasticsearchProvider {
+
+	private ElasticsearchProvider() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static RestClient restClient(String... hosts) {
 		return restClient(Arrays.stream(hosts).map(HttpHost::create).toArray(HttpHost[]::new));
@@ -58,14 +58,14 @@ public class ElasticsearchProvider {
 	}
 
 	public static <T> ElasticsearchApi<T> api(Class<T> cls, Function<T, String> idFunc,
-			ElasticsearchProperties properties, ElasticsearchDataPermissionHandler handler,
-			ElasticsearchClient client) {
+											  ElasticsearchProperties properties, ElasticsearchDataPermissionHandler handler,
+											  ElasticsearchClient client) {
 		return new ElasticsearchApi<>(cls, idFunc, properties, handler, client);
 	}
 
 	public static <T> ElasticsearchApi<T> api(String index, Class<T> cls, Function<T, String> idFunc,
-			ElasticsearchProperties properties, ElasticsearchDataPermissionHandler handler,
-			ElasticsearchClient client) {
+											  ElasticsearchProperties properties, ElasticsearchDataPermissionHandler handler,
+											  ElasticsearchClient client) {
 		return new ElasticsearchApi<>(index, cls, idFunc, properties, handler, client);
 	}
 

@@ -1,7 +1,6 @@
 package live.lingting.framework.util;
 
 import live.lingting.framework.util.ResourceUtils.Resource;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -20,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ResourceUtilsTest {
 
 	@Test
-	@SneakyThrows
 	void scan() {
 		Collection<Resource> s1 = ResourceUtils.scan(".", r -> !r.isDirectory() && r.getName().startsWith("s"));
 		assertEquals(3, s1.size());

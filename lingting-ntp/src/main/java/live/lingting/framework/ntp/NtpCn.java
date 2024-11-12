@@ -2,9 +2,7 @@ package live.lingting.framework.ntp;
 
 import live.lingting.framework.util.ThreadUtils;
 import live.lingting.framework.value.WaitValue;
-import lombok.SneakyThrows;
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -19,17 +17,18 @@ import java.util.function.UnaryOperator;
  *
  * @author lingting 2023/2/1 14:10
  */
-@Slf4j
-@UtilityClass
-public class NtpCn {
+public final class NtpCn {
 
 	public static final ZoneOffset DEFAULT_ZONE_OFFSET = ZoneOffset.of("+8");
 
 	public static final ZoneId DEFAULT_ZONE_ID = DEFAULT_ZONE_OFFSET.normalized();
 
 	static final WaitValue<Ntp> instance = WaitValue.of();
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(NtpCn.class);
 
-	@SneakyThrows
+	private NtpCn() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+
+
 	static void initNtpCN() {
 		NtpFactory factory = NtpFactory.getDefault();
 		Set<String> hosts = NtpFactory.getDefaultHosts();
@@ -47,7 +46,7 @@ public class NtpCn {
 		}
 	}
 
-	@SneakyThrows
+
 	public static Ntp instance() {
 		if (!instance.isNull()) {
 			return instance.getValue();
@@ -55,7 +54,7 @@ public class NtpCn {
 
 		return instance.compute(new UnaryOperator<Ntp>() {
 			@Override
-			@SneakyThrows
+
 			public Ntp apply(Ntp v) {
 				if (v != null) {
 					return v;
@@ -67,31 +66,31 @@ public class NtpCn {
 		});
 	}
 
-	public long diff() {
+	public static long diff() {
 		return instance().diff();
 	}
 
-	public long currentMillis() {
+	public static long currentMillis() {
 		return instance().currentMillis();
 	}
 
-	public Instant instant() {
+	public static Instant instant() {
 		return instance().instant();
 	}
 
-	public LocalDateTime now() {
+	public static LocalDateTime now() {
 		return instance().now();
 	}
 
-	public long plusSeconds(long seconds) {
+	public static long plusSeconds(long seconds) {
 		return plusMillis(seconds * 1000);
 	}
 
-	public long plusMillis(long millis) {
+	public static long plusMillis(long millis) {
 		return instance().plusMillis(millis);
 	}
 
-	public long plus(long time, TimeUnit unit) {
+	public static long plus(long time, TimeUnit unit) {
 		return plusMillis(unit.toMillis(time));
 	}
 

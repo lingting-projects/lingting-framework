@@ -1,7 +1,5 @@
 package live.lingting.framework.util;
 
-import lombok.experimental.UtilityClass;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,13 +18,14 @@ import static live.lingting.framework.time.DatePattern.FORMATTER_YMD_HMS;
 /**
  * @author lingting 2022/11/28 10:12
  */
-@UtilityClass
-public class LocalDateTimeUtils {
+public final class LocalDateTimeUtils {
+	private LocalDateTimeUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	// region LocalDateTime
 
 	/**
 	 * 字符串转时间
+	 *
 	 * @param str yyyy-MM-dd HH:mm:ss 格式字符串
 	 * @return java.time.LocalDateTime 时间
 	 */
@@ -36,6 +35,7 @@ public class LocalDateTimeUtils {
 
 	/**
 	 * 时间戳转时间, 使用 GMT+8 时区
+	 *
 	 * @param timestamp 时间戳 - 毫秒
 	 * @return java.time.LocalDateTime
 	 */
@@ -45,8 +45,9 @@ public class LocalDateTimeUtils {
 
 	/**
 	 * 时间戳转时间
+	 *
 	 * @param timestamp 时间戳 - 毫秒
-	 * @param zoneId 时区
+	 * @param zoneId    时区
 	 * @return java.time.LocalDateTime
 	 */
 	public static LocalDateTime parse(Long timestamp, ZoneId zoneId) {

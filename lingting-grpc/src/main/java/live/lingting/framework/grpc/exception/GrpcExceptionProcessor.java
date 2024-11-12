@@ -7,8 +7,7 @@ import live.lingting.framework.Sequence;
 import live.lingting.framework.util.AnnotationUtils;
 import live.lingting.framework.util.ArrayUtils;
 import live.lingting.framework.util.ClassUtils;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -20,12 +19,12 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author lingting 2024-03-27 09:39
  */
-@Slf4j
 public class GrpcExceptionProcessor {
 
 	private static final GrpcExceptionInvoke DEFAULT = new GrpcExceptionThrowInvoke();
 
 	private static final Map<Class<?>, GrpcExceptionInvoke> CACHE = new ConcurrentHashMap<>();
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(GrpcExceptionProcessor.class);
 
 	private final List<GrpcExceptionInstance> instances;
 
@@ -70,7 +69,7 @@ public class GrpcExceptionProcessor {
 			return true;
 		}
 
-		@SneakyThrows
+
 		@Override
 		public Object invoke(Exception e, ServerCall<?, ?> call, Metadata metadata) {
 			log.error("unknown exception. target: {}", call.getMethodDescriptor().getFullMethodName(), e);

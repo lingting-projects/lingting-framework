@@ -1,7 +1,6 @@
 package live.lingting.framework.aws.s3;
 
 import live.lingting.framework.time.DatePattern;
-import lombok.experimental.UtilityClass;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -12,8 +11,7 @@ import java.time.format.DateTimeFormatter;
 /**
  * @author lingting 2024-09-19 15:20
  */
-@UtilityClass
-public class AwsS3Utils {
+public final class AwsS3Utils {
 
 	/**
 	 * 10M
@@ -43,6 +41,8 @@ public class AwsS3Utils {
 	public static final String HEADER_TOKEN = HEADER_PREFIX + "-security-token";
 
 	public static final String HEADER_ACL = HEADER_PREFIX + "-acl";
+
+	private AwsS3Utils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static String format(LocalDateTime dateTime, DateTimeFormatter formatter) {
 		ZonedDateTime atZone = dateTime.atZone(DatePattern.SYSTEM_ZONE_ID);

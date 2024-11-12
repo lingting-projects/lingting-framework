@@ -3,7 +3,6 @@ package live.lingting.framework.mybatis.alias;
 import com.baomidou.mybatisplus.core.metadata.TableInfo;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import live.lingting.framework.util.AnnotationUtils;
-import lombok.experimental.UtilityClass;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,7 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Hccake 2021/1/14
  * @version 1.0
  */
-@UtilityClass
 public final class TableAliasHelper {
 
 	private static final String COMMA = ",";
@@ -31,8 +29,11 @@ public final class TableAliasHelper {
 	 */
 	private static final Map<Class<?>, String> TABLE_ALIAS_SELECT_COLUMNS_CACHE = new ConcurrentHashMap<>();
 
+	private TableAliasHelper() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+
 	/**
 	 * 带别名的查询字段sql
+	 *
 	 * @param clazz 实体类class
 	 * @return sql片段
 	 */
@@ -58,6 +59,7 @@ public final class TableAliasHelper {
 
 	/**
 	 * 获取实体类对应别名
+	 *
 	 * @param clazz 实体类
 	 * @return 表别名
 	 */
@@ -67,7 +69,7 @@ public final class TableAliasHelper {
 			TableAlias annotation = AnnotationUtils.findAnnotation(clazz, TableAlias.class);
 			if (annotation == null) {
 				throw new TableAliasNotFoundException(
-						"[tableAliasSelectSql] No TableAlias annotations found in class: " + clazz);
+					"[tableAliasSelectSql] No TableAlias annotations found in class: " + clazz);
 			}
 			tableAlias = annotation.value();
 			TABLE_ALIAS_CACHE.put(clazz, tableAlias);

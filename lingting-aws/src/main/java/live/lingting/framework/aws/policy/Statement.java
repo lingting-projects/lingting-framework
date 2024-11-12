@@ -1,9 +1,5 @@
 package live.lingting.framework.aws.policy;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -13,9 +9,6 @@ import java.util.Map;
 /**
  * @author lingting 2024-09-12 20:31
  */
-@Getter
-@Setter
-@RequiredArgsConstructor
 @SuppressWarnings("java:S6485")
 public class Statement {
 
@@ -24,6 +17,10 @@ public class Statement {
 	protected final LinkedHashSet<String> actions = new LinkedHashSet<>();
 
 	protected final LinkedHashSet<String> resources = new LinkedHashSet<>();
+
+	public Statement(boolean allow) {
+		this.allow = allow;
+	}
 
 	public static Statement allow() {
 		return new Statement(true);
@@ -69,4 +66,9 @@ public class Statement {
 		return map;
 	}
 
+	public boolean isAllow() {return this.allow;}
+
+	public LinkedHashSet<String> getActions() {return this.actions;}
+
+	public LinkedHashSet<String> getResources() {return this.resources;}
 }

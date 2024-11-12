@@ -1,14 +1,10 @@
 package live.lingting.framework.ali.sts;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * @author lingting 2024-09-14 13:50
  */
-@Getter
-@Setter
 public class AliStsCredentialResponse extends AliStsResponse {
 
 	@JsonProperty("Credentials")
@@ -30,8 +26,11 @@ public class AliStsCredentialResponse extends AliStsResponse {
 		return getCredentials().getExpiration();
 	}
 
-	@Getter
-	@Setter
+	public Credentials getCredentials() {return this.credentials;}
+
+	@JsonProperty("Credentials")
+	public void setCredentials(Credentials credentials) {this.credentials = credentials;}
+
 	public static class Credentials {
 
 		@JsonProperty("AccessKeyId")
@@ -46,6 +45,25 @@ public class AliStsCredentialResponse extends AliStsResponse {
 		@JsonProperty("Expiration")
 		private String expiration;
 
+		public String getAccessKeyId() {return this.accessKeyId;}
+
+		public String getAccessKeySecret() {return this.accessKeySecret;}
+
+		public String getSecurityToken() {return this.securityToken;}
+
+		public String getExpiration() {return this.expiration;}
+
+		@JsonProperty("AccessKeyId")
+		public void setAccessKeyId(String accessKeyId) {this.accessKeyId = accessKeyId;}
+
+		@JsonProperty("AccessKeySecret")
+		public void setAccessKeySecret(String accessKeySecret) {this.accessKeySecret = accessKeySecret;}
+
+		@JsonProperty("SecurityToken")
+		public void setSecurityToken(String securityToken) {this.securityToken = securityToken;}
+
+		@JsonProperty("Expiration")
+		public void setExpiration(String expiration) {this.expiration = expiration;}
 	}
 
 }

@@ -13,9 +13,7 @@ import live.lingting.framework.context.ContextComponent;
 import live.lingting.framework.grpc.interceptor.AbstractServerInterceptor;
 import live.lingting.framework.util.ClassUtils;
 import live.lingting.framework.util.ThreadUtils;
-import lombok.Getter;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -28,10 +26,9 @@ import java.util.Objects;
 /**
  * @author lingting 2023-04-14 17:38
  */
-@Slf4j
-@Getter
 public class GrpcServer implements ContextComponent {
 
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(GrpcServer.class);
 	private final Server server;
 
 	private final Map<String, Class<? extends BindableService>> serviceNameMap;
@@ -39,7 +36,7 @@ public class GrpcServer implements ContextComponent {
 	private final Map<String, Method> fullMethodNameMap;
 
 	public GrpcServer(ServerBuilder<?> builder, Collection<ServerInterceptor> interceptors,
-			Collection<BindableService> services) {
+					  Collection<BindableService> services) {
 		// 升序排序
 		List<ServerInterceptor> asc = Sequence.asc(interceptors);
 		// 获取一个游标在尾部的迭代器
@@ -118,7 +115,7 @@ public class GrpcServer implements ContextComponent {
 	}
 
 	@Override
-	@SneakyThrows
+
 	public void onApplicationStart() {
 		server.start();
 		log.info("grpc server started. port: {}", server.getPort());
@@ -131,4 +128,9 @@ public class GrpcServer implements ContextComponent {
 		server.shutdown();
 	}
 
+	public Server getServer() {return this.server;}
+
+	public Map<String, Class<? extends BindableService>> getServiceNameMap() {return this.serviceNameMap;}
+
+	public Map<String, Method> getFullMethodNameMap() {return this.fullMethodNameMap;}
 }

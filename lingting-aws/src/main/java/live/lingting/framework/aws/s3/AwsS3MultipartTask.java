@@ -5,7 +5,6 @@ import live.lingting.framework.multipart.Multipart;
 import live.lingting.framework.multipart.Part;
 import live.lingting.framework.multipart.file.FileMultipartTask;
 import live.lingting.framework.thread.Async;
-import lombok.Getter;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -20,7 +19,6 @@ public class AwsS3MultipartTask extends FileMultipartTask<AwsS3MultipartTask> {
 
 	protected final Map<Part, String> map;
 
-	@Getter
 	protected final String uploadId;
 
 	public AwsS3MultipartTask(Multipart multipart, AwsS3Object s3) {
@@ -60,4 +58,5 @@ public class AwsS3MultipartTask extends FileMultipartTask<AwsS3MultipartTask> {
 		}
 	}
 
+	public String getUploadId() {return this.uploadId;}
 }

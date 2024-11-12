@@ -5,19 +5,17 @@ import com.tencent.polaris.api.pojo.Instance;
 import com.tencent.polaris.api.pojo.ServiceKey;
 import io.grpc.Attributes.Key;
 import io.grpc.Metadata;
-import lombok.experimental.UtilityClass;
 
 /**
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
-@UtilityClass
-public class Common {
+public final class Common {
 
 	public static final Metadata.Key<String> CALLER_SERVICE_KEY = Metadata.Key.of("polaris.request.caller.service",
-			Metadata.ASCII_STRING_MARSHALLER);
+		Metadata.ASCII_STRING_MARSHALLER);
 
 	public static final Metadata.Key<String> CALLER_NAMESPACE_KEY = Metadata.Key.of("polaris.request.caller.namespace",
-			Metadata.ASCII_STRING_MARSHALLER);
+		Metadata.ASCII_STRING_MARSHALLER);
 
 	/**
 	 * {@link io.grpc.Attributes} 中存放 {@link Instance} 的 key
@@ -39,4 +37,5 @@ public class Common {
 	 */
 	public static final Key<String> TARGET_NAMESPACE_KEY = Key.create("POLARIS_SOURCE_NAMESPACE");
 
+	private Common() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 }

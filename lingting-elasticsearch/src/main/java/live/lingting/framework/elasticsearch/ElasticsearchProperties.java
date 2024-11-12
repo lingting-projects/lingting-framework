@@ -1,15 +1,10 @@
 package live.lingting.framework.elasticsearch;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.Duration;
 
 /**
  * @author lingting 2024-03-06 16:43
  */
-@Getter
-@Setter
 public class ElasticsearchProperties {
 
 	/**
@@ -22,8 +17,14 @@ public class ElasticsearchProperties {
 	 */
 	protected Scroll scroll = new Scroll();
 
-	@Getter
-	@Setter
+	public Retry getRetry() {return this.retry;}
+
+	public Scroll getScroll() {return this.scroll;}
+
+	public void setRetry(Retry retry) {this.retry = retry;}
+
+	public void setScroll(Scroll scroll) {this.scroll = scroll;}
+
 	public static class Retry {
 
 		private boolean enabled = false;
@@ -51,10 +52,27 @@ public class ElasticsearchProperties {
 		 */
 		private Duration versionConflictDelay;
 
+		public boolean isEnabled() {return this.enabled;}
+
+		public int getMaxRetry() {return this.maxRetry;}
+
+		public Duration getDelay() {return this.delay;}
+
+		public int getVersionConflictMaxRetry() {return this.versionConflictMaxRetry;}
+
+		public Duration getVersionConflictDelay() {return this.versionConflictDelay;}
+
+		public void setEnabled(boolean enabled) {this.enabled = enabled;}
+
+		public void setMaxRetry(int maxRetry) {this.maxRetry = maxRetry;}
+
+		public void setDelay(Duration delay) {this.delay = delay;}
+
+		public void setVersionConflictMaxRetry(int versionConflictMaxRetry) {this.versionConflictMaxRetry = versionConflictMaxRetry;}
+
+		public void setVersionConflictDelay(Duration versionConflictDelay) {this.versionConflictDelay = versionConflictDelay;}
 	}
 
-	@Getter
-	@Setter
 	public static class Scroll {
 
 		/**
@@ -67,6 +85,13 @@ public class ElasticsearchProperties {
 		 */
 		private Long size;
 
+		public Duration getTimeout() {return this.timeout;}
+
+		public Long getSize() {return this.size;}
+
+		public void setTimeout(Duration timeout) {this.timeout = timeout;}
+
+		public void setSize(Long size) {this.size = size;}
 	}
 
 }

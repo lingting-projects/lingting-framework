@@ -3,8 +3,8 @@ package live.lingting.framework.http.download;
 import live.lingting.framework.util.DigestUtils;
 import live.lingting.framework.util.FileUtils;
 import live.lingting.framework.util.StreamUtils;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,11 +20,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author lingting 2024-01-29 16:43
  */
-@Slf4j
 class HttpDownloadTest {
 
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(HttpDownloadTest.class);
 	final URI url = URI.create(
-			"https://maven.aliyun.com/repository/central/live/lingting/components/component-validation/0.0.1/component-validation-0.0.1.pom");
+		"https://maven.aliyun.com/repository/central/live/lingting/components/component-validation/0.0.1/component-validation-0.0.1.pom");
 
 	final String md5 = "2ce519cf7373a533e1fd297edb9ad1c3";
 

@@ -4,8 +4,6 @@ import live.lingting.framework.lock.JavaReentrantLock;
 import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.util.ValueUtils;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Collection;
 import java.util.Map;
@@ -24,8 +22,6 @@ public class WaitValue<T> {
 	/**
 	 * 如果直接调用 set 方法是不会触发 {@link JavaReentrantLock#signalAll()}. 会导致在set之前挂起的等待线程不会被唤醒
 	 */
-	@Getter
-	@Setter
 	protected T value;
 
 	public static <T> WaitValue<T> of() {
@@ -51,6 +47,7 @@ public class WaitValue<T> {
 
 	/**
 	 * 进行运算, 同时仅允许一个线程获取
+	 *
 	 * @param operator 运行行为
 	 */
 	public T compute(UnaryOperator<T> operator) throws InterruptedException {
@@ -99,4 +96,7 @@ public class WaitValue<T> {
 		return value == null;
 	}
 
+	public T getValue() {return this.value;}
+
+	public void setValue(T value) {this.value = value;}
 }

@@ -10,22 +10,24 @@ import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import live.lingting.framework.sensitive.Sensitive;
 import live.lingting.framework.sensitive.SensitiveSerializer;
 import live.lingting.framework.sensitive.SensitiveUtils;
-import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
 
 /**
  * @author lingting 2023-04-27 15:30
  */
-@RequiredArgsConstructor
 public class SensitiveDefaultSerializer extends JsonSerializer<Object>
-		implements SensitiveSerializer, ContextualSerializer {
+	implements SensitiveSerializer, ContextualSerializer {
 
 	protected final Sensitive sensitive;
 
+	public SensitiveDefaultSerializer(Sensitive sensitive) {
+		this.sensitive = sensitive;
+	}
+
 	@Override
 	public JsonSerializer<?> createContextual(SerializerProvider prov, BeanProperty property)
-			throws JsonMappingException {
+		throws JsonMappingException {
 		Sensitive annotation = property.getAnnotation(Sensitive.class);
 		if (annotation == null) {
 			return prov.findValueSerializer(property.getType(), property);

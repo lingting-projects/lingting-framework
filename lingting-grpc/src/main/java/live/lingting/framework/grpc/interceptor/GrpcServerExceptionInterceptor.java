@@ -10,21 +10,24 @@ import live.lingting.framework.Sequence;
 import live.lingting.framework.grpc.exception.GrpcExceptionInvoke;
 import live.lingting.framework.grpc.exception.GrpcExceptionProcessor;
 import live.lingting.framework.grpc.properties.GrpcServerProperties;
-import lombok.RequiredArgsConstructor;
 
 /**
  * @author lingting 2024-03-27 10:05
  */
-@RequiredArgsConstructor
 public class GrpcServerExceptionInterceptor implements ServerInterceptor, Sequence {
 
 	private final GrpcServerProperties properties;
 
 	private final GrpcExceptionProcessor processor;
 
+	public GrpcServerExceptionInterceptor(GrpcServerProperties properties, GrpcExceptionProcessor processor) {
+		this.properties = properties;
+		this.processor = processor;
+	}
+
 	@Override
 	public <S, R> ServerCall.Listener<S> interceptCall(ServerCall<S, R> call, Metadata headers,
-			ServerCallHandler<S, R> next) {
+													   ServerCallHandler<S, R> next) {
 		ServerCall.Listener<S> listener;
 		try {
 			ServerCall.Listener<S> nextCall = next.startCall(call, headers);

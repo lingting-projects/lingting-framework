@@ -1,13 +1,8 @@
 package live.lingting.framework.id;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
 /**
  * @author lingting 2024-04-20 14:23
  */
-@Getter
-@RequiredArgsConstructor
 public class SnowflakeParams {
 
 	public static final SnowflakeParams DEFAULT = new SnowflakeParams();
@@ -76,10 +71,42 @@ public class SnowflakeParams {
 	}
 
 	public SnowflakeParams(long startTimestamp, long workerIdBits, long datacenterIdBits, long sequenceBits,
-			long workerIdShift) {
+						   long workerIdShift) {
 		this(startTimestamp, workerIdBits, datacenterIdBits, ~(-1L << workerIdBits), ~(-1L << datacenterIdBits),
-				sequenceBits, workerIdShift, sequenceBits + workerIdBits,
-				sequenceBits + workerIdBits + datacenterIdBits, ~(-1L << sequenceBits));
+			sequenceBits, workerIdShift, sequenceBits + workerIdBits,
+			sequenceBits + workerIdBits + datacenterIdBits, ~(-1L << sequenceBits));
 	}
 
+	public SnowflakeParams(long startTimestamp, long workerIdBits, long datacenterIdBits, long maxWorkerId, long maxDatacenterId, long sequenceBits, long workerIdShift, long datacenterIdShift, long timestampLeftShift, long sequenceMask) {
+		this.startTimestamp = startTimestamp;
+		this.workerIdBits = workerIdBits;
+		this.datacenterIdBits = datacenterIdBits;
+		this.maxWorkerId = maxWorkerId;
+		this.maxDatacenterId = maxDatacenterId;
+		this.sequenceBits = sequenceBits;
+		this.workerIdShift = workerIdShift;
+		this.datacenterIdShift = datacenterIdShift;
+		this.timestampLeftShift = timestampLeftShift;
+		this.sequenceMask = sequenceMask;
+	}
+
+	public long getStartTimestamp() {return this.startTimestamp;}
+
+	public long getWorkerIdBits() {return this.workerIdBits;}
+
+	public long getDatacenterIdBits() {return this.datacenterIdBits;}
+
+	public long getMaxWorkerId() {return this.maxWorkerId;}
+
+	public long getMaxDatacenterId() {return this.maxDatacenterId;}
+
+	public long getSequenceBits() {return this.sequenceBits;}
+
+	public long getWorkerIdShift() {return this.workerIdShift;}
+
+	public long getDatacenterIdShift() {return this.datacenterIdShift;}
+
+	public long getTimestampLeftShift() {return this.timestampLeftShift;}
+
+	public long getSequenceMask() {return this.sequenceMask;}
 }

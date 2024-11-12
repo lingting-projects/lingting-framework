@@ -12,7 +12,6 @@ import io.grpc.Server;
 import io.grpc.ServerServiceDefinition;
 import live.lingting.polaris.grpc.server.impl.NoopDelayRegister;
 import live.lingting.polaris.grpc.util.NetworkHelper;
-import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +53,6 @@ public class PolarisGrpcServer extends Server {
 
 	private DelayRegister delayRegister = new NoopDelayRegister();
 
-	@Setter
 	private Duration maxWaitDuration;
 
 	private RegisterHook registerHook;
@@ -74,7 +72,7 @@ public class PolarisGrpcServer extends Server {
 
 		if (Objects.nonNull(delayRegister)) {
 			executorService.execute(() -> {
-				for (;;) {
+				for (; ; ) {
 					if (delayRegister.allowRegis()) {
 						break;
 					}
@@ -190,6 +188,7 @@ public class PolarisGrpcServer extends Server {
 
 	/**
 	 * Register a service instance.
+	 *
 	 * @param serviceName service name
 	 */
 	private void registerOne(String serviceName) {
@@ -220,6 +219,7 @@ public class PolarisGrpcServer extends Server {
 
 	/**
 	 * Service deregister.
+	 *
 	 * @param definitions Definition of a service
 	 */
 	private void deregister(List<ServerServiceDefinition> definitions) {
@@ -236,6 +236,7 @@ public class PolarisGrpcServer extends Server {
 
 	/**
 	 * deregister a service instance.
+	 *
 	 * @param serviceName service name
 	 */
 	private void deregisterOne(String serviceName) {
@@ -247,4 +248,5 @@ public class PolarisGrpcServer extends Server {
 		providerAPI.deRegister(request);
 	}
 
+	public void setMaxWaitDuration(Duration maxWaitDuration) {this.maxWaitDuration = maxWaitDuration;}
 }

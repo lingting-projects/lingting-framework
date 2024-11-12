@@ -1,7 +1,5 @@
 package live.lingting.framework.util;
 
-import lombok.experimental.UtilityClass;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -10,12 +8,13 @@ import java.math.BigInteger;
  *
  * @author lingting 2023-11-24 11:48
  */
-@UtilityClass
-public class NumberUtils {
+public final class NumberUtils {
 
 	public static final BigDecimal DECIMAL_TWO = new BigDecimal("2");
 
 	public static final BigInteger INTEGER_TWO = DECIMAL_TWO.toBigInteger();
+
+	private NumberUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	/**
 	 * 指定数字是否为整数
@@ -44,6 +43,7 @@ public class NumberUtils {
 	 * <p>
 	 * 对于大数, 仅支持正整数
 	 * </p>
+	 *
 	 * @return true 表示是2的整数次幂
 	 */
 	public static boolean isPower2(Number v) {

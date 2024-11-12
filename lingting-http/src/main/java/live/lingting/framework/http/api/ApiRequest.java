@@ -6,12 +6,10 @@ import live.lingting.framework.http.body.MemoryBody;
 import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.value.multi.StringMultiValue;
-import lombok.Getter;
 
 /**
  * @author lingting 2024-09-14 15:33
  */
-@Getter
 public abstract class ApiRequest {
 
 	protected final HttpHeaders headers = HttpHeaders.empty();
@@ -38,4 +36,7 @@ public abstract class ApiRequest {
 		//
 	}
 
+	public HttpHeaders getHeaders() {return this.headers;}
+
+	public StringMultiValue getParams() {return this.params;}
 }

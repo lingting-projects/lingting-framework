@@ -5,8 +5,6 @@ import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.http.okhttp.OkHttpCookie;
 import live.lingting.framework.http.okhttp.OkHttpRequestBody;
 import live.lingting.framework.jackson.JacksonUtils;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import okhttp3.Authenticator;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -28,10 +26,13 @@ import java.util.function.Supplier;
 /**
  * @author lingting 2024-09-02 15:36
  */
-@RequiredArgsConstructor
 public class OkHttpClient extends HttpClient {
 
 	protected final okhttp3.OkHttpClient client;
+
+	public OkHttpClient(okhttp3.OkHttpClient client) {
+		this.client = client;
+	}
 
 	@Override
 	public okhttp3.OkHttpClient client() {
@@ -110,7 +111,7 @@ public class OkHttpClient extends HttpClient {
 		call.enqueue(callback);
 	}
 
-	@SneakyThrows
+
 	public <T> T request(Request request, ThrowingFunction<Response, T> function) throws IOException {
 		try (Response response = request(request)) {
 			return function.apply(response);

@@ -1,6 +1,5 @@
 package live.lingting.framework.datascope.util;
 
-import lombok.experimental.UtilityClass;
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -10,13 +9,15 @@ import net.sf.jsqlparser.schema.Table;
  *
  * @author hccake
  */
-@UtilityClass
 public final class SqlParseUtils {
 
 	public static final String MYSQL_ESCAPE_CHARACTER = "`";
 
+	private SqlParseUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+
 	/**
 	 * 兼容 mysql 转义表名 `t_xxx`
+	 *
 	 * @param tableName 表名
 	 * @return 去除转移字符后的表名
 	 */
@@ -29,17 +30,19 @@ public final class SqlParseUtils {
 
 	/**
 	 * 根据当前表是否有别名，动态对字段名前添加表别名 eg. 表名： table_1 as t 原始字段：column1 返回： t.column1
-	 * @param table 表信息
+	 *
+	 * @param table      表信息
 	 * @param columnName 字段名
 	 * @return 原始字段名，或者添加了表别名的字段名
 	 */
-	public Column getAliasColumn(Table table, String columnName) {
+	public static Column getAliasColumn(Table table, String columnName) {
 		return getAliasColumn(table.getName(), table.getAlias(), columnName);
 	}
 
 	/**
 	 * 根据当前表是否有别名，动态对字段名前添加表别名 eg. 表名： table_1 as t 原始字段：column1 返回： t.column1
-	 * @param tableName 表名
+	 *
+	 * @param tableName  表名
 	 * @param tableAlias 别别名
 	 * @param columnName 字段名
 	 * @return 原始字段名，或者添加了表别名的字段名

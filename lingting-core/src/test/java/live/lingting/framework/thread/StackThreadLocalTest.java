@@ -1,8 +1,8 @@
 package live.lingting.framework.thread;
 
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -10,12 +10,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 /**
  * @author lingting 2024-03-29 13:38
  */
-@Slf4j
 class StackThreadLocalTest {
 
 	static final StackThreadLocal<Long> local = new StackThreadLocal<>();
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(StackThreadLocalTest.class);
 
-	@SneakyThrows
+
 	@Test
 	void test() {
 		int max = 1000;

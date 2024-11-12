@@ -1,8 +1,6 @@
 package live.lingting.framework.system;
 
 import live.lingting.framework.util.StreamUtils;
-import lombok.Getter;
-import lombok.SneakyThrows;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -13,7 +11,6 @@ import java.time.Duration;
 /**
  * @author lingting 2022/6/25 12:01
  */
-@Getter
 public class CommandResult implements Closeable {
 
 	protected final Command command;
@@ -35,7 +32,7 @@ public class CommandResult implements Closeable {
 		this.duration = Duration.ofMillis(end - command.startTime);
 	}
 
-	@SneakyThrows
+
 	public synchronized String getStdOut() {
 		if (stdOut == null) {
 			InputStream stream = stdOut();
@@ -44,7 +41,7 @@ public class CommandResult implements Closeable {
 		return stdOut;
 	}
 
-	@SneakyThrows
+
 	public synchronized String getStdErr() {
 		if (stdErr == null) {
 			InputStream stream = stdErr();
@@ -72,4 +69,11 @@ public class CommandResult implements Closeable {
 		clean();
 	}
 
+	public Command getCommand() {return this.command;}
+
+	public int getExitCode() {return this.exitCode;}
+
+	public long getEnd() {return this.end;}
+
+	public Duration getDuration() {return this.duration;}
 }

@@ -1,14 +1,10 @@
 package live.lingting.framework.huawei.iam;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * @author lingting 2024-09-13 11:52
  */
-@Getter
-@Setter
 public class HuaweiIamTokenResponse {
 
 	private Token token;
@@ -21,8 +17,10 @@ public class HuaweiIamTokenResponse {
 		return getToken().getIssued();
 	}
 
-	@Getter
-	@Setter
+	public Token getToken() {return this.token;}
+
+	public void setToken(Token token) {this.token = token;}
+
 	public static class Token {
 
 		@JsonProperty("expires_at")
@@ -31,6 +29,15 @@ public class HuaweiIamTokenResponse {
 		@JsonProperty("issued_at")
 		private String issued;
 
+		public String getExpire() {return this.expire;}
+
+		public String getIssued() {return this.issued;}
+
+		@JsonProperty("expires_at")
+		public void setExpire(String expire) {this.expire = expire;}
+
+		@JsonProperty("issued_at")
+		public void setIssued(String issued) {this.issued = issued;}
 	}
 
 }

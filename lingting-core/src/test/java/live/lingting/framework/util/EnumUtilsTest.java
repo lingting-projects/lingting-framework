@@ -2,8 +2,6 @@ package live.lingting.framework.util;
 
 import com.baomidou.mybatisplus.annotation.IEnum;
 import com.fasterxml.jackson.annotation.JsonValue;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,8 +20,6 @@ class EnumUtilsTest {
 		assertEquals(2, EnumUtils.getValue(JE.JE2));
 	}
 
-	@Getter
-	@AllArgsConstructor
 	enum IE implements IEnum<Integer> {
 
 		IE1(1), IE2(2),
@@ -32,10 +28,13 @@ class EnumUtilsTest {
 
 		private final Integer value;
 
+		private IE(Integer value) {
+			this.value = value;
+		}
+
+		public Integer getValue() {return this.value;}
 	}
 
-	@Getter
-	@AllArgsConstructor
 	enum JE {
 
 		JE1(1), JE2(2),
@@ -45,6 +44,11 @@ class EnumUtilsTest {
 		@JsonValue
 		private final Integer value;
 
+		private JE(Integer value) {
+			this.value = value;
+		}
+
+		public Integer getValue() {return this.value;}
 	}
 
 }

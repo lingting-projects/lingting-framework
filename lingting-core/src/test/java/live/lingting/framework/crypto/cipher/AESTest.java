@@ -1,6 +1,6 @@
 package live.lingting.framework.crypto.cipher;
 
-import lombok.SneakyThrows;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
  */
 class AESTest {
 
-	@SneakyThrows
+
 	@Test
 	void defaultTest() {
 		String secret = "6A921171B0A28CC2";
@@ -40,7 +40,7 @@ class AESTest {
 		Assertions.assertEquals(plaintext, d31);
 	}
 
-	@SneakyThrows
+
 	@Test
 	void ecb() {
 		String secret = "6A921171B0A28CC2";
@@ -70,7 +70,6 @@ class AESTest {
 	}
 
 	@Test
-	@SneakyThrows
 	void cbc() {
 		String iv = "9A221171B0A18CC2";
 		String secret = "6A921171B0A28CC2";

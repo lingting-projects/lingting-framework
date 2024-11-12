@@ -2,8 +2,6 @@ package live.lingting.framework.huawei;
 
 import live.lingting.framework.aws.policy.Statement;
 import live.lingting.framework.util.CollectionUtils;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -13,8 +11,6 @@ import java.util.Map;
 /**
  * @author lingting 2024-09-13 13:47
  */
-@Getter
-@Setter
 public class HuaweiStatement extends Statement {
 
 	protected final LinkedHashMap<String, LinkedHashMap<String, LinkedHashSet<String>>> conditions = new LinkedHashMap<>();
@@ -48,4 +44,5 @@ public class HuaweiStatement extends Statement {
 		return map;
 	}
 
+	public LinkedHashMap<String, LinkedHashMap<String, LinkedHashSet<String>>> getConditions() {return this.conditions;}
 }

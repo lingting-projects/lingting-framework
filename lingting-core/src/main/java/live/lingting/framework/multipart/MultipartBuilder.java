@@ -2,7 +2,6 @@ package live.lingting.framework.multipart;
 
 import live.lingting.framework.stream.FileCloneInputStream;
 import live.lingting.framework.util.ValueUtils;
-import lombok.Getter;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +11,6 @@ import java.util.Collection;
 /**
  * @author lingting 2024-09-14 10:39
  */
-@Getter
 public class MultipartBuilder {
 
 	private long partSize;
@@ -87,4 +85,17 @@ public class MultipartBuilder {
 		return new Multipart(id, file, size, partSize, parts);
 	}
 
+	public long getPartSize() {return this.partSize;}
+
+	public String getId() {return this.id;}
+
+	public FileCloneInputStream getSource() {return this.source;}
+
+	public long getSize() {return this.size;}
+
+	public long getMaxPartSize() {return this.maxPartSize;}
+
+	public long getMinPartSize() {return this.minPartSize;}
+
+	public long getMaxPartCount() {return this.maxPartCount;}
 }

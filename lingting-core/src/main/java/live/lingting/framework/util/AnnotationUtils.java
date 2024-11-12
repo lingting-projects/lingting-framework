@@ -1,7 +1,5 @@
 package live.lingting.framework.util;
 
-import lombok.experimental.UtilityClass;
-
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -14,15 +12,16 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author lingting 2024-02-02 17:42
  */
-@UtilityClass
 @SuppressWarnings("unchecked")
-public class AnnotationUtils {
+public final class AnnotationUtils {
 
 	public static final Annotation NULL = () -> null;
 
 	private static final Map<AnnotatedElement, Map<Class<? extends Annotation>, Annotation>> CACHE = new ConcurrentHashMap<>();
 
 	private static final Map<Class<?>, Map<Class<? extends Annotation>, Annotation>> CACHE_CLS = new ConcurrentHashMap<>();
+
+	private AnnotationUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	/**
 	 * 按照以下顺序寻找注解. 深度优先

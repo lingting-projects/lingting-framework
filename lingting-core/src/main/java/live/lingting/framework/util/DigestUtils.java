@@ -1,7 +1,5 @@
 package live.lingting.framework.util;
 
-import lombok.experimental.UtilityClass;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -11,8 +9,9 @@ import java.security.NoSuchAlgorithmException;
 /**
  * @author lingting 2023-10-08 14:41
  */
-@UtilityClass
-public class DigestUtils {
+public final class DigestUtils {
+
+	private DigestUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static byte[] md5(String input) throws NoSuchAlgorithmException {
 		return md5(input.getBytes(StandardCharsets.UTF_8));

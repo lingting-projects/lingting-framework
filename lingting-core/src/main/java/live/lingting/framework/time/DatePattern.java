@@ -1,7 +1,5 @@
 package live.lingting.framework.time;
 
-import lombok.experimental.UtilityClass;
-
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -10,8 +8,7 @@ import java.time.format.DateTimeFormatter;
 /**
  * @author lingting
  */
-@UtilityClass
-public class DatePattern {
+public final class DatePattern {
 
 	public static final ZoneOffset DEFAULT_ZONE_OFFSET = ZoneOffset.of("+8");
 
@@ -41,4 +38,5 @@ public class DatePattern {
 
 	public static final DateTimeFormatter FORMATTER_ISO_8601 = DateTimeFormatter.ofPattern(ISO_8601_DATETIME_PATTERN);
 
+	private DatePattern() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 }

@@ -7,7 +7,6 @@ import live.lingting.framework.function.ThrowingFunction;
 import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.value.AbstractFileValue;
-import lombok.SneakyThrows;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +42,7 @@ public class FileJsonValue<T> extends AbstractFileValue<T> {
 		return String.format("%s%s", filename, SUFFIX);
 	}
 
-	@SneakyThrows
+
 	protected T of(String str, ThrowingFunction<String, T> function) {
 		if (StringUtils.hasText(str)) {
 			return function.apply(str);
@@ -52,13 +51,13 @@ public class FileJsonValue<T> extends AbstractFileValue<T> {
 	}
 
 	@Override
-	@SneakyThrows
+
 	protected T ofClass(String json, Class<T> cls) {
 		return of(json, s -> mapper.readValue(s, cls));
 	}
 
 	@Override
-	@SneakyThrows
+
 	protected String toString(T t) {
 		return mapper.writeValueAsString(t);
 	}

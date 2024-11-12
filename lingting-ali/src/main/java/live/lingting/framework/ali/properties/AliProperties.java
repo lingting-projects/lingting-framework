@@ -1,14 +1,10 @@
 package live.lingting.framework.ali.properties;
 
 import live.lingting.framework.aws.s3.AwsS3Properties;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * @author lingting 2024-09-14 14:16
  */
-@Getter
-@Setter
 public class AliProperties {
 
 	protected String scheme = "https";
@@ -41,4 +37,31 @@ public class AliProperties {
 		return s3;
 	}
 
+	public String getScheme() {return this.scheme;}
+
+	public String getPrefix() {return this.prefix;}
+
+	public String getRegion() {return this.region;}
+
+	public String getEndpoint() {return this.endpoint;}
+
+	public String getAk() {return this.ak;}
+
+	public String getSk() {return this.sk;}
+
+	public String getToken() {return this.token;}
+
+	public void setScheme(String scheme) {this.scheme = scheme;}
+
+	public void setPrefix(String prefix) {this.prefix = prefix;}
+
+	public void setRegion(String region) {this.region = region;}
+
+	public void setEndpoint(String endpoint) {this.endpoint = endpoint;}
+
+	public void setAk(String ak) {this.ak = ak;}
+
+	public void setSk(String sk) {this.sk = sk;}
+
+	public void setToken(String token) {this.token = token;}
 }

@@ -1,7 +1,6 @@
 package live.lingting.framework.download;
 
 import live.lingting.framework.util.ThreadUtils;
-import lombok.Getter;
 
 import java.time.Duration;
 import java.util.concurrent.ExecutorService;
@@ -9,7 +8,6 @@ import java.util.concurrent.ExecutorService;
 /**
  * @author lingting 2024-01-16 19:33
  */
-@Getter
 @SuppressWarnings("unchecked")
 public abstract class DownloadBuilder<B extends DownloadBuilder<B>> {
 
@@ -103,6 +101,7 @@ public abstract class DownloadBuilder<B extends DownloadBuilder<B>> {
 
 	/**
 	 * 将原值进行安全判断, 如果不满足则设置为默认值
+	 *
 	 * @param t 原值
 	 * @param d 默认值
 	 * @return 结果
@@ -120,4 +119,19 @@ public abstract class DownloadBuilder<B extends DownloadBuilder<B>> {
 		return t;
 	}
 
+	public String getUrl() {return this.url;}
+
+	public boolean isMulti() {return this.multi;}
+
+	public ExecutorService getExecutor() {return this.executor;}
+
+	public Long getSize() {return this.size;}
+
+	public int getThreadLimit() {return this.threadLimit;}
+
+	public long getPartSize() {return this.partSize;}
+
+	public long getMaxRetryCount() {return this.maxRetryCount;}
+
+	public Duration getTimeout() {return this.timeout;}
 }

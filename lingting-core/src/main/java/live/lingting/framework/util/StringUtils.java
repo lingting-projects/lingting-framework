@@ -1,7 +1,5 @@
 package live.lingting.framework.util;
 
-import lombok.experimental.UtilityClass;
-
 import java.io.CharArrayWriter;
 import java.util.Base64;
 import java.util.Iterator;
@@ -9,8 +7,7 @@ import java.util.Iterator;
 /**
  * @author lingting
  */
-@UtilityClass
-public class StringUtils {
+public final class StringUtils {
 
 	public static final String BOM_UTF8 = "\uFEFF";
 
@@ -22,8 +19,11 @@ public class StringUtils {
 
 	public static final String BOM_UTF32S = "\uFFFFE0000";
 
+	private StringUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+
 	/**
 	 * 指定字符串是否存在可见字符
+	 *
 	 * @param str 字符串
 	 * @return boolean
 	 */
@@ -199,9 +199,10 @@ public class StringUtils {
 
 	/**
 	 * 往前缀追加 指定数量的指定字符
+	 *
 	 * @param prefix 前缀
-	 * @param count 数量
-	 * @param str 指定字符
+	 * @param count  数量
+	 * @param str    指定字符
 	 * @return 追加完成后的字符串
 	 */
 	public static String append(String prefix, int count, String str) {

@@ -1,7 +1,5 @@
 package live.lingting.framework.http;
 
-import lombok.experimental.UtilityClass;
-
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -17,15 +15,16 @@ import java.util.Objects;
 /**
  * @author lingting 2024-09-28 11:32
  */
-@UtilityClass
-public class Https {
+public final class Https {
 
 	public static final X509TrustManager SSL_DISABLED_TRUST_MANAGER = X509TrustAllManager.INSTANCE;
 
 	public static final HostnameVerifier SSL_DISABLED_HOSTNAME_VERIFIER = HostnameAllVerifier.INSTANCE;
 
+	private Https() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+
 	public static SSLContext sslContext(TrustManager tm, TrustManager... tms)
-			throws NoSuchAlgorithmException, KeyManagementException {
+		throws NoSuchAlgorithmException, KeyManagementException {
 		SSLContext context = SSLContext.getInstance("TLS");
 		SecureRandom random = new SecureRandom();
 		List<TrustManager> list = new ArrayList<>();

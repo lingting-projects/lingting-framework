@@ -2,8 +2,7 @@ package live.lingting.framework.dingtalk;
 
 import live.lingting.framework.dingtalk.message.DingTalkMessage;
 import live.lingting.framework.queue.WaitQueue;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.util.Collection;
 
@@ -12,9 +11,9 @@ import java.util.Collection;
  *
  * @author lingting 2020/6/10 21:25
  */
-@Slf4j
 public class DingTalkBalancedSender {
 
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(DingTalkBalancedSender.class);
 	private final WaitQueue<DingTalkSender> queue = new WaitQueue<>();
 
 	public DingTalkBalancedSender add(DingTalkSender... senders) {
@@ -29,7 +28,7 @@ public class DingTalkBalancedSender {
 		return this;
 	}
 
-	@SneakyThrows
+
 	protected DingTalkSender sender() {
 		return queue.poll();
 	}

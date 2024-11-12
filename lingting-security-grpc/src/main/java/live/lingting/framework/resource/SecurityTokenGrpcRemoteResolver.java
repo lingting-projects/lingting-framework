@@ -12,7 +12,6 @@ import live.lingting.framework.security.domain.AuthorizationVO;
 import live.lingting.framework.security.domain.SecurityScope;
 import live.lingting.framework.security.domain.SecurityToken;
 import live.lingting.framework.security.resolver.SecurityTokenResolver;
-import lombok.SneakyThrows;
 
 import static live.lingting.framework.exception.SecurityGrpcThrowing.convert;
 
@@ -52,7 +51,7 @@ public class SecurityTokenGrpcRemoteResolver implements SecurityTokenResolver, C
 		return true;
 	}
 
-	@SneakyThrows
+
 	@Override
 	public SecurityScope resolver(SecurityToken token) {
 		SecurityGrpcAuthorization.AuthorizationVO authorizationVO = resolveByRemote(token);

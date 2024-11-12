@@ -6,7 +6,6 @@ import live.lingting.framework.datascope.holder.DataScopeMatchNumHolder;
 import live.lingting.framework.datascope.holder.MappedStatementIdsWithoutDataScope;
 import live.lingting.framework.datascope.parser.DataScopeParser;
 import live.lingting.framework.mybatis.util.PluginUtils;
-import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlCommandType;
@@ -25,14 +24,18 @@ import java.util.List;
  * @author Hccake 2020/9/28
  * @version 1.0
  */
-@RequiredArgsConstructor
 @Intercepts({
-		@Signature(type = StatementHandler.class, method = "prepare", args = { Connection.class, Integer.class }) })
+	@Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class})})
 public class DataPermissionInterceptor implements Interceptor {
 
 	private final DataScopeParser parser;
 
 	private final DataPermissionHandler handler;
+
+	public DataPermissionInterceptor(DataScopeParser parser, DataPermissionHandler handler) {
+		this.parser = parser;
+		this.handler = handler;
+	}
 
 	@Override
 	public Object intercept(Invocation invocation) throws Throwable {

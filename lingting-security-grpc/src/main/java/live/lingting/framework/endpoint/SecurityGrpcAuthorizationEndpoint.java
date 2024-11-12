@@ -13,14 +13,12 @@ import live.lingting.framework.security.exception.AuthorizationException;
 import live.lingting.framework.security.password.SecurityPassword;
 import live.lingting.framework.security.resource.SecurityHolder;
 import live.lingting.framework.security.store.SecurityStore;
-import lombok.RequiredArgsConstructor;
 
 /**
  * @author lingting 2023-12-18 15:31
  */
-@RequiredArgsConstructor
 public class SecurityGrpcAuthorizationEndpoint
-		extends SecurityGrpcAuthorizationServiceGrpc.SecurityGrpcAuthorizationServiceImplBase {
+	extends SecurityGrpcAuthorizationServiceGrpc.SecurityGrpcAuthorizationServiceImplBase {
 
 	private final SecurityAuthorizationService service;
 
@@ -29,6 +27,13 @@ public class SecurityGrpcAuthorizationEndpoint
 	private final SecurityPassword securityPassword;
 
 	private final SecurityGrpcConvert convert;
+
+	public SecurityGrpcAuthorizationEndpoint(SecurityAuthorizationService service, SecurityStore store, SecurityPassword securityPassword, SecurityGrpcConvert convert) {
+		this.service = service;
+		this.store = store;
+		this.securityPassword = securityPassword;
+		this.convert = convert;
+	}
 
 	@Override
 	public void logout(Empty request, StreamObserver<SecurityGrpcAuthorization.AuthorizationVO> observer) {
@@ -40,7 +45,7 @@ public class SecurityGrpcAuthorizationEndpoint
 	@Override
 	@Authorize(anyone = true)
 	public void password(SecurityGrpcAuthorization.AuthorizationPasswordPO po,
-			StreamObserver<SecurityGrpcAuthorization.AuthorizationVO> observer) {
+						 StreamObserver<SecurityGrpcAuthorization.AuthorizationVO> observer) {
 		String username = po.getUsername();
 		String rawPassword = po.getPassword();
 		String password = securityPassword.decodeFront(rawPassword);

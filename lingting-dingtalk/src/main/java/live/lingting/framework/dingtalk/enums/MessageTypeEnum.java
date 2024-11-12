@@ -1,15 +1,10 @@
 package live.lingting.framework.dingtalk.enums;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 /**
  * 钉钉消息类型
  *
  * @author lingting 2020/6/10 21:29
  */
-@Getter
-@AllArgsConstructor
 public enum MessageTypeEnum {
 
 	/**
@@ -29,4 +24,12 @@ public enum MessageTypeEnum {
 
 	private final String desc;
 
+	private MessageTypeEnum(String val, String desc) {
+		this.val = val;
+		this.desc = desc;
+	}
+
+	public String getVal() {return this.val;}
+
+	public String getDesc() {return this.desc;}
 }

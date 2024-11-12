@@ -2,14 +2,10 @@ package live.lingting.framework.aws.s3;
 
 import live.lingting.framework.aws.policy.Acl;
 import live.lingting.framework.http.api.ApiRequest;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * @author lingting 2024-09-19 15:03
  */
-@Getter
-@Setter
 public abstract class AwsS3Request extends ApiRequest {
 
 	protected String key;
@@ -27,4 +23,11 @@ public abstract class AwsS3Request extends ApiRequest {
 		}
 	}
 
+	public String getKey() {return this.key;}
+
+	public Acl getAcl() {return this.acl;}
+
+	public void setKey(String key) {this.key = key;}
+
+	public void setAcl(Acl acl) {this.acl = acl;}
 }

@@ -10,8 +10,6 @@ import live.lingting.framework.huawei.HuaweiUtils;
 import live.lingting.framework.util.DigestUtils;
 import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.value.multi.StringMultiValue;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
@@ -24,7 +22,6 @@ import static live.lingting.framework.huawei.HuaweiUtils.CHARSET;
 /**
  * @author lingting 2024/11/5 11:18
  */
-@RequiredArgsConstructor
 public class HuaweiObsSing {
 
 	protected final LocalDateTime dateTime;
@@ -46,6 +43,19 @@ public class HuaweiObsSing {
 	protected final String sk;
 
 	protected final String bucket;
+
+	public HuaweiObsSing(LocalDateTime dateTime, String method, String path, HttpHeaders headers, String bodySha256, StringMultiValue params, String region, String ak, String sk, String bucket) {
+		this.dateTime = dateTime;
+		this.method = method;
+		this.path = path;
+		this.headers = headers;
+		this.bodySha256 = bodySha256;
+		this.params = params;
+		this.region = region;
+		this.ak = ak;
+		this.sk = sk;
+		this.bucket = bucket;
+	}
 
 	public static HuaweiObsSingBuilder builder() {
 		return new HuaweiObsSingBuilder();
@@ -150,7 +160,7 @@ public class HuaweiObsSing {
 		public HuaweiObsSing build() {
 			LocalDateTime time = this.dateTime == null ? LocalDateTime.now() : this.dateTime;
 			return new HuaweiObsSing(time, this.method, this.path, this.headers, this.bodySha256, this.params,
-					this.region, this.ak, this.sk, this.bucket);
+				this.region, this.ak, this.sk, this.bucket);
 		}
 
 	}
@@ -207,7 +217,7 @@ public class HuaweiObsSing {
 		return method + "\n" + md5 + "\n" + type + "\n" + date + "\n" + canonicalizedHeaders + canonicalizedResource;
 	}
 
-	@SneakyThrows
+
 	public String calculate() {
 		String source = source();
 		Mac mac = Mac.hmacBuilder().sha1().secret(sk).charset(CHARSET).build();

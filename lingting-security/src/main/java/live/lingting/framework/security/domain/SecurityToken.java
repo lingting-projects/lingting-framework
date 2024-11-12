@@ -1,16 +1,11 @@
 package live.lingting.framework.security.domain;
 
 import live.lingting.framework.util.StringUtils;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 /**
  * @author lingting 2023-04-28 12:38
  */
-@Getter
 @SuppressWarnings("java:S6548")
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class SecurityToken {
 
 	public static final SecurityToken EMPTY = of(null, null, null);
@@ -20,6 +15,12 @@ public class SecurityToken {
 	private final String token;
 
 	private final String raw;
+
+	private SecurityToken(String type, String token, String raw) {
+		this.type = type;
+		this.token = token;
+		this.raw = raw;
+	}
 
 	public static SecurityToken ofDelimiter(String raw, String delimiter) {
 		if (!StringUtils.hasText(raw)) {
@@ -44,4 +45,9 @@ public class SecurityToken {
 		return StringUtils.hasText(getToken());
 	}
 
+	public String getType() {return this.type;}
+
+	public String getToken() {return this.token;}
+
+	public String getRaw() {return this.raw;}
 }

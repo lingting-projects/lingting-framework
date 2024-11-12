@@ -1,6 +1,5 @@
 package live.lingting.framework.flow;
 
-import lombok.SneakyThrows;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +39,7 @@ public abstract class FutureSubscriber<R, T> implements Flow.Subscriber<T> {
 
 	public abstract R convert(List<T> list);
 
-	@SneakyThrows
+
 	public R get() {
 		try {
 			return future.get();

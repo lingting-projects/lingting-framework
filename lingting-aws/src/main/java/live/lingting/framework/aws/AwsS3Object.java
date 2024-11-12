@@ -19,7 +19,6 @@ import live.lingting.framework.multipart.Part;
 import live.lingting.framework.stream.CloneInputStream;
 import live.lingting.framework.stream.FileCloneInputStream;
 import live.lingting.framework.thread.Async;
-import lombok.Getter;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +35,6 @@ import static live.lingting.framework.http.HttpMethod.POST;
 /**
  * @author lingting 2024-09-19 15:09
  */
-@Getter
 public class AwsS3Object extends AwsS3Client implements AwsS3ObjectInterface {
 
 	protected final String key;
@@ -159,6 +157,7 @@ public class AwsS3Object extends AwsS3Client implements AwsS3ObjectInterface {
 
 	/**
 	 * 上传分片
+	 *
 	 * @return 合并用的 etag
 	 */
 	@Override
@@ -173,6 +172,7 @@ public class AwsS3Object extends AwsS3Client implements AwsS3ObjectInterface {
 
 	/**
 	 * 合并分片
+	 *
 	 * @param map key: part. value: etag
 	 */
 	@Override
@@ -189,6 +189,10 @@ public class AwsS3Object extends AwsS3Client implements AwsS3ObjectInterface {
 		request.getParams().add("uploadId", uploadId);
 		call(request);
 	}
+
+	public String getKey() {return this.key;}
+
+	public String getPublicUrl() {return this.publicUrl;}
 
 	// endregion
 

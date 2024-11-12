@@ -3,7 +3,6 @@ package live.lingting.framework.multipart.file;
 import live.lingting.framework.multipart.Multipart;
 import live.lingting.framework.multipart.MultipartTask;
 import live.lingting.framework.thread.Async;
-import lombok.Getter;
 
 import static live.lingting.framework.multipart.file.FileMultipartTaskStatus.CANCELED;
 import static live.lingting.framework.multipart.file.FileMultipartTaskStatus.MERGED;
@@ -13,7 +12,6 @@ import static live.lingting.framework.multipart.file.FileMultipartTaskStatus.WAI
 /**
  * @author lingting 2024-09-06 16:31
  */
-@Getter
 public abstract class FileMultipartTask<I extends FileMultipartTask<I>> extends MultipartTask<I> {
 
 	protected FileMultipartTaskStatus taskStatus = WAIT;
@@ -58,4 +56,5 @@ public abstract class FileMultipartTask<I extends FileMultipartTask<I>> extends 
 
 	protected abstract void onCancel();
 
+	public FileMultipartTaskStatus getTaskStatus() {return this.taskStatus;}
 }

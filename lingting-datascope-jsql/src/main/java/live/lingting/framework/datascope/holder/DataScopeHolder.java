@@ -1,23 +1,24 @@
 package live.lingting.framework.datascope.holder;
 
 import live.lingting.framework.datascope.JsqlDataScope;
-import lombok.experimental.UtilityClass;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
-@UtilityClass
-public class DataScopeHolder {
+public final class DataScopeHolder {
 
 	/**
 	 * 使用栈存储 List<DataScope>，便于在方法嵌套调用时使用不同的数据权限控制。
 	 */
 	private static final ThreadLocal<Deque<List<JsqlDataScope>>> DATA_SCOPES = ThreadLocal.withInitial(ArrayDeque::new);
 
+	private DataScopeHolder() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+
 	/**
 	 * 获取当前的 dataScopes
+	 *
 	 * @return List<DataScope>
 	 */
 	public static List<JsqlDataScope> peek() {

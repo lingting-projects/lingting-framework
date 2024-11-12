@@ -1,8 +1,7 @@
 package live.lingting.framework.ali;
 
 import live.lingting.framework.time.DatePattern;
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -14,15 +13,16 @@ import static live.lingting.framework.time.DatePattern.FORMATTER_ISO_8601;
 /**
  * @author lingting 2024-09-14 13:42
  */
-@Slf4j
-@UtilityClass
-public class AliUtils {
+public final class AliUtils {
 
 	public static final Duration CREDENTIAL_EXPIRE = Duration.ofHours(1);
 
 	public static final String HEADER_ERR = "x-oss-err";
 
 	public static final String HEADER_EC = "x-oss-ec";
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(AliUtils.class);
+
+	private AliUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static LocalDateTime parse(String str) {
 		LocalDateTime parse = LocalDateTime.parse(str, FORMATTER_ISO_8601);

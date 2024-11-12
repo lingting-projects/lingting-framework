@@ -1,13 +1,8 @@
 package live.lingting.framework.api;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 /**
  * @author lingting 2022/9/19 13:56
  */
-@Getter
-@AllArgsConstructor
 public enum ApiResultCode implements ResultCode {
 
 	/**
@@ -104,4 +99,12 @@ public enum ApiResultCode implements ResultCode {
 
 	private final String message;
 
+	private ApiResultCode(Integer code, String message) {
+		this.code = code;
+		this.message = message;
+	}
+
+	public Integer getCode() {return this.code;}
+
+	public String getMessage() {return this.message;}
 }

@@ -14,11 +14,10 @@ import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.DigestUtils;
 import live.lingting.framework.util.StreamUtils;
 import live.lingting.framework.value.multi.StringMultiValue;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import org.slf4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
@@ -35,10 +34,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author lingting 2024-09-18 14:29
  */
-@Slf4j
 @EnabledIfSystemProperty(named = "framework.ali.oss.test", matches = "true")
 class AliOssTest {
 
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(AliOssTest.class);
 	AliSts sts;
 
 	AliOssProperties properties;
@@ -49,7 +48,7 @@ class AliOssTest {
 		properties = AliBasic.ossProperties();
 	}
 
-	@SneakyThrows
+
 	@Test
 	void put() {
 		Snowflake snowflake = new Snowflake(0, 0);
@@ -71,7 +70,7 @@ class AliOssTest {
 		ossObject.delete();
 	}
 
-	@SneakyThrows
+
 	@Test
 	void multipart() {
 		AliOssBucket ossBucket = sts.ossBucket(properties);
@@ -101,7 +100,7 @@ class AliOssTest {
 		byte[] bytes = source.getBytes();
 		String hex = DigestUtils.md5Hex(bytes);
 		AwsS3MultipartTask task = assertDoesNotThrow(
-				() -> ossObject.multipart(new ByteArrayInputStream(bytes), 1, new Async(10)));
+			() -> ossObject.multipart(new ByteArrayInputStream(bytes), 1, new Async(10)));
 		assertTrue(task.isStarted());
 		task.await();
 		if (task.hasFailed()) {

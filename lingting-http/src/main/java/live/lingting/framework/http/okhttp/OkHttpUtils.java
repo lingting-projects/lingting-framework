@@ -2,7 +2,6 @@ package live.lingting.framework.http.okhttp;
 
 import live.lingting.framework.http.HttpRequest;
 import live.lingting.framework.util.StringUtils;
-import lombok.experimental.UtilityClass;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.Buffer;
@@ -13,8 +12,9 @@ import java.io.InputStream;
 /**
  * @author lingting 2024-09-28 14:11
  */
-@UtilityClass
-public class OkHttpUtils {
+public final class OkHttpUtils {
+
+	private OkHttpUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static InputStream input(RequestBody body) throws IOException {
 		if (body == null) {

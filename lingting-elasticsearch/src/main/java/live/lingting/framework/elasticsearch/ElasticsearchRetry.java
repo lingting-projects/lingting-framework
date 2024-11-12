@@ -3,8 +3,6 @@ package live.lingting.framework.elasticsearch;
 import live.lingting.framework.function.ThrowingSupplier;
 import live.lingting.framework.retry.Retry;
 import live.lingting.framework.retry.RetryFunction;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;
 
@@ -19,8 +17,6 @@ public class ElasticsearchRetry<T> extends Retry<T> {
 		super(supplier, new ElasticsearchRetryFunction(retry));
 	}
 
-	@Getter
-	@RequiredArgsConstructor
 	public static class ElasticsearchRetryFunction implements RetryFunction {
 
 		protected final ElasticsearchProperties.Retry retry;
@@ -28,6 +24,10 @@ public class ElasticsearchRetry<T> extends Retry<T> {
 		protected int versionConflictCount = 0;
 
 		protected int count = 0;
+
+		public ElasticsearchRetryFunction(ElasticsearchProperties.Retry retry) {
+			this.retry = retry;
+		}
 
 		@Override
 		public boolean allowRetry(int retryCount, Exception e) {
@@ -69,6 +69,11 @@ public class ElasticsearchRetry<T> extends Retry<T> {
 			return retry.getDelay();
 		}
 
+		public ElasticsearchProperties.Retry getRetry() {return this.retry;}
+
+		public int getVersionConflictCount() {return this.versionConflictCount;}
+
+		public int getCount() {return this.count;}
 	}
 
 }

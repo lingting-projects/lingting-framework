@@ -1,15 +1,12 @@
 package live.lingting.framework.retry;
 
 import live.lingting.framework.function.ThrowingSupplier;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;
 
 /**
  * @author lingting 2023-12-19 13:47
  */
-@Getter
 public class SimpleRetry<T> extends Retry<T> {
 
 	/**
@@ -28,7 +25,10 @@ public class SimpleRetry<T> extends Retry<T> {
 		this.delay = delay;
 	}
 
-	@RequiredArgsConstructor
+	public int getMaxRetryCount() {return this.maxRetryCount;}
+
+	public Duration getDelay() {return this.delay;}
+
 	public static class SimpleRetryFunction implements RetryFunction {
 
 		/**
@@ -40,6 +40,11 @@ public class SimpleRetry<T> extends Retry<T> {
 		 * 重试延迟
 		 */
 		protected final Duration delay;
+
+		public SimpleRetryFunction(int maxRetryCount, Duration delay) {
+			this.maxRetryCount = maxRetryCount;
+			this.delay = delay;
+		}
 
 		@Override
 		public boolean allowRetry(int retryCount, Exception e) {

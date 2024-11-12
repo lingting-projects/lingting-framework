@@ -4,15 +4,17 @@ import live.lingting.framework.Sequence;
 import live.lingting.framework.security.domain.SecurityScope;
 import live.lingting.framework.security.domain.SecurityToken;
 import live.lingting.framework.security.store.SecurityStore;
-import lombok.RequiredArgsConstructor;
 
 /**
  * @author lingting 2024-05-27 16:36
  */
-@RequiredArgsConstructor
 public class SecurityTokenDefaultResolver implements SecurityTokenResolver, Sequence {
 
 	private final SecurityStore store;
+
+	public SecurityTokenDefaultResolver(SecurityStore store) {
+		this.store = store;
+	}
 
 	@Override
 	public boolean isSupport(SecurityToken token) {

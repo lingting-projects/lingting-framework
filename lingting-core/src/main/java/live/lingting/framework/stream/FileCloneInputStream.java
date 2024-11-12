@@ -1,7 +1,6 @@
 package live.lingting.framework.stream;
 
 import live.lingting.framework.util.FileUtils;
-import lombok.SneakyThrows;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,7 +41,7 @@ public class FileCloneInputStream extends CloneInputStream {
 		return new FileInputStream(source());
 	}
 
-	@SneakyThrows
+
 	@Override
 	public FileCloneInputStream copy() {
 		return new FileCloneInputStream(this);

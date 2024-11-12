@@ -1,15 +1,10 @@
 package live.lingting.framework.dingtalk.enums;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 /**
  * 跳转 ActionCard 类型 消息的按钮排列方式
  *
  * @author lingting 2020/6/10 23:44
  */
-@Getter
-@AllArgsConstructor
 public enum ActionBtnOrientationEnum {
 
 	/**
@@ -25,4 +20,12 @@ public enum ActionBtnOrientationEnum {
 
 	private final String text;
 
+	private ActionBtnOrientationEnum(String val, String text) {
+		this.val = val;
+		this.text = text;
+	}
+
+	public String getVal() {return this.val;}
+
+	public String getText() {return this.text;}
 }

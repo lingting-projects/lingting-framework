@@ -1,13 +1,11 @@
 package live.lingting.framework.util;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.experimental.UtilityClass;
 
 /**
  * @author lingting 2022/10/28 17:54
  */
-@UtilityClass
-public class HttpUtils {
+public final class HttpUtils {
 
 	public static final String HEADER_HOST = "Host";
 
@@ -18,6 +16,8 @@ public class HttpUtils {
 	public static final String HEADER_AUTHORIZATION = "Authorization";
 
 	public static final String HEADER_ACCEPT_LANGUAGE = "Accept-Language";
+
+	private HttpUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static String host(HttpServletRequest request) {
 		return request.getHeader(HEADER_HOST);

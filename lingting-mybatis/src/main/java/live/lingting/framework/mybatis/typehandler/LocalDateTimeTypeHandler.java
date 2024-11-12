@@ -1,9 +1,9 @@
 package live.lingting.framework.mybatis.typehandler;
 
 import live.lingting.framework.util.StringUtils;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
+import org.slf4j.Logger;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
@@ -19,10 +19,9 @@ import java.util.Map;
 /**
  * @author lingting 2022/8/22 9:41
  */
-@Slf4j
 @SuppressWarnings("java:S6485")
 public class LocalDateTimeTypeHandler extends BaseTypeHandler<LocalDateTime>
-		implements AutoRegisterTypeHandler<LocalDateTime> {
+	implements AutoRegisterTypeHandler<LocalDateTime> {
 
 	public static final String MICROSECONDS_DELIMITER = ".";
 
@@ -33,6 +32,7 @@ public class LocalDateTimeTypeHandler extends BaseTypeHandler<LocalDateTime>
 	public static final DateTimeFormatter FORMAT_NORMAL = DateTimeFormatter.ofPattern(STR_FORMAT_NORMAL);
 
 	private static final Map<Integer, DateTimeFormatter> CACHE = new HashMap<>(16);
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(LocalDateTimeTypeHandler.class);
 
 	public static LocalDateTime parse(String val) {
 		if (!StringUtils.hasText(val)) {
@@ -64,7 +64,7 @@ public class LocalDateTimeTypeHandler extends BaseTypeHandler<LocalDateTime>
 
 	@Override
 	public void setNonNullParameter(PreparedStatement ps, int i, LocalDateTime parameter, JdbcType jdbcType)
-			throws SQLException {
+		throws SQLException {
 		if (parameter == null) {
 			ps.setObject(i, null);
 		}

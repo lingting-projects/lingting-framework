@@ -3,8 +3,6 @@ package live.lingting.framework.http.java;
 import live.lingting.framework.flow.FutureSubscriber;
 import live.lingting.framework.util.FileUtils;
 import live.lingting.framework.util.StreamUtils;
-import lombok.SneakyThrows;
-import lombok.experimental.UtilityClass;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,13 +15,14 @@ import java.util.List;
 /**
  * @author lingting 2024-09-14 17:47
  */
-@UtilityClass
-public class JavaHttpUtils {
+public final class JavaHttpUtils {
+
+	private JavaHttpUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static File write(HttpRequest.BodyPublisher publisher) {
 		FutureSubscriber<File, ByteBuffer> subscriber = new FutureSubscriber<>() {
 
-			@SneakyThrows
+
 			@Override
 			public File convert(List<ByteBuffer> list) {
 				File file = FileUtils.createTemp(".http");

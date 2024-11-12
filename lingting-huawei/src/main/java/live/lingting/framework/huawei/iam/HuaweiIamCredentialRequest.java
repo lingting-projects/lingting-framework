@@ -4,8 +4,6 @@ import live.lingting.framework.http.body.BodySource;
 import live.lingting.framework.http.body.MemoryBody;
 import live.lingting.framework.huawei.HuaweiStatement;
 import live.lingting.framework.jackson.JacksonUtils;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.time.Duration;
 import java.util.Collection;
@@ -15,11 +13,9 @@ import java.util.Map;
 /**
  * @author lingting 2024-09-13 13:53
  */
-@Getter
-@Setter
 public class HuaweiIamCredentialRequest extends HuaweiIamRequest {
 
-	protected static final String[] VALUE_METHODS = { "token" };
+	protected static final String[] VALUE_METHODS = {"token"};
 
 	protected Duration timeout;
 
@@ -45,4 +41,11 @@ public class HuaweiIamCredentialRequest extends HuaweiIamRequest {
 		return new MemoryBody(json);
 	}
 
+	public Duration getTimeout() {return this.timeout;}
+
+	public Collection<HuaweiStatement> getStatements() {return this.statements;}
+
+	public void setTimeout(Duration timeout) {this.timeout = timeout;}
+
+	public void setStatements(Collection<HuaweiStatement> statements) {this.statements = statements;}
 }

@@ -2,7 +2,6 @@ package live.lingting.framework.api;
 
 import live.lingting.framework.function.ThrowingFunction;
 import live.lingting.framework.value.CursorValue;
-import lombok.SneakyThrows;
 
 import java.util.List;
 
@@ -20,7 +19,7 @@ public class LimitCursor<T> extends CursorValue<T> {
 		this.index = 1;
 	}
 
-	@SneakyThrows
+
 	@Override
 	protected List<T> nextBatchData() {
 		PaginationResult<T> result = limit.apply(index);

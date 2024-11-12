@@ -1,7 +1,6 @@
 package live.lingting.framework.value.step;
 
 import live.lingting.framework.value.StepValue;
-import lombok.SneakyThrows;
 
 import java.math.BigInteger;
 import java.util.Iterator;
@@ -72,7 +71,7 @@ public class IteratorStepValue<T> extends AbstractConcurrentStepValue<T> {
 	 * 移除上一个next返回的元素
 	 */
 	@Override
-	@SneakyThrows
+
 	public void remove() {
 		lock.runByInterruptibly(() -> {
 			// 至少需要调用一次next

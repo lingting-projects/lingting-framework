@@ -6,11 +6,9 @@ import live.lingting.framework.value.CycleValue;
 import live.lingting.framework.value.StepValue;
 import live.lingting.framework.value.cycle.StepCycleValue;
 import live.lingting.framework.value.step.LongStepValue;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.TimeInfo;
+import org.slf4j.Logger;
 
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
@@ -30,21 +28,22 @@ import java.util.stream.Collectors;
 /**
  * @author lingting 2023-12-27 15:47
  */
-@Slf4j
 @SuppressWarnings("java:S6548")
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class NtpFactory {
 
 	public static final StepValue<Long> STEP_INIT = new LongStepValue(1, null, Long.valueOf(10));
 
 	public static final NtpFactory INSTANCE = new NtpFactory();
 
-	private static final String[] HOSTS = { "time.windows.com", "time.nist.gov", "time.apple.com",
-			"time.asia.apple.com", "cn.ntp.org.cn", "ntp.ntsc.ac.cn", "cn.pool.ntp.org", "ntp.aliyun.com",
-			"ntp1.aliyun.com", "ntp2.aliyun.com", "ntp3.aliyun.com", "ntp4.aliyun.com", "ntp5.aliyun.com",
-			"ntp6.aliyun.com", "ntp7.aliyun.com", };
+	private static final String[] HOSTS = {"time.windows.com", "time.nist.gov", "time.apple.com",
+		"time.asia.apple.com", "cn.ntp.org.cn", "ntp.ntsc.ac.cn", "cn.pool.ntp.org", "ntp.aliyun.com",
+		"ntp1.aliyun.com", "ntp2.aliyun.com", "ntp3.aliyun.com", "ntp4.aliyun.com", "ntp5.aliyun.com",
+		"ntp6.aliyun.com", "ntp7.aliyun.com",};
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(NtpFactory.class);
 
 	private final Set<String> blockHosts = new HashSet<>();
+
+	protected NtpFactory() {}
 
 	public static Set<String> getDefaultHosts() {
 		return Arrays.stream(HOSTS).collect(Collectors.toCollection(LinkedHashSet::new));
@@ -93,7 +92,7 @@ public class NtpFactory {
 	}
 
 	public Ntp createByFuture(CycleValue<Long> cycle, String host)
-			throws UnknownHostException, ExecutionException, TimeoutException, InterruptedException {
+		throws UnknownHostException, ExecutionException, TimeoutException, InterruptedException {
 		String ip = IpUtils.resolve(host);
 
 		CompletableFuture<Ntp> future = ThreadUtils.async(() -> {

@@ -1,16 +1,11 @@
 package live.lingting.framework.huawei.iam;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 
 /**
  * @author lingting 2024-09-12 22:04
  */
-@Getter
-@Setter
 public class HuaweiIamToken {
 
 	private String value;
@@ -42,4 +37,15 @@ public class HuaweiIamToken {
 		return duration.compareTo(tokenEarlyExpire) < 1;
 	}
 
+	public String getValue() {return this.value;}
+
+	public LocalDateTime getExpire() {return this.expire;}
+
+	public LocalDateTime getIssued() {return this.issued;}
+
+	public void setValue(String value) {this.value = value;}
+
+	public void setExpire(LocalDateTime expire) {this.expire = expire;}
+
+	public void setIssued(LocalDateTime issued) {this.issued = issued;}
 }

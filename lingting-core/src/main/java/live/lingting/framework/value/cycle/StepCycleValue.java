@@ -1,15 +1,17 @@
 package live.lingting.framework.value.cycle;
 
 import live.lingting.framework.value.StepValue;
-import lombok.RequiredArgsConstructor;
 
 /**
  * @author lingting 2024-01-23 15:22
  */
-@RequiredArgsConstructor
 public class StepCycleValue<T> extends AbstractConcurrentCycleValue<T> {
 
 	private final StepValue<T> step;
+
+	public StepCycleValue(StepValue<T> step) {
+		this.step = step;
+	}
 
 	@Override
 	public void doReset() {

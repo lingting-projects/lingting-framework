@@ -15,7 +15,6 @@
  */
 package live.lingting.framework.mybatis.util;
 
-import lombok.experimental.UtilityClass;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.statement.StatementHandler;
@@ -38,10 +37,11 @@ import java.util.Map;
  * @author TaoYu , hubin
  * @since 2017-06-20
  */
-@UtilityClass
 public final class PluginUtils {
 
 	public static final String DELEGATE_BOUNDSQL_SQL = "delegate.boundSql.sql";
+
+	private PluginUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	/**
 	 * 获得真正的处理对象,可能多层代理.
@@ -57,7 +57,8 @@ public final class PluginUtils {
 
 	/**
 	 * 给 BoundSql 设置 additionalParameters
-	 * @param boundSql BoundSql
+	 *
+	 * @param boundSql             BoundSql
 	 * @param additionalParameters additionalParameters
 	 */
 	public static void setAdditionalParameter(BoundSql boundSql, Map<String, Object> additionalParameters) {

@@ -4,10 +4,6 @@ import live.lingting.framework.MarkdownBuilder;
 import live.lingting.framework.dingtalk.DingTalkParams;
 import live.lingting.framework.dingtalk.enums.ActionBtnOrientationEnum;
 import live.lingting.framework.dingtalk.enums.MessageTypeEnum;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,9 +13,7 @@ import java.util.List;
  *
  * @author lingting 2020/6/10 23:39
  */
-@Getter
-@Setter
-@Accessors(chain = true)
+
 public class DingTalkActionCardMessage extends AbstractDingTalkMessage {
 
 	private String title;
@@ -78,8 +72,48 @@ public class DingTalkActionCardMessage extends AbstractDingTalkMessage {
 		return params.setActionCard(card);
 	}
 
-	@Getter
-	@AllArgsConstructor
+	public String getTitle() {return this.title;}
+
+	public MarkdownBuilder getText() {return this.text;}
+
+	public ActionBtnOrientationEnum getOrientation() {return this.orientation;}
+
+	public String getSingleTitle() {return this.singleTitle;}
+
+	public String getSingleUrl() {return this.singleUrl;}
+
+	public List<Button> getButtons() {return this.buttons;}
+
+	public DingTalkActionCardMessage setTitle(String title) {
+		this.title = title;
+		return this;
+	}
+
+	public DingTalkActionCardMessage setText(MarkdownBuilder text) {
+		this.text = text;
+		return this;
+	}
+
+	public DingTalkActionCardMessage setOrientation(ActionBtnOrientationEnum orientation) {
+		this.orientation = orientation;
+		return this;
+	}
+
+	public DingTalkActionCardMessage setSingleTitle(String singleTitle) {
+		this.singleTitle = singleTitle;
+		return this;
+	}
+
+	public DingTalkActionCardMessage setSingleUrl(String singleUrl) {
+		this.singleUrl = singleUrl;
+		return this;
+	}
+
+	public DingTalkActionCardMessage setButtons(List<Button> buttons) {
+		this.buttons = buttons;
+		return this;
+	}
+
 	public static class Button {
 
 		/**
@@ -92,6 +126,14 @@ public class DingTalkActionCardMessage extends AbstractDingTalkMessage {
 		 */
 		private final String actionURL;
 
+		public Button(String title, String actionURL) {
+			this.title = title;
+			this.actionURL = actionURL;
+		}
+
+		public String getTitle() {return this.title;}
+
+		public String getActionURL() {return this.actionURL;}
 	}
 
 }

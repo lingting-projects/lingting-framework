@@ -1,14 +1,12 @@
 package live.lingting.framework.money;
 
 import live.lingting.framework.exception.BizException;
-import lombok.RequiredArgsConstructor;
 
 import java.math.RoundingMode;
 
 /**
  * @author lingting 2023-05-07 17:55
  */
-@RequiredArgsConstructor
 @SuppressWarnings("java:S6548")
 public class MoneyConfig {
 
@@ -46,8 +44,16 @@ public class MoneyConfig {
 	 */
 	final String quantileSymbol;
 
+	public MoneyConfig(Integer decimalLimit, RoundingMode decimalType, Integer quantileLimit, String quantileSymbol) {
+		this.decimalLimit = decimalLimit;
+		this.decimalType = decimalType;
+		this.quantileLimit = quantileLimit;
+		this.quantileSymbol = quantileSymbol;
+	}
+
 	/**
 	 * 小数位数量是否有效
+	 *
 	 * @return true 有效, 需要进行小数位处理
 	 */
 	public static boolean validDecimal(Integer decimalLimit) {
@@ -56,6 +62,7 @@ public class MoneyConfig {
 
 	/**
 	 * 分位配置是否有效
+	 *
 	 * @return true 表示有效, 需要进行分位控制
 	 */
 	public static boolean validQuantile(Integer quantileLimit) {

@@ -3,7 +3,6 @@ package live.lingting.framework.util;
 import com.baomidou.mybatisplus.annotation.IEnum;
 import com.fasterxml.jackson.annotation.JsonValue;
 import live.lingting.framework.reflect.ClassField;
-import lombok.experimental.UtilityClass;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -15,8 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author lingting 2022/12/20 14:52
  */
-@UtilityClass
-public class EnumUtils {
+public final class EnumUtils {
 
 	public static final String METHOD_GET_VALUE = "getValue";
 
@@ -25,6 +23,8 @@ public class EnumUtils {
 	public static final String CLS_JACKSON_JSON_VALUE = "com.fasterxml.jackson.annotation.JsonValue";
 
 	static final Map<Class<?>, ClassField> CACHE = new ConcurrentHashMap<>();
+
+	private EnumUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static ClassField getByIEnum(Class<?> cls) {
 		if (!ClassUtils.isPresent(CLS_MYBATIS_PLUS_IENUM, EnumUtils.class.getClassLoader())) {

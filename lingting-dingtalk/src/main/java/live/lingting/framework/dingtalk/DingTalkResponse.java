@@ -2,18 +2,13 @@ package live.lingting.framework.dingtalk;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import live.lingting.framework.jackson.JacksonUtils;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
 
 /**
  * 钉钉返回信息
  *
  * @author lingting 2020/6/11 0:23
  */
-@Getter
-@Setter
-@Accessors(chain = true)
+
 public class DingTalkResponse {
 
 	public static final Long SUCCESS_CODE = 0L;
@@ -49,4 +44,33 @@ public class DingTalkResponse {
 		return response;
 	}
 
+	public Long getCode() {return this.code;}
+
+	public String getMessage() {return this.message;}
+
+	public String getResponse() {return this.response;}
+
+	public boolean isSuccess() {return this.success;}
+
+	@JsonProperty("errcode")
+	public DingTalkResponse setCode(Long code) {
+		this.code = code;
+		return this;
+	}
+
+	@JsonProperty("errmsg")
+	public DingTalkResponse setMessage(String message) {
+		this.message = message;
+		return this;
+	}
+
+	public DingTalkResponse setResponse(String response) {
+		this.response = response;
+		return this;
+	}
+
+	public DingTalkResponse setSuccess(boolean success) {
+		this.success = success;
+		return this;
+	}
 }

@@ -8,8 +8,6 @@ import live.lingting.framework.security.resource.SecurityHolder;
 import live.lingting.framework.util.AnnotationUtils;
 import live.lingting.framework.util.ArrayUtils;
 import live.lingting.framework.util.CollectionUtils;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -18,11 +16,13 @@ import java.util.function.Predicate;
 /**
  * @author lingting 2023-03-29 20:45
  */
-@Getter
-@RequiredArgsConstructor
 public class SecurityAuthorize {
 
 	private final int order;
+
+	public SecurityAuthorize(int order) {
+		this.order = order;
+	}
 
 	public Authorize findAuthorize(Class<?> cls, Method method) {
 		if (method != null) {
@@ -149,4 +149,5 @@ public class SecurityAuthorize {
 		}
 	}
 
+	public int getOrder() {return this.order;}
 }

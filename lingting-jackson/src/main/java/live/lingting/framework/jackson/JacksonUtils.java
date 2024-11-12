@@ -15,9 +15,6 @@ import live.lingting.framework.jackson.module.MoneyModule;
 import live.lingting.framework.jackson.module.RModule;
 import live.lingting.framework.jackson.provider.NullSerializerProvider;
 import live.lingting.framework.jackson.sensitive.SensitiveModule;
-import lombok.Getter;
-import lombok.SneakyThrows;
-import lombok.experimental.UtilityClass;
 
 import java.lang.reflect.Type;
 import java.util.function.Consumer;
@@ -25,15 +22,14 @@ import java.util.function.Consumer;
 /**
  * @author lingting 2021/6/9 14:28
  */
-@UtilityClass
 @SuppressWarnings("unchecked")
-public class JacksonUtils {
+public final class JacksonUtils {
 
-	@Getter
 	static ObjectMapper mapper = defaultConfig(new ObjectMapper());
 
-	@Getter
 	static XmlMapper xmlMapper = defaultConfig(new XmlMapper());
+
+	private JacksonUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static <T extends ObjectMapper> T defaultConfig(T mapper) {
 		// 序列化时忽略未知属性
@@ -81,12 +77,12 @@ public class JacksonUtils {
 	}
 
 	// region json
-	@SneakyThrows
+
 	public static String toJson(Object obj) {
 		return mapper.writeValueAsString(obj);
 	}
 
-	@SneakyThrows
+
 	public static <T> T toObj(String json, Class<T> r) {
 		if (r.isAssignableFrom(String.class)) {
 			return (T) json;
@@ -94,7 +90,7 @@ public class JacksonUtils {
 		return mapper.readValue(json, r);
 	}
 
-	@SneakyThrows
+
 	public static <T> T toObj(String json, Type t) {
 		JavaType type = mapper.constructType(t);
 		if (type.getRawClass().equals(String.class)) {
@@ -103,7 +99,7 @@ public class JacksonUtils {
 		return mapper.readValue(json, type);
 	}
 
-	@SneakyThrows
+
 	public static <T> T toObj(String json, TypeReference<T> t) {
 		return mapper.readValue(json, t);
 	}
@@ -117,23 +113,23 @@ public class JacksonUtils {
 		}
 	}
 
-	@SneakyThrows
+
 	public static <T> T toObj(JsonNode node, Class<T> r) {
 		return mapper.treeToValue(node, r);
 	}
 
-	@SneakyThrows
+
 	public static <T> T toObj(JsonNode node, Type t) {
 		return mapper.treeToValue(node, mapper.constructType(t));
 	}
 
-	@SneakyThrows
+
 	public static <T> T toObj(JsonNode node, TypeReference<T> t) {
 		JavaType javaType = mapper.constructType(t.getType());
 		return mapper.treeToValue(node, javaType);
 	}
 
-	@SneakyThrows
+
 	public static JsonNode toNode(String json) {
 		return mapper.readTree(json);
 	}
@@ -142,12 +138,12 @@ public class JacksonUtils {
 
 	// region xml
 
-	@SneakyThrows
+
 	public static String toXml(Object obj) {
 		return xmlMapper.writeValueAsString(obj);
 	}
 
-	@SneakyThrows
+
 	public static <T> T xmlToObj(String xml, Class<T> r) {
 		if (r.isAssignableFrom(String.class)) {
 			return (T) xml;
@@ -155,7 +151,7 @@ public class JacksonUtils {
 		return xmlMapper.readValue(xml, r);
 	}
 
-	@SneakyThrows
+
 	public static <T> T xmlToObj(String xml, Type t) {
 		JavaType type = xmlMapper.constructType(t);
 		if (type.getRawClass().equals(String.class)) {
@@ -164,7 +160,7 @@ public class JacksonUtils {
 		return xmlMapper.readValue(xml, type);
 	}
 
-	@SneakyThrows
+
 	public static <T> T xmlToObj(String xml, TypeReference<T> t) {
 		return xmlMapper.readValue(xml, t);
 	}
@@ -178,26 +174,30 @@ public class JacksonUtils {
 		}
 	}
 
-	@SneakyThrows
+
 	public static <T> T xmlToObj(JsonNode node, Class<T> r) {
 		return xmlMapper.treeToValue(node, r);
 	}
 
-	@SneakyThrows
+
 	public static <T> T xmlToObj(JsonNode node, Type t) {
 		return xmlMapper.treeToValue(node, xmlMapper.constructType(t));
 	}
 
-	@SneakyThrows
+
 	public static <T> T xmlToObj(JsonNode node, TypeReference<T> t) {
 		JavaType javaType = xmlMapper.constructType(t.getType());
 		return xmlMapper.treeToValue(node, javaType);
 	}
 
-	@SneakyThrows
+
 	public static JsonNode xmlToNode(String xml) {
 		return xmlMapper.readTree(xml);
 	}
+
+	public static ObjectMapper getMapper() {return JacksonUtils.mapper;}
+
+	public static XmlMapper getXmlMapper() {return JacksonUtils.xmlMapper;}
 
 	// endregion
 

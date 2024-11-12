@@ -2,7 +2,7 @@ package live.lingting.framework.thread;
 
 import live.lingting.framework.util.MdcUtils;
 import live.lingting.framework.util.StringUtils;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.slf4j.MDC;
 
 import java.util.Map;
@@ -12,10 +12,10 @@ import java.util.Map;
  *
  * @author lingting 2024-04-28 17:25
  */
-@Slf4j
 @SuppressWarnings("java:S112")
 public abstract class KeepRunnable implements Runnable {
 
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(KeepRunnable.class);
 	protected final String name;
 
 	protected final Map<String, String> mdc;

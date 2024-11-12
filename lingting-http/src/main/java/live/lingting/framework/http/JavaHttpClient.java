@@ -3,8 +3,6 @@ package live.lingting.framework.http;
 import live.lingting.framework.http.body.BodySource;
 import live.lingting.framework.http.body.MemoryBody;
 import live.lingting.framework.http.header.HttpHeaders;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
@@ -23,10 +21,13 @@ import java.util.function.Supplier;
 /**
  * @author lingting 2024-09-02 15:33
  */
-@RequiredArgsConstructor
 public class JavaHttpClient extends HttpClient {
 
 	protected final java.net.http.HttpClient client;
+
+	public JavaHttpClient(java.net.http.HttpClient client) {
+		this.client = client;
+	}
 
 	public static HttpResponse convert(HttpRequest request, java.net.http.HttpResponse<InputStream> r) {
 		int code = r.statusCode();
@@ -70,7 +71,7 @@ public class JavaHttpClient extends HttpClient {
 		return client;
 	}
 
-	@SneakyThrows
+
 	@Override
 	public HttpResponse request(HttpRequest request) throws IOException {
 		java.net.http.HttpRequest jr = convert(request);
@@ -112,7 +113,7 @@ public class JavaHttpClient extends HttpClient {
 			return timeout(null, null, null, null);
 		}
 
-		@SneakyThrows
+
 		public JavaHttpClient build(Supplier<java.net.http.HttpClient.Builder> supplier) {
 			java.net.http.HttpClient.Builder builder = supplier.get();
 

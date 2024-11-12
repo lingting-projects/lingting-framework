@@ -29,7 +29,6 @@ import io.grpc.Status;
 import live.lingting.polaris.grpc.interceptor.PolarisServerInterceptor;
 import live.lingting.polaris.grpc.util.Common;
 import live.lingting.polaris.grpc.util.PolarisHelper;
-import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +57,6 @@ public class PolarisRateLimitServerInterceptor extends PolarisServerInterceptor 
 
 	private String applicationName = "";
 
-	@Setter
 	private BiFunction<QuotaResponse, String, Status> rateLimitCallback;
 
 	public PolarisRateLimitServerInterceptor() {
@@ -79,7 +77,7 @@ public class PolarisRateLimitServerInterceptor extends PolarisServerInterceptor 
 		final boolean applicationRegisterMode = StringUtils.isNotBlank(aname);
 		final String serviceName = applicationRegisterMode ? aname : call.getMethodDescriptor().getServiceName();
 		final String method = applicationRegisterMode ? call.getMethodDescriptor().getFullMethodName()
-				: call.getMethodDescriptor().getBareMethodName();
+			: call.getMethodDescriptor().getBareMethodName();
 
 		final QuotaRequest request = new QuotaRequest();
 		request.setNamespace(namespace);
@@ -119,7 +117,7 @@ public class PolarisRateLimitServerInterceptor extends PolarisServerInterceptor 
 			switch (argument.getType()) {
 				case HEADER:
 					arguments.add(Argument.buildHeader(argument.getKey(),
-							headers.get(Key.of(key, Metadata.ASCII_STRING_MARSHALLER))));
+						headers.get(Key.of(key, Metadata.ASCII_STRING_MARSHALLER))));
 					break;
 				case CALLER_IP:
 					HttpConnectProxiedSocketAddress clientAddress = (HttpConnectProxiedSocketAddress) call
@@ -158,6 +156,8 @@ public class PolarisRateLimitServerInterceptor extends PolarisServerInterceptor 
 		}
 		return new RateLimitResp(Collections.emptyList(), null);
 	}
+
+	public void setRateLimitCallback(BiFunction<QuotaResponse, String, Status> rateLimitCallback) {this.rateLimitCallback = rateLimitCallback;}
 
 	private static class RateLimitResp {
 

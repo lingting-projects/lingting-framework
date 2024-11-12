@@ -13,11 +13,10 @@ import live.lingting.framework.thread.Async;
 import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.DigestUtils;
 import live.lingting.framework.util.StreamUtils;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import org.slf4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
@@ -34,10 +33,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author lingting 2024-09-13 17:13
  */
-@Slf4j
 @EnabledIfSystemProperty(named = "framework.huawei.obs.test", matches = "true")
 class HuaweiObsTest {
 
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(HuaweiObsTest.class);
 	HuaweiIam iam;
 
 	HuaweiObsProperties properties;
@@ -48,7 +47,7 @@ class HuaweiObsTest {
 		properties = HuaweiBasic.obsProperties();
 	}
 
-	@SneakyThrows
+
 	@Test
 	void put() {
 		Snowflake snowflake = new Snowflake(0, 0);
@@ -69,7 +68,7 @@ class HuaweiObsTest {
 		obsObject.delete();
 	}
 
-	@SneakyThrows
+
 	@Test
 	void multipart() {
 		HuaweiObsBucket obsBucket = iam.obsBucket(properties);
@@ -91,7 +90,7 @@ class HuaweiObsTest {
 		byte[] bytes = source.getBytes();
 		String hex = DigestUtils.md5Hex(bytes);
 		AwsS3MultipartTask task = assertDoesNotThrow(
-				() -> obsObject.multipart(new ByteArrayInputStream(bytes), 1, new Async(10)));
+			() -> obsObject.multipart(new ByteArrayInputStream(bytes), 1, new Async(10)));
 		assertTrue(task.isStarted());
 		task.await();
 		if (task.hasFailed()) {

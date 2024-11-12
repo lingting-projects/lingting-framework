@@ -1,8 +1,6 @@
 package live.lingting.framework.time;
 
 import live.lingting.framework.util.LocalDateTimeUtils;
-import lombok.Getter;
-import lombok.experimental.UtilityClass;
 
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAmount;
@@ -11,14 +9,14 @@ import java.time.temporal.TemporalUnit;
 /**
  * @author lingting 2024-05-29 20:30
  */
-@Getter
-@UtilityClass
-public class Time {
+public final class Time {
 
 	/**
 	 * 当前系统时间比实际真实时间慢多少毫秒
 	 */
 	private static long diff = 0;
+
+	private Time() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static void setDiff(long diff) {
 		Time.diff = diff;

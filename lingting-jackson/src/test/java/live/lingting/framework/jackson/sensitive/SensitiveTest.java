@@ -5,8 +5,6 @@ import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.sensitive.Sensitive;
 import live.lingting.framework.sensitive.serializer.SensitiveAllSerializer;
 import live.lingting.framework.sensitive.serializer.SensitiveMobileSerializer;
-import lombok.Getter;
-import lombok.Setter;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,8 +30,6 @@ class SensitiveTest {
 		assertEquals("*", node.get("spi").asText());
 	}
 
-	@Getter
-	@Setter
 	static class SensitiveTestEntity {
 
 		@Sensitive(SensitiveAllSerializer.class)
@@ -48,6 +44,21 @@ class SensitiveTest {
 		@Sensitive(SensitiveSpiProvider.SensitiveSpiSerializer.class)
 		private String spi;
 
+		public String getAll() {return this.all;}
+
+		public String getDefaultValue() {return this.defaultValue;}
+
+		public String getMobile() {return this.mobile;}
+
+		public String getSpi() {return this.spi;}
+
+		public void setAll(String all) {this.all = all;}
+
+		public void setDefaultValue(String defaultValue) {this.defaultValue = defaultValue;}
+
+		public void setMobile(String mobile) {this.mobile = mobile;}
+
+		public void setSpi(String spi) {this.spi = spi;}
 	}
 
 }

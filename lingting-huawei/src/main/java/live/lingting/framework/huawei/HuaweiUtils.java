@@ -1,7 +1,6 @@
 package live.lingting.framework.huawei;
 
 import live.lingting.framework.aws.s3.AwsS3Utils;
-import lombok.experimental.UtilityClass;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -15,8 +14,7 @@ import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 /**
  * @author lingting 2024-09-13 11:54
  */
-@UtilityClass
-public class HuaweiUtils {
+public final class HuaweiUtils {
 
 	public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
@@ -27,6 +25,8 @@ public class HuaweiUtils {
 	public static final Charset CHARSET = StandardCharsets.UTF_8;
 
 	public static final String HEADER_DATE = "Date";
+
+	private HuaweiUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static LocalDateTime parse(String str, ZoneOffset zone) {
 		LocalDateTime parse = LocalDateTime.parse(str, FORMATTER);

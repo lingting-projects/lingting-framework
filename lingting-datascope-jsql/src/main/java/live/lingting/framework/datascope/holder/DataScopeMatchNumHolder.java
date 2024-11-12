@@ -1,7 +1,5 @@
 package live.lingting.framework.datascope.holder;
 
-import lombok.experimental.UtilityClass;
-
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Optional;
@@ -12,10 +10,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author hccake
  */
-@UtilityClass
 public final class DataScopeMatchNumHolder {
 
 	private static final ThreadLocal<Deque<AtomicInteger>> matchNumTreadLocal = new ThreadLocal<>();
+
+	private DataScopeMatchNumHolder() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	/**
 	 * 每次 SQL 执行解析前初始化匹配次数为 0
@@ -31,6 +30,7 @@ public final class DataScopeMatchNumHolder {
 
 	/**
 	 * 获取当前 SQL 解析后被数据权限匹配中的次数
+	 *
 	 * @return int 次数
 	 */
 	public static Integer pollMatchNum() {

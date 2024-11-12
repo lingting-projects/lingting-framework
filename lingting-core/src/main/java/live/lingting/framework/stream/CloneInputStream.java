@@ -2,10 +2,6 @@ package live.lingting.framework.stream;
 
 import live.lingting.framework.util.FileUtils;
 import live.lingting.framework.util.StreamUtils;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.SneakyThrows;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +10,6 @@ import java.io.InputStream;
 /**
  * @author lingting 2024/10/24 11:00
  */
-@RequiredArgsConstructor
 @SuppressWarnings("java:S1170")
 public abstract class CloneInputStream extends InputStream {
 
@@ -31,9 +26,12 @@ public abstract class CloneInputStream extends InputStream {
 
 	protected InputStream stream;
 
-	@Getter
-	@Setter
 	protected boolean closeAndDelete = false;
+
+	public CloneInputStream(Object source, long size) {
+		this.source = source;
+		this.size = size;
+	}
 
 	protected InputStream getStream() throws IOException {
 		if (stream != null) {
@@ -93,7 +91,7 @@ public abstract class CloneInputStream extends InputStream {
 		}
 	}
 
-	@SneakyThrows
+
 	@Override
 	public boolean markSupported() {
 		return getStream().markSupported();
@@ -116,4 +114,7 @@ public abstract class CloneInputStream extends InputStream {
 
 	public abstract void clear();
 
+	public boolean isCloseAndDelete() {return this.closeAndDelete;}
+
+	public void setCloseAndDelete(boolean closeAndDelete) {this.closeAndDelete = closeAndDelete;}
 }

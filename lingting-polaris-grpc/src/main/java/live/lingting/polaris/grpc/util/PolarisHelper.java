@@ -10,7 +10,6 @@ import io.grpc.Status;
 import live.lingting.polaris.grpc.client.MetadataClientInterceptor;
 import live.lingting.polaris.grpc.ratelimit.PolarisRateLimitServerInterceptor;
 import live.lingting.polaris.grpc.server.MetadataServerInterceptor;
-import lombok.experimental.UtilityClass;
 
 import java.util.Iterator;
 import java.util.Optional;
@@ -22,8 +21,7 @@ import java.util.function.Predicate;
 /**
  * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
  */
-@UtilityClass
-public class PolarisHelper {
+public final class PolarisHelper {
 
 	/**
 	 * {@link PolarisLabelsInject} 用户自定义的 PolarisLabelsInject 实现，可以在处理每次流量时，通过
@@ -48,12 +46,15 @@ public class PolarisHelper {
 		});
 	}
 
+	private PolarisHelper() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+
 	public static PolarisLabelsInject getLabelsInject() {
 		return inject;
 	}
 
 	/**
 	 * 调用此方法注入用户自定义的 PolarisLabelsInject
+	 *
 	 * @param inject {@link PolarisLabelsInject}
 	 */
 	public static void setLabelsInject(PolarisLabelsInject inject) {
@@ -74,6 +75,7 @@ public class PolarisHelper {
 
 	/**
 	 * 使用 builder 模式开启 gRPC 的限流能力
+	 *
 	 * @return {@link PolarisRateLimitInterceptorBuilder}
 	 */
 	public static PolarisRateLimitInterceptorBuilder buildRateLimitInterceptor() {
@@ -83,18 +85,19 @@ public class PolarisHelper {
 	public static class PolarisRateLimitInterceptorBuilder {
 
 		private BiFunction<QuotaResponse, String, Status> rateLimitCallback = (quotaResponse,
-				method) -> Status.UNAVAILABLE.withDescription("rate-limit exceeded (server side)");
+																			   method) -> Status.UNAVAILABLE.withDescription("rate-limit exceeded (server side)");
 
 		private PolarisRateLimitInterceptorBuilder() {
 		}
 
 		/**
 		 * 当限流触发时，用户自定义的限流结果返回器
+		 *
 		 * @param rateLimitCallback {@link BiFunction<QuotaResponse, String, Status>}
 		 * @return {@link PolarisRateLimitInterceptorBuilder}
 		 */
 		public PolarisRateLimitInterceptorBuilder rateLimitCallback(
-				BiFunction<QuotaResponse, String, Status> rateLimitCallback) {
+			BiFunction<QuotaResponse, String, Status> rateLimitCallback) {
 			this.rateLimitCallback = rateLimitCallback;
 			return this;
 		}

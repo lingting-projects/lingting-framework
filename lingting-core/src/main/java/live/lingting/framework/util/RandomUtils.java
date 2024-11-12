@@ -1,14 +1,11 @@
 package live.lingting.framework.util;
 
-import lombok.experimental.UtilityClass;
-
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @author lingting
  */
-@UtilityClass
-public class RandomUtils {
+public final class RandomUtils {
 
 	/**
 	 * 用于随机选的数字
@@ -30,12 +27,15 @@ public class RandomUtils {
 	 */
 	public static final String STRING = NUMBER + LETTER;
 
+	private RandomUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+
 	public static ThreadLocalRandom getRandom() {
 		return ThreadLocalRandom.current();
 	}
 
 	/**
 	 * 随机数
+	 *
 	 * @param max 最大值 - 不包括该值
 	 * @return int
 	 */
@@ -45,6 +45,7 @@ public class RandomUtils {
 
 	/**
 	 * 随机数
+	 *
 	 * @param min 最小值 - 包括该值
 	 * @param max 最大值 - 不包括该值
 	 * @return int
@@ -55,8 +56,9 @@ public class RandomUtils {
 
 	/**
 	 * 从指定字符串中随机生成字符串
+	 *
 	 * @param base 根字符
-	 * @param len 长度
+	 * @param len  长度
 	 * @return java.lang.String
 	 */
 	public static String nextStr(String base, int len) {

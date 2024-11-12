@@ -1,17 +1,18 @@
 package live.lingting.framework.mybatis.wrapper;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import lombok.experimental.UtilityClass;
 
 /**
  * @author Hccake 2021/1/14
  * @version 1.0
  */
-@UtilityClass
 public final class WrappersX {
+
+	private WrappersX() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	/**
 	 * 获取 LambdaQueryWrapperX&lt;T&gt;
+	 *
 	 * @param <T> 实体类泛型
 	 * @return LambdaQueryWrapperX&lt;T&gt;
 	 */
@@ -21,8 +22,9 @@ public final class WrappersX {
 
 	/**
 	 * 获取 LambdaQueryWrapperX&lt;T&gt;
+	 *
 	 * @param entity 实体类
-	 * @param <T> 实体类泛型
+	 * @param <T>    实体类泛型
 	 * @return LambdaQueryWrapperX&lt;T&gt;
 	 */
 	public static <T> LambdaQueryWrapperX<T> lambdaQueryX(T entity) {
@@ -31,8 +33,9 @@ public final class WrappersX {
 
 	/**
 	 * 获取 LambdaQueryWrapperX&lt;T&gt;
+	 *
 	 * @param entityClass 实体类class
-	 * @param <T> 实体类泛型
+	 * @param <T>         实体类泛型
 	 * @return LambdaQueryWrapperX&lt;T&gt;
 	 * @since 3.3.1
 	 */
@@ -42,8 +45,9 @@ public final class WrappersX {
 
 	/**
 	 * 获取 LambdaAliasQueryWrapper&lt;T&gt;
+	 *
 	 * @param entity 实体类
-	 * @param <T> 实体类泛型
+	 * @param <T>    实体类泛型
 	 * @return LambdaAliasQueryWrapper&lt;T&gt;
 	 */
 	public static <T> LambdaAliasQueryWrapperX<T> lambdaAliasQueryX(T entity) {
@@ -52,8 +56,9 @@ public final class WrappersX {
 
 	/**
 	 * 获取 LambdaAliasQueryWrapper&lt;T&gt;
+	 *
 	 * @param entityClass 实体类class
-	 * @param <T> 实体类泛型
+	 * @param <T>         实体类泛型
 	 * @return LambdaAliasQueryWrapper&lt;T&gt;
 	 * @since 3.3.1
 	 */
@@ -63,6 +68,7 @@ public final class WrappersX {
 
 	/**
 	 * 获取 LambdaUpdateWrapper&lt;T&gt; 复制 com.baomidou.mybatisplus.core.toolkit.Wrappers
+	 *
 	 * @param <T> 实体类泛型
 	 * @return LambdaUpdateWrapper&lt;T&gt;
 	 */
@@ -72,8 +78,9 @@ public final class WrappersX {
 
 	/**
 	 * 获取 LambdaUpdateWrapper&lt;T&gt; 复制 com.baomidou.mybatisplus.core.toolkit.Wrappers
+	 *
 	 * @param entity 实体类
-	 * @param <T> 实体类泛型
+	 * @param <T>    实体类泛型
 	 * @return LambdaUpdateWrapper&lt;T&gt;
 	 */
 	public static <T> LambdaUpdateWrapper<T> lambdaUpdate(T entity) {
@@ -82,8 +89,9 @@ public final class WrappersX {
 
 	/**
 	 * 获取 LambdaUpdateWrapper&lt;T&gt; 复制 com.baomidou.mybatisplus.core.toolkit.Wrappers
+	 *
 	 * @param entityClass 实体类class
-	 * @param <T> 实体类泛型
+	 * @param <T>         实体类泛型
 	 * @return LambdaUpdateWrapper&lt;T&gt;
 	 * @since 3.3.1
 	 */

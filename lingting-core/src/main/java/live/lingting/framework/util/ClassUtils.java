@@ -1,7 +1,6 @@
 package live.lingting.framework.util;
 
 import live.lingting.framework.reflect.ClassField;
-import lombok.experimental.UtilityClass;
 
 import java.io.IOException;
 import java.lang.reflect.AccessibleObject;
@@ -33,9 +32,8 @@ import java.util.stream.Collectors;
 /**
  * @author lingting 2021/2/25 21:17
  */
-@UtilityClass
-@SuppressWarnings({ "java:S3011", "unchecked" })
-public class ClassUtils {
+@SuppressWarnings({"java:S3011", "unchecked"})
+public final class ClassUtils {
 
 	static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
 
@@ -50,6 +48,8 @@ public class ClassUtils {
 	static final Map<Class<?>, Type[]> CACHE_TYPE_ARGUMENTS = new ConcurrentHashMap<>();
 
 	static final Map<Class<?>, Constructor<?>[]> CACHE_CONSTRUCTOR = new ConcurrentHashMap<>();
+
+	private ClassUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	/**
 	 * 获取指定类的泛型
@@ -81,6 +81,7 @@ public class ClassUtils {
 
 	/**
 	 * 判断class是否可以被加载, 使用系统类加载器和当前工具类加载器
+	 *
 	 * @param className 类名
 	 * @return true
 	 */
@@ -90,7 +91,8 @@ public class ClassUtils {
 
 	/**
 	 * 确定class是否可以被加载
-	 * @param className 完整类名
+	 *
+	 * @param className    完整类名
 	 * @param classLoaders 类加载
 	 */
 	public static boolean isPresent(String className, ClassLoader... classLoaders) {
@@ -101,7 +103,7 @@ public class ClassUtils {
 			throw new IllegalArgumentException("ClassLoaders can not be empty!");
 		}
 		Map<ClassLoader, Boolean> absent = CACHE_CLASS_PRESENT.computeIfAbsent(className,
-				k -> new ConcurrentHashMap<>(loaders.size()));
+			k -> new ConcurrentHashMap<>(loaders.size()));
 
 		for (ClassLoader loader : loaders) {
 			Boolean flag = absent.computeIfAbsent(loader, k -> {
@@ -133,18 +135,19 @@ public class ClassUtils {
 
 	/**
 	 * 扫描指定包下, 所有继承指定类的class
+	 *
 	 * @param basePack 指定包 eg: live.lingting.framework.item
-	 * @param filter 过滤指定类
-	 * @param error 获取类时发生异常处理
+	 * @param filter   过滤指定类
+	 * @param error    获取类时发生异常处理
 	 * @return java.util.Set<java.lang.Class < T>>
 	 */
 	@SuppressWarnings("java:S3776")
 	public static <T> Set<Class<T>> scan(String basePack, Predicate<Class<T>> filter,
-			BiConsumer<String, Exception> error) throws IOException {
+										 BiConsumer<String, Exception> error) throws IOException {
 		String scanName = basePack.replace(".", "/");
 
 		Collection<ResourceUtils.Resource> collection = ResourceUtils.scan(scanName,
-				resource -> !resource.isDirectory() && resource.getName().endsWith(".class"));
+			resource -> !resource.isDirectory() && resource.getName().endsWith(".class"));
 
 		Set<Class<T>> classes = new HashSet<>();
 		for (ResourceUtils.Resource resource : collection) {
@@ -168,6 +171,7 @@ public class ClassUtils {
 
 	/**
 	 * 把指定对象的所有字段和对应的值组成Map
+	 *
 	 * @param o 需要转化的对象
 	 * @return java.util.Map<java.lang.String, java.lang.Object>
 	 */
@@ -177,14 +181,15 @@ public class ClassUtils {
 
 	/**
 	 * 把指定对象的所有字段和对应的值组成Map
-	 * @param o 需要转化的对象
+	 *
+	 * @param o      需要转化的对象
 	 * @param filter 过滤不存入Map的字段, 返回false表示不存入Map
-	 * @param toKey 设置存入Map的key
-	 * @param toVal 自定义指定字段值的存入Map的数据
+	 * @param toKey  设置存入Map的key
+	 * @param toVal  自定义指定字段值的存入Map的数据
 	 * @return java.util.Map<java.lang.String, java.lang.Object>
 	 */
 	public static <T> Map<String, T> toMap(Object o, Predicate<Field> filter, Function<Field, String> toKey,
-			BiFunction<Field, Object, T> toVal) {
+										   BiFunction<Field, Object, T> toVal) {
 		if (o == null) {
 			return Collections.emptyMap();
 		}
@@ -208,6 +213,7 @@ public class ClassUtils {
 
 	/**
 	 * 获取所有字段, 不改变可读性
+	 *
 	 * @param cls 指定类
 	 * @return java.lang.reflect.Field[]
 	 */
@@ -270,6 +276,7 @@ public class ClassUtils {
 	 * <p>
 	 * 否则直接取字段 - 不会尝试修改可读性, 如果可读性有问题, 请主动get 然后修改
 	 * </p>
+	 *
 	 * @return live.lingting.framework.domain.ClassField 可用于获取字段值的数组
 	 */
 	public static ClassField[] classFields(Class<?> cls) {
@@ -311,8 +318,9 @@ public class ClassUtils {
 
 	/**
 	 * 获取指定类中的指定字段名的字段
+	 *
 	 * @param fieldName 字段名
-	 * @param cls 指定类
+	 * @param cls       指定类
 	 * @return live.lingting.framework.domain.ClassField 字段
 	 */
 	public static ClassField classField(String fieldName, Class<?> cls) {
@@ -330,7 +338,7 @@ public class ClassUtils {
 
 	public static Class<?> loadClass(String className, ClassLoader classLoader) throws ClassNotFoundException {
 		return loadClass(className, classLoader, ClassLoader.getSystemClassLoader(), ClassUtils.class.getClassLoader(),
-				Thread.currentThread().getContextClassLoader());
+			Thread.currentThread().getContextClassLoader());
 	}
 
 	public static Class<?> loadClass(String className, ClassLoader... classLoaders) throws ClassNotFoundException {
@@ -349,8 +357,9 @@ public class ClassUtils {
 
 	/**
 	 * 设置可访问对象的可访问权限为 true
+	 *
 	 * @param object 可访问的对象
-	 * @param <T> 类型
+	 * @param <T>    类型
 	 * @return 返回设置后的对象
 	 */
 	public static <T extends AccessibleObject> T setAccessible(T object) {
@@ -362,6 +371,7 @@ public class ClassUtils {
 
 	/**
 	 * 方法名转字段名
+	 *
 	 * @param methodName 方法名
 	 * @return java.lang.String 字段名
 	 */

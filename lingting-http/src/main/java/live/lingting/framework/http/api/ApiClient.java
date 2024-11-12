@@ -8,9 +8,6 @@ import live.lingting.framework.http.HttpUrlBuilder;
 import live.lingting.framework.http.body.BodySource;
 import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.value.multi.StringMultiValue;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 import org.slf4j.Logger;
 
 import java.net.URI;
@@ -21,23 +18,22 @@ import java.time.Duration;
  */
 public abstract class ApiClient<R extends ApiRequest> {
 
-	@Setter
 	static HttpClient defaultClient = HttpClient.okhttp()
 		.disableSsl()
 		.timeout(Duration.ofSeconds(15), Duration.ofSeconds(30))
 		.build();
 
-	@Getter
 	protected final Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
 
 	protected final String host;
 
-	@Setter
 	protected HttpClient client = defaultClient;
 
 	protected ApiClient(String host) {
 		this.host = host;
 	}
+
+	public static void setDefaultClient(HttpClient defaultClient) {ApiClient.defaultClient = defaultClient;}
 
 	protected void customize(R request) {
 		//
@@ -65,7 +61,7 @@ public abstract class ApiClient<R extends ApiRequest> {
 
 	protected abstract HttpResponse checkout(R request, HttpResponse response);
 
-	@SneakyThrows
+
 	protected HttpResponse call(R r) {
 		r.onCall();
 		customize(r);
@@ -97,4 +93,7 @@ public abstract class ApiClient<R extends ApiRequest> {
 		return checkout(r, response);
 	}
 
+	public Logger getLog() {return this.log;}
+
+	public void setClient(HttpClient client) {this.client = client;}
 }

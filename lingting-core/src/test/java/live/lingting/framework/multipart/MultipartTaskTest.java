@@ -1,6 +1,6 @@
 package live.lingting.framework.multipart;
 
-import lombok.SneakyThrows;
+
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -45,7 +45,7 @@ class MultipartTaskTest {
 		ByteArrayOutputStream output = new ByteArrayOutputStream((int) size);
 		task.cache.keySet().stream().sorted().forEach(new Consumer<Long>() {
 			@Override
-			@SneakyThrows
+
 			public void accept(Long i) {
 				output.write(task.cache.get(i));
 			}
@@ -65,7 +65,7 @@ class TestMultipartTask extends MultipartTask<TestMultipartTask> {
 		super(multipart);
 	}
 
-	@SneakyThrows
+
 	@Override
 	protected void onPart(Part part) {
 		try (InputStream stream = multipart.stream(part)) {

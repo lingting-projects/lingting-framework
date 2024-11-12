@@ -4,10 +4,7 @@ import live.lingting.framework.function.ThrowableRunnable;
 import live.lingting.framework.lock.JavaReentrantLock;
 import live.lingting.framework.util.ThreadUtils;
 import live.lingting.framework.util.ValueUtils;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.time.Duration;
 import java.util.List;
@@ -20,10 +17,9 @@ import java.util.function.Supplier;
 /**
  * @author lingting 2023-06-05 17:31
  */
-@Slf4j
 public class Async {
 
-	@Setter
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(Async.class);
 	protected static Executor defaultExecutor = VirtualThread.executor();
 
 	public static final long UNLIMITED = -1;
@@ -58,7 +54,6 @@ public class Async {
 	/**
 	 * 线程数量限制. -1 表示不限制
 	 */
-	@Getter
 	protected final long limit;
 
 	public Async() {
@@ -96,6 +91,8 @@ public class Async {
 		return new Async(e, limit);
 	}
 
+	public static void setDefaultExecutor(Executor defaultExecutor) {Async.defaultExecutor = defaultExecutor;}
+
 	/**
 	 * 是否可以无限制使用线程
 	 */
@@ -123,7 +120,7 @@ public class Async {
 				runnable.run();
 			}
 
-			@SneakyThrows
+
 			@Override
 			protected void onFinally() {
 				super.onFinally();
@@ -143,7 +140,7 @@ public class Async {
 	/**
 	 * 唤醒所有任务. 尝试执行
 	 */
-	@SneakyThrows
+
 	public void walk() {
 		// 上锁确保不会多执行
 		lock.runByInterruptibly(() -> {
@@ -165,6 +162,7 @@ public class Async {
 
 	/**
 	 * 等待结束, 执行时间超过超时时间的任务强行中断
+	 *
 	 * @param duration 超时时间
 	 */
 	public void await(Duration duration) {
@@ -173,7 +171,8 @@ public class Async {
 
 	/**
 	 * 等待结束
-	 * @param duration 超时时间
+	 *
+	 * @param duration       超时时间
 	 * @param forceInterrupt 是否强制中断已超时的任务
 	 */
 	public void await(Duration duration, boolean forceInterrupt) {
@@ -223,4 +222,5 @@ public class Async {
 		return all.size();
 	}
 
+	public long getLimit() {return this.limit;}
 }

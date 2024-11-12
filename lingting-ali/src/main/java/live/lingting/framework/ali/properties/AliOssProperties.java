@@ -3,14 +3,10 @@ package live.lingting.framework.ali.properties;
 import live.lingting.framework.aws.policy.Acl;
 import live.lingting.framework.aws.policy.Credential;
 import live.lingting.framework.aws.s3.AwsS3Properties;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * @author lingting 2024-09-18 10:29
  */
-@Getter
-@Setter
 public class AliOssProperties extends AliProperties {
 
 	private String bucket;
@@ -56,4 +52,11 @@ public class AliOssProperties extends AliProperties {
 		setToken(credential.getToken());
 	}
 
+	public String getBucket() {return this.bucket;}
+
+	public Acl getAcl() {return this.acl;}
+
+	public void setBucket(String bucket) {this.bucket = bucket;}
+
+	public void setAcl(Acl acl) {this.acl = acl;}
 }

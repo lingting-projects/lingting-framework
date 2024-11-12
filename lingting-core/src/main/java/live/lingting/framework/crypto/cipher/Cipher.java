@@ -2,7 +2,6 @@ package live.lingting.framework.crypto.cipher;
 
 import live.lingting.framework.crypto.AbstractCrypt;
 import live.lingting.framework.util.StringUtils;
-import lombok.Getter;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -17,7 +16,6 @@ import java.security.NoSuchAlgorithmException;
 /**
  * @author lingting 2024-09-04 10:17
  */
-@Getter
 public class Cipher extends AbstractCrypt<Cipher> {
 
 	/**
@@ -36,7 +34,7 @@ public class Cipher extends AbstractCrypt<Cipher> {
 	protected final String symbol;
 
 	public Cipher(String algorithm, String mode, String padding, String symbol, Charset charset, SecretKeySpec secret,
-			IvParameterSpec iv) {
+				  IvParameterSpec iv) {
 		super(algorithm, charset, secret, iv);
 		this.mode = mode;
 		this.padding = padding;
@@ -56,7 +54,7 @@ public class Cipher extends AbstractCrypt<Cipher> {
 	 * @param mode {@link javax.crypto.Cipher#ENCRYPT_MODE}
 	 */
 	public javax.crypto.Cipher cipher(int mode) throws NoSuchPaddingException, NoSuchAlgorithmException,
-			InvalidAlgorithmParameterException, InvalidKeyException {
+		InvalidAlgorithmParameterException, InvalidKeyException {
 		javax.crypto.Cipher cipher = instance();
 		if (iv == null) {
 			cipher.init(mode, secret);
@@ -94,43 +92,43 @@ public class Cipher extends AbstractCrypt<Cipher> {
 	// region encrypt
 
 	public byte[] encrypt(byte[] bytes) throws InvalidAlgorithmParameterException, NoSuchPaddingException,
-			NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+		NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
 		javax.crypto.Cipher cipher = cipher(javax.crypto.Cipher.ENCRYPT_MODE);
 		return cipher.doFinal(bytes);
 	}
 
 	public byte[] encrypt(String plaintext) throws InvalidAlgorithmParameterException, NoSuchPaddingException,
-			IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+		IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 		byte[] bytes = plaintext.getBytes(charset);
 		return encrypt(bytes);
 	}
 
 	public String encryptString(byte[] bytes) throws InvalidAlgorithmParameterException, NoSuchPaddingException,
-			IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+		IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 		byte[] encrypt = encrypt(bytes);
 		return new String(encrypt, charset);
 	}
 
 	public String encryptBase64(byte[] bytes) throws InvalidAlgorithmParameterException, NoSuchPaddingException,
-			NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+		NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
 		byte[] encrypt = encrypt(bytes);
 		return StringUtils.base64(encrypt);
 	}
 
 	public String encryptBase64(String plaintext) throws InvalidAlgorithmParameterException, NoSuchPaddingException,
-			IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+		IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 		byte[] bytes = plaintext.getBytes(charset);
 		return encryptBase64(bytes);
 	}
 
 	public String encryptHex(byte[] bytes) throws InvalidAlgorithmParameterException, NoSuchPaddingException,
-			NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+		NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
 		byte[] encrypt = encrypt(bytes);
 		return StringUtils.hex(encrypt);
 	}
 
 	public String encryptHex(String plaintext) throws InvalidAlgorithmParameterException, NoSuchPaddingException,
-			IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+		IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 		byte[] bytes = plaintext.getBytes(charset);
 		return encryptHex(bytes);
 	}
@@ -138,44 +136,50 @@ public class Cipher extends AbstractCrypt<Cipher> {
 	// endregion
 	// region decrypt
 	public byte[] decrypt(byte[] bytes) throws InvalidAlgorithmParameterException, NoSuchPaddingException,
-			NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+		NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
 		javax.crypto.Cipher cipher = cipher(javax.crypto.Cipher.DECRYPT_MODE);
 		return cipher.doFinal(bytes);
 	}
 
 	public byte[] decrypt(String ciphertext) throws InvalidAlgorithmParameterException, NoSuchPaddingException,
-			IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+		IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 		byte[] bytes = ciphertext.getBytes(charset);
 		return decrypt(bytes);
 	}
 
 	public String decryptString(byte[] bytes) throws InvalidAlgorithmParameterException, NoSuchPaddingException,
-			IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+		IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 		byte[] decrypt = decrypt(bytes);
 		return new String(decrypt, charset);
 	}
 
 	public String decryptBase64(byte[] bytes) throws InvalidAlgorithmParameterException, NoSuchPaddingException,
-			NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+		NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
 		return decryptString(bytes);
 	}
 
 	public String decryptBase64(String ciphertext) throws InvalidAlgorithmParameterException, NoSuchPaddingException,
-			IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+		IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 		byte[] bytes = StringUtils.base64(ciphertext);
 		return decryptBase64(bytes);
 	}
 
 	public String decryptHex(byte[] bytes) throws InvalidAlgorithmParameterException, NoSuchPaddingException,
-			NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+		NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
 		return decryptString(bytes);
 	}
 
 	public String decryptHex(String ciphertext) throws InvalidAlgorithmParameterException, NoSuchPaddingException,
-			IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+		IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
 		byte[] bytes = StringUtils.hex(ciphertext);
 		return decryptHex(bytes);
 	}
+
+	public String getMode() {return this.mode;}
+
+	public String getPadding() {return this.padding;}
+
+	public String getSymbol() {return this.symbol;}
 	// endregion
 
 }

@@ -6,9 +6,6 @@ import live.lingting.framework.util.FileUtils;
 import live.lingting.framework.util.StreamUtils;
 import live.lingting.framework.util.ThreadUtils;
 import live.lingting.framework.value.LazyValue;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.HostnameVerifier;
@@ -42,15 +39,13 @@ public abstract class HttpClient {
 	 * @see jdk.internal.net.http.common.Utils#getDisallowedHeaders()
 	 */
 	protected static final Set<String> HEADERS_DISABLED = Set.of("connection", "content-length", "expect", "host",
-			"upgrade");
+		"upgrade");
 
 	public static final File TEMP_DIR = FileUtils.createTempDir("http");
 
 	/**
 	 * 默认大小以内文件直接放内存里面, 单位: bytes
 	 */
-	@Getter
-	@Setter
 	static long defaultMaxBytes = 1048576;
 
 	protected CookieStore cookie;
@@ -97,6 +92,10 @@ public abstract class HttpClient {
 		}
 		return new FileCloneInputStream(fileValue.get());
 	}
+
+	public static long getDefaultMaxBytes() {return HttpClient.defaultMaxBytes;}
+
+	public static void setDefaultMaxBytes(long defaultMaxBytes) {HttpClient.defaultMaxBytes = defaultMaxBytes;}
 
 	public CookieStore cookie() {
 		return cookie;
@@ -180,7 +179,7 @@ public abstract class HttpClient {
 			return (B) this;
 		}
 
-		@SneakyThrows
+
 		public B disableSsl() {
 			X509TrustManager manager = Https.SSL_DISABLED_TRUST_MANAGER;
 			HostnameVerifier verifier = Https.SSL_DISABLED_HOSTNAME_VERIFIER;

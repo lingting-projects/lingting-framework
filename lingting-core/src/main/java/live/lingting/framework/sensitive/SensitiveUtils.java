@@ -3,7 +3,6 @@ package live.lingting.framework.sensitive;
 import live.lingting.framework.Sequence;
 import live.lingting.framework.sensitive.serializer.SensitiveDefaultProvider;
 import live.lingting.framework.util.StringUtils;
-import lombok.experimental.UtilityClass;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,14 +13,16 @@ import java.util.ServiceLoader;
 /**
  * @author lingting 2023-04-27 15:42
  */
-@UtilityClass
-public class SensitiveUtils {
+public final class SensitiveUtils {
 
 	public static final String MIDDLE = "******";
 
+	private SensitiveUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+
 	/**
 	 * 脱敏字符串序列化
-	 * @param raw 原始字符串
+	 *
+	 * @param raw          原始字符串
 	 * @param prefixLength 结果前缀长度
 	 * @param suffixLength 结果后缀长度
 	 */

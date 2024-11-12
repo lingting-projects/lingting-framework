@@ -15,7 +15,6 @@ import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import live.lingting.framework.api.R;
-import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
 
@@ -42,7 +41,7 @@ public class RModule extends SimpleModule {
 
 		@Override
 		public JsonDeserializer<?> findBeanDeserializer(JavaType type, DeserializationConfig config,
-				BeanDescription beanDesc) throws JsonMappingException {
+														BeanDescription beanDesc) throws JsonMappingException {
 			Class<?> rawClass = type.getRawClass();
 			if (R.class.isAssignableFrom(rawClass)) {
 				return new RDeserializer(beanDesc);
@@ -52,10 +51,13 @@ public class RModule extends SimpleModule {
 
 	}
 
-	@RequiredArgsConstructor
 	public static class RDeserializer extends JsonDeserializer<R<?>> {
 
 		private final BeanDescription beanDesc;
+
+		public RDeserializer(BeanDescription beanDesc) {
+			this.beanDesc = beanDesc;
+		}
 
 		@Override
 		public R<?> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
@@ -83,7 +85,7 @@ public class RModule extends SimpleModule {
 		}
 
 		Object getData(TreeNode root, BeanPropertyDefinition definition, DeserializationContext ctxt)
-				throws IOException {
+			throws IOException {
 			TreeNode node = root.get(FIELD_DATA);
 			if (isNull(node)) {
 				return null;

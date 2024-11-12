@@ -6,7 +6,6 @@ import live.lingting.framework.multipart.Part;
 import live.lingting.framework.multipart.file.FileMultipartTask;
 import live.lingting.framework.retry.Retry;
 import live.lingting.framework.thread.Async;
-import lombok.Getter;
 
 import java.io.InputStream;
 import java.time.Duration;
@@ -23,7 +22,6 @@ public class HuaweiMultipartTask extends FileMultipartTask<HuaweiMultipartTask> 
 
 	protected final Map<Part, String> map;
 
-	@Getter
 	protected final String uploadId;
 
 	public HuaweiMultipartTask(Multipart multipart, HuaweiObsObject obsObject) {
@@ -86,4 +84,5 @@ public class HuaweiMultipartTask extends FileMultipartTask<HuaweiMultipartTask> 
 		}
 	}
 
+	public String getUploadId() {return this.uploadId;}
 }

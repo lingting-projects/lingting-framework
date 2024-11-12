@@ -5,10 +5,6 @@ import live.lingting.framework.http.body.MemoryBody;
 import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.jackson.JacksonUtils;
 import live.lingting.framework.util.StringUtils;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -21,7 +17,6 @@ import java.util.function.Consumer;
 /**
  * @author lingting 2024-09-27 21:29
  */
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class HttpRequest {
 
 	protected final HttpMethod method;
@@ -31,6 +26,13 @@ public class HttpRequest {
 	protected final HttpHeaders headers;
 
 	protected final Body body;
+
+	private HttpRequest(HttpMethod method, URI uri, HttpHeaders headers, Body body) {
+		this.method = method;
+		this.uri = uri;
+		this.headers = headers;
+		this.body = body;
+	}
 
 	public static Builder builder() {
 		return new Builder();
@@ -52,7 +54,6 @@ public class HttpRequest {
 		return body;
 	}
 
-	@Getter
 	public static class Builder {
 
 		private HttpMethod method = HttpMethod.GET;
@@ -191,17 +192,28 @@ public class HttpRequest {
 			return new HttpRequest(method, uri, headers.unmodifiable(), requestBody);
 		}
 
+		public HttpMethod getMethod() {return this.method;}
+
+		public HttpUrlBuilder getUrlBuilder() {return this.urlBuilder;}
+
+		public HttpHeaders getHeaders() {return this.headers;}
+
+		public Body getBody() {return this.body;}
 	}
 
 	/**
 	 * @author lingting 2024-09-28 11:54
 	 */
-	@RequiredArgsConstructor
 	public static class Body {
 
 		private final BodySource source;
 
 		private final String contentType;
+
+		public Body(BodySource source, String contentType) {
+			this.source = source;
+			this.contentType = contentType;
+		}
 
 		public static Body empty() {
 			return new Body(BodySource.empty(), null);
@@ -239,7 +251,7 @@ public class HttpRequest {
 			return string(StandardCharsets.UTF_8);
 		}
 
-		@SneakyThrows
+
 		public String string(Charset charset) {
 			return source.string(charset);
 		}

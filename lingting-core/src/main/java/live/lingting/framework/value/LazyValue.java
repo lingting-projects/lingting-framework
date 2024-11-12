@@ -3,15 +3,12 @@ package live.lingting.framework.value;
 import live.lingting.framework.function.ThrowableSupplier;
 import live.lingting.framework.lock.JavaReentrantLock;
 import live.lingting.framework.lock.LockSupplier;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author lingting 2024-09-28 15:29
  */
-@RequiredArgsConstructor
 public class LazyValue<T> {
 
 	protected final JavaReentrantLock lock = new JavaReentrantLock();
@@ -22,7 +19,11 @@ public class LazyValue<T> {
 
 	protected final ThrowableSupplier<T> supplier;
 
-	@SneakyThrows
+	public LazyValue(ThrowableSupplier<T> supplier) {
+		this.supplier = supplier;
+	}
+
+
 	public T get() {
 		if (!isFirst()) {
 			return t;
@@ -30,7 +31,7 @@ public class LazyValue<T> {
 
 		t = lock.getByInterruptibly(new LockSupplier<T>() {
 			@Override
-			@SneakyThrows
+
 			public T get() throws InterruptedException {
 				// 非首次进入锁
 				if (!first.compareAndSet(true, false)) {

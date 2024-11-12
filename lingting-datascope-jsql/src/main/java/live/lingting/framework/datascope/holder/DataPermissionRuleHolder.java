@@ -2,7 +2,6 @@ package live.lingting.framework.datascope.holder;
 
 import live.lingting.framework.datascope.annotation.DataPermission;
 import live.lingting.framework.datascope.handler.DataPermissionRule;
-import lombok.experimental.UtilityClass;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -14,7 +13,6 @@ import java.util.Deque;
  *
  * @author hccake
  */
-@UtilityClass
 public final class DataPermissionRuleHolder {
 
 	/**
@@ -23,8 +21,11 @@ public final class DataPermissionRuleHolder {
 	private static final ThreadLocal<Deque<DataPermissionRule>> DATA_PERMISSION_RULES = ThreadLocal
 		.withInitial(ArrayDeque::new);
 
+	private DataPermissionRuleHolder() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+
 	/**
 	 * 获取当前的 DataPermissionRule 注解
+	 *
 	 * @return DataPermissionRule
 	 */
 	public static DataPermissionRule peek() {
@@ -34,6 +35,7 @@ public final class DataPermissionRuleHolder {
 
 	/**
 	 * 入栈一个 DataPermissionRule 注解
+	 *
 	 * @return DataPermissionRule
 	 */
 	public static DataPermissionRule push(DataPermissionRule dataPermissionRule) {

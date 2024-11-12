@@ -2,8 +2,6 @@ package live.lingting.framework.huawei.iam;
 
 import live.lingting.framework.http.body.MemoryBody;
 import live.lingting.framework.jackson.JacksonUtils;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,13 +9,11 @@ import java.util.Map;
 /**
  * @author lingting 2024-09-12 21:38
  */
-@Getter
-@Setter
 public class HuaweiIamTokenRequest extends HuaweiIamRequest {
 
 	public static final String KEY_PASSWORD = "password";
 
-	protected static final String[] VALUE_METHODS = { KEY_PASSWORD };
+	protected static final String[] VALUE_METHODS = {KEY_PASSWORD};
 
 	private Map<String, Object> domain;
 
@@ -50,4 +46,15 @@ public class HuaweiIamTokenRequest extends HuaweiIamRequest {
 		return new MemoryBody(json);
 	}
 
+	public Map<String, Object> getDomain() {return this.domain;}
+
+	public String getUsername() {return this.username;}
+
+	public String getPassword() {return this.password;}
+
+	public void setDomain(Map<String, Object> domain) {this.domain = domain;}
+
+	public void setUsername(String username) {this.username = username;}
+
+	public void setPassword(String password) {this.password = password;}
 }

@@ -18,7 +18,6 @@ import live.lingting.framework.util.ArrayUtils;
 import live.lingting.framework.util.DigestUtils;
 import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.value.multi.StringMultiValue;
-import lombok.SneakyThrows;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -71,7 +70,7 @@ public class AliSts extends AliClient<AliStsRequest> {
 		return response;
 	}
 
-	@SneakyThrows
+
 	@Override
 	protected void customize(AliStsRequest request, HttpHeaders headers, BodySource requestBody,
 			StringMultiValue params) {

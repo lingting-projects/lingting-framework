@@ -1,9 +1,9 @@
 package live.lingting.framework.mybatis.typehandler;
 
 import live.lingting.framework.util.StringUtils;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
+import org.slf4j.Logger;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
@@ -17,14 +17,14 @@ import java.time.format.DateTimeParseException;
 /**
  * @author lingting 2022/8/22 9:41
  */
-@Slf4j
 public class LocalDateTypeHandler extends BaseTypeHandler<LocalDate> implements AutoRegisterTypeHandler<LocalDate> {
 
 	public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(LocalDateTypeHandler.class);
 
 	@Override
 	public void setNonNullParameter(PreparedStatement ps, int i, LocalDate parameter, JdbcType jdbcType)
-			throws SQLException {
+		throws SQLException {
 		if (parameter == null) {
 			ps.setObject(i, null);
 		}

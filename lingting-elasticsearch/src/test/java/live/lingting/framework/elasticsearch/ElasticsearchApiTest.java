@@ -7,9 +7,6 @@ import co.elastic.clients.transport.ElasticsearchTransport;
 import live.lingting.framework.elasticsearch.composer.QueryComposer;
 import live.lingting.framework.elasticsearch.datascope.DefaultElasticsearchDataPermissionHandler;
 import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataScope;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 import org.elasticsearch.client.RestClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,7 +68,7 @@ class ElasticsearchApiTest {
 		};
 
 		DefaultElasticsearchDataPermissionHandler handler = new DefaultElasticsearchDataPermissionHandler(
-				Collections.singletonList(scope)) {
+			Collections.singletonList(scope)) {
 			@Override
 			public boolean ignorePermissionControl(String index) {
 				return !allowDefault;
@@ -80,7 +77,7 @@ class ElasticsearchApiTest {
 		api = api(".kibana_8.12.2_001", Entity.class, Entity::getId, new ElasticsearchProperties(), handler, client);
 	}
 
-	@SneakyThrows
+
 	@Test
 	void test() {
 		List<Entity> list = api.list();
@@ -91,8 +88,6 @@ class ElasticsearchApiTest {
 		assertEquals("Default", byQuery.space.get("name"));
 	}
 
-	@Getter
-	@Setter
 	static class Entity {
 
 		private String id;
@@ -103,6 +98,21 @@ class ElasticsearchApiTest {
 
 		private Object references;
 
+		public String getId() {return this.id;}
+
+		public Map<String, Object> getSpace() {return this.space;}
+
+		public Map<String, Object> getConfig() {return this.config;}
+
+		public Object getReferences() {return this.references;}
+
+		public void setId(String id) {this.id = id;}
+
+		public void setSpace(Map<String, Object> space) {this.space = space;}
+
+		public void setConfig(Map<String, Object> config) {this.config = config;}
+
+		public void setReferences(Object references) {this.references = references;}
 	}
 
 }

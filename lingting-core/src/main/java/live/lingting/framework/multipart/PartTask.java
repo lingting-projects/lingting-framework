@@ -1,13 +1,8 @@
 package live.lingting.framework.multipart;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
 /**
  * @author lingting 2024-09-05 14:48
  */
-@Getter
-@RequiredArgsConstructor
 public class PartTask {
 
 	final Part part;
@@ -17,6 +12,10 @@ public class PartTask {
 	PartTaskStatus status = PartTaskStatus.WAIT;
 
 	long retryCount = 0L;
+
+	public PartTask(Part part) {
+		this.part = part;
+	}
 
 	public boolean isCompleted() {
 		return isSuccessful() || isFailed();
@@ -30,4 +29,11 @@ public class PartTask {
 		return status == PartTaskStatus.FAILED;
 	}
 
+	public Part getPart() {return this.part;}
+
+	public Throwable getT() {return this.t;}
+
+	public PartTaskStatus getStatus() {return this.status;}
+
+	public long getRetryCount() {return this.retryCount;}
 }

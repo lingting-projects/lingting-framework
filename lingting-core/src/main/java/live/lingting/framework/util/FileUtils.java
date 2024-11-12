@@ -1,7 +1,6 @@
 package live.lingting.framework.util;
 
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,15 +19,17 @@ import java.util.List;
 /**
  * @author lingting
  */
-@Slf4j
-@UtilityClass
-public class FileUtils {
+public final class FileUtils {
 
 	public static final File TEMP_DIR = SystemUtils.tmpDirLingting();
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(FileUtils.class);
+
+	private FileUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	/**
 	 * 扫描指定路径下所有文件
-	 * @param path 指定路径
+	 *
+	 * @param path      指定路径
 	 * @param recursive 是否递归
 	 * @return java.util.List<java.lang.String>
 	 */
@@ -66,6 +67,7 @@ public class FileUtils {
 
 	/**
 	 * 创建指定文件夹, 已存在时不会重新创建
+	 *
 	 * @param dir 文件夹.
 	 */
 	public static boolean createDir(File dir) {
@@ -83,6 +85,7 @@ public class FileUtils {
 
 	/**
 	 * 创建指定文件, 已存在时不会重新创建
+	 *
 	 * @param file 文件.
 	 */
 	public static boolean createFile(File file) {
@@ -123,6 +126,7 @@ public class FileUtils {
 
 	/**
 	 * 创建临时文件
+	 *
 	 * @param suffix 文件后缀
 	 * @return 临时文件对象
 	 */
@@ -132,8 +136,9 @@ public class FileUtils {
 
 	/**
 	 * 创建临时文件
+	 *
 	 * @param suffix 文件特征
-	 * @param dir 文件存放位置
+	 * @param dir    文件存放位置
 	 * @return 临时文件对象
 	 */
 	public static File createTemp(String suffix, File dir) throws IOException {
@@ -163,10 +168,11 @@ public class FileUtils {
 
 	/**
 	 * 复制文件
-	 * @param source 源文件
-	 * @param target 目标文件
+	 *
+	 * @param source   源文件
+	 * @param target   目标文件
 	 * @param override 如果目标文件已存在是否覆盖
-	 * @param options 其他文件复制选项 {@link StandardCopyOption}
+	 * @param options  其他文件复制选项 {@link StandardCopyOption}
 	 * @return 目标文件地址
 	 */
 	public static Path copy(File source, File target, boolean override, CopyOption... options) throws IOException {
@@ -228,6 +234,7 @@ public class FileUtils {
 
 	/**
 	 * 获取文件扩展名
+	 *
 	 * @return java.lang.String eg: java
 	 */
 	public static String getFileExt(String filename) {

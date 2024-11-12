@@ -2,8 +2,6 @@ package live.lingting.framework.thread;
 
 import live.lingting.framework.function.InterruptedRunnable;
 import live.lingting.framework.util.ThreadUtils;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -16,7 +14,6 @@ import java.util.function.Supplier;
 /**
  * @author lingting 2024-05-31 11:14
  */
-@RequiredArgsConstructor
 public class Await<S> {
 
 	private final Supplier<S> supplier;
@@ -29,10 +26,18 @@ public class Await<S> {
 
 	private final ExecutorService executor;
 
-	@SneakyThrows
+	public Await(Supplier<S> supplier, Predicate<S> predicate, InterruptedRunnable sleep, Duration timeout, ExecutorService executor) {
+		this.supplier = supplier;
+		this.predicate = predicate;
+		this.sleep = sleep;
+		this.timeout = timeout;
+		this.executor = executor;
+	}
+
+
 	public S await() {
 		Supplier<S> supply = new Supplier<>() {
-			@SneakyThrows
+
 			@Override
 			public S get() {
 				while (true) {

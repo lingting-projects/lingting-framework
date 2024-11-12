@@ -3,8 +3,6 @@ package live.lingting.framework.util;
 import live.lingting.framework.function.InterruptedRunnable;
 import live.lingting.framework.thread.Await;
 import live.lingting.framework.thread.VirtualThread;
-import lombok.Setter;
-import lombok.experimental.UtilityClass;
 
 import java.lang.reflect.Array;
 import java.time.Duration;
@@ -18,14 +16,14 @@ import java.util.function.Supplier;
 /**
  * @author lingting 2024-01-26 15:47
  */
-@UtilityClass
-public class ValueUtils {
+public final class ValueUtils {
 
 	/**
 	 * 默认使用虚拟线程
 	 */
-	@Setter
 	static ExecutorService executor = VirtualThread.executor();
+
+	private ValueUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static void awaitTrue(Supplier<Boolean> supplier) {
 		awaitTrue(null, supplier);
@@ -45,10 +43,11 @@ public class ValueUtils {
 
 	/**
 	 * 等待值满足条件, 不满足条件休眠 500 毫秒
-	 * @param supplier 值获取
+	 *
+	 * @param supplier  值获取
 	 * @param predicate 值条件测试, 返回true表示该值为目标值, 当前函数会返回该值
+	 * @param <T>       值类型
 	 * @return 值
-	 * @param <T> 值类型
 	 */
 	public static <T> T await(Supplier<T> supplier, Predicate<T> predicate) {
 		return await(null, supplier, predicate, InterruptedRunnable.THREAD_SLEEP);
@@ -60,23 +59,25 @@ public class ValueUtils {
 
 	/**
 	 * 等待值满足条件
-	 * @param supplier 值获取
+	 *
+	 * @param supplier  值获取
 	 * @param predicate 值条件测试, 返回true表示该值为目标值, 当前函数会返回该值
-	 * @param sleep 休眠
+	 * @param sleep     休眠
+	 * @param <T>       值类型
 	 * @return 值
-	 * @param <T> 值类型
 	 */
 	public static <T> T await(Supplier<T> supplier, Predicate<T> predicate, InterruptedRunnable sleep) {
 		return await(null, supplier, predicate, sleep);
 	}
 
 	public static <T> T await(Duration timeout, Supplier<T> supplier, Predicate<T> predicate,
-			InterruptedRunnable sleep) {
+							  InterruptedRunnable sleep) {
 		return Await.builder(supplier, predicate).sleep(sleep).timeout(timeout).executor(executor).await();
 	}
 
 	/**
 	 * 当前对象是否非null，且不为空
+	 *
 	 * @param value 值
 	 * @return boolean 不为空返回true
 	 */
@@ -107,4 +108,5 @@ public class ValueUtils {
 		return uuid().replace("-", "");
 	}
 
+	public static void setExecutor(ExecutorService executor) {ValueUtils.executor = executor;}
 }

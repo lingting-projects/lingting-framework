@@ -1,14 +1,10 @@
 package live.lingting.framework.properties;
 
 import io.grpc.Metadata;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * @author lingting 2023-12-14 16:40
  */
-@Getter
-@Setter
 public class SecurityGrpcProperties {
 
 	private String authorizationKey = "Authorization";
@@ -17,4 +13,7 @@ public class SecurityGrpcProperties {
 		return Metadata.Key.of(getAuthorizationKey(), Metadata.ASCII_STRING_MARSHALLER);
 	}
 
+	public String getAuthorizationKey() {return this.authorizationKey;}
+
+	public void setAuthorizationKey(String authorizationKey) {this.authorizationKey = authorizationKey;}
 }

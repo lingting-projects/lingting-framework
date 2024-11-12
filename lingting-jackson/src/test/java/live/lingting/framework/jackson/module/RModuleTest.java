@@ -3,9 +3,6 @@ package live.lingting.framework.jackson.module;
 import com.fasterxml.jackson.core.type.TypeReference;
 import live.lingting.framework.api.R;
 import live.lingting.framework.jackson.JacksonUtils;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -41,15 +38,26 @@ class RModuleTest {
 		Assertions.assertNull(o3.data());
 	}
 
-	@Getter
-	@Setter
-	@Accessors(chain = true)
+
 	static class REntity {
 
 		private String p1;
 
 		private String p2;
 
+		public String getP1() {return this.p1;}
+
+		public String getP2() {return this.p2;}
+
+		public REntity setP1(String p1) {
+			this.p1 = p1;
+			return this;
+		}
+
+		public REntity setP2(String p2) {
+			this.p2 = p2;
+			return this;
+		}
 	}
 
 }

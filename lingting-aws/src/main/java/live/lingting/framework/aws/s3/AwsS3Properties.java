@@ -2,14 +2,10 @@ package live.lingting.framework.aws.s3;
 
 import live.lingting.framework.aws.policy.Acl;
 import live.lingting.framework.aws.policy.Credential;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * @author lingting 2024-09-12 21:20
  */
-@Getter
-@Setter
 public class AwsS3Properties {
 
 	protected String scheme = "https";
@@ -60,4 +56,43 @@ public class AwsS3Properties {
 		return "%s://%s.%s%s%s.%s".formatted(scheme, bucket, prefix, connector, region, endpoint);
 	}
 
+	public String getScheme() {return this.scheme;}
+
+	public String getPrefix() {return this.prefix;}
+
+	public String getConnector() {return this.connector;}
+
+	public String getRegion() {return this.region;}
+
+	public String getEndpoint() {return this.endpoint;}
+
+	public String getBucket() {return this.bucket;}
+
+	public Acl getAcl() {return this.acl;}
+
+	public String getAk() {return this.ak;}
+
+	public String getSk() {return this.sk;}
+
+	public String getToken() {return this.token;}
+
+	public void setScheme(String scheme) {this.scheme = scheme;}
+
+	public void setPrefix(String prefix) {this.prefix = prefix;}
+
+	public void setConnector(String connector) {this.connector = connector;}
+
+	public void setRegion(String region) {this.region = region;}
+
+	public void setEndpoint(String endpoint) {this.endpoint = endpoint;}
+
+	public void setBucket(String bucket) {this.bucket = bucket;}
+
+	public void setAcl(Acl acl) {this.acl = acl;}
+
+	public void setAk(String ak) {this.ak = ak;}
+
+	public void setSk(String sk) {this.sk = sk;}
+
+	public void setToken(String token) {this.token = token;}
 }

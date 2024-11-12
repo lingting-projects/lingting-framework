@@ -4,19 +4,14 @@ import live.lingting.framework.aws.s3.AwsS3Request;
 import live.lingting.framework.http.HttpMethod;
 import live.lingting.framework.http.body.BodySource;
 import live.lingting.framework.multipart.Part;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 
 import java.io.InputStream;
 
 /**
  * @author lingting 2024-09-13 16:31
  */
-@Getter
 public class AwsS3ObjectPutRequest extends AwsS3Request {
 
-	@Setter
 	protected InputStream stream;
 
 	protected String uploadId;
@@ -33,7 +28,7 @@ public class AwsS3ObjectPutRequest extends AwsS3Request {
 		return HttpMethod.PUT;
 	}
 
-	@SneakyThrows
+
 	@Override
 	public BodySource body() {
 		InputStream inputStream = getStream();
@@ -53,4 +48,11 @@ public class AwsS3ObjectPutRequest extends AwsS3Request {
 		}
 	}
 
+	public InputStream getStream() {return this.stream;}
+
+	public String getUploadId() {return this.uploadId;}
+
+	public Part getPart() {return this.part;}
+
+	public void setStream(InputStream stream) {this.stream = stream;}
 }

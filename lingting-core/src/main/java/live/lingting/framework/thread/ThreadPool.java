@@ -1,9 +1,7 @@
 package live.lingting.framework.thread;
 
 import live.lingting.framework.function.ThrowableRunnable;
-import lombok.AllArgsConstructor;
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -16,34 +14,35 @@ import java.util.function.Supplier;
 /**
  * @author lingting 2022/11/17 20:15
  */
-@Slf4j
-@UtilityClass
 @SuppressWarnings("java:S6548")
-public class ThreadPool {
+public final class ThreadPool {
 
 	static final ThreadPool.Impl instance = new Impl(newExecutor());
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(ThreadPool.class);
+
+	private ThreadPool() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static ThreadPoolExecutor newExecutor() {
 		int core = Runtime.getRuntime().availableProcessors() * 10;
 		int max = core * 30;
 		int queue = max / 2;
 		return new ThreadPoolExecutor(
-				// 核心线程数大小. 不论是否空闲都存在的线程
-				core,
-				// 最大线程数
-				max,
-				// 存活时间. 非核心线程数如果空闲指定时间. 就回收
-				// 存活时间不宜过长. 避免任务量遇到尖峰情况时. 大量空闲线程占用资源
-				15,
-				// 存活时间的单位
-				TimeUnit.SECONDS,
-				// 等待任务存放队列 - 队列最大值
-				// 这样配置. 当积压任务数量为 队列最大值 时. 会创建新线程来执行任务. 直到线程总数达到 最大线程数
-				new LinkedBlockingQueue<>(queue),
-				// 新线程创建工厂 - LinkedBlockingQueue 不支持线程优先级. 所以直接新增线程就可以了
-				runnable -> new Thread(null, runnable),
-				// 拒绝策略 - 在主线程继续执行.
-				new ThreadPoolExecutor.CallerRunsPolicy());
+			// 核心线程数大小. 不论是否空闲都存在的线程
+			core,
+			// 最大线程数
+			max,
+			// 存活时间. 非核心线程数如果空闲指定时间. 就回收
+			// 存活时间不宜过长. 避免任务量遇到尖峰情况时. 大量空闲线程占用资源
+			15,
+			// 存活时间的单位
+			TimeUnit.SECONDS,
+			// 等待任务存放队列 - 队列最大值
+			// 这样配置. 当积压任务数量为 队列最大值 时. 会创建新线程来执行任务. 直到线程总数达到 最大线程数
+			new LinkedBlockingQueue<>(queue),
+			// 新线程创建工厂 - LinkedBlockingQueue 不支持线程优先级. 所以直接新增线程就可以了
+			runnable -> new Thread(null, runnable),
+			// 拒绝策略 - 在主线程继续执行.
+			new ThreadPoolExecutor.CallerRunsPolicy());
 	}
 
 	public static Impl instance() {
@@ -120,10 +119,13 @@ public class ThreadPool {
 		return instance.submit(callable);
 	}
 
-	@AllArgsConstructor
 	public static class Impl implements ThreadService {
 
 		protected ThreadPoolExecutor executor;
+
+		public Impl(ThreadPoolExecutor executor) {
+			this.executor = executor;
+		}
 
 		public ThreadPoolExecutor executor() {
 			return executor;

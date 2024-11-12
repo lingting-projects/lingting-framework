@@ -1,8 +1,6 @@
 package live.lingting.framework.ntp;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -15,20 +13,23 @@ import java.util.concurrent.TimeUnit;
  *
  * @author lingting 2022/11/18 13:40
  */
-@Slf4j
-@Getter
-@RequiredArgsConstructor
 public class Ntp {
 
 	public static final ZoneOffset DEFAULT_ZONE_OFFSET = ZoneOffset.of("+0");
 
 	public static final ZoneId DEFAULT_ZONE_ID = DEFAULT_ZONE_OFFSET.normalized();
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(Ntp.class);
 
 	private final String host;
 
 	private final long diff;
 
 	private ZoneId zoneId = DEFAULT_ZONE_ID;
+
+	public Ntp(String host, long diff) {
+		this.host = host;
+		this.diff = diff;
+	}
 
 	public Ntp zoneId(ZoneId zoneId) {
 		if (zoneId == null) {
@@ -68,4 +69,9 @@ public class Ntp {
 		return plusMillis(unit.toMillis(time));
 	}
 
+	public String getHost() {return this.host;}
+
+	public long getDiff() {return this.diff;}
+
+	public ZoneId getZoneId() {return this.zoneId;}
 }

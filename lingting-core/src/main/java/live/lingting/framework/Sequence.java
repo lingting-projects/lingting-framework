@@ -1,7 +1,6 @@
 package live.lingting.framework;
 
 import live.lingting.framework.util.ClassUtils;
-import lombok.RequiredArgsConstructor;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
@@ -38,12 +37,16 @@ public interface Sequence {
 
 	int getSequence();
 
-	@RequiredArgsConstructor
 	class SequenceComparator implements Comparator<Object> {
 
 		private final boolean isAsc;
 
 		private final int defaultSequence;
+
+		public SequenceComparator(boolean isAsc, int defaultSequence) {
+			this.isAsc = isAsc;
+			this.defaultSequence = defaultSequence;
+		}
 
 		@Override
 		public int compare(Object o1, Object o2) {

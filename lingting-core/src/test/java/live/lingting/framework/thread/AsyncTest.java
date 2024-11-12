@@ -2,8 +2,8 @@ package live.lingting.framework.thread;
 
 import live.lingting.framework.time.StopWatch;
 import live.lingting.framework.util.ThreadUtils;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -15,9 +15,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author lingting 2024-01-26 17:07
  */
-@Slf4j
 class AsyncTest {
 
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(AsyncTest.class);
 	Executor executor;
 
 	@Test

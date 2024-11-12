@@ -1,7 +1,5 @@
 package live.lingting.framework.util;
 
-import lombok.experimental.UtilityClass;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,9 +13,10 @@ import java.util.Set;
 /**
  * @author lingting
  */
-@UtilityClass
 @SuppressWarnings("unchecked")
-public class CollectionUtils {
+public final class CollectionUtils {
+
+	private CollectionUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	@SafeVarargs
 	public static <T> List<T> toList(T... ts) {
@@ -86,6 +85,7 @@ public class CollectionUtils {
 
 	/**
 	 * 提取集合中指定数量的元素,
+	 *
 	 * @param number 提取元素数量, 不足则有多少提取多少
 	 */
 	public static <D> List<D> extract(Collection<D> collection, int number) {
@@ -105,8 +105,9 @@ public class CollectionUtils {
 
 	/**
 	 * 分割为多个小list, 每个list最多拥有 size个元素
+	 *
 	 * @param collection 原始数据
-	 * @param size 单个list最多元素数量
+	 * @param size       单个list最多元素数量
 	 * @return java.util.List<java.util.List < D>>
 	 */
 	public static <D> List<List<D>> split(Collection<D> collection, int size) {

@@ -1,14 +1,13 @@
 package live.lingting.framework.sensitive;
 
-import lombok.experimental.UtilityClass;
-
 /**
  * @author lingting 2023-06-30 17:57
  */
-@UtilityClass
-public class SensitiveHolder {
+public final class SensitiveHolder {
 
 	private static final ThreadLocal<Boolean> THREAD_LOCAL = new ThreadLocal<>();
+
+	private SensitiveHolder() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static boolean allowSensitive() {
 		return !Boolean.FALSE.equals(THREAD_LOCAL.get());

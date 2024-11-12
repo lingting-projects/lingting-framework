@@ -1,6 +1,5 @@
 package live.lingting.framework.util;
 
-import lombok.experimental.UtilityClass;
 import org.slf4j.MDC;
 
 import java.util.HashMap;
@@ -10,10 +9,11 @@ import java.util.UUID;
 /**
  * @author lingting 2022/12/11 20:14
  */
-@UtilityClass
-public class MdcUtils {
+public final class MdcUtils {
 
 	public static final String TRACE_ID = "traceId";
+
+	private MdcUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static String traceId() {
 		return UUID.randomUUID().toString().replace("-", "");

@@ -1,9 +1,7 @@
 package live.lingting.framework.retry;
 
 import live.lingting.framework.function.ThrowingSupplier;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -12,10 +10,9 @@ import java.util.List;
 /**
  * @author lingting 2023-10-23 19:14
  */
-@Slf4j
-@RequiredArgsConstructor
 public class Retry<T> {
 
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(Retry.class);
 	protected final ThrowingSupplier<T> supplier;
 
 	protected final RetryFunction function;
@@ -26,6 +23,11 @@ public class Retry<T> {
 	 * 当前重试次数
 	 */
 	protected int count = 0;
+
+	public Retry(ThrowingSupplier<T> supplier, RetryFunction function) {
+		this.supplier = supplier;
+		this.function = function;
+	}
 
 	public static <T> Retry<T> simple(ThrowingSupplier<T> supplier) {
 		return simple(3, Duration.ofMillis(10), supplier);
@@ -39,7 +41,7 @@ public class Retry<T> {
 		return value().get();
 	}
 
-	@SneakyThrows
+
 	public RetryValue<T> value() {
 		Exception ex = null;
 		while (true) {

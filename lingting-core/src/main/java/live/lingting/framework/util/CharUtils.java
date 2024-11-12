@@ -1,12 +1,11 @@
 package live.lingting.framework.util;
 
-import lombok.experimental.UtilityClass;
-
 /**
  * @author lingting
  */
-@UtilityClass
-public class CharUtils {
+public final class CharUtils {
+
+	private CharUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static boolean isLowerLetter(char c) {
 		return c >= 'a' && c <= 'z';

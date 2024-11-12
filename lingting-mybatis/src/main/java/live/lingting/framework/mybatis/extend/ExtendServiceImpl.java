@@ -9,9 +9,6 @@ import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import jakarta.annotation.Resource;
 import live.lingting.framework.api.PaginationParams;
 import live.lingting.framework.function.ThrowingSupplier;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
@@ -34,19 +31,13 @@ public abstract class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements
 
 	protected final Log log = LogFactory.getLog(getClass());
 
-	@Setter
-	@Getter
 	protected M mapper;
 
-	@Setter
-	@Getter
 	@Resource
 	protected SqlSessionFactory sessionFactory;
 
-	@Getter
 	protected Class<T> entityClass = currentModelClass();
 
-	@Getter
 	protected Class<M> mapperClass = currentMapperClass();
 
 	protected Class<M> currentMapperClass() {
@@ -59,6 +50,7 @@ public abstract class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements
 
 	/**
 	 * 获取mapperStatementId
+	 *
 	 * @param sqlMethod 方法名
 	 * @return 命名id
 	 * @since 3.4.0
@@ -128,10 +120,11 @@ public abstract class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements
 
 	/**
 	 * 执行批量操作
-	 * @param list 数据集合
+	 *
+	 * @param list      数据集合
 	 * @param batchSize 批量大小
-	 * @param consumer 执行方法
-	 * @param <E> 泛型
+	 * @param consumer  执行方法
+	 * @param <E>       泛型
 	 * @return 操作结果
 	 * @since 3.3.1
 	 */
@@ -140,7 +133,7 @@ public abstract class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements
 	}
 
 	@Override
-	@SneakyThrows
+
 	public <R> R useTransactional(ThrowingSupplier<R> supplier, Predicate<Throwable> predicate) {
 		SqlSession session = getSessionFactory().openSession(false);
 		try {
@@ -160,4 +153,15 @@ public abstract class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements
 		}
 	}
 
+	public M getMapper() {return this.mapper;}
+
+	public SqlSessionFactory getSessionFactory() {return this.sessionFactory;}
+
+	public Class<T> getEntityClass() {return this.entityClass;}
+
+	public Class<M> getMapperClass() {return this.mapperClass;}
+
+	public void setMapper(M mapper) {this.mapper = mapper;}
+
+	public void setSessionFactory(SqlSessionFactory sessionFactory) {this.sessionFactory = sessionFactory;}
 }

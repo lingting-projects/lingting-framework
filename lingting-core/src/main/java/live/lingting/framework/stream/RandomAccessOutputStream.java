@@ -1,7 +1,6 @@
 package live.lingting.framework.stream;
 
 import live.lingting.framework.util.FileUtils;
-import lombok.Getter;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +20,6 @@ public class RandomAccessOutputStream extends OutputStream {
 
 	protected final RandomAccessFile file;
 
-	@Getter
 	protected final Path path;
 
 	public RandomAccessOutputStream() throws IOException {
@@ -64,4 +62,5 @@ public class RandomAccessOutputStream extends OutputStream {
 		file.write(b);
 	}
 
+	public Path getPath() {return this.path;}
 }

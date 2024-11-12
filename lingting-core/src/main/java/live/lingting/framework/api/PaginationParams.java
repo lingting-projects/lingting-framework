@@ -1,22 +1,12 @@
 package live.lingting.framework.api;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.experimental.Accessors;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author lingting 2024-02-02 17:53
  */
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Accessors(chain = true)
+
 public class PaginationParams {
 
 	private long page = 1;
@@ -24,6 +14,14 @@ public class PaginationParams {
 	private long size = 10;
 
 	private List<Sort> sorts;
+
+	public PaginationParams(long page, long size, List<Sort> sorts) {
+		this.page = page;
+		this.size = size;
+		this.sorts = sorts;
+	}
+
+	public PaginationParams() {}
 
 	/**
 	 * 数据起始索引
@@ -53,11 +51,22 @@ public class PaginationParams {
 		return sorts;
 	}
 
-	@Getter
-	@Setter
-	@NoArgsConstructor
-	@AllArgsConstructor
-	@Accessors(chain = true)
+	public PaginationParams setPage(long page) {
+		this.page = page;
+		return this;
+	}
+
+	public PaginationParams setSize(long size) {
+		this.size = size;
+		return this;
+	}
+
+	public PaginationParams setSorts(List<Sort> sorts) {
+		this.sorts = sorts;
+		return this;
+	}
+
+
 	public static class Sort {
 
 		/**
@@ -70,6 +79,26 @@ public class PaginationParams {
 		 */
 		private Boolean desc;
 
+		public Sort(String field, Boolean desc) {
+			this.field = field;
+			this.desc = desc;
+		}
+
+		public Sort() {}
+
+		public String getField() {return this.field;}
+
+		public Boolean getDesc() {return this.desc;}
+
+		public Sort setField(String field) {
+			this.field = field;
+			return this;
+		}
+
+		public Sort setDesc(Boolean desc) {
+			this.desc = desc;
+			return this;
+		}
 	}
 
 }

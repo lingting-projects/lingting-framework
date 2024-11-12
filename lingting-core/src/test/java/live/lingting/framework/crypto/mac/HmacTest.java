@@ -1,6 +1,6 @@
 package live.lingting.framework.crypto.mac;
 
-import lombok.SneakyThrows;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,7 +14,7 @@ class HmacTest {
 
 	String secret = "secret";
 
-	@SneakyThrows
+
 	@Test
 	void sha1() {
 		Mac mac = Mac.hmacBuilder().sha1().secret(secret).build();
@@ -22,7 +22,7 @@ class HmacTest {
 		assertEquals("5112055c05f944f85755efc5cd8970e194e9f45b", mac.calculateHex(source));
 	}
 
-	@SneakyThrows
+
 	@Test
 	void sha256() {
 		Mac mac = Mac.hmacBuilder().sha256().secret(secret).build();

@@ -1,7 +1,5 @@
 package live.lingting.framework.lock;
 
-import lombok.Getter;
-
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -10,7 +8,6 @@ import java.util.function.Supplier;
 /**
  * @author lingting 2023-04-22 10:55
  */
-@Getter
 public class JavaReentrantLock {
 
 	/**
@@ -130,4 +127,7 @@ public class JavaReentrantLock {
 		return getByInterruptibly(() -> getDefaultCondition().await(time, timeUnit));
 	}
 
+	public ReentrantLock getLock() {return this.lock;}
+
+	public Condition getDefaultCondition() {return this.defaultCondition;}
 }

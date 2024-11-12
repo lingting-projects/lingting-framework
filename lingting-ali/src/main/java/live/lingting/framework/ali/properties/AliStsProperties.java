@@ -1,13 +1,8 @@
 package live.lingting.framework.ali.properties;
 
-import lombok.Getter;
-import lombok.Setter;
-
 /**
  * @author lingting 2024-09-14 11:53
  */
-@Getter
-@Setter
 public class AliStsProperties extends AliProperties {
 
 	public AliStsProperties() {
@@ -18,4 +13,11 @@ public class AliStsProperties extends AliProperties {
 
 	private String roleSessionName;
 
+	public String getRoleArn() {return this.roleArn;}
+
+	public String getRoleSessionName() {return this.roleSessionName;}
+
+	public void setRoleArn(String roleArn) {this.roleArn = roleArn;}
+
+	public void setRoleSessionName(String roleSessionName) {this.roleSessionName = roleSessionName;}
 }

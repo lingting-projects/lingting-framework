@@ -1,7 +1,6 @@
 package live.lingting.framework.datascope.holder;
 
 import live.lingting.framework.datascope.JsqlDataScope;
-import lombok.experimental.UtilityClass;
 
 import java.util.HashSet;
 import java.util.List;
@@ -13,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author hccake
  */
-@UtilityClass
 public final class MappedStatementIdsWithoutDataScope {
 
 	/**
@@ -21,23 +19,27 @@ public final class MappedStatementIdsWithoutDataScope {
 	 */
 	private static final Map<Class<? extends JsqlDataScope>, HashSet<String>> WITHOUT_MAPPED_STATEMENT_ID_MAP = new ConcurrentHashMap<>();
 
+	private MappedStatementIdsWithoutDataScope() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+
 	/**
 	 * 给所有的 DataScope 对应的忽略列表添加对应的 mappedStatementId
-	 * @param dataScopeList 数据范围集合
+	 *
+	 * @param dataScopeList     数据范围集合
 	 * @param mappedStatementId mappedStatementId
 	 */
 	public static void addToWithoutSet(List<JsqlDataScope> dataScopeList, String mappedStatementId) {
 		for (JsqlDataScope dataScope : dataScopeList) {
 			Class<? extends JsqlDataScope> dataScopeClass = dataScope.getClass();
 			HashSet<String> set = WITHOUT_MAPPED_STATEMENT_ID_MAP.computeIfAbsent(dataScopeClass,
-					key -> new HashSet<>());
+				key -> new HashSet<>());
 			set.add(mappedStatementId);
 		}
 	}
 
 	/**
 	 * 是否可以忽略权限控制，检查当前 mappedStatementId 是否存在于所有需要控制的 dataScope 对应的忽略列表中
-	 * @param dataScopeList 数据范围集合
+	 *
+	 * @param dataScopeList     数据范围集合
 	 * @param mappedStatementId mappedStatementId
 	 * @return 忽略控制返回 true
 	 */
@@ -45,7 +47,7 @@ public final class MappedStatementIdsWithoutDataScope {
 		for (JsqlDataScope dataScope : dataScopeList) {
 			Class<? extends JsqlDataScope> dataScopeClass = dataScope.getClass();
 			HashSet<String> set = WITHOUT_MAPPED_STATEMENT_ID_MAP.computeIfAbsent(dataScopeClass,
-					key -> new HashSet<>());
+				key -> new HashSet<>());
 			if (!set.contains(mappedStatementId)) {
 				return false;
 			}

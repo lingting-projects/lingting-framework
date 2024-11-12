@@ -3,10 +3,6 @@ package live.lingting.framework.jackson;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import live.lingting.framework.util.StringUtils;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.junit.jupiter.api.Test;
 
 import static live.lingting.framework.jackson.JacksonUtils.toJson;
@@ -39,16 +35,26 @@ class JacksonUtilsTest {
 		assertEquals("f1", xmlNode.get("f1").asText());
 	}
 
-	@Getter
-	@Setter
-	@NoArgsConstructor
-	@AllArgsConstructor
 	public static class Entity {
 
 		private String f1;
 
 		private String f2;
 
+		public Entity(String f1, String f2) {
+			this.f1 = f1;
+			this.f2 = f2;
+		}
+
+		public Entity() {}
+
+		public String getF1() {return this.f1;}
+
+		public String getF2() {return this.f2;}
+
+		public void setF1(String f1) {this.f1 = f1;}
+
+		public void setF2(String f2) {this.f2 = f2;}
 	}
 
 }

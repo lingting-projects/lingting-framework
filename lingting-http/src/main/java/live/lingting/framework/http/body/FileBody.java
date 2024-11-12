@@ -2,7 +2,6 @@ package live.lingting.framework.http.body;
 
 import live.lingting.framework.stream.FileCloneInputStream;
 import live.lingting.framework.util.StreamUtils;
-import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +30,7 @@ public class FileBody extends BodySource {
 		return input.size();
 	}
 
-	@SneakyThrows
+
 	@Override
 	public byte[] bytes() {
 		return input.copy().readAllBytes();
@@ -42,7 +41,7 @@ public class FileBody extends BodySource {
 		return input.copy();
 	}
 
-	@SneakyThrows
+
 	@Override
 	public String string(Charset charset) {
 		return StreamUtils.toString(input.copy(), charset);

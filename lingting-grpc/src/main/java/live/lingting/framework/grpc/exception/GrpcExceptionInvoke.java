@@ -5,8 +5,6 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.SecurityLevel;
 import io.grpc.ServerCall;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -14,7 +12,6 @@ import java.lang.reflect.Parameter;
 /**
  * @author lingting 2024-03-27 09:40
  */
-@RequiredArgsConstructor
 public class GrpcExceptionInvoke {
 
 	private final GrpcExceptionInstance instance;
@@ -22,6 +19,12 @@ public class GrpcExceptionInvoke {
 	private final Method method;
 
 	private final GrpcExceptionHandler handler;
+
+	public GrpcExceptionInvoke(GrpcExceptionInstance instance, Method method, GrpcExceptionHandler handler) {
+		this.instance = instance;
+		this.method = method;
+		this.handler = handler;
+	}
 
 	protected Object[] args(Exception e, ServerCall<?, ?> call, Metadata metadata) {
 		int count = method.getParameterCount();
@@ -66,7 +69,7 @@ public class GrpcExceptionInvoke {
 		return false;
 	}
 
-	@SneakyThrows
+
 	public Object invoke(Exception e, ServerCall<?, ?> call, Metadata metadata) {
 		Object[] args = args(e, call, metadata);
 		return method.invoke(instance, args);

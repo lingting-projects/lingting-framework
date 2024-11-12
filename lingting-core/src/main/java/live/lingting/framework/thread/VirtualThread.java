@@ -2,7 +2,6 @@ package live.lingting.framework.thread;
 
 import live.lingting.framework.function.ThrowableRunnable;
 import live.lingting.framework.util.ClassUtils;
-import lombok.experimental.UtilityClass;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
@@ -15,9 +14,8 @@ import java.util.function.Supplier;
 /**
  * @author lingting 2024-09-18 19:59
  */
-@UtilityClass
 @SuppressWarnings("java:S1845")
-public class VirtualThread {
+public final class VirtualThread {
 
 	static final boolean SUPPORT;
 
@@ -28,6 +26,8 @@ public class VirtualThread {
 		SUPPORT = method != null;
 		instance = new VirtualThread.Impl();
 	}
+
+	private VirtualThread() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static VirtualThread.Impl instance() {
 		return instance;

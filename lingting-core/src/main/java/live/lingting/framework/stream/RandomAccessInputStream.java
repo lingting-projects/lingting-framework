@@ -1,8 +1,6 @@
 package live.lingting.framework.stream;
 
 import live.lingting.framework.util.FileUtils;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,17 +20,13 @@ public class RandomAccessInputStream extends InputStream {
 
 	protected final RandomAccessFile file;
 
-	@Getter
 	private final Path path;
 
 	/**
 	 * 文件大小: bytes
 	 */
-	@Getter
 	private final long size;
 
-	@Getter
-	@Setter
 	protected boolean closeAndDelete = false;
 
 	public RandomAccessInputStream(InputStream in) throws IOException {
@@ -93,4 +87,11 @@ public class RandomAccessInputStream extends InputStream {
 		file.seek(0);
 	}
 
+	public Path getPath() {return this.path;}
+
+	public long getSize() {return this.size;}
+
+	public boolean isCloseAndDelete() {return this.closeAndDelete;}
+
+	public void setCloseAndDelete(boolean closeAndDelete) {this.closeAndDelete = closeAndDelete;}
 }

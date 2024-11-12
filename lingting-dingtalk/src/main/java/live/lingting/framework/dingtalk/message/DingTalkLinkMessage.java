@@ -2,16 +2,11 @@ package live.lingting.framework.dingtalk.message;
 
 import live.lingting.framework.dingtalk.DingTalkParams;
 import live.lingting.framework.dingtalk.enums.MessageTypeEnum;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
 
 /**
  * @author lingting 2020/6/10 22:13
  */
-@Getter
-@Setter
-@Accessors(chain = true)
+
 public class DingTalkLinkMessage extends AbstractDingTalkMessage {
 
 	/**
@@ -42,7 +37,34 @@ public class DingTalkLinkMessage extends AbstractDingTalkMessage {
 	@Override
 	public DingTalkParams put(DingTalkParams params) {
 		return params.setLink(
-				new DingTalkParams.Link().setText(text).setTitle(title).setPicUrl(picUrl).setMessageUrl(messageUrl));
+			new DingTalkParams.Link().setText(text).setTitle(title).setPicUrl(picUrl).setMessageUrl(messageUrl));
 	}
 
+	public String getText() {return this.text;}
+
+	public String getTitle() {return this.title;}
+
+	public String getPicUrl() {return this.picUrl;}
+
+	public String getMessageUrl() {return this.messageUrl;}
+
+	public DingTalkLinkMessage setText(String text) {
+		this.text = text;
+		return this;
+	}
+
+	public DingTalkLinkMessage setTitle(String title) {
+		this.title = title;
+		return this;
+	}
+
+	public DingTalkLinkMessage setPicUrl(String picUrl) {
+		this.picUrl = picUrl;
+		return this;
+	}
+
+	public DingTalkLinkMessage setMessageUrl(String messageUrl) {
+		this.messageUrl = messageUrl;
+		return this;
+	}
 }

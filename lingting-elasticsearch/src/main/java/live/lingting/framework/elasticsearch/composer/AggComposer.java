@@ -2,7 +2,6 @@ package live.lingting.framework.elasticsearch.composer;
 
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
 import live.lingting.framework.elasticsearch.ElasticsearchFunction;
-import lombok.experimental.UtilityClass;
 
 import java.util.function.UnaryOperator;
 
@@ -11,8 +10,9 @@ import static live.lingting.framework.elasticsearch.ElasticsearchUtils.fieldName
 /**
  * @author lingting 2024-03-06 17:47
  */
-@UtilityClass
-public class AggComposer {
+public final class AggComposer {
+
+	private AggComposer() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static Aggregation terms(String field) {
 		return terms(field, null);
@@ -31,7 +31,7 @@ public class AggComposer {
 	}
 
 	public static Aggregation terms(String field, Integer size,
-			UnaryOperator<Aggregation.Builder.ContainerBuilder> operator) {
+									UnaryOperator<Aggregation.Builder.ContainerBuilder> operator) {
 		return Aggregation.of(agg -> {
 			Aggregation.Builder.ContainerBuilder builder = agg.terms(ta -> {
 				if (size != null) {
@@ -44,12 +44,12 @@ public class AggComposer {
 	}
 
 	public static <E> Aggregation terms(ElasticsearchFunction<E, ?> function,
-			UnaryOperator<Aggregation.Builder.ContainerBuilder> operator) {
+										UnaryOperator<Aggregation.Builder.ContainerBuilder> operator) {
 		return terms(function, null, operator);
 	}
 
 	public static <E> Aggregation terms(ElasticsearchFunction<E, ?> function, Integer size,
-			UnaryOperator<Aggregation.Builder.ContainerBuilder> operator) {
+										UnaryOperator<Aggregation.Builder.ContainerBuilder> operator) {
 		return terms(fieldName(function), size, operator);
 	}
 

@@ -1,16 +1,16 @@
 
 package live.lingting.polaris.grpc.util;
 
-import lombok.experimental.UtilityClass;
-
 /**
  * @author lixiaoshuang
  */
-@UtilityClass
-public class JvmHookHelper {
+public final class JvmHookHelper {
+
+	private JvmHookHelper() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	/**
 	 * Add JVM callback hooks.
+	 *
 	 * @param runnable Functional interface
 	 */
 	public static boolean addShutdownHook(Runnable runnable) {

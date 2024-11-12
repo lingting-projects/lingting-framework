@@ -2,15 +2,15 @@ package live.lingting.framework.interceptor;
 
 import live.lingting.framework.security.domain.SecurityToken;
 import live.lingting.framework.thread.StackThreadLocal;
-import lombok.experimental.UtilityClass;
 
 /**
  * @author lingting 2023-12-18 16:39
  */
-@UtilityClass
-public class SecurityGrpcRemoteContent {
+public final class SecurityGrpcRemoteContent {
 
 	static final StackThreadLocal<SecurityToken> THREAD_LOCAL = new StackThreadLocal<>();
+
+	private SecurityGrpcRemoteContent() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static SecurityToken get() {
 		return THREAD_LOCAL.get();

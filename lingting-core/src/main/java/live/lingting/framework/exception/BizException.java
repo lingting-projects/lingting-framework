@@ -1,12 +1,10 @@
 package live.lingting.framework.exception;
 
 import live.lingting.framework.api.ResultCode;
-import lombok.Getter;
 
 /**
  * @author lingting 2022/9/22 12:11
  */
-@Getter
 public class BizException extends RuntimeException {
 
 	private final Integer code;
@@ -35,4 +33,7 @@ public class BizException extends RuntimeException {
 		this.code = code;
 	}
 
+	public Integer getCode() {return this.code;}
+
+	public String getMessage() {return this.message;}
 }

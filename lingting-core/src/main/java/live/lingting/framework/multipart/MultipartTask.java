@@ -3,9 +3,6 @@ package live.lingting.framework.multipart;
 import live.lingting.framework.lock.JavaReentrantLock;
 import live.lingting.framework.thread.Async;
 import live.lingting.framework.util.ValueUtils;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.SneakyThrows;
 import org.slf4j.Logger;
 
 import java.time.Duration;
@@ -22,7 +19,7 @@ import static live.lingting.framework.multipart.MultipartTaskStatus.WAIT;
 /**
  * @author lingting 2024-09-05 14:48
  */
-@SuppressWarnings({ "unchecked", "java:S1172", "java:S1181", "java:S112" })
+@SuppressWarnings({"unchecked", "java:S1172", "java:S1181", "java:S112"})
 public abstract class MultipartTask<I extends MultipartTask<I>> {
 
 	protected final Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
@@ -33,25 +30,18 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 
 	protected final Async async;
 
-	@Getter
 	protected final Multipart multipart;
 
-	@Getter
 	protected final int partCount;
 
 	protected final List<PartTask> tasks;
 
-	@Getter
 	protected int completedNumber = 0;
 
-	@Getter
 	protected int successfulNumber = 0;
 
-	@Getter
 	protected int failedNumber = 0;
 
-	@Getter
-	@Setter
 	protected long maxRetryCount = 0L;
 
 	protected MultipartTask(Multipart multipart) {
@@ -103,7 +93,7 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 	/**
 	 * 计算以及更新数据
 	 */
-	@SneakyThrows
+
 	protected void calculate() {
 		lock.runByInterruptibly(() -> {
 			AtomicInteger cn = new AtomicInteger();
@@ -203,4 +193,17 @@ public abstract class MultipartTask<I extends MultipartTask<I>> {
 		return getMultipart().getId();
 	}
 
+	public Multipart getMultipart() {return this.multipart;}
+
+	public int getPartCount() {return this.partCount;}
+
+	public int getCompletedNumber() {return this.completedNumber;}
+
+	public int getSuccessfulNumber() {return this.successfulNumber;}
+
+	public int getFailedNumber() {return this.failedNumber;}
+
+	public long getMaxRetryCount() {return this.maxRetryCount;}
+
+	public void setMaxRetryCount(long maxRetryCount) {this.maxRetryCount = maxRetryCount;}
 }

@@ -1,7 +1,6 @@
 package live.lingting.framework.value;
 
 import live.lingting.framework.util.CollectionUtils;
-import lombok.Getter;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -31,7 +30,6 @@ public abstract class CursorValue<T> implements Iterator<T> {
 	/**
 	 * 已读取数据数量
 	 */
-	@Getter
 	protected long count = 0;
 
 	@Override
@@ -74,4 +72,5 @@ public abstract class CursorValue<T> implements Iterator<T> {
 		return StreamSupport.stream(spliterator, false);
 	}
 
+	public long getCount() {return this.count;}
 }

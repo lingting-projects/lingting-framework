@@ -1,7 +1,5 @@
 package live.lingting.framework;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -52,12 +50,15 @@ class SequenceTest {
 		assertEquals(e_2, list.get(0));
 	}
 
-	@Getter
-	@RequiredArgsConstructor
 	static class ES implements Sequence {
 
 		private final int sequence;
 
+		public ES(int sequence) {
+			this.sequence = sequence;
+		}
+
+		public int getSequence() {return this.sequence;}
 	}
 
 	@Order(-90)

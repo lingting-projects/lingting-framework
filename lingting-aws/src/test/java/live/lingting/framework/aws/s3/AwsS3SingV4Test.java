@@ -2,7 +2,6 @@ package live.lingting.framework.aws.s3;
 
 import live.lingting.framework.http.header.HttpHeaders;
 import live.lingting.framework.value.multi.StringMultiValue;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -16,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class AwsS3SingV4Test {
 
-	@SneakyThrows
+
 	@Test
 	void test() {
 		HttpHeaders headers = HttpHeaders.empty();

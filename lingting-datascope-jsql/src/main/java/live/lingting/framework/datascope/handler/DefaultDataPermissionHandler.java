@@ -3,7 +3,6 @@ package live.lingting.framework.datascope.handler;
 import live.lingting.framework.datascope.JsqlDataScope;
 import live.lingting.framework.datascope.holder.DataPermissionRuleHolder;
 import live.lingting.framework.datascope.holder.MappedStatementIdsWithoutDataScope;
-import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,13 +16,17 @@ import java.util.Set;
  * @author Hccake 2021/1/27
  * @version 1.0
  */
-@RequiredArgsConstructor
 public class DefaultDataPermissionHandler implements DataPermissionHandler {
 
 	private final List<JsqlDataScope> dataScopes;
 
+	public DefaultDataPermissionHandler(List<JsqlDataScope> dataScopes) {
+		this.dataScopes = dataScopes;
+	}
+
 	/**
 	 * 系统配置的所有的数据范围
+	 *
 	 * @return 数据范围集合
 	 */
 	@Override
@@ -33,6 +36,7 @@ public class DefaultDataPermissionHandler implements DataPermissionHandler {
 
 	/**
 	 * 系统配置的所有的数据范围
+	 *
 	 * @param mappedStatementId Mapper方法ID
 	 * @return 数据范围集合
 	 */
@@ -52,7 +56,8 @@ public class DefaultDataPermissionHandler implements DataPermissionHandler {
 	 * </p>
 	 * 若当前的 mappedStatementId 存在于 <Code>MappedStatementIdsWithoutDataScope<Code/>
 	 * 中，则表示无需处理
-	 * @param dataScopeList 当前需要控制的 dataScope 集合
+	 *
+	 * @param dataScopeList     当前需要控制的 dataScope 集合
 	 * @param mappedStatementId Mapper方法ID
 	 * @return always false
 	 */
@@ -63,6 +68,7 @@ public class DefaultDataPermissionHandler implements DataPermissionHandler {
 
 	/**
 	 * 根据数据权限规则过滤出 dataScope 列表
+	 *
 	 * @param dataPermissionRule 数据权限规则
 	 * @return List<DataScope>
 	 */

@@ -7,7 +7,6 @@ import live.lingting.framework.multipart.PartTask;
 import live.lingting.framework.thread.Async;
 import live.lingting.framework.util.FileUtils;
 import live.lingting.framework.util.ValueUtils;
-import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,48 +25,39 @@ import static live.lingting.framework.util.ValueUtils.simpleUuid;
 /**
  * @author lingting 2024-09-06 16:39
  */
-@SuppressWarnings({ "unchecked", "java:S1181", "java:S112" })
+@SuppressWarnings({"unchecked", "java:S1181", "java:S112"})
 public abstract class MultipartDownload<D extends MultipartDownload<D>> implements Download {
 
 	public static final File TEMP_DIR = FileUtils.createTempDir("download");
 
 	protected final Logger log = LoggerFactory.getLogger(getClass());
 
-	@Getter
 	protected final String url;
 
 	/**
 	 * 文件大小. 不知道就写null. 为null或小于1时会调用 {@link MultipartDownload#size()} 方法获取
 	 */
-	@Getter
 	protected final Long size;
 
 	/**
 	 * 是否存在多个分片.
 	 */
-	@Getter
 	protected final boolean multi;
 
-	@Getter
 	protected final long threadLimit;
 
-	@Getter
 	protected final long partSize;
 
-	@Getter
 	protected final long maxRetryCount;
 
-	@Getter
 	protected final Duration timeout;
 
 	protected final ExecutorService executor;
 
 	protected final String id;
 
-	@Getter
 	protected DownloadStatus downloadStatus = WAIT;
 
-	@Getter
 	protected DownloadException ex = null;
 
 	protected File file;
@@ -106,7 +96,7 @@ public abstract class MultipartDownload<D extends MultipartDownload<D>> implemen
 					.partSize(multi ? partSize : fileSize)
 					.build();
 				DownloadFileMultipartTask task = new DownloadFileMultipartTask(multipart, maxRetryCount, async, file,
-						this::download);
+					this::download);
 				task.start().await(timeout);
 				if (task.hasFailed()) {
 					PartTask t = task.tasksFailed().get(0);
@@ -160,4 +150,21 @@ public abstract class MultipartDownload<D extends MultipartDownload<D>> implemen
 
 	public abstract InputStream download(Part part) throws Throwable;
 
+	public String getUrl() {return this.url;}
+
+	public Long getSize() {return this.size;}
+
+	public boolean isMulti() {return this.multi;}
+
+	public long getThreadLimit() {return this.threadLimit;}
+
+	public long getPartSize() {return this.partSize;}
+
+	public long getMaxRetryCount() {return this.maxRetryCount;}
+
+	public Duration getTimeout() {return this.timeout;}
+
+	public DownloadStatus getDownloadStatus() {return this.downloadStatus;}
+
+	public DownloadException getEx() {return this.ex;}
 }

@@ -3,17 +3,16 @@ package live.lingting.framework.sensitive.serializer;
 import live.lingting.framework.sensitive.Sensitive;
 import live.lingting.framework.sensitive.SensitiveProvider;
 import live.lingting.framework.sensitive.SensitiveSerializer;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
 /**
  * @author lingting 2024-05-21 10:30
  */
 @SuppressWarnings("java:S6548")
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SensitiveDefaultProvider implements SensitiveProvider {
 
 	public static final SensitiveDefaultProvider INSTANCE = new SensitiveDefaultProvider();
+
+	private SensitiveDefaultProvider() {}
 
 	@Override
 	public SensitiveSerializer find(Sensitive sensitive) {

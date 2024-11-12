@@ -3,15 +3,15 @@ package live.lingting.framework.elasticsearch.composer;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import live.lingting.framework.elasticsearch.ElasticsearchFunction;
-import lombok.experimental.UtilityClass;
 
 import static live.lingting.framework.elasticsearch.ElasticsearchUtils.fieldName;
 
 /**
  * @author lingting 2024-03-06 17:44
  */
-@UtilityClass
-public class SortComposer {
+public final class SortComposer {
+
+	private SortComposer() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static SortOptions sort(String field, Boolean desc) {
 		return sort(field, Boolean.TRUE.equals(desc) ? SortOrder.Desc : SortOrder.Asc);

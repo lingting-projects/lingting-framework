@@ -5,8 +5,6 @@ import live.lingting.framework.stream.FileCloneInputStream;
 import live.lingting.framework.stream.RandomAccessInputStream;
 import live.lingting.framework.util.FileUtils;
 import live.lingting.framework.util.StreamUtils;
-import lombok.Getter;
-import lombok.SneakyThrows;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,31 +27,26 @@ public class Multipart {
 	/**
 	 * 每个分片的最大大小: byte
 	 */
-	@Getter
 	protected final long partSize;
 
 	/**
 	 * 所有分片
 	 */
-	@Getter
 	protected final Collection<Part> parts;
 
 	/**
 	 * 唯一标识符
 	 */
-	@Getter
 	protected final String id;
 
 	/**
 	 * 原始内容大小: byte
 	 */
-	@Getter
 	protected final long size;
 
 	/**
 	 * 原始内容缓存文件
 	 */
-	@Getter
 	protected final File source;
 
 	protected final Map<Long, File> cache;
@@ -73,7 +66,8 @@ public class Multipart {
 
 	/**
 	 * 计算对应大小和每个分片大小需要构造多少个分片
-	 * @param size 总大小
+	 *
+	 * @param size     总大小
 	 * @param partSize 每个分片大小
 	 */
 	public static long calculate(long size, long partSize) {
@@ -105,7 +99,7 @@ public class Multipart {
 	public File file(Part part) {
 		return cache.computeIfAbsent(part.index, new Function<Long, File>() {
 			@Override
-			@SneakyThrows
+
 			public File apply(Long k) {
 				File dir = new File(TEMP_DIR, id);
 				File temp = FileUtils.createTemp(".part" + k, dir);
@@ -138,4 +132,13 @@ public class Multipart {
 		FileUtils.delete(file);
 	}
 
+	public long getPartSize() {return this.partSize;}
+
+	public Collection<Part> getParts() {return this.parts;}
+
+	public String getId() {return this.id;}
+
+	public long getSize() {return this.size;}
+
+	public File getSource() {return this.source;}
 }

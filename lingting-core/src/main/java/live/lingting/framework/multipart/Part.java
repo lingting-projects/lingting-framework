@@ -1,7 +1,5 @@
 package live.lingting.framework.multipart;
 
-import lombok.Getter;
-
 /**
  * 分片详情
  * <p>
@@ -10,7 +8,6 @@ import lombok.Getter;
  *
  * @author lingting 2024-09-05 14:47
  */
-@Getter
 public class Part {
 
 	protected final Long index;
@@ -49,4 +46,11 @@ public class Part {
 		return result;
 	}
 
+	public Long getIndex() {return this.index;}
+
+	public Long getStart() {return this.start;}
+
+	public Long getEnd() {return this.end;}
+
+	public Long getSize() {return this.size;}
 }

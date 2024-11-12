@@ -2,7 +2,6 @@ package live.lingting.framework.http.download;
 
 import live.lingting.framework.download.DownloadBuilder;
 import live.lingting.framework.http.HttpClient;
-import lombok.SneakyThrows;
 
 import java.net.URI;
 import java.time.Duration;
@@ -37,7 +36,7 @@ public class HttpDownloadBuilder extends DownloadBuilder<HttpDownloadBuilder> {
 		return this;
 	}
 
-	@SneakyThrows
+
 	public HttpDownload build() {
 		return new HttpDownload(this);
 	}

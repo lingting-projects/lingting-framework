@@ -7,11 +7,10 @@ import live.lingting.framework.reflect.ClassField;
 import live.lingting.framework.util.AnnotationUtils;
 import live.lingting.framework.util.ClassUtils;
 import live.lingting.framework.util.StringUtils;
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.http.StatusLine;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
+import org.slf4j.Logger;
 
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Field;
@@ -24,16 +23,17 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author lingting 2023-06-16 11:25
  */
-@Slf4j
-@UtilityClass
-@SuppressWarnings({ "unchecked", "java:S3011" })
-public class ElasticsearchUtils {
+@SuppressWarnings({"unchecked", "java:S3011"})
+public final class ElasticsearchUtils {
 
 	private static final Map<Class<? extends ElasticsearchFunction>, SerializedLambda> EF_LAMBDA_CACHE = new ConcurrentHashMap<>();
 
 	private static final Map<Class<? extends ElasticsearchFunction>, Class<?>> CLS_LAMBDA_CACHE = new ConcurrentHashMap<>();
 
 	private static final Map<Class<? extends ElasticsearchFunction>, Field> FIELD_LAMBDA_CACHE = new ConcurrentHashMap<>();
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(ElasticsearchUtils.class);
+
+	private ElasticsearchUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static <T> Class<T> getEntityClass(Class<?> cls) {
 		List<Class<?>> list = ClassUtils.classArguments(cls);
@@ -52,7 +52,7 @@ public class ElasticsearchUtils {
 	}
 
 	static <T, R> SerializedLambda resolveByReflection(ElasticsearchFunction<T, R> function)
-			throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+		throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 		Class<? extends ElasticsearchFunction> fClass = function.getClass();
 		Method method = fClass.getDeclaredMethod("writeReplace");
 		method.setAccessible(true);

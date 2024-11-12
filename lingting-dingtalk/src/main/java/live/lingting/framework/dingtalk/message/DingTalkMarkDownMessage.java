@@ -3,16 +3,11 @@ package live.lingting.framework.dingtalk.message;
 import live.lingting.framework.MarkdownBuilder;
 import live.lingting.framework.dingtalk.DingTalkParams;
 import live.lingting.framework.dingtalk.enums.MessageTypeEnum;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
 
 /**
  * @author lingting 2020/6/10 22:13
  */
-@Getter
-@Setter
-@Accessors(chain = true)
+
 public class DingTalkMarkDownMessage extends AbstractDingTalkMessage {
 
 	/**
@@ -35,4 +30,17 @@ public class DingTalkMarkDownMessage extends AbstractDingTalkMessage {
 		return params.setMarkdown(new DingTalkParams.Markdown().setTitle(title).setText(text.build()));
 	}
 
+	public String getTitle() {return this.title;}
+
+	public MarkdownBuilder getText() {return this.text;}
+
+	public DingTalkMarkDownMessage setTitle(String title) {
+		this.title = title;
+		return this;
+	}
+
+	public DingTalkMarkDownMessage setText(MarkdownBuilder text) {
+		this.text = text;
+		return this;
+	}
 }

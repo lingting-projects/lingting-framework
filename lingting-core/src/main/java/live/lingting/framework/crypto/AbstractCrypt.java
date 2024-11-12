@@ -1,7 +1,5 @@
 package live.lingting.framework.crypto;
 
-import lombok.RequiredArgsConstructor;
-
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.Charset;
@@ -9,7 +7,6 @@ import java.nio.charset.Charset;
 /**
  * @author lingting 2024-09-04 13:59
  */
-@RequiredArgsConstructor
 public abstract class AbstractCrypt<R extends AbstractCrypt<R>> {
 
 	protected final String algorithm;
@@ -19,6 +16,13 @@ public abstract class AbstractCrypt<R extends AbstractCrypt<R>> {
 	protected final SecretKeySpec secret;
 
 	protected final IvParameterSpec iv;
+
+	public AbstractCrypt(String algorithm, Charset charset, SecretKeySpec secret, IvParameterSpec iv) {
+		this.algorithm = algorithm;
+		this.charset = charset;
+		this.secret = secret;
+		this.iv = iv;
+	}
 
 	public R useSecret(SecretKeySpec secret) {
 		return instance(algorithm, charset, secret, iv);

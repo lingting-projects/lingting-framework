@@ -1,14 +1,13 @@
 package live.lingting.framework.util;
 
-import lombok.experimental.UtilityClass;
-
 import java.util.List;
 
 /**
  * @author lingting 2023-12-22 11:28
  */
-@UtilityClass
-public class ByteUtils {
+public final class ByteUtils {
+
+	private ByteUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static byte[] toArray(List<Byte> list) {
 		byte[] bytes = new byte[list.size()];
@@ -23,6 +22,7 @@ public class ByteUtils {
 	 * <p>
 	 * 字节1在字节2前面
 	 * </p>
+	 *
 	 * @param byte1 字节1
 	 * @param byte2 字节2
 	 * @return true 行尾
@@ -33,6 +33,7 @@ public class ByteUtils {
 
 	/**
 	 * 字节是否表示行尾
+	 *
 	 * @param byte1 字节1
 	 * @return true 行尾
 	 */
@@ -42,6 +43,7 @@ public class ByteUtils {
 
 	/**
 	 * 此数据是否为完整的一行数据(以换行符结尾)
+	 *
 	 * @param bytes 字节
 	 * @return true 一整行
 	 */
@@ -64,6 +66,7 @@ public class ByteUtils {
 
 	/**
 	 * 此数据是否为完整的一行数据(以换行符结尾)
+	 *
 	 * @param bytes 字节
 	 * @return true 一整行
 	 */
@@ -86,6 +89,7 @@ public class ByteUtils {
 
 	/**
 	 * 移除行数据中的行尾符合
+	 *
 	 * @param list 数据
 	 * @return 移除后的数据, 如果没有则是原数据
 	 */

@@ -2,16 +2,10 @@ package live.lingting.framework.dingtalk.message;
 
 import live.lingting.framework.dingtalk.DingTalkParams;
 import live.lingting.framework.dingtalk.enums.MessageTypeEnum;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
 
 /**
  * @author lingting 2020/6/10 22:13
  */
-@Getter
-@Setter
-@Accessors(chain = true)
 public class DingTalkTextMessage extends AbstractDingTalkMessage {
 
 	/**
@@ -29,4 +23,10 @@ public class DingTalkTextMessage extends AbstractDingTalkMessage {
 		return params.setText(new DingTalkParams.Text().setContent(content));
 	}
 
+	public String getContent() {return this.content;}
+
+	public DingTalkTextMessage setContent(String content) {
+		this.content = content;
+		return this;
+	}
 }

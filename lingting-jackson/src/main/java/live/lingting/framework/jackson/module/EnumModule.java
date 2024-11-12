@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleDeserializers;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import live.lingting.framework.util.EnumUtils;
-import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -20,7 +19,7 @@ import java.util.Objects;
 /**
  * @author lingting 2022/12/20 14:11
  */
-@SuppressWarnings({ "java:S3740", "unchecked" })
+@SuppressWarnings({"java:S3740", "unchecked"})
 public class EnumModule extends SimpleModule {
 
 	public EnumModule() {
@@ -38,7 +37,7 @@ public class EnumModule extends SimpleModule {
 
 		@Override
 		public void serialize(Enum e, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
-				throws IOException {
+			throws IOException {
 			jsonGenerator.writeObject(EnumUtils.getValue(e));
 		}
 
@@ -51,7 +50,7 @@ public class EnumModule extends SimpleModule {
 
 		@Override
 		public JsonDeserializer<?> findEnumDeserializer(Class<?> type, DeserializationConfig config,
-				BeanDescription beanDesc) throws JsonMappingException {
+														BeanDescription beanDesc) throws JsonMappingException {
 			if (type.isEnum()) {
 				return new EnumDeserializer(type);
 			}
@@ -60,14 +59,17 @@ public class EnumModule extends SimpleModule {
 
 	}
 
-	@RequiredArgsConstructor
 	public static class EnumDeserializer extends JsonDeserializer<Enum<?>> {
 
 		private final Class<?> cls;
 
+		public EnumDeserializer(Class<?> cls) {
+			this.cls = cls;
+		}
+
 		@Override
 		public Enum<?> deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
-				throws IOException {
+			throws IOException {
 			// 获取前端输入的原始文本
 			String rawString = jsonParser.getValueAsString();
 
@@ -77,7 +79,7 @@ public class EnumModule extends SimpleModule {
 				Object value = EnumUtils.getValue(e);
 
 				if (Objects.equals(value, rawString)
-						|| (value != null && Objects.equals(value.toString(), rawString))) {
+					|| (value != null && Objects.equals(value.toString(), rawString))) {
 					return e;
 				}
 			}

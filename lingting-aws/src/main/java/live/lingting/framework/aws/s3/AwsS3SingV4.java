@@ -10,8 +10,6 @@ import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.DigestUtils;
 import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.value.multi.StringMultiValue;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -29,14 +27,13 @@ import static live.lingting.framework.util.StringUtils.deleteLast;
 /**
  * @author lingting 2024-09-19 17:01
  */
-@RequiredArgsConstructor
 public class AwsS3SingV4 {
 
 	public static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'");
 
 	public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
-	protected static final String[] HEADER_INCLUDE = { "host", "content-md5", "range", };
+	protected static final String[] HEADER_INCLUDE = {"host", "content-md5", "range",};
 
 	public static final String ALGORITHM = "AWS4-HMAC-SHA256";
 
@@ -61,6 +58,19 @@ public class AwsS3SingV4 {
 	protected final String sk;
 
 	protected final String bucket;
+
+	public AwsS3SingV4(LocalDateTime dateTime, String method, String path, HttpHeaders headers, String bodySha256, StringMultiValue params, String region, String ak, String sk, String bucket) {
+		this.dateTime = dateTime;
+		this.method = method;
+		this.path = path;
+		this.headers = headers;
+		this.bodySha256 = bodySha256;
+		this.params = params;
+		this.region = region;
+		this.ak = ak;
+		this.sk = sk;
+		this.bucket = bucket;
+	}
 
 	public static S3SingV4Builder builder() {
 		return new S3SingV4Builder();
@@ -168,7 +178,7 @@ public class AwsS3SingV4 {
 		public AwsS3SingV4 build() {
 			LocalDateTime time = this.dateTime == null ? LocalDateTime.now() : this.dateTime;
 			return new AwsS3SingV4(time, this.method, this.path, this.headers, this.bodySha256, this.params,
-					this.region, this.ak, this.sk, this.bucket);
+				this.region, this.ak, this.sk, this.bucket);
 		}
 
 	}
@@ -257,7 +267,7 @@ public class AwsS3SingV4 {
 	}
 
 	public String sourceHmacSha(String source, String scopeDate)
-			throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, InvalidKeyException {
+		throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, InvalidKeyException {
 		Mac mac = Mac.hmacBuilder().sha256().secret("AWS4" + sk).build();
 		byte[] sourceKey1 = mac.calculate(scopeDate);
 		byte[] sourceKey2 = mac.useSecret(sourceKey1).calculate(region);
@@ -270,7 +280,7 @@ public class AwsS3SingV4 {
 	/**
 	 * 计算前面
 	 */
-	@SneakyThrows
+
 	public String calculate() {
 		String request = canonicalRequest();
 
@@ -283,7 +293,7 @@ public class AwsS3SingV4 {
 
 		String signedHeaders = signedHeaders();
 		return ALGORITHM + " Credential=" + ak + "/" + scope + "," + "SignedHeaders=" + signedHeaders + ","
-				+ "Signature=" + sourceHmacSha;
+			+ "Signature=" + sourceHmacSha;
 	}
 
 }

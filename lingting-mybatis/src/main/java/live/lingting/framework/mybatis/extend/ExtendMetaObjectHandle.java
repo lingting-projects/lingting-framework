@@ -1,15 +1,16 @@
 package live.lingting.framework.mybatis.extend;
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.reflection.MetaObject;
+import org.slf4j.Logger;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-@Slf4j
 public class ExtendMetaObjectHandle implements MetaObjectHandler {
+
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(ExtendMetaObjectHandle.class);
 
 	@Override
 	public void insertFill(MetaObject metaObject) {

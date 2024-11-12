@@ -2,7 +2,6 @@ package live.lingting.framework.security.resource;
 
 import live.lingting.framework.security.domain.SecurityScope;
 import live.lingting.framework.thread.StackThreadLocal;
-import lombok.experimental.UtilityClass;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -11,10 +10,11 @@ import java.util.Set;
 /**
  * @author lingting 2023-03-29 20:29
  */
-@UtilityClass
-public class SecurityHolder {
+public final class SecurityHolder {
 
 	static final StackThreadLocal<SecurityScope> LOCAL = new StackThreadLocal<>();
+
+	private SecurityHolder() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static void put(SecurityScope scope) {
 		LOCAL.put(scope);

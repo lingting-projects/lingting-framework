@@ -2,7 +2,6 @@
 package live.lingting.polaris.grpc.util;
 
 import com.tencent.polaris.api.utils.StringUtils;
-import lombok.experimental.UtilityClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,16 +16,18 @@ import java.util.Map;
 /**
  * @author lixiaoshuang
  */
-@UtilityClass
 @SuppressWarnings("java:S1181")
-public class NetworkHelper {
+public final class NetworkHelper {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(NetworkHelper.class);
 
 	private static final String LOCALHOST_VALUE = "127.0.0.1";
 
+	private NetworkHelper() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+
 	/**
 	 * Gets the local address to which the socket is bound.
+	 *
 	 * @param host polaris server host
 	 * @param port polaris server port
 	 * @return local ip
@@ -48,6 +49,7 @@ public class NetworkHelper {
 	 * You can use getNetworkInterfaces()+getInetAddresses() to get all the IP addresses
 	 * of the node, and then judge to find out the site-local address, this is a
 	 * recommended solution.
+	 *
 	 * @return real ip
 	 */
 	public static String getLocalHostExactAddress() {
@@ -55,7 +57,7 @@ public class NetworkHelper {
 			Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
 			while (networkInterfaces.hasMoreElements()) {
 				NetworkInterface iface = networkInterfaces.nextElement();
-				for (Enumeration<InetAddress> inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements();) {
+				for (Enumeration<InetAddress> inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements(); ) {
 					InetAddress inetAddr = inetAddrs.nextElement();
 					if (!inetAddr.isLoopbackAddress() && inetAddr.isSiteLocalAddress()) {
 						return inetAddr.getHostAddress();

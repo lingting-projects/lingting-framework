@@ -1,8 +1,7 @@
 package live.lingting.framework.util;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -15,9 +14,7 @@ import java.util.function.Predicate;
 /**
  * @author psh 2022-04-21 16:55
  */
-@Slf4j
-@UtilityClass
-public class IpUtils {
+public final class IpUtils {
 
 	public static final String LOCALHOST = "127.0.0.1";
 
@@ -32,6 +29,7 @@ public class IpUtils {
 	public static final Integer IPV4_LENGTH_MAX = 16;
 
 	private static final List<String> HEADERS;
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(IpUtils.class);
 
 	static {
 		HEADERS = new ArrayList<>(16);
@@ -43,6 +41,8 @@ public class IpUtils {
 		HEADERS.add("HTTP_CLIENT_IP");
 		HEADERS.add("HTTP_X_FORWARDED_FOR");
 	}
+
+	private IpUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static String getFirstIp(HttpServletRequest request) {
 		String ip;
@@ -92,7 +92,8 @@ public class IpUtils {
 
 	/**
 	 * 是否为正确的IP地址
-	 * @param raw 原始值
+	 *
+	 * @param raw       原始值
 	 * @param predicate 附加判断,
 	 * @return true 满足是IP地址和附加判断时返回true
 	 */
@@ -103,7 +104,7 @@ public class IpUtils {
 		try {
 			String rawTrim = raw.trim();
 			String rawNormalize = rawTrim.contains(IPV6_SPLIT) ? rawTrim.replaceAll("(^|:)0+(\\w+)", "$1$2")
-					: rawTrim.replaceAll("(^|.)0+(\\w+)", "$1$2");
+				: rawTrim.replaceAll("(^|.)0+(\\w+)", "$1$2");
 
 			InetAddress address = InetAddress.getByName(raw);
 			String hostAddress = address.getHostAddress();

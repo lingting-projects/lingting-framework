@@ -9,7 +9,6 @@ import io.grpc.stub.AbstractFutureStub;
 import io.grpc.stub.AbstractStub;
 import live.lingting.framework.grpc.properties.GrpcClientProperties;
 import live.lingting.framework.util.StringUtils;
-import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,7 +19,6 @@ import java.util.function.UnaryOperator;
 /**
  * @author lingting 2024-01-30 13:55
  */
-@RequiredArgsConstructor
 public class GrpcChannelBuilder {
 
 	protected final GrpcClientProvide provide;
@@ -30,6 +28,10 @@ public class GrpcChannelBuilder {
 	protected String target;
 
 	protected GrpcClientProperties properties;
+
+	public GrpcChannelBuilder(GrpcClientProvide provide) {
+		this.provide = provide;
+	}
 
 	public GrpcChannelBuilder address(String host, Integer port) {
 		if (!StringUtils.hasText(host)) {

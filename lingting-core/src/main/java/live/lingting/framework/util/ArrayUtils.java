@@ -1,7 +1,5 @@
 package live.lingting.framework.util;
 
-import lombok.experimental.UtilityClass;
-
 import java.lang.reflect.Array;
 import java.util.Objects;
 import java.util.function.BiPredicate;
@@ -9,14 +7,16 @@ import java.util.function.BiPredicate;
 /**
  * @author lingting
  */
-@UtilityClass
 @SuppressWarnings("java:S1168")
-public class ArrayUtils {
+public final class ArrayUtils {
 
 	public static final int NOT_FOUNT = -1;
 
+	private ArrayUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+
 	/**
 	 * 数组是否为空
+	 *
 	 * @param obj 对象
 	 * @return true表示为空, 如果对象不为数组, 返回false
 	 */
@@ -130,9 +130,10 @@ public class ArrayUtils {
 
 	/**
 	 * 截取数组
+	 *
 	 * @param array 数组
 	 * @param start 左闭
-	 * @param end 右开
+	 * @param end   右开
 	 */
 	public static <T> T[] sub(T[] array, int start, int end) {
 		if (array == null) {

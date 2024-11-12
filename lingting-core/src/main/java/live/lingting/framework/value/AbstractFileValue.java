@@ -4,7 +4,7 @@ import live.lingting.framework.function.ThrowingFunction;
 import live.lingting.framework.util.FileUtils;
 import live.lingting.framework.util.StreamUtils;
 import live.lingting.framework.util.StringUtils;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -18,10 +18,10 @@ import java.util.function.Supplier;
 /**
  * @author lingting 2023-05-23 09:12
  */
-@Slf4j
 @SuppressWarnings("java:S1181")
 public abstract class AbstractFileValue<T> {
 
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(AbstractFileValue.class);
 	protected final File file;
 
 	protected T value;
@@ -37,6 +37,7 @@ public abstract class AbstractFileValue<T> {
 
 	/**
 	 * 文件名处理, 用于调整后缀
+	 *
 	 * @return 返回真实的文件名
 	 */
 	public abstract String fillFilename(Object filename);

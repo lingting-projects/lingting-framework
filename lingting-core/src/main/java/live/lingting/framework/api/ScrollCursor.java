@@ -3,7 +3,6 @@ package live.lingting.framework.api;
 import live.lingting.framework.function.ThrowingFunction;
 import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.value.CursorValue;
-import lombok.SneakyThrows;
 
 import java.util.List;
 
@@ -28,7 +27,7 @@ public class ScrollCursor<T, S> extends CursorValue<T> {
 		}
 	}
 
-	@SneakyThrows
+
 	@Override
 	protected List<T> nextBatchData() {
 		ScrollResult<T, S> result = scroll.apply(scrollId);

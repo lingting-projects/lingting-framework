@@ -7,7 +7,6 @@ import live.lingting.framework.lock.JavaReentrantLock;
 import live.lingting.framework.lock.LockRunnable;
 import live.lingting.framework.stream.CloneInputStream;
 import live.lingting.framework.util.StreamUtils;
-import lombok.SneakyThrows;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -66,7 +65,7 @@ public class HttpResponse implements Closeable {
 		}
 	}
 
-	@SneakyThrows
+
 	public String string() {
 		if (string != null) {
 			return string;
@@ -74,7 +73,7 @@ public class HttpResponse implements Closeable {
 
 		lock.runByInterruptibly(new LockRunnable() {
 			@Override
-			@SneakyThrows
+
 			public void run() throws InterruptedException {
 				if (string != null) {
 					return;

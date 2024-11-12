@@ -1,7 +1,6 @@
 package live.lingting.framework.util;
 
 import live.lingting.framework.value.LazyValue;
-import lombok.experimental.UtilityClass;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -9,13 +8,15 @@ import java.nio.charset.Charset;
 /**
  * @author lingting 2022/6/25 12:10
  */
-@UtilityClass
-public class SystemUtils {
+public final class SystemUtils {
+
+	private SystemUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	/**
 	 * 当前系统是否为Windows系统, 参考以下系统API
-	 * @see sun.awt.OSInfo#getOSType()
+	 *
 	 * @return boolean
+	 * @see sun.awt.OSInfo#getOSType()
 	 */
 	public static boolean isWindows() {
 		return osName().contains("Windows");

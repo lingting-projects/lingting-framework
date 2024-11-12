@@ -15,8 +15,6 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import live.lingting.framework.Sequence;
 import live.lingting.framework.grpc.properties.GrpcClientProperties;
 import live.lingting.framework.util.CollectionUtils;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 
 import java.util.Collection;
 import java.util.List;
@@ -27,12 +25,16 @@ import java.util.function.UnaryOperator;
 /**
  * @author lingting 2023-12-15 14:44
  */
-@RequiredArgsConstructor
 public class GrpcClientProvide {
 
 	protected final GrpcClientProperties properties;
 
 	protected final List<ClientInterceptor> interceptors;
+
+	public GrpcClientProvide(GrpcClientProperties properties, List<ClientInterceptor> interceptors) {
+		this.properties = properties;
+		this.interceptors = interceptors;
+	}
 
 	// region builder
 
@@ -75,7 +77,7 @@ public class GrpcClientProvide {
 		useProperties(builder, properties);
 	}
 
-	@SneakyThrows
+
 	public void useProperties(ManagedChannelBuilder<?> builder, GrpcClientProperties properties) {
 		// 开启心跳
 		if (properties.isEnableKeepAlive()) {
@@ -95,7 +97,7 @@ public class GrpcClientProvide {
 
 		// ssl配置
 		if (!properties.isUsePlaintext() && properties.isDisableSsl()
-				&& builder instanceof NettyChannelBuilder nettyChannelBuilder) {
+			&& builder instanceof NettyChannelBuilder nettyChannelBuilder) {
 			SslContextBuilder sslContextBuilder = GrpcSslContexts.forClient()
 				.trustManager(InsecureTrustManagerFactory.INSTANCE);
 			nettyChannelBuilder.sslContext(sslContextBuilder.build());

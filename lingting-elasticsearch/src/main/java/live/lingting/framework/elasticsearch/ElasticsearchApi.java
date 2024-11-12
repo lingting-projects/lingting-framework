@@ -44,9 +44,7 @@ import live.lingting.framework.function.ThrowingSupplier;
 import live.lingting.framework.retry.Retry;
 import live.lingting.framework.util.CollectionUtils;
 import live.lingting.framework.util.StringUtils;
-import lombok.Getter;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,10 +64,9 @@ import java.util.function.UnaryOperator;
 /**
  * @author lingting 2024-03-06 16:41
  */
-@Slf4j
-@Getter
 public class ElasticsearchApi<T> {
 
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(ElasticsearchApi.class);
 	protected final String index;
 
 	protected final Class<T> cls;
@@ -87,12 +84,12 @@ public class ElasticsearchApi<T> {
 	protected final Time scrollTime;
 
 	public ElasticsearchApi(Class<T> cls, Function<T, String> idFunc, ElasticsearchProperties properties,
-			ElasticsearchDataPermissionHandler handler, ElasticsearchClient client) {
+							ElasticsearchDataPermissionHandler handler, ElasticsearchClient client) {
 		this(ElasticsearchUtils.index(cls), cls, idFunc, properties, handler, client);
 	}
 
 	public ElasticsearchApi(String index, Class<T> cls, Function<T, String> idFunc, ElasticsearchProperties properties,
-			ElasticsearchDataPermissionHandler handler, ElasticsearchClient client) {
+							ElasticsearchDataPermissionHandler handler, ElasticsearchClient client) {
 		this.index = index;
 		this.cls = cls;
 		this.idFunc = idFunc;
@@ -125,7 +122,7 @@ public class ElasticsearchApi<T> {
 		});
 	}
 
-	@SneakyThrows
+
 	public <R> R retry(ThrowingSupplier<R> supplier) throws Exception {
 		if (retryProperties == null || !retryProperties.isEnabled()) {
 			return supplier.get();
@@ -189,7 +186,7 @@ public class ElasticsearchApi<T> {
 	}
 
 	public HitsMetadata<T> search(UnaryOperator<SearchRequest.Builder> operator, QueryBuilder<T> queries)
-			throws IOException {
+		throws IOException {
 		Query query = merge(queries);
 
 		SearchRequest.Builder builder = operator.apply(new SearchRequest.Builder()
@@ -229,12 +226,12 @@ public class ElasticsearchApi<T> {
 	}
 
 	public void aggs(BiConsumer<String, Aggregate> consumer, Map<String, Aggregation> aggregationMap,
-			QueryBuilder<T> queries) throws IOException {
+					 QueryBuilder<T> queries) throws IOException {
 		aggs(builder -> builder, consumer, aggregationMap, queries);
 	}
 
 	public void aggs(UnaryOperator<SearchRequest.Builder> operator, BiConsumer<String, Aggregate> consumer,
-			Map<String, Aggregation> aggregationMap, QueryBuilder<T> queries) throws IOException {
+					 Map<String, Aggregation> aggregationMap, QueryBuilder<T> queries) throws IOException {
 		aggs(operator, response -> {
 			Map<String, Aggregate> aggregations = response.aggregations();
 			Set<Map.Entry<String, Aggregate>> entries = aggregations.entrySet();
@@ -247,7 +244,7 @@ public class ElasticsearchApi<T> {
 	}
 
 	public void aggs(UnaryOperator<SearchRequest.Builder> operator, Consumer<SearchResponse<T>> consumer,
-			Map<String, Aggregation> aggregationMap, QueryBuilder<T> queries) throws IOException {
+					 Map<String, Aggregation> aggregationMap, QueryBuilder<T> queries) throws IOException {
 		Query query = merge(queries);
 
 		SearchRequest.Builder builder = operator.apply(new SearchRequest.Builder()
@@ -265,7 +262,7 @@ public class ElasticsearchApi<T> {
 	}
 
 	public boolean update(String documentId, Function<Script.Builder, ObjectBuilder<Script>> scriptOperator)
-			throws IOException {
+		throws IOException {
 		return update(documentId, scriptOperator.apply(new Script.Builder()).build());
 	}
 
@@ -274,7 +271,7 @@ public class ElasticsearchApi<T> {
 	}
 
 	public boolean update(UnaryOperator<UpdateRequest.Builder<T, T>> operator, String documentId, Script script)
-			throws IOException {
+		throws IOException {
 		return update(builder -> operator.apply(builder).script(script), documentId);
 	}
 
@@ -309,7 +306,7 @@ public class ElasticsearchApi<T> {
 	}
 
 	public boolean updateByQuery(Function<Script.Builder, ObjectBuilder<Script>> scriptOperator,
-			QueryBuilder<T> queries) throws IOException {
+								 QueryBuilder<T> queries) throws IOException {
 		return updateByQuery(scriptOperator.apply(new Script.Builder()).build(), queries);
 	}
 
@@ -318,7 +315,7 @@ public class ElasticsearchApi<T> {
 	}
 
 	public boolean updateByQuery(UnaryOperator<UpdateByQueryRequest.Builder> operator, Script script,
-			QueryBuilder<T> queries) throws IOException {
+								 QueryBuilder<T> queries) throws IOException {
 		Query query = merge(queries);
 
 		UpdateByQueryRequest.Builder builder = operator.apply(new UpdateByQueryRequest.Builder()
@@ -340,7 +337,7 @@ public class ElasticsearchApi<T> {
 	}
 
 	public BulkResponse bulk(UnaryOperator<BulkRequest.Builder> operator, List<BulkOperation> operations)
-			throws IOException {
+		throws IOException {
 		BulkRequest.Builder builder = operator.apply(new BulkRequest.Builder().refresh(Refresh.WaitFor));
 		builder.index(index);
 		builder.operations(operations);
@@ -370,7 +367,7 @@ public class ElasticsearchApi<T> {
 	}
 
 	public <E> BulkResponse batch(UnaryOperator<BulkRequest.Builder> operator, Collection<E> collection,
-			Function<E, BulkOperation> function) throws IOException {
+								  Function<E, BulkOperation> function) throws IOException {
 		if (CollectionUtils.isEmpty(collection)) {
 			return BulkResponse.of(br -> br.errors(false).items(Collections.emptyList()).ingestTook(0L).took(0));
 		}
@@ -407,7 +404,7 @@ public class ElasticsearchApi<T> {
 	}
 
 	public boolean deleteByQuery(UnaryOperator<DeleteByQueryRequest.Builder> operator, QueryBuilder<T> queries)
-			throws IOException {
+		throws IOException {
 		Query query = merge(queries);
 
 		DeleteByQueryRequest.Builder builder = operator.apply(new DeleteByQueryRequest.Builder().refresh(false));
@@ -461,7 +458,7 @@ public class ElasticsearchApi<T> {
 	}
 
 	public ScrollResult<T, String> scroll(UnaryOperator<SearchRequest.Builder> operator, ScrollParams<String> params,
-			QueryBuilder<T> queries) throws IOException {
+										  QueryBuilder<T> queries) throws IOException {
 		String scrollId = null;
 		if (params.getCursor() != null) {
 			scrollId = params.getCursor();
@@ -494,7 +491,7 @@ public class ElasticsearchApi<T> {
 	}
 
 	public ScrollResult<T, String> scroll(UnaryOperator<ScrollRequest.Builder> operator, String scrollId)
-			throws IOException {
+		throws IOException {
 		ScrollRequest.Builder builder = operator.apply(new ScrollRequest.Builder()).scrollId(scrollId);
 
 		ScrollResponse<T> response = client.scroll(builder.build(), cls);
@@ -531,7 +528,7 @@ public class ElasticsearchApi<T> {
 	}
 
 	public ScrollCursor<T, String> scrollCursor(ScrollParams<String> params, QueryBuilder<T> queries)
-			throws IOException {
+		throws IOException {
 		ScrollResult<T, String> scroll = scroll(params, queries);
 		return new ScrollCursor<>(scrollId -> {
 			params.setCursor(scrollId);
@@ -539,4 +536,19 @@ public class ElasticsearchApi<T> {
 		}, scroll.getCursor(), scroll.getRecords());
 	}
 
+	public String getIndex() {return this.index;}
+
+	public Class<T> getCls() {return this.cls;}
+
+	public Function<T, String> getIdFunc() {return this.idFunc;}
+
+	public ElasticsearchDataPermissionHandler getHandler() {return this.handler;}
+
+	public ElasticsearchClient getClient() {return this.client;}
+
+	public ElasticsearchProperties.Retry getRetryProperties() {return this.retryProperties;}
+
+	public Long getScrollSize() {return this.scrollSize;}
+
+	public Time getScrollTime() {return this.scrollTime;}
 }

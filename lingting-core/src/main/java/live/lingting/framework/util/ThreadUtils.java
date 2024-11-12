@@ -4,8 +4,6 @@ import live.lingting.framework.function.ThrowableRunnable;
 import live.lingting.framework.thread.KeepRunnable;
 import live.lingting.framework.thread.ThreadService;
 import live.lingting.framework.thread.VirtualThread;
-import lombok.Setter;
-import lombok.experimental.UtilityClass;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -16,11 +14,11 @@ import java.util.function.Supplier;
 /**
  * @author lingting 2023-11-15 16:44
  */
-@UtilityClass
-public class ThreadUtils {
+public final class ThreadUtils {
 
-	@Setter
 	static ThreadService instance = VirtualThread.instance();
+
+	private ThreadUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static ThreadService instance() {
 		return instance;
@@ -46,8 +44,9 @@ public class ThreadUtils {
 		return instance().async(supplier);
 	}
 
-	public <T> Future<T> submit(Callable<T> callable) {
+	public static <T> Future<T> submit(Callable<T> callable) {
 		return instance().submit(callable);
 	}
 
+	public static void setInstance(ThreadService instance) {ThreadUtils.instance = instance;}
 }

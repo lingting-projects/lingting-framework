@@ -1,17 +1,18 @@
 package live.lingting.framework.elasticsearch.datascope;
 
-import lombok.RequiredArgsConstructor;
-
 import java.util.Collections;
 import java.util.List;
 
 /**
  * @author lingting 2023-06-27 11:06
  */
-@RequiredArgsConstructor
 public class DefaultElasticsearchDataPermissionHandler implements ElasticsearchDataPermissionHandler {
 
 	protected final List<ElasticsearchDataScope> scopes;
+
+	public DefaultElasticsearchDataPermissionHandler(List<ElasticsearchDataScope> scopes) {
+		this.scopes = scopes;
+	}
 
 	@Override
 	public List<ElasticsearchDataScope> dataScopes() {

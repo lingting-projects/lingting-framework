@@ -4,7 +4,7 @@ import live.lingting.framework.ali.AliRequest;
 import live.lingting.framework.id.Snowflake;
 import live.lingting.framework.util.StringUtils;
 import live.lingting.framework.value.WaitValue;
-import lombok.SneakyThrows;
+
 
 /**
  * @author lingting 2024-09-18 16:51
@@ -19,7 +19,7 @@ public abstract class AliStsRequest extends AliRequest {
 
 	public abstract String version();
 
-	@SneakyThrows
+
 	public String nonce() {
 		return nonceValue.compute(v -> {
 			if (StringUtils.hasText(v)) {

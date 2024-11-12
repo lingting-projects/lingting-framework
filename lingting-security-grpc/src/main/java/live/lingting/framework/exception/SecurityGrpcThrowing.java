@@ -5,15 +5,15 @@ import io.grpc.StatusException;
 import io.grpc.StatusRuntimeException;
 import live.lingting.framework.security.exception.AuthorizationException;
 import live.lingting.framework.security.exception.PermissionsException;
-import lombok.experimental.UtilityClass;
 
 import java.util.function.Consumer;
 
 /**
  * @author lingting 2024-04-18 16:24
  */
-@UtilityClass
-public class SecurityGrpcThrowing {
+public final class SecurityGrpcThrowing {
+
+	private SecurityGrpcThrowing() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	public static Exception convert(Exception e) {
 		if (e instanceof StatusException || e instanceof StatusRuntimeException) {
@@ -31,7 +31,7 @@ public class SecurityGrpcThrowing {
 	}
 
 	public static void throwing(Exception ex, Consumer<Exception> consumer)
-			throws AuthorizationException, PermissionsException {
+		throws AuthorizationException, PermissionsException {
 		Exception e = convert(ex);
 		if (e instanceof AuthorizationException ae) {
 			throw ae;

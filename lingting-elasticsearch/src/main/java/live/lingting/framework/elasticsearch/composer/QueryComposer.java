@@ -8,7 +8,6 @@ import co.elastic.clients.util.ObjectBuilder;
 import live.lingting.framework.elasticsearch.ElasticsearchFunction;
 import live.lingting.framework.elasticsearch.function.TermOperator;
 import live.lingting.framework.util.CollectionUtils;
-import lombok.experimental.UtilityClass;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,8 +22,9 @@ import static live.lingting.framework.elasticsearch.ElasticsearchUtils.fieldValu
 /**
  * @author lingting 2024-03-06 17:33
  */
-@UtilityClass
-public class QueryComposer {
+public final class QueryComposer {
+
+	private QueryComposer() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
 	// region basic
 	public static <T> Query term(String field, T obj) {

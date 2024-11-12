@@ -1,6 +1,5 @@
 package live.lingting.framework.http.okhttp;
 
-import lombok.RequiredArgsConstructor;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
@@ -13,10 +12,13 @@ import java.util.List;
 /**
  * @author lingting 2024-05-08 13:59
  */
-@RequiredArgsConstructor
 public class OkHttpCookie implements CookieJar {
 
 	private final CookieStore store;
+
+	public OkHttpCookie(CookieStore store) {
+		this.store = store;
+	}
 
 	Cookie of(HttpCookie cookie) {
 		Cookie.Builder builder = new Cookie.Builder();
