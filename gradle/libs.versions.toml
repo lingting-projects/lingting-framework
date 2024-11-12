@@ -16,6 +16,7 @@ lombok = "1.18.34"
 lombokMapstructBinding = "0.2.0"
 publish = "0.29.0"
 kotlin = "2.0.20"
+kotlin-coroutines = "1.9.0"
 
 [libraries]
 spring-boot-classpath = { group = "org.springframework.boot", name = "spring-boot-gradle-plugin", version.ref = "springBoot" }
@@ -43,11 +44,14 @@ slf4j = { group = "org.slf4j", name = "slf4j-api" }
 awaitility = { group = "org.awaitility", name = "awaitility" }
 junit = { group = "org.junit.jupiter", name = "junit-jupiter" }
 logback = { group = "ch.qos.logback", name = "logback-classic" }
+kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
+kotlin-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
 
 [bundles]
 dependencies = ["spring-boot-dependencies", "grpc-dependencies"]
 annotation = ["mapstruct-processor", "lombok", "lombok-mapstruct"]
-implementation = ["mapstruct", "slf4j"]
+implementation = ["mapstruct", "slf4j", "kotlin-reflect", "kotlin-stdlib", "kotlin-coroutines-core"]
 compile = ["lombok"]
 test = ["awaitility", "junit", "logback"]
 elasticsearch = ["elasticsearch", "elasticsearch-client"]
