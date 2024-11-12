@@ -1,17 +1,17 @@
 plugins {
-    id("com.google.protobuf")
+    alias(libs.plugins.grpc)
 }
 
 dependencies {
     api("io.grpc:grpc-stub")
     api("io.grpc:grpc-protobuf")
-    api(libs.javaxAnnotation)
-    compileOnly(enforcedPlatform(libs.grpcDependencies))
+    api(libs.javax.annotation)
+    compileOnly(enforcedPlatform(libs.grpc.dependencies))
 }
 
 protobuf {
     protoc {
-        artifact = libs.grpcProtoc.get().toString()
+        artifact = libs.grpc.protoc.get().toString()
     }
     plugins {
         create("protoc-grpc") {

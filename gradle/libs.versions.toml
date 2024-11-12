@@ -1,0 +1,60 @@
+[versions]
+mybatis = "3.5.16"
+mybatisPlus = "3.5.7"
+jsqlparser = "4.9"
+grpc = "1.66.0"
+grpcProtobuf = "0.9.4"
+grpcProtoc = "3.25.3"
+elastic = "8.15.0"
+commonsNet = "3.11.1"
+polaris = "1.15.9"
+javax = "1.3.2"
+springBoot = "3.3.3"
+formatter = "0.0.41"
+mapstruct = "1.5.5.Final"
+lombok = "1.18.34"
+lombokMapstructBinding = "0.2.0"
+publish = "0.29.0"
+kotlin = "2.0.20"
+
+[libraries]
+spring-boot-classpath = { group = "org.springframework.boot", name = "spring-boot-gradle-plugin", version.ref = "springBoot" }
+spring-formatter-plugin = { group = "io.spring.javaformat", name = "spring-javaformat-gradle-plugin", version.ref = "formatter" }
+spring-formatter-checkstyle = { group = "io.spring.javaformat", name = "spring-javaformat-checkstyle", version.ref = "formatter" }
+spring-boot-dependencies = { group = "org.springframework.boot", name = "spring-boot-dependencies", version.ref = "springBoot" }
+polaris-dependencies = { group = "com.tencent.polaris", name = "polaris-dependencies", version.ref = "polaris" }
+grpc-dependencies = { group = "io.grpc", name = "grpc-bom", version.ref = "grpc" }
+grpc-protobuf-plugin = { group = "com.google.protobuf", name = "protobuf-gradle-plugin", version.ref = "grpcProtobuf" }
+grpc-protoc = { group = "com.google.protobuf", name = "protoc", version.ref = "grpcProtoc" }
+javax-annotation = { group = "javax.annotation", name = "javax.annotation-api", version.ref = "javax" }
+mapstruct = { group = "org.mapstruct", name = "mapstruct", version.ref = "mapstruct" }
+lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
+mapstruct-processor = { group = "org.mapstruct", name = "mapstruct-processor", version.ref = "mapstruct" }
+lombok-mapstruct = { group = "org.projectlombok", name = "lombok-mapstruct-binding", version.ref = "lombokMapstructBinding" }
+mybatis = { group = "org.mybatis", name = "mybatis", version.ref = "mybatis" }
+mybatis-plus-annotation = { group = "com.baomidou", name = "mybatis-plus-annotation", version.ref = "mybatisPlus" }
+mybatis-plus-extension = { group = "com.baomidou", name = "mybatis-plus-extension", version.ref = "mybatisPlus" }
+mybatis-plus-boot-starter = { group = "com.baomidou", name = "mybatis-plus-spring-boot3-starter", version.ref = "mybatisPlus" }
+mybatis-plus-core = { group = "com.baomidou", name = "mybatis-plus-core", version.ref = "mybatisPlus" }
+elasticsearch = { group = "co.elastic.clients", name = "elasticsearch-java", version.ref = "elastic" }
+elasticsearch-client = { group = "org.elasticsearch.client", name = "elasticsearch-rest-client", version.ref = "elastic" }
+commons-net = { group = "commons-net", name = "commons-net", version.ref = "commonsNet" }
+slf4j = { group = "org.slf4j", name = "slf4j-api" }
+awaitility = { group = "org.awaitility", name = "awaitility" }
+junit = { group = "org.junit.jupiter", name = "junit-jupiter" }
+logback = { group = "ch.qos.logback", name = "logback-classic" }
+
+[bundles]
+dependencies = ["spring-boot-dependencies", "grpc-dependencies"]
+annotation = ["mapstruct-processor", "lombok", "lombok-mapstruct"]
+implementation = ["mapstruct", "slf4j"]
+compile = ["lombok"]
+test = ["awaitility", "junit", "logback"]
+elasticsearch = ["elasticsearch", "elasticsearch-client"]
+mybatis = ["mybatis", "mybatis-plus-annotation", "mybatis-plus-extension", "mybatis-plus-core"]
+
+[plugins]
+publish = { id = "com.vanniktech.maven.publish", version.ref = "publish" }
+javaformat = { id = "io.spring.javaformat", version.ref = "formatter" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+grpc = { id = "com.google.protobuf", version.ref = "grpcProtobuf" }

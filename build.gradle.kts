@@ -1,5 +1,6 @@
 import com.vanniktech.maven.publish.SonatypeHost
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 
 val projectGroup = "live.lingting.framework"
 val projectVersion = "2024.01.24-Bata-8"
@@ -14,13 +15,13 @@ val javaProjects = subprojects.filter { it.name.startsWith("lingting-") && !depe
 val javaVersion = JavaVersion.VERSION_21
 // 字符集
 val encoding = "UTF-8"
-val ideaLanguageLevel = IdeaLanguageLevel(javaVersion);
+val ideaLanguageLevel = IdeaLanguageLevel(javaVersion)
 
 plugins {
     id("idea")
-    id("java")
-    id("com.vanniktech.maven.publish") version "0.29.0"
     id("signing")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.publish)
 }
 
 idea {
@@ -30,50 +31,26 @@ idea {
     }
 }
 
-buildscript {
-    dependencies {
-        classpath(libs.springFormatterPlugin)
-        classpath(libs.grpcProtobufPlugin)
-    }
-}
-
 allprojects {
     group = projectGroup
     version = projectVersion
 
-    val isJava = javaProjects.contains(project)
-    val isDependency = dependencyProjects.contains(project)
-
     apply {
         plugin("idea")
-        plugin("com.vanniktech.maven.publish")
         plugin("signing")
-    }
-
-    if (isJava) {
-        apply {
-            plugin("java")
-            plugin("java-library")
-        }
-    }
-
-    if (isDependency) {
-        apply {
-            plugin("java-platform")
-        }
+        plugin(catalogLibs.plugins.publish.get().pluginId)
     }
 
     idea {
         module {
             languageLevel = ideaLanguageLevel
             targetBytecodeVersion = javaVersion
-
-            excludeDirs.add(File(rootDir, "src"))
         }
     }
 
+
     mavenPublishing {
-        val projectRepository = "lingting-projects/lingting-framework"
+        val projectRepository = "lingting-projects/lingting-live.lingting.framework"
         val projectUrl = "https://github.com/$projectRepository"
 
         publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
@@ -117,29 +94,32 @@ allprojects {
 
 }
 
-configure(javaProjects) {
+configure(dependencyProjects) {
+
     apply {
-        plugin("io.spring.javaformat")
-        plugin("checkstyle")
+        plugin("java-platform")
+    }
+}
+
+configure(javaProjects) {
+
+    apply {
+        plugin(catalogLibs.plugins.kotlin.jvm.get().pluginId)
     }
 
     dependencies {
-        add("checkstyle", catalogLibs.springFormatterCheckstyle)
+        catalogLibs.bundles.dependencies.get().forEach {
+            implementation(platform(it))
+        }
+        implementation(catalogLibs.bundles.implementation)
 
-        add("implementation", platform(catalogLibs.springBootDependencies))
-        add("implementation", platform(catalogLibs.grpcDependencies))
+        annotationProcessor(catalogLibs.bundles.annotation)
+        compileOnly(catalogLibs.bundles.compile)
+        testImplementation(catalogLibs.bundles.test)
+    }
 
-        add("implementation", "org.slf4j:slf4j-api")
-
-        add("implementation", catalogLibs.bundles.implementation)
-        add("compileOnly", catalogLibs.bundles.compile)
-        add("testCompileOnly", catalogLibs.bundles.compile)
-        add("annotationProcessor", catalogLibs.bundles.annotation)
-        add("testAnnotationProcessor", catalogLibs.bundles.annotation)
-
-        add("testImplementation", "org.awaitility:awaitility")
-        add("testImplementation", "org.junit.jupiter:junit-jupiter")
-        add("testImplementation", "ch.qos.logback:logback-classic")
+    configure<KotlinJvmProjectExtension> {
+        jvmToolchain(21)
     }
 
     configure<JavaPluginExtension> {

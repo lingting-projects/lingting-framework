@@ -1,5 +1,5 @@
 dependencies {
-    api(libs.bundles.mybatisPlus)
+    api(libs.bundles.mybatis)
 
     implementation(project(":lingting-datascope-jsql"))
     implementation(project(":lingting-core"))
