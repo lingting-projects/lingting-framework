@@ -1,79 +1,73 @@
-package live.lingting.framework.crypto;
+package live.lingting.framework.crypto
 
-import live.lingting.framework.util.StringUtils;
-
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import live.lingting.framework.api.R
+import live.lingting.framework.util.StringUtils
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
+import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.SecretKeySpec
 
 /**
  * @author lingting 2024-09-04 13:47
  */
-public abstract class AbstractCryptoBuilder<B extends AbstractCryptoBuilder<B, R>, R> {
+abstract class AbstractCryptoBuilder<B : AbstractCryptoBuilder<B, R>, R> {
+    /**
+     * 加密方式
+     */
+    protected var algorithm: String? = null
 
-	/**
-	 * 加密方式
-	 */
-	protected String algorithm;
+    protected var charset: Charset = StandardCharsets.UTF_8
 
-	protected Charset charset = StandardCharsets.UTF_8;
+    protected var secret: SecretKeySpec? = null
 
-	protected SecretKeySpec secret;
+    protected var iv: IvParameterSpec? = null
 
-	protected IvParameterSpec iv;
+    open fun algorithm(algorithm: String): B {
+        this.algorithm = algorithm
+        return this as B
+    }
 
-	public B algorithm(String algorithm) {
-		this.algorithm = algorithm;
-		return (B) this;
-	}
+    fun charset(charset: Charset): B {
+        this.charset = charset
+        return this as B
+    }
 
-	public B charset(Charset charset) {
-		this.charset = charset;
-		return (B) this;
-	}
+    fun secret(secret: SecretKeySpec): B {
+        this.secret = secret
+        return this as B
+    }
 
-	public B secret(SecretKeySpec secret) {
-		this.secret = secret;
-		return (B) this;
-	}
+    fun secret(secret: ByteArray): B {
+        this.secret = SecretKeySpec(secret, algorithm)
+        return this as B
+    }
 
-	public B secret(byte[] secret) {
-		this.secret = new SecretKeySpec(secret, algorithm);
-		return (B) this;
-	}
+    fun secret(secret: String): B {
+        val bytes: ByteArray = secret.toByteArray(charset)
+        return secret(bytes)
+    }
 
-	public B secret(String secret) {
-		byte[] bytes = secret.getBytes(charset);
-		return secret(bytes);
-	}
+    fun iv(iv: IvParameterSpec?): B {
+        this.iv = iv
+        return this as B
+    }
 
-	public B iv(IvParameterSpec iv) {
-		this.iv = iv;
-		return (B) this;
-	}
+    fun iv(iv: ByteArray): B {
+        this.iv = IvParameterSpec(iv)
+        return this as B
+    }
 
-	public B iv(byte[] iv) {
-		this.iv = new IvParameterSpec(iv);
-		return (B) this;
-	}
+    fun iv(iv: String): B {
+        val bytes: ByteArray = iv.toByteArray(charset)
+        return iv(bytes)
+    }
 
-	public B iv(String iv) {
-		byte[] bytes = iv.getBytes(charset);
-		return iv(bytes);
-	}
+    fun build(): R {
+        require(StringUtils.hasText(algorithm)) { "algorithm is required" }
+        requireNotNull(secret) { "secret is required" }
 
-	public R build() {
-		if (!StringUtils.hasText(algorithm)) {
-			throw new IllegalArgumentException("algorithm is required");
-		}
-		if (secret == null) {
-			throw new IllegalArgumentException("secret is required");
-		}
+        return doBuild()
+    }
 
-		return doBuild();
-	}
-
-	protected abstract R doBuild();
-
+    protected abstract fun doBuild(): R
 }

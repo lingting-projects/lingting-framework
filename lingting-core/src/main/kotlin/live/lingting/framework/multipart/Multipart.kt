@@ -1,144 +1,116 @@
-package live.lingting.framework.multipart;
+package live.lingting.framework.multipart
 
-import live.lingting.framework.stream.CloneInputStream;
-import live.lingting.framework.stream.FileCloneInputStream;
-import live.lingting.framework.stream.RandomAccessInputStream;
-import live.lingting.framework.util.FileUtils;
-import live.lingting.framework.util.StreamUtils;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
+import live.lingting.framework.stream.CloneInputStream
+import live.lingting.framework.stream.FileCloneInputStream
+import live.lingting.framework.stream.RandomAccessInputStream
+import live.lingting.framework.util.FileUtils
+import live.lingting.framework.util.StreamUtils
+import java.io.File
+import java.io.FileOutputStream
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Consumer
 
 /**
  * @author lingting 2024-09-05 14:47
  */
-public class Multipart {
+class Multipart(
+    /**
+     * 唯一标识符
+     */
+    val id: String,
+    /**
+     *
+     */
+    val source: File,
+    /**
+     * 原始内容大小: byte
+     */
+    val size: Long,
+    /**
+     * 每个分片的最大大小: byte
+     */
+    val partSize: Long,
+    /**
+     * 所有分片
+     */
+    val parts: Collection<Part>
+) {
 
-	public static final File TEMP_DIR = FileUtils.createTempDir("multipart");
+    protected val cache: MutableMap<Long, File> = ConcurrentHashMap(parts.size)
 
-	/**
-	 * 每个分片的最大大小: byte
-	 */
-	protected final long partSize;
+    fun usePartSize(partSize: Long): Multipart {
+        return usePartSize(partSize, id)
+    }
 
-	/**
-	 * 所有分片
-	 */
-	protected final Collection<Part> parts;
+    fun usePartSize(partSize: Long, id: String): Multipart {
+        return Multipart(id, source, size, partSize, parts)
+    }
 
-	/**
-	 * 唯一标识符
-	 */
-	protected final String id;
+    fun file(part: Part): File {
+        return cache.computeIfAbsent(part.index) { k ->
+            val dir = File(TEMP_DIR, id)
+            val temp: File = FileUtils.createTemp(".part$k", dir)
+            RandomAccessInputStream(source).use { input ->
+                input.seek(part.start)
+                FileOutputStream(temp).use { output ->
+                    StreamUtils.write(input, output, part.size)
+                }
+            }
+            temp
+        }
+    }
 
-	/**
-	 * 原始内容大小: byte
-	 */
-	protected final long size;
 
-	/**
-	 * 原始内容缓存文件
-	 */
-	protected final File source;
+    fun stream(part: Part): CloneInputStream {
+        val file = file(part)
+        return FileCloneInputStream(file)
+    }
 
-	protected final Map<Long, File> cache;
+    fun clear() {
+        cache.keys.forEach(Consumer { index: Long -> this.clear(index) })
+    }
 
-	protected Multipart(String id, File source, long size, long partSize, Collection<Part> parts) {
-		this.id = id;
-		this.source = source;
-		this.size = size;
-		this.parts = parts;
-		this.partSize = partSize;
-		this.cache = new ConcurrentHashMap<>(parts.size());
-	}
+    fun clear(part: Part) {
+        clear(part.index)
+    }
 
-	public static MultipartBuilder builder() {
-		return new MultipartBuilder();
-	}
+    protected fun clear(index: Long) {
+        val file = cache.remove(index)
+        FileUtils.delete(file)
+    }
 
-	/**
-	 * 计算对应大小和每个分片大小需要构造多少个分片
-	 *
-	 * @param size     总大小
-	 * @param partSize 每个分片大小
-	 */
-	public static long calculate(long size, long partSize) {
-		long l = size / partSize;
-		return size % partSize == 0 ? l : l + 1;
-	}
+    companion object {
+        val TEMP_DIR: File = FileUtils.createTempDir("multipart")
 
-	public static Collection<Part> split(long size, long partSize) {
-		long number = calculate(size, partSize);
-		List<Part> parts = new ArrayList<>((int) number);
-		for (long i = 0; i < number; i++) {
-			long start = i * partSize;
-			long middle = start + partSize - 1;
-			long end = middle >= size ? size - 1 : middle;
-			Part part = new Part(i, start, end);
-			parts.add(part);
-		}
-		return Collections.unmodifiableCollection(parts);
-	}
 
-	public Multipart usePartSize(long partSize) {
-		return usePartSize(partSize, null);
-	}
+        fun builder(): MultipartBuilder {
+            return MultipartBuilder()
+        }
 
-	public Multipart usePartSize(long partSize, String id) {
-		return new Multipart(id, source, size, partSize, parts);
-	}
+        /**
+         * 计算对应大小和每个分片大小需要构造多少个分片
+         *
+         * @param size     总大小
+         * @param partSize 每个分片大小
+         */
 
-	public File file(Part part) {
-		return cache.computeIfAbsent(part.index, new Function<Long, File>() {
-			@Override
+        fun calculate(size: Long, partSize: Long): Long {
+            val l = size / partSize
+            return if (size % partSize == 0L) l else l + 1
+        }
 
-			public File apply(Long k) {
-				File dir = new File(TEMP_DIR, id);
-				File temp = FileUtils.createTemp(".part" + k, dir);
-				try (RandomAccessInputStream input = new RandomAccessInputStream(source)) {
-					input.seek(part.start);
-					try (FileOutputStream output = new FileOutputStream(temp)) {
-						StreamUtils.write(input, output, part.size);
-					}
-				}
-				return temp;
-			}
-		});
-	}
-
-	public CloneInputStream stream(Part part) throws IOException {
-		File file = file(part);
-		return new FileCloneInputStream(file);
-	}
-
-	public void clear() {
-		cache.keySet().forEach(this::clear);
-	}
-
-	public void clear(Part part) {
-		clear(part.index);
-	}
-
-	protected void clear(long index) {
-		File file = cache.remove(index);
-		FileUtils.delete(file);
-	}
-
-	public long getPartSize() {return this.partSize;}
-
-	public Collection<Part> getParts() {return this.parts;}
-
-	public String getId() {return this.id;}
-
-	public long getSize() {return this.size;}
-
-	public File getSource() {return this.source;}
+        fun split(size: Long, partSize: Long): Collection<Part> {
+            val number = calculate(size, partSize)
+            val parts: MutableList<Part> = ArrayList(number.toInt())
+            for (i in 0 until number) {
+                val start: Long = i * partSize
+                val middle = start + partSize - 1
+                val end = if (middle >= size) size - 1 else middle
+                val part = Part(i, start, end)
+                parts.add(part)
+            }
+            return Collections.unmodifiableCollection(parts)
+        }
+    }
 }

@@ -1,34 +1,28 @@
-package live.lingting.framework.sensitive.serializer;
+package live.lingting.framework.sensitive.serializer
 
-import live.lingting.framework.sensitive.Sensitive;
-import live.lingting.framework.sensitive.SensitiveProvider;
-import live.lingting.framework.sensitive.SensitiveSerializer;
+import live.lingting.framework.sensitive.Sensitive
+import live.lingting.framework.sensitive.SensitiveProvider
+import live.lingting.framework.sensitive.SensitiveSerializer
 
 /**
  * @author lingting 2024-05-21 10:30
  */
-@SuppressWarnings("java:S6548")
-public class SensitiveDefaultProvider implements SensitiveProvider {
+class SensitiveDefaultProvider private constructor() : SensitiveProvider {
+    override fun find(sensitive: Sensitive): SensitiveSerializer {
+        if (SensitiveAllSerializer::class.java.isAssignableFrom(sensitive.value)) {
+            return SensitiveAllSerializer.INSTANCE
+        }
 
-	public static final SensitiveDefaultProvider INSTANCE = new SensitiveDefaultProvider();
+        if (SensitiveMobileSerializer::class.java.isAssignableFrom(sensitive.value)) {
+            return SensitiveMobileSerializer.INSTANCE
+        }
+        return SensitiveDefaultSerializer.INSTANCE
+    }
 
-	private SensitiveDefaultProvider() {}
+    override val sequence: Int
+        get() = Int.MAX_VALUE
 
-	@Override
-	public SensitiveSerializer find(Sensitive sensitive) {
-		if (SensitiveAllSerializer.class.isAssignableFrom(sensitive.value())) {
-			return SensitiveAllSerializer.INSTANCE;
-		}
-
-		if (SensitiveMobileSerializer.class.isAssignableFrom(sensitive.value())) {
-			return SensitiveMobileSerializer.INSTANCE;
-		}
-		return SensitiveDefaultSerializer.INSTANCE;
-	}
-
-	@Override
-	public int getSequence() {
-		return Integer.MAX_VALUE;
-	}
-
+    companion object {
+        val INSTANCE: SensitiveDefaultProvider = SensitiveDefaultProvider()
+    }
 }

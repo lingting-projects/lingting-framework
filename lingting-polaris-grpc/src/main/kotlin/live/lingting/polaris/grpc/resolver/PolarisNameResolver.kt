@@ -1,178 +1,164 @@
+package live.lingting.polaris.grpc.resolver
 
-package live.lingting.polaris.grpc.resolver;
-
-import com.tencent.polaris.api.core.ConsumerAPI;
-import com.tencent.polaris.api.listener.ServiceListener;
-import com.tencent.polaris.api.pojo.Instance;
-import com.tencent.polaris.api.pojo.ServiceChangeEvent;
-import com.tencent.polaris.api.pojo.ServiceInstances;
-import com.tencent.polaris.api.pojo.ServiceKey;
-import com.tencent.polaris.api.rpc.GetHealthyInstancesRequest;
-import com.tencent.polaris.api.rpc.InstancesResponse;
-import com.tencent.polaris.api.rpc.UnWatchServiceRequest;
-import com.tencent.polaris.api.rpc.WatchServiceRequest;
-import com.tencent.polaris.client.api.SDKContext;
-import io.grpc.Attributes;
-import io.grpc.EquivalentAddressGroup;
-import io.grpc.NameResolver;
-import live.lingting.framework.jackson.JacksonUtils;
-import live.lingting.polaris.grpc.util.Common;
-import live.lingting.polaris.grpc.util.NetworkHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ServiceLoader;
+import com.tencent.polaris.api.core.ConsumerAPI
+import com.tencent.polaris.api.listener.ServiceListener
+import com.tencent.polaris.api.pojo.Instance
+import com.tencent.polaris.api.pojo.ServiceChangeEvent
+import com.tencent.polaris.api.pojo.ServiceKey
+import com.tencent.polaris.api.rpc.GetHealthyInstancesRequest
+import com.tencent.polaris.api.rpc.InstancesResponse
+import com.tencent.polaris.api.rpc.UnWatchServiceRequest
+import com.tencent.polaris.api.rpc.WatchServiceRequest
+import com.tencent.polaris.client.api.SDKContext
+import io.grpc.Attributes
+import io.grpc.EquivalentAddressGroup
+import io.grpc.NameResolver
+import live.lingting.framework.jackson.JacksonUtils
+import live.lingting.polaris.grpc.util.Common
+import live.lingting.polaris.grpc.util.NetworkHelper
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.net.InetSocketAddress
+import java.net.URI
+import java.util.*
+import java.util.function.Consumer
 
 /**
  * Service discovery class
  *
  * @author lixiaoshuang
  */
-public class PolarisNameResolver extends NameResolver {
+class PolarisNameResolver(private val targetUri: URI, context: SDKContext, consumerAPI: ConsumerAPI) : NameResolver() {
+    private val consumerAPI: ConsumerAPI
 
-	private static final Logger LOG = LoggerFactory.getLogger(PolarisNameResolver.class);
+    private val namespace: String
 
-	private static final String DEFAULT_NAMESPACE = "default";
+    private val service: String
 
-	private final ConsumerAPI consumerAPI;
+    private val context: SDKContext
 
-	private final String namespace;
+    private val interceptors: MutableList<ResolverInterceptor> = ArrayList()
 
-	private final String service;
+    private var watcher: ServiceChangeWatcher? = null
 
-	private final URI targetUri;
+    private var sourceService: ServiceKey? = null
 
-	private final SDKContext context;
+    init {
+        val params: Map<String, String?> = NetworkHelper.Companion.getUrlParams(targetUri.query)
+        this.service = targetUri.host
+        this.namespace = if (params["namespace"] == null) DEFAULT_NAMESPACE else params["namespace"]!!
+        this.context = context
+        this.consumerAPI = consumerAPI
+        ServiceLoader.load(ResolverInterceptor::class.java).iterator().forEachRemaining { e: ResolverInterceptor -> interceptors.add(e) }
+        interceptors.sort(Comparator.comparingInt { obj: ResolverInterceptor -> obj.priority() })
+        if (params.containsKey("extend_info")) {
+            val json = String(Base64.getUrlDecoder().decode(params["extend_info"]))
+            this.sourceService = JacksonUtils.toObj(json, ServiceKey::class.java)
+        }
+    }
 
-	private final List<ResolverInterceptor> interceptors = new ArrayList<>();
+    override fun getServiceAuthority(): String {
+        return service
+    }
 
-	private ServiceChangeWatcher watcher;
+    override fun start(listener: Listener2) {
+        doResolve(listener)
+        doWatch(listener)
+    }
 
-	private ServiceKey sourceService;
+    private fun doResolve(listener: Listener2) {
+        val resolverContext: ResolverContext = ResolverContext.Companion.builder()
+            .context(context)
+            .targetUri(targetUri)
+            .sourceService(sourceService)
+            .build()
+        interceptors.forEach(Consumer { resolverInterceptor: ResolverInterceptor -> resolverInterceptor.before(resolverContext) })
 
-	public PolarisNameResolver(URI targetUri, SDKContext context, ConsumerAPI consumerAPI) {
-		this.targetUri = targetUri;
-		Map<String, String> params = NetworkHelper.getUrlParams(targetUri.getQuery());
-		this.service = targetUri.getHost();
-		this.namespace = params.get("namespace") == null ? DEFAULT_NAMESPACE : params.get("namespace");
-		this.context = context;
-		this.consumerAPI = consumerAPI;
-		ServiceLoader.load(ResolverInterceptor.class).iterator().forEachRemaining(interceptors::add);
-		interceptors.sort(Comparator.comparingInt(ResolverInterceptor::priority));
-		if (params.containsKey("extend_info")) {
-			String json = new String(Base64.getUrlDecoder().decode(params.get("extend_info")));
-			this.sourceService = JacksonUtils.toObj(json, ServiceKey.class);
-		}
-	}
+        val request = GetHealthyInstancesRequest()
+        request.namespace = namespace
+        request.service = service
+        var response = consumerAPI.getHealthyInstances(request)
+        LOG.info(
+            "[grpc-polaris] namespace:{} service:{} instance size:{}", namespace, service,
+            response!!.instances.size
+        )
 
-	@Override
-	public String getServiceAuthority() {
-		return service;
-	}
+        for (interceptor in interceptors) {
+            response = interceptor.after(resolverContext, response)
+        }
 
-	@Override
-	public void start(Listener2 listener) {
-		doResolve(listener);
-		doWatch(listener);
-	}
+        LOG.info(
+            "[grpc-polaris] after namespace:{} service:{} instance size:{}", namespace, service,
+            response!!.instances.size
+        )
+        notifyListener(listener, response)
+    }
 
-	private void doResolve(Listener2 listener) {
-		ResolverContext resolverContext = ResolverContext.builder()
-			.context(context)
-			.targetUri(targetUri)
-			.sourceService(sourceService)
-			.build();
-		interceptors.forEach(resolverInterceptor -> resolverInterceptor.before(resolverContext));
+    private fun doWatch(listener: Listener2) {
+        this.watcher = ServiceChangeWatcher(listener)
+        consumerAPI.watchService(
+            WatchServiceRequest.builder()
+                .namespace(namespace)
+                .service(service)
+                .listeners(listOf<ServiceListener?>(this.watcher))
+                .build()
+        )
+    }
 
-		GetHealthyInstancesRequest request = new GetHealthyInstancesRequest();
-		request.setNamespace(namespace);
-		request.setService(service);
-		InstancesResponse response = consumerAPI.getHealthyInstances(request);
-		LOG.info("[grpc-polaris] namespace:{} service:{} instance size:{}", namespace, service,
-				response.getInstances().length);
+    private fun notifyListener(listener: Listener2, response: InstancesResponse) {
+        val serviceInstances = response.toServiceInstances()
+        val equivalentAddressGroups: MutableList<EquivalentAddressGroup> = ArrayList()
+        for (instance in serviceInstances.instances) {
+            if ("grpc" == instance.protocol) {
+                equivalentAddressGroups.add(buildEquivalentAddressGroup(instance))
+            }
+        }
 
-		for (ResolverInterceptor interceptor : interceptors) {
-			response = interceptor.after(resolverContext, response);
-		}
+        val builder = Attributes.newBuilder()
 
-		LOG.info("[grpc-polaris] after namespace:{} service:{} instance size:{}", namespace, service,
-				response.getInstances().length);
-		notifyListener(listener, response);
-	}
+        if (sourceService != null) {
+            builder.set<ServiceKey>(Common.Companion.SOURCE_SERVICE_INFO, sourceService)
+        }
 
-	private void doWatch(Listener2 listener) {
-		this.watcher = new ServiceChangeWatcher(listener);
-		this.consumerAPI.watchService(WatchServiceRequest.builder()
-			.namespace(namespace)
-			.service(service)
-			.listeners(Collections.singletonList(this.watcher))
-			.build());
-	}
+        listener.onResult(
+            ResolutionResult.newBuilder()
+                .setAddresses(equivalentAddressGroups)
+                .setAttributes(builder.build())
+                .build()
+        )
+    }
 
-	private void notifyListener(Listener2 listener, InstancesResponse response) {
-		ServiceInstances serviceInstances = response.toServiceInstances();
-		List<EquivalentAddressGroup> equivalentAddressGroups = new ArrayList<>();
-		for (Instance instance : serviceInstances.getInstances()) {
-			if (Objects.equals("grpc", instance.getProtocol())) {
-				equivalentAddressGroups.add(buildEquivalentAddressGroup(instance));
-			}
-		}
+    override fun shutdown() {
+        if (this.watcher != null) {
+            consumerAPI.unWatchService(
+                UnWatchServiceRequest.UnWatchServiceRequestBuilder.anUnWatchServiceRequest()
+                    .listeners(listOf<ServiceListener?>(this.watcher))
+                    .namespace(namespace)
+                    .service(service)
+                    .build()
+            )
+        }
+    }
 
-		Attributes.Builder builder = Attributes.newBuilder();
+    private fun buildEquivalentAddressGroup(instance: Instance): EquivalentAddressGroup {
+        val address = InetSocketAddress(instance.host, instance.port)
+        val attributes = Attributes.newBuilder()
+            .set<Instance>(Common.Companion.INSTANCE_KEY, instance)
+            .set<String>(Common.Companion.TARGET_NAMESPACE_KEY, namespace)
+            .set<String>(Common.Companion.TARGET_SERVICE_KEY, service)
+            .build()
+        return EquivalentAddressGroup(address, attributes)
+    }
 
-		if (sourceService != null) {
-			builder.set(Common.SOURCE_SERVICE_INFO, sourceService);
-		}
+    private inner class ServiceChangeWatcher(private val listener: Listener2) : ServiceListener {
+        override fun onEvent(event: ServiceChangeEvent) {
+            doResolve(listener)
+        }
+    }
 
-		listener.onResult(ResolutionResult.newBuilder()
-			.setAddresses(equivalentAddressGroups)
-			.setAttributes(builder.build())
-			.build());
-	}
+    companion object {
+        private val LOG: Logger = LoggerFactory.getLogger(PolarisNameResolver::class.java)
 
-	@Override
-	public void shutdown() {
-		if (this.watcher != null) {
-			this.consumerAPI.unWatchService(UnWatchServiceRequest.UnWatchServiceRequestBuilder.anUnWatchServiceRequest()
-				.listeners(Collections.singletonList(this.watcher))
-				.namespace(namespace)
-				.service(service)
-				.build());
-		}
-	}
-
-	private EquivalentAddressGroup buildEquivalentAddressGroup(Instance instance) {
-		InetSocketAddress address = new InetSocketAddress(instance.getHost(), instance.getPort());
-		Attributes attributes = Attributes.newBuilder()
-			.set(Common.INSTANCE_KEY, instance)
-			.set(Common.TARGET_NAMESPACE_KEY, namespace)
-			.set(Common.TARGET_SERVICE_KEY, service)
-			.build();
-		return new EquivalentAddressGroup(address, attributes);
-	}
-
-	private class ServiceChangeWatcher implements ServiceListener {
-
-		private final Listener2 listener;
-
-		ServiceChangeWatcher(Listener2 listener) {
-			this.listener = listener;
-		}
-
-		@Override
-		public void onEvent(ServiceChangeEvent event) {
-			doResolve(listener);
-		}
-
-	}
-
+        private const val DEFAULT_NAMESPACE = "default"
+    }
 }

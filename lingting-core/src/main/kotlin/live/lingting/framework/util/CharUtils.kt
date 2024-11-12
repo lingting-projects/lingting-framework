@@ -1,22 +1,27 @@
-package live.lingting.framework.util;
+package live.lingting.framework.util
 
 /**
  * @author lingting
  */
-public final class CharUtils {
+class CharUtils private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	private CharUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+    companion object {
 
-	public static boolean isLowerLetter(char c) {
-		return c >= 'a' && c <= 'z';
-	}
+        fun isLowerLetter(c: Char): Boolean {
+            return c >= 'a' && c <= 'z'
+        }
 
-	public static boolean isUpperLetter(char c) {
-		return c >= 'A' && c <= 'Z';
-	}
 
-	public static boolean isLetter(char c) {
-		return isLowerLetter(c) || isUpperLetter(c);
-	}
+        fun isUpperLetter(c: Char): Boolean {
+            return c >= 'A' && c <= 'Z'
+        }
 
+
+        fun isLetter(c: Char): Boolean {
+            return isLowerLetter(c) || isUpperLetter(c)
+        }
+    }
 }

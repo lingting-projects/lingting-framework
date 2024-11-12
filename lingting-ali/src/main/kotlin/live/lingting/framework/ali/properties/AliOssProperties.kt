@@ -1,62 +1,53 @@
-package live.lingting.framework.ali.properties;
+package live.lingting.framework.ali.properties
 
-import live.lingting.framework.aws.policy.Acl;
-import live.lingting.framework.aws.policy.Credential;
-import live.lingting.framework.aws.s3.AwsS3Properties;
+import live.lingting.framework.aws.policy.Acl
+import live.lingting.framework.aws.policy.Credential
+import live.lingting.framework.aws.s3.AwsS3Properties
 
 /**
  * @author lingting 2024-09-18 10:29
  */
-public class AliOssProperties extends AliProperties {
+class AliOssProperties : AliProperties() {
+    @JvmField
+    var bucket: String? = null
 
-	private String bucket;
+    @JvmField
+    var acl: Acl = Acl.PRIVATE
 
-	private Acl acl = Acl.PRIVATE;
+    init {
+        setPrefix("oss")
+    }
 
-	public AliOssProperties() {
-		setPrefix("oss");
-	}
+    override fun host(): String {
+        return "%s://%s.%s-%s.%s".formatted(scheme, bucket, prefix, region, endpoint)
+    }
 
-	@Override
-	public String host() {
-		return "%s://%s.%s-%s.%s".formatted(scheme, bucket, prefix, region, endpoint);
-	}
+    override fun s3(): AwsS3Properties {
+        val s3 = super.s3()
+        s3!!.prefix = "oss"
+        s3.bucket = bucket
+        s3.acl = acl
+        return s3
+    }
 
-	@Override
-	public AwsS3Properties s3() {
-		AwsS3Properties s3 = super.s3();
-		s3.setPrefix("oss");
-		s3.setBucket(bucket);
-		s3.setAcl(acl);
-		return s3;
-	}
+    fun copy(): AliOssProperties {
+        val properties = AliOssProperties()
+        properties.setScheme(getScheme())
+        properties.setPrefix(getPrefix())
+        properties.setRegion(getRegion())
+        properties.setEndpoint(getEndpoint())
+        properties.bucket = bucket
+        properties.acl = acl
 
-	public AliOssProperties copy() {
-		AliOssProperties properties = new AliOssProperties();
-		properties.setScheme(getScheme());
-		properties.setPrefix(getPrefix());
-		properties.setRegion(getRegion());
-		properties.setEndpoint(getEndpoint());
-		properties.setBucket(getBucket());
-		properties.setAcl(getAcl());
+        properties.setAk(getAk())
+        properties.setSk(getSk())
+        properties.setToken(getToken())
+        return properties
+    }
 
-		properties.setAk(getAk());
-		properties.setSk(getSk());
-		properties.setToken(getToken());
-		return properties;
-	}
-
-	public void useCredential(Credential credential) {
-		setAk(credential.getAk());
-		setSk(credential.getSk());
-		setToken(credential.getToken());
-	}
-
-	public String getBucket() {return this.bucket;}
-
-	public Acl getAcl() {return this.acl;}
-
-	public void setBucket(String bucket) {this.bucket = bucket;}
-
-	public void setAcl(Acl acl) {this.acl = acl;}
+    fun useCredential(credential: Credential) {
+        setAk(credential.ak)
+        setSk(credential.sk)
+        setToken(credential.token)
+    }
 }

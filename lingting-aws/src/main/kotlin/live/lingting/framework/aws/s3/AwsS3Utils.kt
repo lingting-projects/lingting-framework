@@ -1,64 +1,66 @@
-package live.lingting.framework.aws.s3;
+package live.lingting.framework.aws.s3
 
-import live.lingting.framework.time.DatePattern;
-
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+import live.lingting.framework.time.DatePattern
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * @author lingting 2024-09-19 15:20
  */
-public final class AwsS3Utils {
+class AwsS3Utils private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	/**
-	 * 10M
-	 */
-	public static final long MULTIPART_DEFAULT_PART_SIZE = 10485760;
+    companion object {
+        /**
+         * 10M
+         */
+        const val MULTIPART_DEFAULT_PART_SIZE: Long = 10485760
 
-	/**
-	 * 5G
-	 */
-	public static final long MULTIPART_MAX_PART_SIZE = 5368709120L;
+        /**
+         * 5G
+         */
+        const val MULTIPART_MAX_PART_SIZE: Long = 5368709120L
 
-	/**
-	 * 100K
-	 */
-	public static final long MULTIPART_MIN_PART_SIZE = 102400;
+        /**
+         * 100K
+         */
+        const val MULTIPART_MIN_PART_SIZE: Long = 102400
 
-	public static final long MULTIPART_MAX_PART_COUNT = 1000;
+        const val MULTIPART_MAX_PART_COUNT: Long = 1000
 
-	public static final String PAYLOAD_UNSIGNED = "UNSIGNED-PAYLOAD";
+        const val PAYLOAD_UNSIGNED: String = "UNSIGNED-PAYLOAD"
 
-	public static final String HEADER_PREFIX = "x-amz";
+        const val HEADER_PREFIX: String = "x-amz"
 
-	public static final String HEADER_DATE = HEADER_PREFIX + "-date";
+        const val HEADER_DATE: String = HEADER_PREFIX + "-date"
 
-	public static final String HEADER_CONTENT_SHA256 = HEADER_PREFIX + "-content-sha256";
+        const val HEADER_CONTENT_SHA256: String = HEADER_PREFIX + "-content-sha256"
 
-	public static final String HEADER_TOKEN = HEADER_PREFIX + "-security-token";
+        const val HEADER_TOKEN: String = HEADER_PREFIX + "-security-token"
 
-	public static final String HEADER_ACL = HEADER_PREFIX + "-acl";
+        const val HEADER_ACL: String = HEADER_PREFIX + "-acl"
 
-	private AwsS3Utils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+        @JvmStatic
+        fun format(dateTime: LocalDateTime, formatter: DateTimeFormatter): String {
+            val atZone = dateTime.atZone(DatePattern.SYSTEM_ZONE_ID)
+            val atGmt = atZone.withZoneSameInstant(DatePattern.GMT_ZONE_ID)
+            return formatter.format(atGmt)
+        }
 
-	public static String format(LocalDateTime dateTime, DateTimeFormatter formatter) {
-		ZonedDateTime atZone = dateTime.atZone(DatePattern.SYSTEM_ZONE_ID);
-		ZonedDateTime atGmt = atZone.withZoneSameInstant(DatePattern.GMT_ZONE_ID);
-		return formatter.format(atGmt);
-	}
+        @JvmStatic
+        fun parse(string: String, formatter: DateTimeFormatter): LocalDateTime {
+            val source = LocalDateTime.parse(string, formatter)
+            val atGmt = source.atZone(DatePattern.GMT_ZONE_ID)
+            val atZone = atGmt.withZoneSameInstant(DatePattern.SYSTEM_ZONE_ID)
+            return atZone.toLocalDateTime()
+        }
 
-	public static LocalDateTime parse(String string, DateTimeFormatter formatter) {
-		LocalDateTime source = LocalDateTime.parse(string, formatter);
-		ZonedDateTime atGmt = source.atZone(DatePattern.GMT_ZONE_ID);
-		ZonedDateTime atZone = atGmt.withZoneSameInstant(DatePattern.SYSTEM_ZONE_ID);
-		return atZone.toLocalDateTime();
-	}
-
-	public static String encode(String s) {
-		return URLEncoder.encode(s, StandardCharsets.UTF_8);
-	}
-
+        fun encode(s: String): String {
+            return URLEncoder.encode(s, StandardCharsets.UTF_8)
+        }
+    }
 }

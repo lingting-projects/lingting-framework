@@ -1,35 +1,31 @@
-package live.lingting.framework.mybatis.typehandler;
+package live.lingting.framework.mybatis.typehandler
 
-import org.slf4j.Logger;
-
-import java.util.HashSet;
-import java.util.Set;
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2022/9/28 14:43
  */
-public abstract class AbstractSetTypeHandler<T> extends AbstractJacksonTypeHandler<Set<T>> {
+abstract class AbstractSetTypeHandler<T> : AbstractJacksonTypeHandler<Set<T>>() {
+    /**
+     * 取出数据转化异常时 使用
+     *
+     * @return 实体类对象
+     */
+    override fun defaultValue(): Set<T> {
+        return HashSet()
+    }
 
-	private static final Logger log = org.slf4j.LoggerFactory.getLogger(AbstractSetTypeHandler.class);
+    /**
+     * 存储数据异常时 使用
+     *
+     * @return 存储数据
+     */
+    override fun defaultJson(): String {
+        return "[]"
+    }
 
-	/**
-	 * 取出数据转化异常时 使用
-	 *
-	 * @return 实体类对象
-	 */
-	@Override
-	protected Set<T> defaultValue() {
-		return new HashSet<>();
-	}
-
-	/**
-	 * 存储数据异常时 使用
-	 *
-	 * @return 存储数据
-	 */
-	@Override
-	protected String defaultJson() {
-		return "[]";
-	}
-
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(AbstractSetTypeHandler::class.java)
+    }
 }

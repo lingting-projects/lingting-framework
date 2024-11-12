@@ -1,19 +1,13 @@
+package live.lingting.polaris.grpc.resolver
 
-package live.lingting.polaris.grpc.resolver;
-
-import com.tencent.polaris.client.api.SDKContext;
-import io.grpc.NameResolverRegistry;
+import com.tencent.polaris.client.api.SDKContext
+import io.grpc.NameResolverRegistry
 
 /**
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
+ * @author [liaochuntao](mailto:liaochuntao@live.com)
  */
-public final class PolarisNameResolverFactory {
-
-	private PolarisNameResolverFactory() {
-	}
-
-	public static void init(final SDKContext context) {
-		NameResolverRegistry.getDefaultRegistry().register(new PolarisNameResolverProvider(context));
-	}
-
+object PolarisNameResolverFactory {
+    fun init(context: SDKContext?) {
+        NameResolverRegistry.getDefaultRegistry().register(PolarisNameResolverProvider(context!!))
+    }
 }

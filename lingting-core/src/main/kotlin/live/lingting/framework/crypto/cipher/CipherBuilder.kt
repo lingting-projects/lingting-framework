@@ -1,66 +1,55 @@
-package live.lingting.framework.crypto.cipher;
+package live.lingting.framework.crypto.cipher
 
 /**
  * @author lingting 2024-09-04 11:26
  */
-public class CipherBuilder extends AbstractCipherBuilder<CipherBuilder> {
+class CipherBuilder : AbstractCipherBuilder<CipherBuilder>() {
+    abstract class SpecificCipherBuilder<B : SpecificCipherBuilder<B>>
+    protected constructor(algorithm: String) : AbstractCipherBuilder<B>() {
+        init {
+            this.algorithm = algorithm
+        }
 
-	public abstract static class SpecificCipherBuilder<B extends SpecificCipherBuilder<B>>
-			extends AbstractCipherBuilder<B> {
+        override fun algorithm(algorithm: String): B {
+            return this as B
+        }
+    }
 
-		protected SpecificCipherBuilder(String algorithm) {
-			this.algorithm = algorithm;
-		}
+    class AES : SpecificCipherBuilder<AES>("AES") {
+        fun ecb(): AES {
+            return mode("ECB")
+        }
 
-		@Override
-		public B algorithm(String algorithm) {
-			return (B) this;
-		}
+        fun cbc(): AES {
+            return mode("CBC")
+        }
 
-	}
+        fun ctr(): AES {
+            return mode("CTR")
+        }
 
-	public static class AES extends SpecificCipherBuilder<AES> {
+        fun ofb(): AES {
+            return mode("OFB")
+        }
 
-		public AES() {
-			super("AES");
-		}
+        fun cfb(): AES {
+            return mode("CFB")
+        }
 
-		public CipherBuilder.AES ecb() {
-			return mode("ECB");
-		}
+        fun pkcs5(): AES {
+            return padding("PKCS5Padding")
+        }
 
-		public CipherBuilder.AES cbc() {
-			return mode("CBC");
-		}
+        fun pkcs7(): AES {
+            return padding("PKCS5Padding")
+        }
 
-		public CipherBuilder.AES ctr() {
-			return mode("CTR");
-		}
+        fun iso10126(): AES {
+            return padding("ISO10126Padding")
+        }
 
-		public CipherBuilder.AES ofb() {
-			return mode("OFB");
-		}
-
-		public CipherBuilder.AES cfb() {
-			return mode("CFB");
-		}
-
-		public CipherBuilder.AES pkcs5() {
-			return padding("PKCS5Padding");
-		}
-
-		public CipherBuilder.AES pkcs7() {
-			return padding("PKCS5Padding");
-		}
-
-		public CipherBuilder.AES iso10126() {
-			return padding("ISO10126Padding");
-		}
-
-		public CipherBuilder.AES no() {
-			return padding("NoPadding");
-		}
-
-	}
-
+        fun no(): AES {
+            return padding("NoPadding")
+        }
+    }
 }

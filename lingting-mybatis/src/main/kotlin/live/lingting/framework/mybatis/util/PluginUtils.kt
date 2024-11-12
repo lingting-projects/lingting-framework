@@ -13,23 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package live.lingting.framework.mybatis.util;
+package live.lingting.framework.mybatis.util
 
-import org.apache.ibatis.executor.Executor;
-import org.apache.ibatis.executor.parameter.ParameterHandler;
-import org.apache.ibatis.executor.statement.StatementHandler;
-import org.apache.ibatis.mapping.BoundSql;
-import org.apache.ibatis.mapping.MappedStatement;
-import org.apache.ibatis.mapping.ParameterMapping;
-import org.apache.ibatis.reflection.MetaObject;
-import org.apache.ibatis.reflection.SystemMetaObject;
-import org.apache.ibatis.session.Configuration;
-
-import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import org.apache.ibatis.executor.Executor
+import org.apache.ibatis.executor.parameter.ParameterHandler
+import org.apache.ibatis.executor.statement.StatementHandler
+import org.apache.ibatis.mapping.BoundSql
+import org.apache.ibatis.mapping.MappedStatement
+import org.apache.ibatis.mapping.ParameterMapping
+import org.apache.ibatis.reflection.MetaObject
+import org.apache.ibatis.reflection.SystemMetaObject
+import org.apache.ibatis.session.Configuration
+import java.lang.reflect.Proxy
+import java.util.*
 
 /**
  * 插件工具类
@@ -37,130 +33,117 @@ import java.util.Map;
  * @author TaoYu , hubin
  * @since 2017-06-20
  */
-public final class PluginUtils {
+class PluginUtils private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	public static final String DELEGATE_BOUNDSQL_SQL = "delegate.boundSql.sql";
+    /**
+     * [org.apache.ibatis.executor.statement.BaseStatementHandler]
+     */
+    class MPStatementHandler internal constructor(private val statementHandler: MetaObject) {
+        fun parameterHandler(): ParameterHandler {
+            return get("parameterHandler")
+        }
 
-	private PluginUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+        fun mappedStatement(): MappedStatement {
+            return get("mappedStatement")
+        }
 
-	/**
-	 * 获得真正的处理对象,可能多层代理.
-	 */
-	@SuppressWarnings("unchecked")
-	public static <T> T realTarget(Object target) {
-		if (Proxy.isProxyClass(target.getClass())) {
-			MetaObject metaObject = SystemMetaObject.forObject(target);
-			return realTarget(metaObject.getValue("h.target"));
-		}
-		return (T) target;
-	}
+        fun executor(): Executor {
+            return get("executor")
+        }
 
-	/**
-	 * 给 BoundSql 设置 additionalParameters
-	 *
-	 * @param boundSql             BoundSql
-	 * @param additionalParameters additionalParameters
-	 */
-	public static void setAdditionalParameter(BoundSql boundSql, Map<String, Object> additionalParameters) {
-		additionalParameters.forEach(boundSql::setAdditionalParameter);
-	}
+        fun mPBoundSql(): MPBoundSql {
+            return MPBoundSql(boundSql())
+        }
 
-	public static MPBoundSql mpBoundSql(BoundSql boundSql) {
-		return new MPBoundSql(boundSql);
-	}
+        fun boundSql(): BoundSql {
+            return get("boundSql")
+        }
 
-	public static MPStatementHandler mpStatementHandler(StatementHandler statementHandler) {
-		statementHandler = realTarget(statementHandler);
-		MetaObject object = SystemMetaObject.forObject(statementHandler);
-		return new MPStatementHandler(SystemMetaObject.forObject(object.getValue("delegate")));
-	}
+        fun configuration(): Configuration {
+            return get("configuration")
+        }
 
-	/**
-	 * {@link org.apache.ibatis.executor.statement.BaseStatementHandler}
-	 */
-	public static class MPStatementHandler {
+        private fun <T> get(property: String): T {
+            return statementHandler.getValue(property) as T
+        }
+    }
 
-		private final MetaObject statementHandler;
+    /**
+     * [BoundSql]
+     */
+    class MPBoundSql internal constructor(private val delegate: BoundSql) {
+        private val boundSql: MetaObject
 
-		MPStatementHandler(MetaObject statementHandler) {
-			this.statementHandler = statementHandler;
-		}
+        init {
+            this.delegate = SystemMetaObject.forObject(delegate)
+        }
 
-		public ParameterHandler parameterHandler() {
-			return get("parameterHandler");
-		}
+        fun sql(): String {
+            return delegate.sql
+        }
 
-		public MappedStatement mappedStatement() {
-			return get("mappedStatement");
-		}
+        fun sql(sql: String?) {
+            delegate.setValue("sql", sql)
+        }
 
-		public Executor executor() {
-			return get("executor");
-		}
+        fun parameterMappings(): List<ParameterMapping> {
+            val parameterMappings = delegate.parameterMappings
+            return ArrayList(parameterMappings)
+        }
 
-		public MPBoundSql mPBoundSql() {
-			return new MPBoundSql(boundSql());
-		}
+        fun parameterMappings(parameterMappings: List<ParameterMapping>) {
+            delegate.setValue("parameterMappings", Collections.unmodifiableList(parameterMappings))
+        }
 
-		public BoundSql boundSql() {
-			return get("boundSql");
-		}
+        fun parameterObject(): Any {
+            return get("parameterObject")
+        }
 
-		public Configuration configuration() {
-			return get("configuration");
-		}
+        fun additionalParameters(): Map<String, Any> {
+            return get("additionalParameters")
+        }
 
-		@SuppressWarnings("unchecked")
-		private <T> T get(String property) {
-			return (T) statementHandler.getValue(property);
-		}
+        private fun <T> get(property: String): T {
+            return delegate.getValue(property) as T
+        }
+    }
 
-	}
+    companion object {
+        const val DELEGATE_BOUNDSQL_SQL: String = "delegate.boundSql.sql"
 
-	/**
-	 * {@link BoundSql}
-	 */
-	public static class MPBoundSql {
+        /**
+         * 获得真正的处理对象,可能多层代理.
+         */
+        fun <T> realTarget(target: Any): T {
+            if (Proxy.isProxyClass(target.javaClass)) {
+                val metaObject = SystemMetaObject.forObject(target)
+                return realTarget(metaObject.getValue("h.target"))
+            }
+            return target as T
+        }
 
-		private final MetaObject boundSql;
+        /**
+         * 给 BoundSql 设置 additionalParameters
+         *
+         * @param boundSql             BoundSql
+         * @param additionalParameters additionalParameters
+         */
+        fun setAdditionalParameter(boundSql: BoundSql, additionalParameters: Map<String?, Any?>) {
+            additionalParameters.forEach { (name: String?, value: Any?) -> boundSql.setAdditionalParameter(name, value) }
+        }
 
-		private final BoundSql delegate;
+        fun mpBoundSql(boundSql: BoundSql): MPBoundSql {
+            return MPBoundSql(boundSql)
+        }
 
-		MPBoundSql(BoundSql boundSql) {
-			this.delegate = boundSql;
-			this.boundSql = SystemMetaObject.forObject(boundSql);
-		}
-
-		public String sql() {
-			return delegate.getSql();
-		}
-
-		public void sql(String sql) {
-			boundSql.setValue("sql", sql);
-		}
-
-		public List<ParameterMapping> parameterMappings() {
-			List<ParameterMapping> parameterMappings = delegate.getParameterMappings();
-			return new ArrayList<>(parameterMappings);
-		}
-
-		public void parameterMappings(List<ParameterMapping> parameterMappings) {
-			boundSql.setValue("parameterMappings", Collections.unmodifiableList(parameterMappings));
-		}
-
-		public Object parameterObject() {
-			return get("parameterObject");
-		}
-
-		public Map<String, Object> additionalParameters() {
-			return get("additionalParameters");
-		}
-
-		@SuppressWarnings("unchecked")
-		private <T> T get(String property) {
-			return (T) boundSql.getValue(property);
-		}
-
-	}
-
+        fun mpStatementHandler(statementHandler: StatementHandler): MPStatementHandler {
+            var statementHandler = statementHandler
+            statementHandler = realTarget(statementHandler)
+            val `object` = SystemMetaObject.forObject(statementHandler)
+            return MPStatementHandler(SystemMetaObject.forObject(`object`.getValue("delegate")))
+        }
+    }
 }

@@ -1,52 +1,44 @@
-package live.lingting.framework.flow;
+package live.lingting.framework.flow
 
+import live.lingting.framework.api.R
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Flow
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Flow;
 
 /**
  * @author lingting 2024-05-07 17:06
  */
-public abstract class FutureSubscriber<R, T> implements Flow.Subscriber<T> {
+abstract class FutureSubscriber<R, T> : Flow.Subscriber<T> {
+    private val future = CompletableFuture<R>()
 
-	private final CompletableFuture<R> future = new CompletableFuture<>();
+    private val list: MutableList<T> = ArrayList()
 
-	private final List<T> list = new ArrayList<>();
+    override fun onSubscribe(subscription: Flow.Subscription) {
+        subscription.request(Long.MAX_VALUE)
+    }
 
-	@Override
-	public void onSubscribe(Flow.Subscription subscription) {
-		subscription.request(Long.MAX_VALUE);
-	}
+    override fun onNext(item: T) {
+        list.add(item)
+    }
 
-	@Override
-	public void onNext(T item) {
-		list.add(item);
-	}
+    override fun onError(throwable: Throwable) {
+        future.completeExceptionally(throwable)
+    }
 
-	@Override
-	public void onError(Throwable throwable) {
-		future.completeExceptionally(throwable);
-	}
+    override fun onComplete() {
+        val r = convert(list)
+        future.complete(r)
+    }
 
-	@Override
-	public void onComplete() {
-		R r = convert(list);
-		future.complete(r);
-	}
-
-	public abstract R convert(List<T> list);
+    abstract fun convert(list: List<T>?): R
 
 
-	public R get() {
-		try {
-			return future.get();
-		}
-		catch (ExecutionException e) {
-			throw e.getCause();
-		}
-	}
-
+    fun get(): R {
+        try {
+            return future.get()
+        } catch (e: ExecutionException) {
+            throw e.cause!!
+        }
+    }
 }

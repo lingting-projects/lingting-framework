@@ -1,39 +1,26 @@
-package live.lingting.framework.value.cycle;
+package live.lingting.framework.value.cycle
 
-import live.lingting.framework.util.CollectionUtils;
-
-import java.util.List;
+import live.lingting.framework.util.CollectionUtils
 
 /**
  * @author lingting 2024-04-29 15:45
  */
-public class ListCycleValue<T> extends AbstractConcurrentCycleValue<T> {
+class ListCycleValue<T>(private val list: List<T>) : AbstractConcurrentCycleValue<T>() {
+    private var index = -1
 
-	private final List<T> list;
+    val isEmpty: Boolean
+        get() = CollectionUtils.isEmpty(list)
 
-	private int index = -1;
+    override fun doNext(): T? {
+        index += 1
+        if (index < list.size) {
+            return list[index]
+        }
+        doReset()
+        return doNext()
+    }
 
-	public ListCycleValue(List<T> list) {
-		this.list = list;
-	}
-
-	public boolean isEmpty() {
-		return CollectionUtils.isEmpty(list);
-	}
-
-	@Override
-	public T doNext() {
-		index += 1;
-		if (index < list.size()) {
-			return list.get(index);
-		}
-		doReset();
-		return doNext();
-	}
-
-	@Override
-	public void doReset() {
-		index = -1;
-	}
-
+    override fun doReset() {
+        index = -1
+    }
 }

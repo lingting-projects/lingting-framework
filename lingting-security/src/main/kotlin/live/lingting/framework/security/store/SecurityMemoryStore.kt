@@ -1,40 +1,32 @@
-package live.lingting.framework.security.store;
+package live.lingting.framework.security.store
 
-import live.lingting.framework.security.domain.SecurityScope;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import live.lingting.framework.security.domain.SecurityScope
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * @author lingting 2023-06-15 16:07
  */
-public class SecurityMemoryStore implements SecurityStore {
+class SecurityMemoryStore : SecurityStore {
+    private val map: MutableMap<String?, SecurityScope> = ConcurrentHashMap()
 
-	private final Map<String, SecurityScope> map = new ConcurrentHashMap<>();
+    override fun save(scope: SecurityScope) {
+        map[scope.token] = scope
+    }
 
-	@Override
-	public void save(SecurityScope scope) {
-		map.put(scope.getToken(), scope);
-	}
+    override fun update(scope: SecurityScope) {
+        map[scope.token] = scope
+    }
 
-	@Override
-	public void update(SecurityScope scope) {
-		map.put(scope.getToken(), scope);
-	}
+    override fun deleted(scope: SecurityScope) {
+        map.remove(scope.token)
+    }
 
-	@Override
-	public void deleted(SecurityScope scope) {
-		map.remove(scope.getToken());
-	}
-
-	@Override
-	public SecurityScope get(String token) {
-		SecurityScope scope = map.get(token);
-		if (scope != null && scope.getExpireTime() != null && System.currentTimeMillis() >= scope.getExpireTime()) {
-			map.remove(token);
-			return null;
-		}
-		return scope;
-	}
-
+    override fun get(token: String?): SecurityScope? {
+        val scope = map[token]
+        if (scope != null && scope.expireTime != null && System.currentTimeMillis() >= scope.expireTime) {
+            map.remove(token)
+            return null
+        }
+        return scope
+    }
 }

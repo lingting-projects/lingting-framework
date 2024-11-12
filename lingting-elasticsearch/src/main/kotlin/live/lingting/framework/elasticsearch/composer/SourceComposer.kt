@@ -1,30 +1,32 @@
-package live.lingting.framework.elasticsearch.composer;
+package live.lingting.framework.elasticsearch.composer
 
-import co.elastic.clients.elasticsearch.core.search.SourceConfig;
-import live.lingting.framework.elasticsearch.ElasticsearchFunction;
-import live.lingting.framework.elasticsearch.ElasticsearchUtils;
-
-import java.util.Arrays;
-
-import static live.lingting.framework.elasticsearch.ElasticsearchUtils.fieldName;
+import co.elastic.clients.elasticsearch.core.search.SourceConfig
+import co.elastic.clients.elasticsearch.core.search.SourceFilter
+import live.lingting.framework.elasticsearch.ElasticsearchFunction
+import live.lingting.framework.elasticsearch.ElasticsearchUtils
+import java.util.*
 
 /**
  * @author lingting 2024-03-06 17:45
  */
-public final class SourceComposer {
+class SourceComposer private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	private SourceComposer() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+    companion object {
+        fun includes(value: String?, vararg values: String?): SourceConfig {
+            return SourceConfig.of { sc: SourceConfig.Builder -> sc.filter { sf: SourceFilter.Builder -> sf.includes(value, *values) } }
+        }
 
-	public static SourceConfig includes(String value, String... values) {
-		return SourceConfig.of(sc -> sc.filter(sf -> sf.includes(value, values)));
-	}
-
-	@SafeVarargs
-	public static <E> SourceConfig includes(ElasticsearchFunction<E, ?> function,
-											ElasticsearchFunction<E, ?>... functions) {
-		String value = fieldName(function);
-		String[] values = Arrays.stream(functions).map(ElasticsearchUtils::fieldName).toArray(String[]::new);
-		return includes(value, values);
-	}
-
+        @SafeVarargs
+        fun <E> includes(
+            function: ElasticsearchFunction<E, *>,
+            vararg functions: ElasticsearchFunction<E, *>
+        ): SourceConfig {
+            val value: String = ElasticsearchUtils.Companion.fieldName(function)
+            val values = Arrays.stream<ElasticsearchFunction<E, *>>(functions).map<String> { func: ElasticsearchFunction<E, *> -> ElasticsearchUtils.Companion.fieldName(func) }.toArray<String> { _Dummy_.__Array__() }
+            return includes(value, *values)
+        }
+    }
 }

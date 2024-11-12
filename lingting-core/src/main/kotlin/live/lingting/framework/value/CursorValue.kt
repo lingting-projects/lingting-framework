@@ -1,76 +1,71 @@
-package live.lingting.framework.value;
+package live.lingting.framework.value
 
-import live.lingting.framework.util.CollectionUtils;
-import org.slf4j.Logger;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import live.lingting.framework.util.CollectionUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.util.*
+import java.util.stream.Stream
+import java.util.stream.StreamSupport
 
 /**
  * @author lingting 2023-12-29 11:30
  */
-public abstract class CursorValue<T> implements Iterator<T> {
+abstract class CursorValue<T> : MutableIterator<T> {
+    protected val log: Logger = LoggerFactory.getLogger(javaClass)
 
-	protected final Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
+    protected val current: MutableList<T> = ArrayList()
 
-	protected final List<T> current = new ArrayList<>();
+    /**
+     * 是否已经无数据了, 如果为true, 则不会继续调用 [.nextBatchData]方法, 且
+     * [.hasNext]方法永远返回false
+     */
+    protected var empty: Boolean = false
 
-	/**
-	 * 是否已经无数据了, 如果为true, 则不会继续调用 {@link #nextBatchData()}方法, 且
-	 * {@link #hasNext()}方法永远返回false
-	 */
-	protected boolean empty = false;
+    /**
+     * 已读取数据数量
+     */
+    var count: Long = 0
+        protected set
 
-	/**
-	 * 已读取数据数量
-	 */
-	protected long count = 0;
+    override fun hasNext(): Boolean {
+        if (!CollectionUtils.isEmpty(current)) {
+            return true
+        }
 
-	@Override
-	public boolean hasNext() {
-		if (!CollectionUtils.isEmpty(current)) {
-			return true;
-		}
+        if (empty) {
+            return false
+        }
 
-		if (empty) {
-			return false;
-		}
+        val list = nextBatchData()
 
-		List<T> list = nextBatchData();
+        if (CollectionUtils.isEmpty(list)) {
+            empty = true
+            return false
+        }
 
-		if (CollectionUtils.isEmpty(list)) {
-			empty = true;
-			return false;
-		}
+        current.addAll(list)
+        return true
+    }
 
-		current.addAll(list);
-		return true;
-	}
+    override fun next(): T {
+        if (!hasNext()) {
+            throw NoSuchElementException()
+        }
+        count++
+        return current.removeAt(0)
+    }
 
-	@Override
-	public T next() {
-		if (!hasNext()) {
-			throw new NoSuchElementException();
-		}
-		count++;
-		return current.remove(0);
-	}
+    /**
+     * 获取下一批数据
+     */
+    protected abstract fun nextBatchData(): List<T>
 
-	/**
-	 * 获取下一批数据
-	 */
-	protected abstract List<T> nextBatchData();
+    fun stream(): Stream<T> {
+        val spliterator = Spliterators.spliteratorUnknownSize(this, Spliterator.ORDERED)
+        return StreamSupport.stream(spliterator, false)
+    }
 
-	public Stream<T> stream() {
-		Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(this, Spliterator.ORDERED);
-		return StreamSupport.stream(spliterator, false);
-	}
-
-	public long getCount() {return this.count;}
+    override fun remove() {
+        throw UnsupportedOperationException()
+    }
 }

@@ -1,258 +1,257 @@
-package live.lingting.framework.http;
+package live.lingting.framework.http
 
-import live.lingting.framework.stream.BytesInputStream;
-import live.lingting.framework.stream.FileCloneInputStream;
-import live.lingting.framework.util.FileUtils;
-import live.lingting.framework.util.StreamUtils;
-import live.lingting.framework.util.ThreadUtils;
-import live.lingting.framework.value.LazyValue;
-
-import javax.net.SocketFactory;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
-import java.net.CookieStore;
-import java.net.ProxySelector;
-import java.net.URI;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.time.Duration;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
+import live.lingting.framework.stream.BytesInputStream
+import live.lingting.framework.stream.FileCloneInputStream
+import live.lingting.framework.util.FileUtils
+import live.lingting.framework.util.StreamUtils
+import live.lingting.framework.util.ThreadUtils
+import live.lingting.framework.value.LazyValue
+import okhttp3.Cookie.Builder.value
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
+import java.net.CookieManager
+import java.net.CookiePolicy
+import java.net.CookieStore
+import java.net.ProxySelector
+import java.net.URI
+import java.security.KeyManagementException
+import java.security.NoSuchAlgorithmException
+import java.time.Duration
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.atomic.AtomicLong
+import java.util.function.Consumer
+import javax.net.SocketFactory
+import javax.net.ssl.HostnameVerifier
+import javax.net.ssl.SSLContext
+import javax.net.ssl.X509TrustManager
 
 /**
  * @author lingting 2024-09-02 15:28
  */
-public abstract class HttpClient {
+abstract class HttpClient {
+    protected var cookie: CookieStore? = null
 
-	/**
-	 * @see jdk.internal.net.http.common.Utils#getDisallowedHeaders()
-	 */
-	protected static final Set<String> HEADERS_DISABLED = Set.of("connection", "content-length", "expect", "host",
-		"upgrade");
+    fun cookie(): CookieStore? {
+        return cookie
+    }
 
-	public static final File TEMP_DIR = FileUtils.createTempDir("http");
+    abstract fun client(): Any
 
-	/**
-	 * 默认大小以内文件直接放内存里面, 单位: bytes
-	 */
-	static long defaultMaxBytes = 1048576;
+    @Throws(IOException::class)
+    abstract fun request(request: HttpRequest): HttpResponse
 
-	protected CookieStore cookie;
+    @Throws(IOException::class)
+    abstract fun request(request: HttpRequest, callback: ResponseCallback)
 
-	public static JavaHttpClient.Builder java() {
-		return new JavaHttpClient.Builder();
-	}
+    @Throws(IOException::class)
+    fun <T> request(request: HttpRequest, cls: Class<T>?): T? {
+        val response = request(request)
+        return response.convert(cls)
+    }
 
-	public static OkHttpClient.Builder okhttp() {
-		return new OkHttpClient.Builder();
-	}
+    @Throws(IOException::class)
+    fun get(uri: URI?): HttpResponse {
+        return request(HttpRequest.Companion.builder().get().url(uri).build())
+    }
 
-	public static InputStream wrap(InputStream source) throws IOException {
-		return wrap(source, defaultMaxBytes);
-	}
+    abstract class Builder<C : HttpClient?, B : Builder<C, B>?> {
+        protected var executor: ExecutorService = ThreadUtils.executor()
 
-	public static InputStream wrap(InputStream source, long maxBytes) throws IOException {
-		if (source == null) {
-			return new ByteArrayInputStream(new byte[0]);
-		}
-		AtomicLong size = new AtomicLong(0);
+        protected var redirects: Boolean = true
 
-		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-		LazyValue<FileOutputStream> fileOutValue = new LazyValue<>(() -> null);
-		LazyValue<File> fileValue = new LazyValue<>(() -> {
-			File file = FileUtils.createTemp(".wrap", TEMP_DIR);
-			fileOutValue.set(new FileOutputStream(file));
-			return file;
-		});
-		StreamUtils.read(source, (bytes, len) -> {
-			if (!fileValue.isFirst() || size.addAndGet(len) > maxBytes) {
-				if (fileValue.isFirst()) {
-					fileValue.get();
-					fileOutValue.get().write(byteOut.toByteArray());
-				}
-				fileOutValue.get().write(bytes, 0, len);
-			}
-			else {
-				byteOut.write(bytes, 0, len);
-			}
-		});
-		if (fileValue.isFirst()) {
-			return new BytesInputStream(byteOut.toByteArray());
-		}
-		return new FileCloneInputStream(fileValue.get());
-	}
+        protected var socketFactory: SocketFactory? = null
 
-	public static long getDefaultMaxBytes() {return HttpClient.defaultMaxBytes;}
+        /**
+         * HostnameVerifier，用于HTTPS安全连接
+         */
+        protected var hostnameVerifier: HostnameVerifier? = null
 
-	public static void setDefaultMaxBytes(long defaultMaxBytes) {HttpClient.defaultMaxBytes = defaultMaxBytes;}
+        /**
+         * 用于HTTPS安全连接
+         */
+        protected var sslContext: SSLContext? = null
 
-	public CookieStore cookie() {
-		return cookie;
-	}
+        protected var trustManager: X509TrustManager? = null
 
-	public abstract Object client();
+        protected var callTimeout: Duration? = null
 
-	public abstract HttpResponse request(HttpRequest request) throws IOException;
+        protected var connectTimeout: Duration? = null
 
-	public abstract void request(HttpRequest request, ResponseCallback callback) throws IOException;
+        protected var readTimeout: Duration? = null
 
-	public <T> T request(HttpRequest request, Class<T> cls) throws IOException {
-		HttpResponse response = request(request);
-		return response.convert(cls);
-	}
+        protected var writeTimeout: Duration? = null
 
-	public HttpResponse get(URI uri) throws IOException {
-		return request(HttpRequest.builder().get().url(uri).build());
-	}
+        protected var proxySelector: ProxySelector? = null
 
-	public abstract static class Builder<C extends HttpClient, B extends Builder<C, B>> {
+        protected var cookie: CookieStore? = null
 
-		protected ExecutorService executor = ThreadUtils.executor();
+        fun socketFactory(socketFactory: SocketFactory?): B {
+            this.socketFactory = socketFactory
+            return this as B
+        }
 
-		protected boolean redirects = true;
+        fun executor(executor: ExecutorService): B {
+            this.executor = executor
+            return this as B
+        }
 
-		protected SocketFactory socketFactory;
+        fun redirects(redirects: Boolean): B {
+            this.redirects = redirects
+            return this as B
+        }
 
-		/**
-		 * HostnameVerifier，用于HTTPS安全连接
-		 */
-		protected HostnameVerifier hostnameVerifier;
+        fun hostnameVerifier(hostnameVerifier: HostnameVerifier?): B {
+            this.hostnameVerifier = hostnameVerifier
+            return this as B
+        }
 
-		/**
-		 * 用于HTTPS安全连接
-		 */
-		protected SSLContext sslContext;
+        @Throws(NoSuchAlgorithmException::class, KeyManagementException::class)
+        fun ssl(trustManager: X509TrustManager?): B {
+            val context = Https.sslContext(trustManager!!)
+            return ssl(context, trustManager)
+        }
 
-		protected X509TrustManager trustManager;
-
-		protected Duration callTimeout;
-
-		protected Duration connectTimeout;
-
-		protected Duration readTimeout;
-
-		protected Duration writeTimeout;
-
-		protected ProxySelector proxySelector;
-
-		protected CookieStore cookie;
-
-		public B socketFactory(SocketFactory socketFactory) {
-			this.socketFactory = socketFactory;
-			return (B) this;
-		}
-
-		public B executor(ExecutorService executor) {
-			this.executor = executor;
-			return (B) this;
-		}
-
-		public B redirects(boolean redirects) {
-			this.redirects = redirects;
-			return (B) this;
-		}
-
-		public B hostnameVerifier(HostnameVerifier hostnameVerifier) {
-			this.hostnameVerifier = hostnameVerifier;
-			return (B) this;
-		}
-
-		public B ssl(X509TrustManager trustManager) throws NoSuchAlgorithmException, KeyManagementException {
-			SSLContext context = Https.sslContext(trustManager);
-			return ssl(context, trustManager);
-		}
-
-		public B ssl(SSLContext context, X509TrustManager trustManager) {
-			this.sslContext = context;
-			this.trustManager = trustManager;
-			return (B) this;
-		}
+        fun ssl(context: SSLContext?, trustManager: X509TrustManager?): B {
+            this.sslContext = context
+            this.trustManager = trustManager
+            return this as B
+        }
 
 
-		public B disableSsl() {
-			X509TrustManager manager = Https.SSL_DISABLED_TRUST_MANAGER;
-			HostnameVerifier verifier = Https.SSL_DISABLED_HOSTNAME_VERIFIER;
-			return ssl(manager).hostnameVerifier(verifier);
-		}
+        fun disableSsl(): B {
+            val manager = Https.SSL_DISABLED_TRUST_MANAGER
+            val verifier = Https.SSL_DISABLED_HOSTNAME_VERIFIER
+            return ssl(manager)!!.hostnameVerifier(verifier)
+        }
 
-		public B callTimeout(Duration callTimeout) {
-			this.callTimeout = callTimeout;
-			return (B) this;
-		}
+        fun callTimeout(callTimeout: Duration?): B {
+            this.callTimeout = callTimeout
+            return this as B
+        }
 
-		public B connectTimeout(Duration connectTimeout) {
-			this.connectTimeout = connectTimeout;
-			return (B) this;
-		}
+        fun connectTimeout(connectTimeout: Duration?): B {
+            this.connectTimeout = connectTimeout
+            return this as B
+        }
 
-		public B readTimeout(Duration readTimeout) {
-			this.readTimeout = readTimeout;
-			return (B) this;
-		}
+        fun readTimeout(readTimeout: Duration?): B {
+            this.readTimeout = readTimeout
+            return this as B
+        }
 
-		public B writeTimeout(Duration writeTimeout) {
-			this.writeTimeout = writeTimeout;
-			return (B) this;
-		}
+        fun writeTimeout(writeTimeout: Duration?): B {
+            this.writeTimeout = writeTimeout
+            return this as B
+        }
 
-		/**
-		 * 无限等待时间
-		 */
-		public B infiniteTimeout() {
-			return timeout(Duration.ZERO, Duration.ZERO, Duration.ZERO, Duration.ZERO);
-		}
+        /**
+         * 无限等待时间
+         */
+        open fun infiniteTimeout(): B {
+            return timeout(Duration.ZERO, Duration.ZERO, Duration.ZERO, Duration.ZERO)
+        }
 
-		public B timeout(Duration connectTimeout, Duration readTimeout) {
-			return connectTimeout(connectTimeout).readTimeout(readTimeout);
-		}
+        fun timeout(connectTimeout: Duration?, readTimeout: Duration?): B {
+            return connectTimeout(connectTimeout)!!.readTimeout(readTimeout)
+        }
 
-		public B timeout(Duration callTimeout, Duration connectTimeout, Duration readTimeout, Duration writeTimeout) {
-			return callTimeout(callTimeout).connectTimeout(connectTimeout)
-				.readTimeout(readTimeout)
-				.writeTimeout(writeTimeout);
-		}
+        fun timeout(callTimeout: Duration?, connectTimeout: Duration?, readTimeout: Duration?, writeTimeout: Duration?): B {
+            return callTimeout(callTimeout)!!.connectTimeout(connectTimeout)
+                .readTimeout(readTimeout)
+                .writeTimeout(writeTimeout)
+        }
 
-		public B proxySelector(ProxySelector proxySelector) {
-			this.proxySelector = proxySelector;
-			return (B) this;
-		}
+        fun proxySelector(proxySelector: ProxySelector?): B {
+            this.proxySelector = proxySelector
+            return this as B
+        }
 
-		public B cookie(CookieStore cookie) {
-			this.cookie = cookie;
-			return (B) this;
-		}
+        fun cookie(cookie: CookieStore?): B {
+            this.cookie = cookie
+            return this as B
+        }
 
-		public B memoryCookie() {
-			CookieManager manager = new CookieManager(null, CookiePolicy.ACCEPT_ALL);
-			return cookie(manager.getCookieStore());
-		}
+        fun memoryCookie(): B {
+            val manager = CookieManager(null, CookiePolicy.ACCEPT_ALL)
+            return cookie(manager.cookieStore)
+        }
 
-		protected <A> void nonNull(A a, Consumer<A> consumer) {
-			if (a == null) {
-				return;
-			}
-			consumer.accept(a);
-		}
+        protected fun <A> nonNull(a: A?, consumer: Consumer<A>) {
+            if (a == null) {
+                return
+            }
+            consumer.accept(a)
+        }
 
-		public C build() {
-			C c = doBuild();
-			c.cookie = cookie;
-			return c;
-		}
+        fun build(): C {
+            val c = doBuild()
+            c!!.cookie = cookie
+            return c
+        }
 
-		protected abstract C doBuild();
+        protected abstract fun doBuild(): C
+    }
 
-	}
+    companion object {
+        /**
+         * @see jdk.internal.net.http.common.Utils.getDisallowedHeaders
+         */
+        protected val HEADERS_DISABLED: Set<String> = setOf(
+            "connection", "content-length", "expect", "host",
+            "upgrade"
+        )
 
+        val TEMP_DIR: File = FileUtils.createTempDir("http")
+
+        /**
+         * 默认大小以内文件直接放内存里面, 单位: bytes
+         */
+        var defaultMaxBytes: Long = 1048576
+
+        @JvmStatic
+        fun java(): JavaHttpClient.Builder {
+            return JavaHttpClient.Builder()
+        }
+
+        @JvmStatic
+        fun okhttp(): OkHttpClient.Builder {
+            return OkHttpClient.Builder()
+        }
+
+        @JvmOverloads
+        @Throws(IOException::class)
+        fun wrap(source: InputStream?, maxBytes: Long = defaultMaxBytes): InputStream {
+            if (source == null) {
+                return ByteArrayInputStream(ByteArray(0))
+            }
+            val size = AtomicLong(0)
+
+            val byteOut = ByteArrayOutputStream()
+            val fileOutValue = LazyValue<FileOutputStream?> { null }
+            val fileValue = LazyValue<File> {
+                val file = FileUtils.createTemp(".wrap", TEMP_DIR)
+                fileOutValue.set(FileOutputStream(file))
+                file
+            }
+            StreamUtils.read(source) { bytes, len ->
+                if (!fileValue.isFirst() || size.addAndGet(len) > maxBytes) {
+                    if (fileValue.isFirst()) {
+                        fileValue.get()
+                        fileOutValue.get()!!.write(byteOut.toByteArray())
+                    }
+                    fileOutValue.get()!!.write(bytes, 0, len!!)
+                } else {
+                    byteOut.write(bytes, 0, len!!)
+                }
+            }
+            if (fileValue.isFirst()) {
+                return BytesInputStream(byteOut.toByteArray())
+            }
+            return FileCloneInputStream(fileValue.get()!!)
+        }
+    }
 }

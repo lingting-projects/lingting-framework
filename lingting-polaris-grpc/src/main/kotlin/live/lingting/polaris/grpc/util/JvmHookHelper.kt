@@ -1,21 +1,22 @@
-
-package live.lingting.polaris.grpc.util;
+package live.lingting.polaris.grpc.util
 
 /**
  * @author lixiaoshuang
  */
-public final class JvmHookHelper {
+class JvmHookHelper private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	private JvmHookHelper() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
-
-	/**
-	 * Add JVM callback hooks.
-	 *
-	 * @param runnable Functional interface
-	 */
-	public static boolean addShutdownHook(Runnable runnable) {
-		Runtime.getRuntime().addShutdownHook(new Thread(runnable));
-		return true;
-	}
-
+    companion object {
+        /**
+         * Add JVM callback hooks.
+         *
+         * @param runnable Functional interface
+         */
+        fun addShutdownHook(runnable: Runnable?): Boolean {
+            Runtime.getRuntime().addShutdownHook(Thread(runnable))
+            return true
+        }
+    }
 }

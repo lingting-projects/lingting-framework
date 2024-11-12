@@ -1,10 +1,6 @@
-package live.lingting.framework.map;
-
-import java.util.HashMap;
+package live.lingting.framework.map
 
 /**
  * @author lingting 2024-04-20 16:19
  */
-public class SimpleHashMap<K, V> extends HashMap<K, V> implements SimpleMap<K, V> {
-
-}
+open class SimpleHashMap<K, V> : HashMap<K, V>(), SimpleMap<K, V>

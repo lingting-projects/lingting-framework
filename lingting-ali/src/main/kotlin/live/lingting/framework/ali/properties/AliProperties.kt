@@ -1,67 +1,41 @@
-package live.lingting.framework.ali.properties;
+package live.lingting.framework.ali.properties
 
-import live.lingting.framework.aws.s3.AwsS3Properties;
+import live.lingting.framework.aws.s3.AwsS3Properties
 
 /**
  * @author lingting 2024-09-14 14:16
  */
-public class AliProperties {
+open class AliProperties {
+    var scheme: String = "https"
 
-	protected String scheme = "https";
+    var prefix: String? = null
 
-	protected String prefix;
+    @JvmField
+    var region: String? = null
 
-	protected String region;
+    var endpoint: String = "aliyuncs.com"
 
-	protected String endpoint = "aliyuncs.com";
+    @JvmField
+    var ak: String? = null
 
-	protected String ak;
+    @JvmField
+    var sk: String? = null
 
-	protected String sk;
+    var token: String? = null
 
-	protected String token;
+    open fun host(): String {
+        return "%s://%s.%s.%s".formatted(scheme, prefix, region, endpoint)
+    }
 
-	public String host() {
-		return "%s://%s.%s.%s".formatted(scheme, prefix, region, endpoint);
-	}
-
-	public AwsS3Properties s3() {
-		AwsS3Properties s3 = new AwsS3Properties();
-		s3.setScheme(scheme);
-		s3.setConnector("-");
-		s3.setRegion(region);
-		s3.setEndpoint(endpoint);
-		s3.setAk(ak);
-		s3.setSk(sk);
-		s3.setToken(token);
-		return s3;
-	}
-
-	public String getScheme() {return this.scheme;}
-
-	public String getPrefix() {return this.prefix;}
-
-	public String getRegion() {return this.region;}
-
-	public String getEndpoint() {return this.endpoint;}
-
-	public String getAk() {return this.ak;}
-
-	public String getSk() {return this.sk;}
-
-	public String getToken() {return this.token;}
-
-	public void setScheme(String scheme) {this.scheme = scheme;}
-
-	public void setPrefix(String prefix) {this.prefix = prefix;}
-
-	public void setRegion(String region) {this.region = region;}
-
-	public void setEndpoint(String endpoint) {this.endpoint = endpoint;}
-
-	public void setAk(String ak) {this.ak = ak;}
-
-	public void setSk(String sk) {this.sk = sk;}
-
-	public void setToken(String token) {this.token = token;}
+    open fun s3(): AwsS3Properties {
+        val s3 = AwsS3Properties()
+        s3.scheme = scheme
+        s3.connector = "-"
+        s3.region = region
+        s3.endpoint = endpoint
+        s3.ak = ak
+        s3.sk = sk
+        s3.token = token
+        return s3
+    }
 }

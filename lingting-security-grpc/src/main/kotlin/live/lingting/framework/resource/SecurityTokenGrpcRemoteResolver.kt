@@ -1,77 +1,56 @@
-package live.lingting.framework.resource;
+package live.lingting.framework.resource
 
-import com.google.protobuf.Empty;
-import io.grpc.ManagedChannel;
-import live.lingting.framework.Sequence;
-import live.lingting.framework.context.ContextComponent;
-import live.lingting.framework.convert.SecurityGrpcConvert;
-import live.lingting.framework.interceptor.SecurityGrpcRemoteContent;
-import live.lingting.framework.protobuf.SecurityGrpcAuthorization;
-import live.lingting.framework.protobuf.SecurityGrpcAuthorizationServiceGrpc;
-import live.lingting.framework.security.domain.AuthorizationVO;
-import live.lingting.framework.security.domain.SecurityScope;
-import live.lingting.framework.security.domain.SecurityToken;
-import live.lingting.framework.security.resolver.SecurityTokenResolver;
-
-import static live.lingting.framework.exception.SecurityGrpcThrowing.convert;
+import com.google.protobuf.Empty
+import io.grpc.ManagedChannel
+import live.lingting.framework.Sequence
+import live.lingting.framework.context.ContextComponent
+import live.lingting.framework.convert.SecurityGrpcConvert
+import live.lingting.framework.exception.SecurityGrpcThrowing
+import live.lingting.framework.interceptor.SecurityGrpcRemoteContent
+import live.lingting.framework.protobuf.SecurityGrpcAuthorization
+import live.lingting.framework.protobuf.SecurityGrpcAuthorizationServiceGrpc
+import live.lingting.framework.protobuf.SecurityGrpcAuthorizationServiceGrpc.SecurityGrpcAuthorizationServiceBlockingStub
+import live.lingting.framework.security.domain.SecurityScope
+import live.lingting.framework.security.domain.SecurityToken
+import live.lingting.framework.security.resolver.SecurityTokenResolver
 
 /**
  * @author lingting 2023-12-18 16:30
  */
-@SuppressWarnings("java:S112")
-public class SecurityTokenGrpcRemoteResolver implements SecurityTokenResolver, ContextComponent, Sequence {
+class SecurityTokenGrpcRemoteResolver(protected val channel: ManagedChannel, protected val convert: SecurityGrpcConvert) : SecurityTokenResolver, ContextComponent, Sequence {
+    protected val blocking: SecurityGrpcAuthorizationServiceBlockingStub = SecurityGrpcAuthorizationServiceGrpc.newBlockingStub(channel)
 
-	protected final ManagedChannel channel;
+    @Throws(Exception::class)
+    protected fun resolveByRemote(token: SecurityToken?): SecurityGrpcAuthorization.AuthorizationVO {
+        try {
+            SecurityGrpcRemoteContent.Companion.put(token)
+            return blocking.resolve(Empty.getDefaultInstance())
+        } catch (e: Exception) {
+            throw SecurityGrpcThrowing.Companion.convert(e)
+        } finally {
+            SecurityGrpcRemoteContent.Companion.pop()
+        }
+    }
 
-	protected final SecurityGrpcAuthorizationServiceGrpc.SecurityGrpcAuthorizationServiceBlockingStub blocking;
-
-	protected final SecurityGrpcConvert convert;
-
-	public SecurityTokenGrpcRemoteResolver(ManagedChannel channel, SecurityGrpcConvert convert) {
-		this.channel = channel;
-		this.blocking = SecurityGrpcAuthorizationServiceGrpc.newBlockingStub(channel);
-		this.convert = convert;
-	}
-
-	protected SecurityGrpcAuthorization.AuthorizationVO resolveByRemote(SecurityToken token) throws Exception {
-		try {
-			SecurityGrpcRemoteContent.put(token);
-			return blocking.resolve(Empty.getDefaultInstance());
-		}
-		catch (Exception e) {
-			throw convert(e);
-		}
-		finally {
-			SecurityGrpcRemoteContent.pop();
-		}
-	}
-
-	@Override
-	public boolean isSupport(SecurityToken token) {
-		return true;
-	}
+    override fun isSupport(token: SecurityToken?): Boolean {
+        return true
+    }
 
 
-	@Override
-	public SecurityScope resolver(SecurityToken token) {
-		SecurityGrpcAuthorization.AuthorizationVO authorizationVO = resolveByRemote(token);
-		AuthorizationVO vo = convert.toJava(authorizationVO);
-		return convert.voToScope(vo);
-	}
+    override fun resolver(token: SecurityToken): SecurityScope? {
+        val authorizationVO = resolveByRemote(token)
+        val vo = convert.toJava(authorizationVO)
+        return convert.voToScope(vo)
+    }
 
-	@Override
-	public void onApplicationStart() {
-		//
-	}
+    override fun onApplicationStart() {
+        //
+    }
 
-	@Override
-	public void onApplicationStop() {
-		channel.shutdown();
-	}
+    override fun onApplicationStop() {
+        channel.shutdown()
+    }
 
-	@Override
-	public int getSequence() {
-		return Integer.MAX_VALUE;
-	}
-
+    override val sequence: Int
+        get() = Int.MAX_VALUE
 }

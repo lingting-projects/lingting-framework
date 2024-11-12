@@ -1,30 +1,30 @@
-package live.lingting.framework.util;
+package live.lingting.framework.util
 
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test
 
 /**
  * @author lingting 2024-01-05 14:42
  */
-class FileUtilsTest {
+internal class FileUtilsTest {
+    @get:Test
+    val filename: Unit
+        get() {
+            assertEquals(FILENAME, FileUtils.getFilename(PATH, "\\\\"))
+            assertEquals(FILENAME, FileUtils.getFilename(URL, "/"))
+            assertEquals(FILENAME, FileUtils.getFilenameByUrl(URL))
+        }
 
-	static final String PATH = "C:\\code\\FileUtils.java";
-	static final String URL = "file:///code/FileUtils.java";
-	static final String FILENAME = "FileUtils.java";
-	static final String EXT = "java";
+    @get:Test
+    val fileExt: Unit
+        get() {
+            assertEquals(EXT, FileUtils.getFileExt(FileUtils.getFilename(PATH, "\\\\")))
+            assertEquals(EXT, FileUtils.getFileExt(FileUtils.getFilename(URL, "/")))
+        }
 
-	@Test
-	void getFilename() {
-		assertEquals(FILENAME, FileUtils.getFilename(PATH, "\\\\"));
-		assertEquals(FILENAME, FileUtils.getFilename(URL, "/"));
-		assertEquals(FILENAME, FileUtils.getFilenameByUrl(URL));
-	}
-
-	@Test
-	void getFileExt() {
-		assertEquals(EXT, FileUtils.getFileExt(FileUtils.getFilename(PATH, "\\\\")));
-		assertEquals(EXT, FileUtils.getFileExt(FileUtils.getFilename(URL, "/")));
-	}
-
+    companion object {
+        const val PATH: String = "C:\\code\\FileUtils.java"
+        const val URL: String = "file:///code/FileUtils.java"
+        const val FILENAME: String = "FileUtils.java"
+        const val EXT: String = "java"
+    }
 }

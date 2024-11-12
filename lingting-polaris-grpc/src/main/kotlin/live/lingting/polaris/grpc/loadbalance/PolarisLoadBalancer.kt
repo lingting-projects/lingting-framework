@@ -1,223 +1,189 @@
+package live.lingting.polaris.grpc.loadbalance
 
-package live.lingting.polaris.grpc.loadbalance;
-
-import com.google.common.base.Preconditions;
-import com.tencent.polaris.api.core.ConsumerAPI;
-import com.tencent.polaris.api.pojo.ServiceKey;
-import com.tencent.polaris.client.api.SDKContext;
-import com.tencent.polaris.factory.api.DiscoveryAPIFactory;
-import com.tencent.polaris.factory.api.RouterAPIFactory;
-import com.tencent.polaris.router.api.core.RouterAPI;
-import io.grpc.Attributes;
-import io.grpc.ConnectivityState;
-import io.grpc.ConnectivityStateInfo;
-import io.grpc.EquivalentAddressGroup;
-import io.grpc.LoadBalancer;
-import io.grpc.Status;
-import live.lingting.polaris.grpc.loadbalance.PolarisPicker.EmptyPicker;
-import live.lingting.polaris.grpc.util.Common;
-import live.lingting.polaris.grpc.util.GrpcHelper;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
-import static io.grpc.ConnectivityState.CONNECTING;
-import static io.grpc.ConnectivityState.IDLE;
-import static io.grpc.ConnectivityState.READY;
-import static io.grpc.ConnectivityState.TRANSIENT_FAILURE;
+import com.google.common.base.Preconditions
+import com.tencent.polaris.api.core.ConsumerAPI
+import com.tencent.polaris.api.pojo.Instance
+import com.tencent.polaris.api.pojo.ServiceKey
+import com.tencent.polaris.client.api.SDKContext
+import com.tencent.polaris.factory.api.DiscoveryAPIFactory
+import com.tencent.polaris.factory.api.RouterAPIFactory
+import com.tencent.polaris.router.api.core.RouterAPI
+import io.grpc.Attributes
+import io.grpc.ConnectivityState
+import io.grpc.ConnectivityStateInfo
+import io.grpc.EquivalentAddressGroup
+import io.grpc.LoadBalancer
+import io.grpc.Status
+import live.lingting.polaris.grpc.util.Common
+import live.lingting.polaris.grpc.util.GrpcHelper
+import java.net.SocketAddress
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Consumer
+import java.util.function.Function
+import java.util.function.Predicate
 
 /**
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
+ * @author [liaochuntao](mailto:liaochuntao@live.com)
  */
-public class PolarisLoadBalancer extends LoadBalancer {
+class PolarisLoadBalancer(private val context: SDKContext, helper: Helper) : LoadBalancer() {
+    private val consumerAPI: ConsumerAPI = DiscoveryAPIFactory.createConsumerAPIByContext(context)
 
-	private static final Status EMPTY_OK = Status.OK.withDescription("no subChannels ready");
+    private val routerAPI: RouterAPI = RouterAPIFactory.createRouterAPIByContext(context)
 
-	private final SDKContext context;
+    private val helper: Helper = Preconditions.checkNotNull(helper)
 
-	private final ConsumerAPI consumerAPI;
+    private val currentState = AtomicReference(ConnectivityState.IDLE)
 
-	private final RouterAPI routerAPI;
+    private val subChannels: MutableMap<String, Tuple<EquivalentAddressGroup, PolarisSubChannel>> = ConcurrentHashMap()
 
-	private final Helper helper;
+    private val predicate = Predicate { state: ConnectivityState ->
+        if (state == ConnectivityState.READY) {
+            return@Predicate true
+        }
+        state != currentState.get()
+    }
 
-	private final AtomicReference<ConnectivityState> currentState = new AtomicReference<>(IDLE);
+    private var sourceService: ServiceKey? = null
 
-	private final Map<String, Tuple<EquivalentAddressGroup, PolarisSubChannel>> subChannels = new ConcurrentHashMap<>();
+    private val function: Function<EquivalentAddressGroup, Tuple<EquivalentAddressGroup, PolarisSubChannel>>
 
-	private final Predicate<ConnectivityState> predicate = state -> {
-		if (state == READY) {
-			return true;
-		}
+    init {
+        this.function = Function<EquivalentAddressGroup, Tuple<EquivalentAddressGroup, PolarisSubChannel>> { addressGroup: EquivalentAddressGroup ->
+            val newAttributes = addressGroup.attributes
+                .toBuilder()
+                .set<GrpcHelper.Ref<ConnectivityStateInfo>>(GrpcHelper.Companion.STATE_INFO, GrpcHelper.Ref<ConnectivityStateInfo>(ConnectivityStateInfo.forNonError(ConnectivityState.IDLE)))
+                .build()
+            val subChannel = helper.createSubchannel(
+                CreateSubchannelArgs.newBuilder().setAddresses(addressGroup).setAttributes(newAttributes).build()
+            )
 
-		return state != currentState.get();
-	};
+            subChannel.start { state: ConnectivityStateInfo -> processSubChannelState(subChannel, state) }
+            subChannel.requestConnection()
 
-	private ServiceKey sourceService;
+            val channel = PolarisSubChannel(subChannel, newAttributes.get<Instance>(Common.Companion.INSTANCE_KEY))
+            Tuple<EquivalentAddressGroup, PolarisSubChannel>(addressGroup, channel)
+        }
+    }
 
-	private final Function<EquivalentAddressGroup, Tuple<EquivalentAddressGroup, PolarisSubChannel>> function;
+    override fun handleResolvedAddresses(resolvedAddresses: ResolvedAddresses) {
+        if (Objects.isNull(sourceService)) {
+            this.sourceService = resolvedAddresses.attributes.get<ServiceKey>(Common.Companion.SOURCE_SERVICE_INFO)
+        }
 
-	public PolarisLoadBalancer(final SDKContext context, final Helper helper) {
-		this.context = context;
-		this.consumerAPI = DiscoveryAPIFactory.createConsumerAPIByContext(context);
-		this.routerAPI = RouterAPIFactory.createRouterAPIByContext(context);
-		this.helper = Preconditions.checkNotNull(helper);
-		this.function = addressGroup -> {
-			Attributes newAttributes = addressGroup.getAttributes()
-				.toBuilder()
-				.set(GrpcHelper.STATE_INFO, new GrpcHelper.Ref<>(ConnectivityStateInfo.forNonError(IDLE)))
-				.build();
+        val servers = resolvedAddresses.addresses
+        if (servers.isEmpty()) {
+            handleNameResolutionError(Status.NOT_FOUND)
+            return
+        }
 
-			final Subchannel subChannel = helper.createSubchannel(
-					CreateSubchannelArgs.newBuilder().setAddresses(addressGroup).setAttributes(newAttributes).build());
+        val serversMap: Map<String, EquivalentAddressGroup> = servers.stream()
+            .collect({ HashMap() }, { m: java.util.HashMap<String, EquivalentAddressGroup>, e: EquivalentAddressGroup -> m[buildKey(e)] = e }, { obj: java.util.HashMap<String, EquivalentAddressGroup>, m: java.util.HashMap<String, EquivalentAddressGroup>? -> obj.putAll(m!!) })
+        val removed: Set<String> = GrpcHelper.Companion.setsDifference<String>(subChannels.keys, serversMap.keys)
 
-			subChannel.start(state -> processSubChannelState(subChannel, state));
-			subChannel.requestConnection();
+        synchronized(subChannels) {
+            for (addressGroup in servers) {
+                val key = buildKey(addressGroup)
+                if (subChannels.containsKey(key)) {
+                    val value = subChannels[key]!!
+                    // 更新实例的状态信息到 SubChannel 中
+                    value.b.instance = addressGroup.attributes.get<Instance>(Common.Companion.INSTANCE_KEY)
+                } else {
+                    subChannels[key] = function.apply(addressGroup)
+                }
+            }
+        }
 
-			PolarisSubChannel channel = new PolarisSubChannel(subChannel, newAttributes.get(Common.INSTANCE_KEY));
-			return new Tuple<>(addressGroup, channel);
-		};
-	}
+        removed.forEach(Consumer<String> { entry: String ->
+            val channel: Subchannel = subChannels.remove(entry)!!.b
+            GrpcHelper.Companion.shutdownSubChannel(channel)
+        })
+    }
 
-	@Override
-	public void handleResolvedAddresses(ResolvedAddresses resolvedAddresses) {
-		if (Objects.isNull(sourceService)) {
-			this.sourceService = resolvedAddresses.getAttributes().get(Common.SOURCE_SERVICE_INFO);
-		}
+    override fun handleNameResolutionError(error: Status) {
+        if (currentState.get() != ConnectivityState.READY) {
+            updateBalancingState(ConnectivityState.TRANSIENT_FAILURE, PolarisPicker.EmptyPicker(error))
+        }
+    }
 
-		List<EquivalentAddressGroup> servers = resolvedAddresses.getAddresses();
-		if (servers.isEmpty()) {
-			handleNameResolutionError(Status.NOT_FOUND);
-			return;
-		}
+    private fun processSubChannelState(subChannel: Subchannel, stateInfo: ConnectivityStateInfo) {
+        val tuple = subChannels[buildKey(subChannel.addresses)]!!
+        if (Objects.isNull(tuple)) {
+            return
+        }
+        val channel = tuple.b
+        if (Objects.isNull(channel) || channel.channel !== subChannel) {
+            return
+        }
+        if (stateInfo.state == ConnectivityState.TRANSIENT_FAILURE || stateInfo.state == ConnectivityState.IDLE) {
+            helper.refreshNameResolution()
+        }
+        if (stateInfo.state == ConnectivityState.IDLE) {
+            subChannel.requestConnection()
+        }
+        val subChannelStateRef: GrpcHelper.Ref<ConnectivityStateInfo> = GrpcHelper.Companion.getSubChannelStateInfoRef(subChannel)
+        if (subChannelStateRef.value.state == ConnectivityState.TRANSIENT_FAILURE
+            && (stateInfo.state == ConnectivityState.CONNECTING || stateInfo.state == ConnectivityState.IDLE)
+        ) {
+            return
+        }
+        subChannelStateRef.setValue(stateInfo)
+        updateBalancingState()
+    }
 
-		Map<String, EquivalentAddressGroup> serversMap = servers.stream()
-			.collect(HashMap::new, (m, e) -> m.put(buildKey(e), e), HashMap::putAll);
-		Set<String> removed = GrpcHelper.setsDifference(subChannels.keySet(), serversMap.keySet());
+    private fun updateBalancingState() {
+        val holder = AtomicReference<Attributes?>()
+        val activeList: Map<PolarisSubChannel?, PolarisSubChannel?> = GrpcHelper.Companion.filterNonFailingSubChannels(
+            subChannels,
+            holder
+        )
+        if (activeList.isEmpty()) {
+            var isConnecting = false
+            var aggStatus = EMPTY_OK
+            for (tuple in subChannels.values) {
+                val subchannel: Subchannel = tuple.b
+                val stateInfo: ConnectivityStateInfo = GrpcHelper.Companion.getSubChannelStateInfoRef(subchannel).getValue()
+                if (stateInfo.state == ConnectivityState.CONNECTING || stateInfo.state == ConnectivityState.IDLE) {
+                    isConnecting = true
+                }
+                if (aggStatus === EMPTY_OK || !aggStatus.isOk) {
+                    aggStatus = stateInfo.status
+                }
+            }
+            updateBalancingState(if (isConnecting) ConnectivityState.CONNECTING else ConnectivityState.TRANSIENT_FAILURE, PolarisPicker.EmptyPicker(aggStatus))
+        } else {
+            updateBalancingState(
+                ConnectivityState.READY, PolarisPicker(
+                    activeList, context, this.consumerAPI, this.routerAPI,
+                    sourceService, holder.get()
+                )
+            )
+        }
+    }
 
-		synchronized (subChannels) {
-			for (EquivalentAddressGroup addressGroup : servers) {
-				String key = buildKey(addressGroup);
-				if (subChannels.containsKey(key)) {
-					Tuple<EquivalentAddressGroup, PolarisSubChannel> value = subChannels.get(key);
-					// 更新实例的状态信息到 SubChannel 中
-					value.getB().setInstance(addressGroup.getAttributes().get(Common.INSTANCE_KEY));
-				}
-				else {
-					subChannels.put(key, function.apply(addressGroup));
-				}
-			}
-		}
+    private fun updateBalancingState(state: ConnectivityState, picker: SubchannelPicker) {
+        if (predicate.test(state)) {
+            helper.updateBalancingState(state, picker)
+            currentState.set(state)
+        }
+    }
 
-		removed.forEach(entry -> {
-			Subchannel channel = subChannels.remove(entry).getB();
-			GrpcHelper.shutdownSubChannel(channel);
-		});
+    override fun shutdown() {
+        //
+    }
 
-	}
+    private fun buildKey(group: EquivalentAddressGroup): String {
+        val builder = StringBuilder()
+        builder.append(group.attributes.get<String>(Common.Companion.TARGET_NAMESPACE_KEY))
+        builder.append(group.attributes.get<String>(Common.Companion.TARGET_SERVICE_KEY))
+        group.addresses.forEach(Consumer { obj: SocketAddress? -> builder.append(obj) })
+        return builder.toString()
+    }
 
-	@Override
-	public void handleNameResolutionError(Status error) {
-		if (currentState.get() != READY) {
-			updateBalancingState(TRANSIENT_FAILURE, new EmptyPicker(error));
-		}
-	}
+    class Tuple<A, B>(val a: A, val b: B)
 
-	private void processSubChannelState(Subchannel subChannel, ConnectivityStateInfo stateInfo) {
-		Tuple<EquivalentAddressGroup, PolarisSubChannel> tuple = subChannels.get(buildKey(subChannel.getAddresses()));
-		if (Objects.isNull(tuple)) {
-			return;
-		}
-		PolarisSubChannel channel = tuple.getB();
-		if (Objects.isNull(channel) || channel.getChannel() != subChannel) {
-			return;
-		}
-		if (stateInfo.getState() == TRANSIENT_FAILURE || stateInfo.getState() == IDLE) {
-			helper.refreshNameResolution();
-		}
-		if (stateInfo.getState() == IDLE) {
-			subChannel.requestConnection();
-		}
-		GrpcHelper.Ref<ConnectivityStateInfo> subChannelStateRef = GrpcHelper.getSubChannelStateInfoRef(subChannel);
-		if (subChannelStateRef.getValue().getState().equals(TRANSIENT_FAILURE)
-				&& (stateInfo.getState().equals(CONNECTING) || stateInfo.getState().equals(IDLE))) {
-			return;
-		}
-		subChannelStateRef.setValue(stateInfo);
-		updateBalancingState();
-	}
-
-	private void updateBalancingState() {
-		AtomicReference<Attributes> holder = new AtomicReference<>();
-		Map<PolarisSubChannel, PolarisSubChannel> activeList = GrpcHelper.filterNonFailingSubChannels(subChannels,
-				holder);
-		if (activeList.isEmpty()) {
-			boolean isConnecting = false;
-			Status aggStatus = EMPTY_OK;
-			for (Tuple<EquivalentAddressGroup, PolarisSubChannel> tuple : subChannels.values()) {
-				Subchannel subchannel = tuple.getB();
-				ConnectivityStateInfo stateInfo = GrpcHelper.getSubChannelStateInfoRef(subchannel).getValue();
-				if (stateInfo.getState() == CONNECTING || stateInfo.getState() == IDLE) {
-					isConnecting = true;
-				}
-				if (aggStatus == EMPTY_OK || !aggStatus.isOk()) {
-					aggStatus = stateInfo.getStatus();
-				}
-			}
-			updateBalancingState(isConnecting ? CONNECTING : TRANSIENT_FAILURE, new EmptyPicker(aggStatus));
-		}
-		else {
-			updateBalancingState(READY, new PolarisPicker(activeList, context, this.consumerAPI, this.routerAPI,
-					sourceService, holder.get()));
-		}
-	}
-
-	private void updateBalancingState(ConnectivityState state, SubchannelPicker picker) {
-		if (predicate.test(state)) {
-			helper.updateBalancingState(state, picker);
-			currentState.set(state);
-		}
-	}
-
-	@Override
-	public void shutdown() {
-		//
-	}
-
-	private String buildKey(EquivalentAddressGroup group) {
-		StringBuilder builder = new StringBuilder();
-		builder.append(group.getAttributes().get(Common.TARGET_NAMESPACE_KEY));
-		builder.append(group.getAttributes().get(Common.TARGET_SERVICE_KEY));
-		group.getAddresses().forEach(builder::append);
-		return builder.toString();
-	}
-
-	public static class Tuple<A, B> {
-
-		private final A a;
-
-		private final B b;
-
-		public Tuple(A a, B b) {
-			this.a = a;
-			this.b = b;
-		}
-
-		public A getA() {
-			return a;
-		}
-
-		public B getB() {
-			return b;
-		}
-
-	}
-
+    companion object {
+        private val EMPTY_OK: Status = Status.OK.withDescription("no subChannels ready")
+    }
 }

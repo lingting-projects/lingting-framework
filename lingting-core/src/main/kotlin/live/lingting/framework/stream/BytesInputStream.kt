@@ -1,55 +1,37 @@
-package live.lingting.framework.stream;
+package live.lingting.framework.stream
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.ByteArrayInputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.InputStream
 
 /**
  * @author lingting 2024/10/24 10:59
  */
-public class BytesInputStream extends CloneInputStream {
+class BytesInputStream(source: ByteArray) : CloneInputStream(source, source.size.toLong()) {
+    constructor(source: File) : this(FileInputStream(source))
 
-	public BytesInputStream(File source) throws IOException {
-		this(new FileInputStream(source));
-	}
+    constructor(input: BytesInputStream) : this(input.source())
 
-	public BytesInputStream(BytesInputStream input) {
-		this(input.source());
-	}
+    constructor(input: InputStream) : this(input.readAllBytes())
 
-	public BytesInputStream(InputStream input) throws IOException {
-		this(input.readAllBytes());
-	}
+    override fun readAllBytes(): ByteArray {
+        return source()
+    }
 
-	public BytesInputStream(byte[] source) {
-		super(source, source.length);
-	}
+    override fun newStream(): InputStream {
+        return ByteArrayInputStream(source())
+    }
 
-	@Override
-	public byte[] readAllBytes() {
-		return source();
-	}
+    override fun copy(): BytesInputStream {
+        return BytesInputStream(this)
+    }
 
-	@Override
-	protected InputStream newStream() {
-		return new ByteArrayInputStream(source());
-	}
+    override fun source(): ByteArray {
+        return source as ByteArray
+    }
 
-	@Override
-	public BytesInputStream copy() {
-		return new BytesInputStream(this);
-	}
-
-	@Override
-	public byte[] source() {
-		return (byte[]) source;
-	}
-
-	@Override
-	public void clear() {
-		//
-	}
-
+    override fun clear() {
+        //
+    }
 }

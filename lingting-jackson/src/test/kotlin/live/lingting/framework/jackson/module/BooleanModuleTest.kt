@@ -1,21 +1,17 @@
-package live.lingting.framework.jackson.module;
+package live.lingting.framework.jackson.module
 
-import live.lingting.framework.jackson.JacksonUtils;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import live.lingting.framework.jackson.JacksonUtils
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 /**
  * @author lingting 2024-01-29 10:45
  */
-class BooleanModuleTest {
-
-	@Test
-	void test() {
-		// language=JSON
-		String json = """
+internal class BooleanModuleTest {
+    @Test
+    fun test() {
+        // language=JSON
+        val json = """
 				            {
 				  "bt1": true,
 				  "bt2": "t",
@@ -27,75 +23,38 @@ class BooleanModuleTest {
 				  "bf4": "-1",
 				  "bn": null
 						}
-				""";
 
-		Entity obj = JacksonUtils.toObj(json, Entity.class);
-		assertTrue(obj.bt1);
-		assertTrue(obj.bt2);
-		assertTrue(obj.bt3);
-		assertTrue(obj.bt4);
-		assertFalse(obj.bf1);
-		assertFalse(obj.bf2);
-		assertFalse(obj.bf3);
-		assertFalse(obj.bf4);
-		assertNull(obj.bn);
-	}
+				""".trimIndent()
 
-	static class Entity {
+        val obj = JacksonUtils.toObj(json, Entity::class.java)
+        Assertions.assertTrue(obj.bt1!!)
+        Assertions.assertTrue(obj.bt2!!)
+        Assertions.assertTrue(obj.bt3!!)
+        Assertions.assertTrue(obj.bt4!!)
+        Assertions.assertFalse(obj.bf1!!)
+        Assertions.assertFalse(obj.bf2!!)
+        Assertions.assertFalse(obj.bf3!!)
+        Assertions.assertFalse(obj.bf4!!)
+        Assertions.assertNull(obj.bn)
+    }
 
-		private Boolean bt1;
+    internal class Entity {
+        var bt1: Boolean? = null
 
-		private Boolean bf1;
+        var bf1: Boolean? = null
 
-		private Boolean bt2;
+        var bt2: Boolean? = null
 
-		private Boolean bf2;
+        var bf2: Boolean? = null
 
-		private Boolean bt3;
+        var bt3: Boolean? = null
 
-		private Boolean bf3;
+        var bf3: Boolean? = null
 
-		private Boolean bt4;
+        var bt4: Boolean? = null
 
-		private Boolean bf4;
+        var bf4: Boolean? = null
 
-		private Boolean bn;
-
-		public Boolean getBt1() {return this.bt1;}
-
-		public Boolean getBf1() {return this.bf1;}
-
-		public Boolean getBt2() {return this.bt2;}
-
-		public Boolean getBf2() {return this.bf2;}
-
-		public Boolean getBt3() {return this.bt3;}
-
-		public Boolean getBf3() {return this.bf3;}
-
-		public Boolean getBt4() {return this.bt4;}
-
-		public Boolean getBf4() {return this.bf4;}
-
-		public Boolean getBn() {return this.bn;}
-
-		public void setBt1(Boolean bt1) {this.bt1 = bt1;}
-
-		public void setBf1(Boolean bf1) {this.bf1 = bf1;}
-
-		public void setBt2(Boolean bt2) {this.bt2 = bt2;}
-
-		public void setBf2(Boolean bf2) {this.bf2 = bf2;}
-
-		public void setBt3(Boolean bt3) {this.bt3 = bt3;}
-
-		public void setBf3(Boolean bf3) {this.bf3 = bf3;}
-
-		public void setBt4(Boolean bt4) {this.bt4 = bt4;}
-
-		public void setBf4(Boolean bf4) {this.bf4 = bf4;}
-
-		public void setBn(Boolean bn) {this.bn = bn;}
-	}
-
+        var bn: Boolean? = null
+    }
 }

@@ -1,32 +1,22 @@
-package live.lingting.framework.value.multi;
+package live.lingting.framework.value.multi
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.function.Supplier;
+import java.util.*
+import java.util.function.Function
+import java.util.function.Supplier
 
 /**
  * @author lingting 2024-09-14 11:21
  */
-public class StringMultiValue extends AbstractMultiValue<String, String, Collection<String>> {
+open class StringMultiValue : AbstractMultiValue<String, String, Collection<String>> {
+    constructor() : this(Supplier<Collection<String>> { ArrayList() })
 
-	public StringMultiValue() {
-		this(ArrayList::new);
-	}
+    protected constructor(supplier: Supplier<Collection<String>>) : super(supplier)
 
-	protected StringMultiValue(Supplier<Collection<String>> supplier) {
-		super(supplier);
-	}
+    protected constructor(allowModify: Boolean, supplier: Supplier<Collection<String>>) : super(allowModify, supplier)
 
-	protected StringMultiValue(boolean allowModify, Supplier<Collection<String>> supplier) {
-		super(allowModify, supplier);
-	}
-
-	@Override
-	public StringMultiValue unmodifiable() {
-		StringMultiValue value = new StringMultiValue(false, supplier);
-		value.from(this, Collections::unmodifiableCollection);
-		return value;
-	}
-
+    override fun unmodifiable(): StringMultiValue {
+        val value = StringMultiValue(false, supplier)
+        value.from<Collection<String>>(this, Function<Collection<String>, Collection<String>> { c: Collection<String> -> Collections.unmodifiableCollection(c) })
+        return value
+    }
 }

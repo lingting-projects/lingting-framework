@@ -1,292 +1,241 @@
-package live.lingting.framework.value.multi;
+package live.lingting.framework.value.multi
 
-import live.lingting.framework.util.CollectionUtils;
-import live.lingting.framework.value.MultiValue;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import live.lingting.framework.util.CollectionUtils
+import live.lingting.framework.value.MultiValue
+import java.util.concurrent.ConcurrentHashMap
+import java.util.function.BiConsumer
+import java.util.function.Consumer
+import java.util.function.Function
+import java.util.function.Supplier
 
 /**
  * @author lingting 2024-09-05 20:33
  */
-public abstract class AbstractMultiValue<K, V, C extends Collection<V>> implements MultiValue<K, V, C> {
+abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected constructor(
+    protected val allowModify: Boolean,
+    protected val supplier: Supplier<C>
+) : MultiValue<K, V, C> {
+    protected val map: MutableMap<K, C> = ConcurrentHashMap()
 
-	protected final Map<K, C> map = new ConcurrentHashMap<>();
+    protected constructor(supplier: Supplier<C>) : this(true, supplier)
 
-	protected final boolean allowModify;
+    protected open fun convert(key: K): K {
+        return key
+    }
 
-	protected final Supplier<C> supplier;
+    protected fun absent(key: K): C {
+        var key = key
+        if (!allowModify && !hasKey(key)) {
+            throw UnsupportedOperationException()
+        }
+        key = convert(key)
+        return map.computeIfAbsent(key) { k: K -> supplier.get() }
+    }
 
-	protected AbstractMultiValue(Supplier<C> supplier) {
-		this(true, supplier);
-	}
+    override fun ifAbsent(key: K) {
+        absent(key)
+    }
 
-	protected AbstractMultiValue(boolean allowModify, Supplier<C> supplier) {
-		this.allowModify = allowModify;
-		this.supplier = supplier;
-	}
+    // region fill
+    override fun add(key: K) {
+        if (!allowModify) {
+            throw UnsupportedOperationException()
+        }
+        absent(key)
+    }
 
-	protected K convert(K key) {
-		return key;
-	}
+    override fun add(key: K, value: V) {
+        if (!allowModify) {
+            throw UnsupportedOperationException()
+        }
+        absent(key).add(value)
+    }
 
-	protected C absent(K key) {
-		if (!allowModify && !hasKey(key)) {
-			throw new UnsupportedOperationException();
-		}
-		key = convert(key);
-		return map.computeIfAbsent(key, k -> supplier.get());
-	}
+    override fun addAll(key: K, values: Collection<V>) {
+        if (!allowModify) {
+            throw UnsupportedOperationException()
+        }
+        absent(key).addAll(values)
+    }
 
-	@Override
-	public void ifAbsent(K key) {
-		absent(key);
-	}
+    override fun addAll(key: K, values: Iterable<V>) {
+        if (!allowModify) {
+            throw UnsupportedOperationException()
+        }
+        val c = absent(key)
+        values.forEach(Consumer<V> { e: V -> c.add(e) })
+    }
 
-	// region fill
+    override fun addAll(map: Map<K, Collection<V>>) {
+        if (!allowModify) {
+            throw UnsupportedOperationException()
+        }
+        map.forEach { (key: K, values) -> this.addAll(key, values) }
+    }
 
-	@Override
-	public void add(K key) {
-		if (!allowModify) {
-			throw new UnsupportedOperationException();
-		}
-		absent(key);
-	}
+    override fun addAll(value: MultiValue<K, V, C>) {
+        if (!allowModify) {
+            throw UnsupportedOperationException()
+        }
+        value.forEach((BiConsumer { key: K, values: C -> this.addAll(key, values) }))
+    }
 
-	@Override
-	public void add(K key, V value) {
-		if (!allowModify) {
-			throw new UnsupportedOperationException();
-		}
-		absent(key).add(value);
-	}
+    override fun put(key: K, value: V) {
+        if (!allowModify) {
+            throw UnsupportedOperationException()
+        }
+        putAll(key, listOf<V>(value))
+    }
 
-	@Override
-	public void addAll(K key, Collection<V> values) {
-		if (!allowModify) {
-			throw new UnsupportedOperationException();
-		}
-		absent(key).addAll(values);
-	}
+    override fun putAll(key: K, values: Iterable<V>) {
+        var key = key
+        if (!allowModify) {
+            throw UnsupportedOperationException()
+        }
+        val c = supplier.get()
+        values.forEach(Consumer<V> { e: V -> c.add(e) })
+        key = convert(key)
+        map.put(key, c)
+    }
 
-	@Override
-	public void addAll(K key, Iterable<V> values) {
-		if (!allowModify) {
-			throw new UnsupportedOperationException();
-		}
-		C c = absent(key);
-		values.forEach(c::add);
-	}
+    override fun putAll(map: Map<K, Collection<V>>) {
+        if (!allowModify) {
+            throw UnsupportedOperationException()
+        }
+        map.forEach { (key: K, values) -> this.putAll(key, values) }
+    }
 
-	@Override
-	public void addAll(Map<K, ? extends Collection<V>> map) {
-		if (!allowModify) {
-			throw new UnsupportedOperationException();
-		}
-		map.forEach(this::addAll);
-	}
+    override fun putAll(value: MultiValue<K, V, C>) {
+        if (!allowModify) {
+            throw UnsupportedOperationException()
+        }
+        value.forEach((BiConsumer { key: K, values: C -> this.putAll(key, values) }))
+    }
 
-	@Override
-	public void addAll(MultiValue<K, V, C> value) {
-		if (!allowModify) {
-			throw new UnsupportedOperationException();
-		}
-		value.forEach((this::addAll));
-	}
+    override fun replace(oldKey: K, newKey: K) {
+        if (!allowModify) {
+            throw UnsupportedOperationException()
+        }
+        val c = map.remove(oldKey)
+        if (c != null) {
+            map.put(newKey, c)
+        }
+    }
 
-	@Override
-	public void put(K key, V value) {
-		if (!allowModify) {
-			throw new UnsupportedOperationException();
-		}
-		putAll(key, Collections.singletonList(value));
-	}
+    protected fun from(value: MultiValue<K, V, out Collection<V>>) {
+        from(value) { vs: Collection<V> ->
+            val c = supplier.get()
+            c.addAll(vs)
+            c
+        }
+    }
 
-	@Override
-	public void putAll(K key, Iterable<V> values) {
-		if (!allowModify) {
-			throw new UnsupportedOperationException();
-		}
-		C c = supplier.get();
-		values.forEach(c::add);
-		key = convert(key);
-		map.put(key, c);
-	}
+    protected fun <S : Collection<V>> from(value: MultiValue<K, V, S>, function: Function<S, C>) {
+        value.forEach((BiConsumer { k: K, vs: S ->
+            val rk = convert(k)
+            val rv = function.apply(vs)
+            map.put(rk, rv)
+        }))
+    }
 
-	@Override
-	public void putAll(Map<K, Collection<V>> map) {
-		if (!allowModify) {
-			throw new UnsupportedOperationException();
-		}
-		map.forEach(this::putAll);
-	}
+    override val isEmpty: Boolean
+        // endregion
+        get() = map.isEmpty()
 
-	@Override
-	public void putAll(MultiValue<K, V, C> value) {
-		if (!allowModify) {
-			throw new UnsupportedOperationException();
-		}
-		value.forEach((this::putAll));
-	}
+    override fun isEmpty(key: K): Boolean {
+        return isEmpty || !hasKey(key) || absent(key)!!.isEmpty()
+    }
 
-	@Override
-	public void replace(K oldKey, K newKey) {
-		if (!allowModify) {
-			throw new UnsupportedOperationException();
-		}
-		C c = map.remove(oldKey);
-		if (c != null) {
-			map.put(newKey, c);
-		}
-	}
+    override fun size(): Int {
+        return map.size
+    }
 
-	protected void from(MultiValue<K, V, ? extends Collection<V>> value) {
-		from(value, vs -> {
-			C c = supplier.get();
-			c.addAll(vs);
-			return c;
-		});
-	}
+    override fun hasKey(key: K): Boolean {
+        var key = key
+        key = convert(key)
+        return map.containsKey(key)
+    }
 
-	protected <S extends Collection<V>> void from(MultiValue<K, V, S> value, Function<S, C> function) {
-		value.forEach(((k, vs) -> {
-			K rk = convert(k);
-			C rv = function.apply(vs);
-			map.put(rk, rv);
-		}));
-	}
+    override fun get(key: K): C {
+        if (!allowModify && !hasKey(key)) {
+            return supplier.get()
+        }
+        return absent(key)
+    }
 
-	// endregion
+    override fun iterator(key: K): Iterator<V> {
+        return get(key)!!.iterator()
+    }
 
-	// region get
+    override fun first(key: K): V {
+        val collection: Collection<V> = get(key)
+        if (CollectionUtils.isEmpty(collection)) {
+            return null
+        }
+        return collection!!.iterator().next()
+    }
 
-	@Override
-	public boolean isEmpty() {
-		return map.isEmpty();
-	}
+    override fun keys(): Set<K> {
+        return map.keys
+    }
 
-	@Override
-	public boolean isEmpty(K key) {
-		return isEmpty() || !hasKey(key) || absent(key).isEmpty();
-	}
+    override fun values(): Collection<C> {
+        return map.values
+    }
 
-	@Override
-	public int size() {
-		return map.size();
-	}
+    override fun map(): Map<K, C> {
+        val hashMap: MutableMap<K, C> = HashMap()
+        map.forEach { (k: K, vs: C) ->
+            val c = supplier.get()
+            c.addAll(vs)
+            hashMap.put(k, c)
+        }
+        return hashMap
+    }
 
-	@Override
-	public boolean hasKey(K key) {
-		key = convert(key);
-		return map.containsKey(key);
-	}
+    override fun entries(): Set<Map.Entry<K, C>> {
+        return map.entries
+    }
 
-	@Override
-	public C get(K key) {
-		if (!allowModify && !hasKey(key)) {
-			return supplier.get();
-		}
-		return absent(key);
-	}
+    override fun unmodifiable(): MultiValue<K, V, Collection<V>> {
+        return UnmodifiableMultiValue(this)
+    }
 
-	@Override
-	public Iterator<V> iterator(K key) {
-		return get(key).iterator();
-	}
+    // endregion
+    // region remove
+    override fun clear() {
+        if (!allowModify) {
+            throw UnsupportedOperationException()
+        }
+        map.clear()
+    }
 
-	@Override
-	public V first(K key) {
-		Collection<V> collection = get(key);
-		if (CollectionUtils.isEmpty(collection)) {
-			return null;
-		}
-		return collection.iterator().next();
-	}
+    override fun remove(key: K): C {
+        if (!allowModify) {
+            throw UnsupportedOperationException()
+        }
+        absent(key)
+        return map.remove(key)
+    }
 
-	@Override
-	public Set<K> keys() {
-		return map.keySet();
-	}
+    override fun remove(key: K, value: V): Boolean {
+        if (!allowModify) {
+            throw UnsupportedOperationException()
+        }
+        if (!hasKey(key)) {
+            return false
+        }
+        val absent = absent(key)
+        return absent.remove(value)
+    }
 
-	@Override
-	public Collection<C> values() {
-		return map.values();
-	}
+    // endregion
+    // region function
+    override fun forEach(consumer: BiConsumer<K, C>) {
+        map.forEach(consumer!!)
+    }
 
-	@Override
-	public Map<K, C> map() {
-		Map<K, C> hashMap = new HashMap<>();
-		this.map.forEach((k, vs) -> {
-			C c = supplier.get();
-			c.addAll(vs);
-			hashMap.put(k, c);
-		});
-		return hashMap;
-	}
-
-	@Override
-	public Set<Map.Entry<K, C>> entries() {
-		return map.entrySet();
-	}
-
-	@Override
-	public MultiValue<K, V, Collection<V>> unmodifiable() {
-		return new UnmodifiableMultiValue<>(this);
-	}
-
-	// endregion
-
-	// region remove
-	@Override
-	public void clear() {
-		if (!allowModify) {
-			throw new UnsupportedOperationException();
-		}
-		map.clear();
-	}
-
-	@Override
-	public C remove(K key) {
-		if (!allowModify) {
-			throw new UnsupportedOperationException();
-		}
-		absent(key);
-		return map.remove(key);
-	}
-
-	@Override
-	public boolean remove(K key, V value) {
-		if (!allowModify) {
-			throw new UnsupportedOperationException();
-		}
-		if (!hasKey(key)) {
-			return false;
-		}
-		C absent = absent(key);
-		return absent.remove(value);
-	}
-
-	// endregion
-
-	// region function
-	@Override
-	public void forEach(BiConsumer<K, C> consumer) {
-		map.forEach(consumer);
-	}
-
-	@Override
-	public void each(BiConsumer<K, V> consumer) {
-		forEach((k, c) -> c.forEach(v -> consumer.accept(k, v)));
-	}
-
-	// endregion
-
+    override fun each(consumer: BiConsumer<K, V>) {
+        forEach { k: K, c: C -> c!!.forEach { v: V -> consumer.accept(k, v) } }
+    } // endregion
 }

@@ -1,139 +1,136 @@
-package live.lingting.framework.util;
+package live.lingting.framework.util
 
-import com.baomidou.mybatisplus.annotation.IEnum;
-import com.fasterxml.jackson.annotation.JsonValue;
-import live.lingting.framework.reflect.ClassField;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import com.baomidou.mybatisplus.annotation.IEnum
+import com.fasterxml.jackson.annotation.JsonValue
+import live.lingting.framework.reflect.ClassField
+import java.lang.reflect.Field
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
+import java.lang.reflect.Parameter
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * @author lingting 2022/12/20 14:52
  */
-public final class EnumUtils {
+class EnumUtils private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	public static final String METHOD_GET_VALUE = "getValue";
+    companion object {
+        const val METHOD_GET_VALUE: String = "getValue"
 
-	public static final String CLS_MYBATIS_PLUS_IENUM = "com.baomidou.mybatisplus.annotation.IEnum";
+        const val CLS_MYBATIS_PLUS_IENUM: String = "com.baomidou.mybatisplus.annotation.IEnum"
 
-	public static final String CLS_JACKSON_JSON_VALUE = "com.fasterxml.jackson.annotation.JsonValue";
+        const val CLS_JACKSON_JSON_VALUE: String = "com.fasterxml.jackson.annotation.JsonValue"
 
-	static final Map<Class<?>, ClassField> CACHE = new ConcurrentHashMap<>();
+        val CACHE: MutableMap<Class<*>, ClassField?> = ConcurrentHashMap()
 
-	private EnumUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+        fun getByIEnum(cls: Class<*>): ClassField? {
+            if (!ClassUtils.isPresent(CLS_MYBATIS_PLUS_IENUM, EnumUtils::class.java.getClassLoader())) {
+                return null
+            }
 
-	public static ClassField getByIEnum(Class<?> cls) {
-		if (!ClassUtils.isPresent(CLS_MYBATIS_PLUS_IENUM, EnumUtils.class.getClassLoader())) {
-			return null;
-		}
+            var method: Method? = null
+            if (IEnum::class.java.isAssignableFrom(cls)) {
+                method = ClassUtils.method(cls, METHOD_GET_VALUE)
+            }
 
-		Method method = null;
-		if (IEnum.class.isAssignableFrom(cls)) {
-			method = ClassUtils.method(cls, METHOD_GET_VALUE);
-		}
+            if (method == null) {
+                return null
+            }
+            return ClassField(null, method, null)
+        }
 
-		if (method == null) {
-			return null;
-		}
-		return new ClassField(null, method, null);
-	}
+        fun getByJsonValue(cls: Class<*>): ClassField? {
+            if (!ClassUtils.isPresent(CLS_JACKSON_JSON_VALUE, EnumUtils::class.java.getClassLoader())) {
+                return null
+            }
 
-	public static ClassField getByJsonValue(Class<?> cls) {
-		if (!ClassUtils.isPresent(CLS_JACKSON_JSON_VALUE, EnumUtils.class.getClassLoader())) {
-			return null;
-		}
+            var method: Method? = null
+            val field = getJsonValueField(cls)
+            if (field != null) {
+                // public 字段
+                if (Modifier.isPublic(field.modifiers)) {
+                    return ClassField(field, null, null)
+                }
 
-		Method method = null;
-		Field field = getJsonValueField(cls);
-		if (field != null) {
-			// public 字段
-			if (Modifier.isPublic(field.getModifiers())) {
-				return new ClassField(field, null, null);
-			}
+                val name = "get" + StringUtils.firstUpper(field.name)
+                // 获取 get 方法
+                method = ClassUtils.method(cls, name)
+                if (method != null) {
+                    return ClassField(null, method, null)
+                }
+            }
 
-			String name = "get" + StringUtils.firstUpper(field.getName());
-			// 获取 get 方法
-			method = ClassUtils.method(cls, name);
-			if (method != null) {
-				return new ClassField(null, method, null);
-			}
-		}
+            method = getJsonValueMethod(cls)
+            if (method != null) {
+                return ClassField(null, method, null)
+            }
+            return null
+        }
 
-		method = getJsonValueMethod(cls);
-		if (method != null) {
-			return new ClassField(null, method, null);
-		}
-		return null;
-	}
+        fun getJsonValueMethod(cls: Class<*>): Method? {
+            // 获取public的方法.
+            val methods = cls.methods
+            for (method in methods) {
+                val annotation: Annotation? = method.getAnnotation<JsonValue>(JsonValue::class.java)
+                // 存在注解且参数为空
+                if (annotation != null && ArrayUtils.isEmpty<Parameter>(method.parameters)) {
+                    return method
+                }
+            }
+            return null
+        }
 
-	public static Method getJsonValueMethod(Class<?> cls) {
-		// 获取public的方法.
-		Method[] methods = cls.getMethods();
-		for (Method method : methods) {
-			Annotation annotation = method.getAnnotation(JsonValue.class);
-			// 存在注解且参数为空
-			if (annotation != null && ArrayUtils.isEmpty(method.getParameters())) {
-				return method;
-			}
-		}
-		return null;
-	}
+        fun getJsonValueField(cls: Class<*>): Field? {
+            val fields = cls.declaredFields
 
-	public static Field getJsonValueField(Class<?> cls) {
-		Field[] fields = cls.getDeclaredFields();
+            for (field in fields) {
+                val annotation: Annotation? = field.getAnnotation<JsonValue>(JsonValue::class.java)
+                if (annotation != null) {
+                    return field
+                }
+            }
+            return null
+        }
 
-		for (Field field : fields) {
-			Annotation annotation = field.getAnnotation(JsonValue.class);
-			if (annotation != null) {
-				return field;
-			}
-		}
-		return null;
-	}
+        fun getByName(cls: Class<*>?): ClassField? {
+            val method: Method = ClassUtils.method(cls, "name")
+            if (method != null) {
+                return ClassField(null, method, null)
+            }
+            return null
+        }
 
-	public static ClassField getByName(Class<?> cls) {
-		Method method = ClassUtils.method(cls, "name");
-		if (method != null) {
-			return new ClassField(null, method, null);
-		}
-		return null;
-	}
+        fun getCf(cls: Class<*>): ClassField? {
+            return CACHE.computeIfAbsent(cls) { k: Class<*>? ->
+                var cf = getByIEnum(cls)
+                if (cf == null) {
+                    cf = getByJsonValue(cls)
+                }
 
-	public static ClassField getCf(Class<?> cls) {
-		return CACHE.computeIfAbsent(cls, k -> {
-			ClassField cf = getByIEnum(cls);
+                if (cf == null) {
+                    cf = getByName(cls)
+                }
+                cf
+            }
+        }
 
-			if (cf == null) {
-				cf = getByJsonValue(cls);
-			}
+        fun <E : Enum<E>?> getValue(e: Enum<E>?): Any? {
+            if (e == null) {
+                return null
+            }
+            val cf = getCf(e.javaClass)
 
-			if (cf == null) {
-				cf = getByName(cls);
-			}
-
-			return cf;
-		});
-	}
-
-	public static <E extends Enum<E>> Object getValue(Enum<E> e) {
-		if (e == null) {
-			return null;
-		}
-		ClassField cf = getCf(e.getClass());
-
-		try {
-			if (cf.canGet(e)) {
-				return cf.get(e);
-			}
-			return cf.visibleGet().get(e);
-		}
-		catch (Exception ex) {
-			return null;
-		}
-	}
-
+            try {
+                if (cf!!.canGet(e)) {
+                    return cf[e]
+                }
+                return cf.visibleGet()[e]
+            } catch (ex: Exception) {
+                return null
+            }
+        }
+    }
 }

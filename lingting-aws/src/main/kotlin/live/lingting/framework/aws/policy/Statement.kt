@@ -1,74 +1,59 @@
-package live.lingting.framework.aws.policy;
+package live.lingting.framework.aws.policy
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
+import java.util.*
 
 /**
  * @author lingting 2024-09-12 20:31
  */
-@SuppressWarnings("java:S6485")
-public class Statement {
+open class Statement(val isAllow: Boolean) {
+    val actions: LinkedHashSet<String> = LinkedHashSet()
 
-	protected final boolean allow;
+    val resources: LinkedHashSet<String> = LinkedHashSet()
 
-	protected final LinkedHashSet<String> actions = new LinkedHashSet<>();
+    fun addAction(action: String) {
+        actions.add(action)
+    }
 
-	protected final LinkedHashSet<String> resources = new LinkedHashSet<>();
+    fun addAction(vararg actions: String?) {
+        addAction(Arrays.asList(*actions))
+    }
 
-	public Statement(boolean allow) {
-		this.allow = allow;
-	}
+    fun addAction(actions: Collection<String>) {
+        for (action in actions) {
+            addAction(action)
+        }
+    }
 
-	public static Statement allow() {
-		return new Statement(true);
-	}
+    fun addResource(resource: String) {
+        resources.add(resource)
+    }
 
-	public static Statement deny() {
-		return new Statement(false);
-	}
+    fun addResource(vararg resources: String?) {
+        addResource(Arrays.asList(*resources))
+    }
 
-	public void addAction(String action) {
-		actions.add(action);
-	}
+    fun addResource(resources: Collection<String>) {
+        for (resource in resources) {
+            addResource(resource)
+        }
+    }
 
-	public void addAction(String... actions) {
-		addAction(Arrays.asList(actions));
-	}
+    open fun map(): Map<String, Any>? {
+        val map: MutableMap<String, Any> = HashMap(4)
+        map["Effect"] = if (isAllow) "Allow" else "Deny"
+        map["Action"] = LinkedHashSet(actions)
+        map["Resource"] = LinkedHashSet(resources)
+        return map
+    }
 
-	public void addAction(Collection<String> actions) {
-		for (String action : actions) {
-			addAction(action);
-		}
-	}
+    companion object {
+        @JvmStatic
+        fun allow(): Statement {
+            return Statement(true)
+        }
 
-	public void addResource(String resource) {
-		resources.add(resource);
-	}
-
-	public void addResource(String... resources) {
-		addResource(Arrays.asList(resources));
-	}
-
-	public void addResource(Collection<String> resources) {
-		for (String resource : resources) {
-			addResource(resource);
-		}
-	}
-
-	public Map<String, Object> map() {
-		Map<String, Object> map = new HashMap<>(4);
-		map.put("Effect", allow ? "Allow" : "Deny");
-		map.put("Action", new LinkedHashSet<>(actions));
-		map.put("Resource", new LinkedHashSet<>(resources));
-		return map;
-	}
-
-	public boolean isAllow() {return this.allow;}
-
-	public LinkedHashSet<String> getActions() {return this.actions;}
-
-	public LinkedHashSet<String> getResources() {return this.resources;}
+        fun deny(): Statement {
+            return Statement(false)
+        }
+    }
 }

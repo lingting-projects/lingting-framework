@@ -1,136 +1,129 @@
-package live.lingting.framework.grpc;
+package live.lingting.framework.grpc
 
-import io.grpc.BindableService;
-import io.grpc.MethodDescriptor;
-import io.grpc.Server;
-import io.grpc.ServerBuilder;
-import io.grpc.ServerInterceptor;
-import io.grpc.ServerMethodDefinition;
-import io.grpc.ServerServiceDefinition;
-import io.grpc.ServiceDescriptor;
-import live.lingting.framework.Sequence;
-import live.lingting.framework.context.ContextComponent;
-import live.lingting.framework.grpc.interceptor.AbstractServerInterceptor;
-import live.lingting.framework.util.ClassUtils;
-import live.lingting.framework.util.ThreadUtils;
-import org.slf4j.Logger;
-
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Objects;
+import io.grpc.BindableService
+import io.grpc.MethodDescriptor
+import io.grpc.Server
+import io.grpc.ServerBuilder
+import io.grpc.ServerInterceptor
+import io.grpc.ServiceDescriptor
+import live.lingting.framework.Sequence
+import live.lingting.framework.context.ContextComponent
+import live.lingting.framework.grpc.interceptor.AbstractServerInterceptor
+import live.lingting.framework.util.ClassUtils
+import live.lingting.framework.util.ThreadUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.lang.reflect.Method
 
 /**
  * @author lingting 2023-04-14 17:38
  */
-public class GrpcServer implements ContextComponent {
+class GrpcServer(
+    builder: ServerBuilder<*>, interceptors: MutableCollection<ServerInterceptor?>?,
+    services: MutableCollection<BindableService?>
+) : ContextComponent {
+    val server: Server?
 
-	private static final Logger log = org.slf4j.LoggerFactory.getLogger(GrpcServer.class);
-	private final Server server;
+    private val serviceNameMap: MutableMap<String?, Class<out BindableService?>?>
 
-	private final Map<String, Class<? extends BindableService>> serviceNameMap;
+    private val fullMethodNameMap: MutableMap<String?, Method?>
 
-	private final Map<String, Method> fullMethodNameMap;
+    init {
+        // 升序排序
+        val asc: MutableList<ServerInterceptor?> = Sequence.asc(interceptors)
+        // 获取一个游标在尾部的迭代器
+        val iterator = asc.listIterator(asc.size)
+        // 服务端是最后注册的拦截器最先执行, 所以要倒序注册
+        while (iterator.hasPrevious()) {
+            val previous = iterator.previous()
+            if (previous is AbstractServerInterceptor) {
+                previous.setServer(this)
+            }
+            builder.intercept(previous)
+        }
 
-	public GrpcServer(ServerBuilder<?> builder, Collection<ServerInterceptor> interceptors,
-					  Collection<BindableService> services) {
-		// 升序排序
-		List<ServerInterceptor> asc = Sequence.asc(interceptors);
-		// 获取一个游标在尾部的迭代器
-		ListIterator<ServerInterceptor> iterator = asc.listIterator(asc.size());
-		// 服务端是最后注册的拦截器最先执行, 所以要倒序注册
-		while (iterator.hasPrevious()) {
-			ServerInterceptor previous = iterator.previous();
-			if (previous instanceof AbstractServerInterceptor interceptor) {
-				interceptor.setServer(this);
-			}
-			builder.intercept(previous);
-		}
+        this.serviceNameMap = HashMap()
+        this.fullMethodNameMap = HashMap()
 
-		this.serviceNameMap = new HashMap<>();
-		this.fullMethodNameMap = new HashMap<>();
+        // 注册服务
+        for (service in services) {
+            builder.addService(service)
+            fillMap(service)
+        }
 
-		// 注册服务
-		for (BindableService service : services) {
-			builder.addService(service);
-			fillMap(service);
-		}
+        this.server = builder.build()
+    }
 
-		this.server = builder.build();
-	}
+    /**
+     * 填充服务名map和全方法名map
+     */
+    protected fun fillMap(service: BindableService) {
+        val cls: Class<out BindableService?> = service.javaClass
 
-	/**
-	 * 填充服务名map和全方法名map
-	 */
-	protected void fillMap(BindableService service) {
-		Class<? extends BindableService> cls = service.getClass();
+        val serverServiceDefinition = service.bindService()
+        val serviceDescriptor = serverServiceDefinition!!.serviceDescriptor
 
-		ServerServiceDefinition serverServiceDefinition = service.bindService();
-		ServiceDescriptor serviceDescriptor = serverServiceDefinition.getServiceDescriptor();
+        serviceNameMap[serviceDescriptor!!.name] = cls
 
-		serviceNameMap.put(serviceDescriptor.getName(), cls);
+        for (serverMethodDefinition in serverServiceDefinition.methods) {
+            val methodDescriptor = serverMethodDefinition.methodDescriptor
+            val fullMethodName = methodDescriptor!!.fullMethodName
+            fullMethodNameMap[fullMethodName] = resolve(methodDescriptor, cls)
+        }
+    }
 
-		for (ServerMethodDefinition<?, ?> serverMethodDefinition : serverServiceDefinition.getMethods()) {
-			MethodDescriptor<?, ?> methodDescriptor = serverMethodDefinition.getMethodDescriptor();
-			String fullMethodName = methodDescriptor.getFullMethodName();
-			fullMethodNameMap.put(fullMethodName, resolve(methodDescriptor, cls));
-		}
-	}
+    val isRunning: Boolean
+        get() = !server!!.isShutdown && !server.isTerminated
 
-	public boolean isRunning() {
-		return !server.isShutdown() && !server.isTerminated();
-	}
+    fun port(): Int {
+        return server!!.port
+    }
 
-	public int port() {
-		return server.getPort();
-	}
+    fun findClass(descriptor: ServiceDescriptor): Class<out BindableService?>? {
+        return serviceNameMap[descriptor.name]
+    }
 
-	public Class<? extends BindableService> findClass(ServiceDescriptor descriptor) {
-		return serviceNameMap.get(descriptor.getName());
-	}
+    fun findClass(descriptor: MethodDescriptor<*, *>): Class<out BindableService?> {
+        val method = findMethod(descriptor)
+        return method!!.declaringClass as Class<out BindableService?>
+    }
 
-	@SuppressWarnings("unchecked")
-	public Class<? extends BindableService> findClass(MethodDescriptor<?, ?> descriptor) {
-		Method method = findMethod(descriptor);
-		return (Class<? extends BindableService>) method.getDeclaringClass();
-	}
+    fun findMethod(descriptor: MethodDescriptor<*, *>): Method? {
+        return fullMethodNameMap[descriptor.fullMethodName]
+    }
 
-	public Method findMethod(MethodDescriptor<?, ?> descriptor) {
-		return fullMethodNameMap.get(descriptor.getFullMethodName());
-	}
+    protected fun resolve(descriptor: MethodDescriptor<*, *>, cls: Class<out BindableService?>?): Method? {
+        val bareMethodName = descriptor.bareMethodName
 
-	protected Method resolve(MethodDescriptor<?, ?> descriptor, Class<? extends BindableService> cls) {
-		String bareMethodName = descriptor.getBareMethodName();
+        for (method in ClassUtils.methods(cls)) {
+            if (method.name == bareMethodName) {
+                return method
+            }
+        }
 
-		for (Method method : ClassUtils.methods(cls)) {
-			if (Objects.equals(method.getName(), bareMethodName)) {
-				return method;
-			}
-		}
+        return null
+    }
 
-		return null;
-	}
+    override fun onApplicationStart() {
+        server!!.start()
+        log!!.info("grpc server started. port: {}", server.port)
+        ThreadUtils.execute("GrpcServer", server::awaitTermination)
+    }
 
-	@Override
+    override fun onApplicationStop() {
+        log!!.warn("shutdown grpc server!")
+        server!!.shutdown()
+    }
 
-	public void onApplicationStart() {
-		server.start();
-		log.info("grpc server started. port: {}", server.getPort());
-		ThreadUtils.execute("GrpcServer", server::awaitTermination);
-	}
+    fun getServiceNameMap(): MutableMap<String?, Class<out BindableService?>?>? {
+        return this.serviceNameMap
+    }
 
-	@Override
-	public void onApplicationStop() {
-		log.warn("shutdown grpc server!");
-		server.shutdown();
-	}
+    fun getFullMethodNameMap(): MutableMap<String?, Method?>? {
+        return this.fullMethodNameMap
+    }
 
-	public Server getServer() {return this.server;}
-
-	public Map<String, Class<? extends BindableService>> getServiceNameMap() {return this.serviceNameMap;}
-
-	public Map<String, Method> getFullMethodNameMap() {return this.fullMethodNameMap;}
+    companion object {
+        private val log: Logger? = LoggerFactory.getLogger(GrpcServer::class.java)
+    }
 }

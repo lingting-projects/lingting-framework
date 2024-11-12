@@ -1,113 +1,110 @@
-package live.lingting.framework.util;
+package live.lingting.framework.util
 
-import live.lingting.framework.value.LazyValue;
-
-import java.io.File;
-import java.nio.charset.Charset;
+import live.lingting.framework.function.ThrowableSupplier
+import live.lingting.framework.value.LazyValue
+import java.io.File
+import java.nio.charset.Charset
 
 /**
  * @author lingting 2022/6/25 12:10
  */
-public final class SystemUtils {
+class SystemUtils private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	private SystemUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+    companion object {
 
-	/**
-	 * 当前系统是否为Windows系统, 参考以下系统API
-	 *
-	 * @return boolean
-	 * @see sun.awt.OSInfo#getOSType()
-	 */
-	public static boolean isWindows() {
-		return osName().contains("Windows");
-	}
+        val isWindows: Boolean
+            /**
+             * 当前系统是否为Windows系统, 参考以下系统API
+             *
+             * @return boolean
+             * @see sun.awt.OSInfo.getOSType
+             */
+            get() = osName().contains("Windows")
 
-	public static boolean isLinux() {
-		return osName().contains("Linux");
-	}
+        val isLinux: Boolean
+            get() = osName().contains("Linux")
 
-	public static boolean isMacX() {
-		return osName().contains("OS X");
-	}
+        val isMacX: Boolean
+            get() = osName().contains("OS X")
 
-	public static boolean isMac() {
-		return osName().contains("Mac OS");
-	}
+        val isMac: Boolean
+            get() = osName().contains("Mac OS")
 
-	public static boolean isAix() {
-		return osName().contains("AIX");
-	}
+        val isAix: Boolean
+            get() = osName().contains("AIX")
 
-	public static String osName() {
-		return System.getProperty("os.name");
-	}
+        fun osName(): String {
+            return System.getProperty("os.name")
+        }
 
-	static final LazyValue<Charset> charset = new LazyValue<>(() -> {
-		try {
-			String name = System.getProperty("sun.jnu.encoding");
-			return Charset.forName(name);
-		}
-		catch (Exception e) {
-			return Charset.defaultCharset();
-		}
-	});
+        val charset: LazyValue<Charset> = LazyValue(ThrowableSupplier {
+            try {
+                val name = System.getProperty("sun.jnu.encoding")
+                return@ThrowableSupplier Charset.forName(name)
+            } catch (e: Exception) {
+                return@ThrowableSupplier Charset.defaultCharset()
+            }
+        })
 
-	/**
-	 * 获取系统字符集
-	 */
-	public static Charset charset() {
-		return charset.get();
-	}
+        /**
+         * 获取系统字符集
+         */
+        fun charset(): Charset? {
+            return charset.get()
+        }
 
-	public static String lineSeparator() {
-		return System.lineSeparator();
-	}
+        fun lineSeparator(): String {
+            return System.lineSeparator()
+        }
 
-	public static String fileSeparator() {
-		return File.separator;
-	}
+        fun fileSeparator(): String {
+            return File.separator
+        }
 
-	public static File tmpDir() {
-		return new File(System.getProperty("java.io.tmpdir"));
-	}
+        fun tmpDir(): File {
+            return File(System.getProperty("java.io.tmpdir"))
+        }
 
-	public static File tmpDirLingting() {
-		return new File(System.getProperty("java.io.tmpdir"), "lingting");
-	}
+        fun tmpDirLingting(): File {
+            return File(System.getProperty("java.io.tmpdir"), "lingting")
+        }
 
-	public static File homeDir() {
-		return new File(System.getProperty("user.home"));
-	}
+        fun homeDir(): File {
+            return File(System.getProperty("user.home"))
+        }
 
-	public static File homeDirLingting() {
-		return new File(System.getProperty("user.home"), ".lingting");
-	}
+        fun homeDirLingting(): File {
+            return File(System.getProperty("user.home"), ".lingting")
+        }
 
-	public static File workDir() {
-		return new File(System.getProperty("user.dir"));
-	}
+        fun workDir(): File {
+            return File(System.getProperty("user.dir"))
+        }
 
-	public static String username() {
-		return System.getProperty("user.name");
-	}
+        fun username(): String {
+            return System.getProperty("user.name")
+        }
 
-	public static String javaVersion() {
-		return System.getProperty("java.version");
-	}
+        fun javaVersion(): String {
+            return System.getProperty("java.version")
+        }
 
-	public static void proxy(String host, Integer port) {
-		proxyHttp(host, port);
-		proxyHttps(host, port);
-	}
+        fun proxy(host: String, port: Int) {
+            proxyHttp(host, port)
+            proxyHttps(host, port)
+        }
 
-	public static void proxyHttp(String host, Integer port) {
-		System.setProperty("http.proxyHost", host);
-		System.setProperty("http.proxyPort", port.toString());
-	}
+        fun proxyHttp(host: String, port: Int) {
+            System.setProperty("http.proxyHost", host)
+            System.setProperty("http.proxyPort", port.toString())
+        }
 
-	public static void proxyHttps(String host, Integer port) {
-		System.setProperty("https.proxyHost", host);
-		System.setProperty("https.proxyPort", port.toString());
-	}
-
+        fun proxyHttps(host: String, port: Int) {
+            System.setProperty("https.proxyHost", host)
+            System.setProperty("https.proxyPort", port.toString())
+        }
+    }
 }

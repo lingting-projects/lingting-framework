@@ -1,65 +1,62 @@
-package live.lingting.framework.http.okhttp;
+package live.lingting.framework.http.okhttp
 
-import okhttp3.Cookie;
-import okhttp3.CookieJar;
-import okhttp3.HttpUrl;
-import org.jetbrains.annotations.NotNull;
-
-import java.net.CookieStore;
-import java.net.HttpCookie;
-import java.util.List;
+import okhttp3.Cookie
+import okhttp3.Cookie.Builder.build
+import okhttp3.Cookie.Builder.domain
+import okhttp3.Cookie.Builder.expiresAt
+import okhttp3.Cookie.Builder.httpOnly
+import okhttp3.Cookie.Builder.name
+import okhttp3.Cookie.Builder.path
+import okhttp3.Cookie.Builder.secure
+import okhttp3.Cookie.Builder.value
+import okhttp3.CookieJar
+import okhttp3.HttpUrl
+import okhttp3.OkHttpClient.Builder.build
+import okhttp3.Request.Builder.build
+import java.net.CookieStore
+import java.net.HttpCookie
+import java.util.function.Consumer
 
 /**
  * @author lingting 2024-05-08 13:59
  */
-public class OkHttpCookie implements CookieJar {
+class OkHttpCookie(private val store: CookieStore) : CookieJar {
+    fun of(cookie: HttpCookie): Cookie {
+        val builder: Builder = Builder()
+        builder.domain(cookie.domain)
+        builder.expiresAt(cookie.maxAge * 1000 + System.currentTimeMillis())
 
-	private final CookieStore store;
+        if (cookie.isHttpOnly) {
+            builder.httpOnly()
+        }
 
-	public OkHttpCookie(CookieStore store) {
-		this.store = store;
-	}
+        builder.name(cookie.name)
+        builder.path(cookie.path)
 
-	Cookie of(HttpCookie cookie) {
-		Cookie.Builder builder = new Cookie.Builder();
-		builder.domain(cookie.getDomain());
-		builder.expiresAt(cookie.getMaxAge() * 1000 + System.currentTimeMillis());
+        if (cookie.secure) {
+            builder.secure()
+        }
 
-		if (cookie.isHttpOnly()) {
-			builder.httpOnly();
-		}
+        builder.value(cookie.value)
+        return builder.build()
+    }
 
-		builder.name(cookie.getName());
-		builder.path(cookie.getPath());
+    fun to(cookie: Cookie): HttpCookie {
+        val hc = HttpCookie(cookie.name(), cookie.value())
+        hc.domain = cookie.domain()
+        hc.isHttpOnly = cookie.httpOnly()
+        hc.maxAge = (cookie.expiresAt() - System.currentTimeMillis()) / 1000
+        hc.path = cookie.path()
+        hc.secure = cookie.secure()
+        return hc
+    }
 
-		if (cookie.getSecure()) {
-			builder.secure();
-		}
+    override fun loadForRequest(httpUrl: HttpUrl): List<Cookie> {
+        val cookies = store[httpUrl.toUri()]
+        return cookies.stream().map { cookie: HttpCookie -> this.of(cookie) }.toList()
+    }
 
-		builder.value(cookie.getValue());
-		return builder.build();
-	}
-
-	HttpCookie to(Cookie cookie) {
-		HttpCookie hc = new HttpCookie(cookie.name(), cookie.value());
-		hc.setDomain(cookie.domain());
-		hc.setHttpOnly(cookie.httpOnly());
-		hc.setMaxAge((cookie.expiresAt() - System.currentTimeMillis()) / 1000);
-		hc.setPath(cookie.path());
-		hc.setSecure(cookie.secure());
-		return hc;
-	}
-
-	@NotNull
-	@Override
-	public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
-		List<HttpCookie> cookies = store.get(httpUrl.uri());
-		return cookies.stream().map(this::of).toList();
-	}
-
-	@Override
-	public void saveFromResponse(@NotNull HttpUrl httpUrl, @NotNull List<Cookie> list) {
-		list.forEach(cookie -> store.add(httpUrl.uri(), to(cookie)));
-	}
-
+    override fun saveFromResponse(httpUrl: HttpUrl, list: List<Cookie>) {
+        list.forEach(Consumer { cookie: Cookie? -> store.add(httpUrl.toUri(), to(cookie)) })
+    }
 }

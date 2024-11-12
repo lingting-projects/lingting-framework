@@ -1,14 +1,11 @@
+package live.lingting.polaris.grpc.resolver
 
-package live.lingting.polaris.grpc.resolver;
+import com.tencent.polaris.api.rpc.InstancesResponse
 
-import com.tencent.polaris.api.rpc.InstancesResponse;
+interface ResolverInterceptor {
+    fun before(context: ResolverContext?)
 
-public interface ResolverInterceptor {
+    fun after(context: ResolverContext?, response: InstancesResponse?): InstancesResponse?
 
-	void before(ResolverContext context);
-
-	InstancesResponse after(ResolverContext context, InstancesResponse response);
-
-	int priority();
-
+    fun priority(): Int
 }

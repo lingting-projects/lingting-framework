@@ -1,24 +1,26 @@
-package live.lingting.framework.sensitive;
+package live.lingting.framework.sensitive
 
 /**
  * @author lingting 2023-06-30 17:57
  */
-public final class SensitiveHolder {
+class SensitiveHolder private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	private static final ThreadLocal<Boolean> THREAD_LOCAL = new ThreadLocal<>();
+    companion object {
+        private val THREAD_LOCAL = ThreadLocal<Boolean>()
 
-	private SensitiveHolder() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+        fun allowSensitive(): Boolean {
+            return java.lang.Boolean.FALSE != THREAD_LOCAL.get()
+        }
 
-	public static boolean allowSensitive() {
-		return !Boolean.FALSE.equals(THREAD_LOCAL.get());
-	}
+        fun setSensitive(flag: Boolean) {
+            THREAD_LOCAL.set(flag)
+        }
 
-	public static void setSensitive(boolean flag) {
-		THREAD_LOCAL.set(flag);
-	}
-
-	public static void remove() {
-		THREAD_LOCAL.remove();
-	}
-
+        fun remove() {
+            THREAD_LOCAL.remove()
+        }
+    }
 }

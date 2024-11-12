@@ -1,33 +1,23 @@
-package live.lingting.framework.aws.s3;
+package live.lingting.framework.aws.s3
 
-import live.lingting.framework.aws.policy.Acl;
-import live.lingting.framework.http.api.ApiRequest;
+import live.lingting.framework.aws.policy.Acl
+import live.lingting.framework.http.api.ApiRequest
 
 /**
  * @author lingting 2024-09-19 15:03
  */
-public abstract class AwsS3Request extends ApiRequest {
+abstract class AwsS3Request : ApiRequest() {
+    var key: String? = null
 
-	protected String key;
+    var acl: Acl? = null
 
-	protected Acl acl;
+    override fun path(): String {
+        return key!!
+    }
 
-	@Override
-	public String path() {
-		return key;
-	}
-
-	public void setAclIfAbsent(Acl acl) {
-		if (this.acl == null) {
-			this.acl = acl;
-		}
-	}
-
-	public String getKey() {return this.key;}
-
-	public Acl getAcl() {return this.acl;}
-
-	public void setKey(String key) {this.key = key;}
-
-	public void setAcl(Acl acl) {this.acl = acl;}
+    fun setAclIfAbsent(acl: Acl?) {
+        if (this.acl == null) {
+            this.acl = acl
+        }
+    }
 }

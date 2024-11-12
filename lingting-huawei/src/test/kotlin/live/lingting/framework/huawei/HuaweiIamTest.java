@@ -9,7 +9,6 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author lingting 2024-09-13 11:58
@@ -34,10 +33,10 @@ class HuaweiIamTest {
 		statement.addResource("obs:*:*:bucket:*");
 		Credential credential = assertDoesNotThrow(() -> iam.credential(statement));
 		assertNotNull(credential);
-		assertTrue(StringUtils.hasText(credential.getAk()));
-		assertTrue(StringUtils.hasText(credential.getSk()));
-		assertTrue(StringUtils.hasText(credential.getToken()));
-		assertNotNull(credential.getExpire());
+		assertTrue(StringUtils.hasText(credential.ak));
+		assertTrue(StringUtils.hasText(credential.sk));
+		assertTrue(StringUtils.hasText(credential.token));
+		assertNotNull(credential.expire);
 	}
 
 }

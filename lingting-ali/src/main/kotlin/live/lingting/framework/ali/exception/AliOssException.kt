@@ -1,16 +1,10 @@
-package live.lingting.framework.ali.exception;
+package live.lingting.framework.ali.exception
 
 /**
  * @author lingting 2024-09-12 21:41
  */
-public class AliOssException extends AliException {
+class AliOssException : AliException {
+    constructor(message: String?) : super(message)
 
-	public AliOssException(String message) {
-		super(message);
-	}
-
-	public AliOssException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
 }

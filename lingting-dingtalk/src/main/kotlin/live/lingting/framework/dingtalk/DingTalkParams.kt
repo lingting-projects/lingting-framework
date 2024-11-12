@@ -1,237 +1,205 @@
-package live.lingting.framework.dingtalk;
+package live.lingting.framework.dingtalk
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import live.lingting.framework.dingtalk.message.DingTalkActionCardMessage;
-import live.lingting.framework.jackson.JacksonUtils;
-
-import java.util.List;
-import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonProperty
+import live.lingting.framework.dingtalk.message.DingTalkActionCardMessage
+import live.lingting.framework.jackson.JacksonUtils
 
 /**
  * @author lingting 2020/6/12 19:35
  */
+class DingTalkParams {
+    @JsonProperty("msgtype")
+    var type: String? = null
+        private set
 
-public class DingTalkParams {
+    var at: At? = null
+        private set
 
-	@JsonProperty("msgtype")
-	private String type;
+    var actionCard: ActionCard? = null
+        private set
 
-	private At at;
+    var link: Link? = null
+        private set
+
+    var markdown: Markdown? = null
+        private set
 
-	private ActionCard actionCard;
+    var text: Text? = null
+        private set
+
+    fun json(): String {
+        return JacksonUtils.toJson(this)
+    }
 
-	private Link link;
+    @JsonProperty("msgtype")
+    fun setType(type: String?): DingTalkParams {
+        this.type = type
+        return this
+    }
 
-	private Markdown markdown;
+    fun setAt(at: At?): DingTalkParams {
+        this.at = at
+        return this
+    }
 
-	private Text text;
+    fun setActionCard(actionCard: ActionCard?): DingTalkParams {
+        this.actionCard = actionCard
+        return this
+    }
 
-	public String json() {
-		return JacksonUtils.toJson(this);
-	}
+    fun setLink(link: Link?): DingTalkParams {
+        this.link = link
+        return this
+    }
 
-	public String getType() {return this.type;}
+    fun setMarkdown(markdown: Markdown?): DingTalkParams {
+        this.markdown = markdown
+        return this
+    }
 
-	public At getAt() {return this.at;}
+    fun setText(text: Text?): DingTalkParams {
+        this.text = text
+        return this
+    }
 
-	public ActionCard getActionCard() {return this.actionCard;}
 
-	public Link getLink() {return this.link;}
+    class Text {
+        var content: String? = null
+            private set
 
-	public Markdown getMarkdown() {return this.markdown;}
+        fun setContent(content: String?): Text {
+            this.content = content
+            return this
+        }
+    }
+
+
+    class Markdown {
+        var title: String? = null
+            private set
+
+        var text: String? = null
+            private set
+
+        fun setTitle(title: String?): Markdown {
+            this.title = title
+            return this
+        }
+
+        fun setText(text: String?): Markdown {
+            this.text = text
+            return this
+        }
+    }
 
-	public Text getText() {return this.text;}
-
-	@JsonProperty("msgtype")
-	public DingTalkParams setType(String type) {
-		this.type = type;
-		return this;
-	}
-
-	public DingTalkParams setAt(At at) {
-		this.at = at;
-		return this;
-	}
-
-	public DingTalkParams setActionCard(ActionCard actionCard) {
-		this.actionCard = actionCard;
-		return this;
-	}
-
-	public DingTalkParams setLink(Link link) {
-		this.link = link;
-		return this;
-	}
-
-	public DingTalkParams setMarkdown(Markdown markdown) {
-		this.markdown = markdown;
-		return this;
-	}
-
-	public DingTalkParams setText(Text text) {
-		this.text = text;
-		return this;
-	}
-
-
-	public static class Text {
-
-		private String content;
-
-		public String getContent() {return this.content;}
-
-		public Text setContent(String content) {
-			this.content = content;
-			return this;
-		}
-	}
-
-
-	public static class Markdown {
-
-		private String title;
-
-		private String text;
-
-		public String getTitle() {return this.title;}
-
-		public String getText() {return this.text;}
-
-		public Markdown setTitle(String title) {
-			this.title = title;
-			return this;
-		}
-
-		public Markdown setText(String text) {
-			this.text = text;
-			return this;
-		}
-	}
-
-
-	public static class Link {
-
-		private String text;
-
-		private String title;
-
-		private String picUrl;
-
-		private String messageUrl;
-
-		public String getText() {return this.text;}
-
-		public String getTitle() {return this.title;}
-
-		public String getPicUrl() {return this.picUrl;}
-
-		public String getMessageUrl() {return this.messageUrl;}
-
-		public Link setText(String text) {
-			this.text = text;
-			return this;
-		}
-
-		public Link setTitle(String title) {
-			this.title = title;
-			return this;
-		}
-
-		public Link setPicUrl(String picUrl) {
-			this.picUrl = picUrl;
-			return this;
-		}
-
-		public Link setMessageUrl(String messageUrl) {
-			this.messageUrl = messageUrl;
-			return this;
-		}
-	}
-
-
-	public static class ActionCard {
-
-		private String title;
-
-		private String text;
-
-		private String btnOrientation;
-
-		private String singleTitle;
-
-		@JsonProperty("singleURL")
-		private String singleUrl;
-
-		@JsonProperty("btns")
-		private List<DingTalkActionCardMessage.Button> buttons;
-
-		public String getTitle() {return this.title;}
-
-		public String getText() {return this.text;}
-
-		public String getBtnOrientation() {return this.btnOrientation;}
-
-		public String getSingleTitle() {return this.singleTitle;}
-
-		public String getSingleUrl() {return this.singleUrl;}
-
-		public List<DingTalkActionCardMessage.Button> getButtons() {return this.buttons;}
-
-		public ActionCard setTitle(String title) {
-			this.title = title;
-			return this;
-		}
-
-		public ActionCard setText(String text) {
-			this.text = text;
-			return this;
-		}
-
-		public ActionCard setBtnOrientation(String btnOrientation) {
-			this.btnOrientation = btnOrientation;
-			return this;
-		}
-
-		public ActionCard setSingleTitle(String singleTitle) {
-			this.singleTitle = singleTitle;
-			return this;
-		}
-
-		@JsonProperty("singleURL")
-		public ActionCard setSingleUrl(String singleUrl) {
-			this.singleUrl = singleUrl;
-			return this;
-		}
-
-		@JsonProperty("btns")
-		public ActionCard setButtons(List<DingTalkActionCardMessage.Button> buttons) {
-			this.buttons = buttons;
-			return this;
-		}
-	}
-
-
-	public static class At {
-
-		@JsonProperty("isAtAll")
-		private boolean atAll;
-
-		private Set<String> atMobiles;
-
-		public boolean isAtAll() {return this.atAll;}
-
-		public Set<String> getAtMobiles() {return this.atMobiles;}
-
-		@JsonProperty("isAtAll")
-		public At setAtAll(boolean atAll) {
-			this.atAll = atAll;
-			return this;
-		}
-
-		public At setAtMobiles(Set<String> atMobiles) {
-			this.atMobiles = atMobiles;
-			return this;
-		}
-	}
-
+
+    class Link {
+        var text: String? = null
+            private set
+
+        var title: String? = null
+            private set
+
+        var picUrl: String? = null
+            private set
+
+        var messageUrl: String? = null
+            private set
+
+        fun setText(text: String?): Link {
+            this.text = text
+            return this
+        }
+
+        fun setTitle(title: String?): Link {
+            this.title = title
+            return this
+        }
+
+        fun setPicUrl(picUrl: String?): Link {
+            this.picUrl = picUrl
+            return this
+        }
+
+        fun setMessageUrl(messageUrl: String?): Link {
+            this.messageUrl = messageUrl
+            return this
+        }
+    }
+
+
+    class ActionCard {
+        var title: String? = null
+            private set
+
+        var text: String? = null
+            private set
+
+        var btnOrientation: String? = null
+            private set
+
+        var singleTitle: String? = null
+            private set
+
+        @JsonProperty("singleURL")
+        var singleUrl: String? = null
+            private set
+
+        @JsonProperty("btns")
+        var buttons: List<DingTalkActionCardMessage.Button>? = null
+            private set
+
+        fun setTitle(title: String?): ActionCard {
+            this.title = title
+            return this
+        }
+
+        fun setText(text: String?): ActionCard {
+            this.text = text
+            return this
+        }
+
+        fun setBtnOrientation(btnOrientation: String?): ActionCard {
+            this.btnOrientation = btnOrientation
+            return this
+        }
+
+        fun setSingleTitle(singleTitle: String?): ActionCard {
+            this.singleTitle = singleTitle
+            return this
+        }
+
+        @JsonProperty("singleURL")
+        fun setSingleUrl(singleUrl: String?): ActionCard {
+            this.singleUrl = singleUrl
+            return this
+        }
+
+        @JsonProperty("btns")
+        fun setButtons(buttons: List<DingTalkActionCardMessage.Button>?): ActionCard {
+            this.buttons = buttons
+            return this
+        }
+    }
+
+
+    class At {
+        @JsonProperty("isAtAll")
+        var isAtAll: Boolean = false
+            private set
+
+        var atMobiles: Set<String>? = null
+            private set
+
+        @JsonProperty("isAtAll")
+        fun setAtAll(atAll: Boolean): At {
+            this.isAtAll = atAll
+            return this
+        }
+
+        fun setAtMobiles(atMobiles: Set<String>?): At {
+            this.atMobiles = atMobiles
+            return this
+        }
+    }
 }

@@ -1,19 +1,11 @@
-package live.lingting.framework.grpc.exception;
+package live.lingting.framework.grpc.exception
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import kotlin.reflect.KClass
 
 /**
  * @author lingting 2024-03-27 09:43
  */
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface GrpcExceptionHandler {
-
-	Class<? extends Throwable>[] value() default {};
-
-}
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER, AnnotationTarget.PROPERTY_SETTER)
+@Retention(AnnotationRetention.RUNTIME)
+@MustBeDocumented
+annotation class GrpcExceptionHandler(vararg val value: KClass<out Throwable?> = [])

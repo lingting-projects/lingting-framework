@@ -1,32 +1,29 @@
-package live.lingting.framework.jackson.serializer;
+package live.lingting.framework.jackson.serializer
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.databind.JsonSerializer
+import com.fasterxml.jackson.databind.SerializerProvider
+import java.io.IOException
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 
 /**
  * @author lingting 2023-07-24 18:23
  */
-public class InstantSerializer extends JsonSerializer<Instant> {
+class InstantSerializer : JsonSerializer<Instant> {
+    private val formatter: DateTimeFormatter
 
-	private final DateTimeFormatter formatter;
+    constructor() {
+        this.formatter = DateTimeFormatter.ISO_INSTANT
+    }
 
-	public InstantSerializer() {
-		this.formatter = DateTimeFormatter.ISO_INSTANT;
-	}
+    constructor(formatter: DateTimeFormatter) {
+        this.formatter = formatter
+    }
 
-	public InstantSerializer(DateTimeFormatter formatter) {
-		this.formatter = formatter;
-	}
-
-	@Override
-	public void serialize(Instant value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-		String format = formatter.format(value);
-		gen.writeString(format);
-	}
-
+    @Throws(IOException::class)
+    override fun serialize(value: Instant, gen: JsonGenerator, serializers: SerializerProvider) {
+        val format = formatter.format(value)
+        gen.writeString(format)
+    }
 }

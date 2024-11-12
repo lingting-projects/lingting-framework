@@ -1,299 +1,275 @@
-package live.lingting.framework.aws.s3;
+package live.lingting.framework.aws.s3
 
-import live.lingting.framework.crypto.mac.Mac;
-import live.lingting.framework.http.HttpMethod;
-import live.lingting.framework.http.HttpRequest;
-import live.lingting.framework.http.body.BodySource;
-import live.lingting.framework.http.header.HttpHeaders;
-import live.lingting.framework.util.ArrayUtils;
-import live.lingting.framework.util.CollectionUtils;
-import live.lingting.framework.util.DigestUtils;
-import live.lingting.framework.util.StringUtils;
-import live.lingting.framework.value.multi.StringMultiValue;
-
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.function.BiConsumer;
-
-import static live.lingting.framework.aws.s3.AwsS3Utils.HEADER_DATE;
-import static live.lingting.framework.aws.s3.AwsS3Utils.HEADER_PREFIX;
-import static live.lingting.framework.aws.s3.AwsS3Utils.PAYLOAD_UNSIGNED;
-import static live.lingting.framework.util.StringUtils.deleteLast;
+import live.lingting.framework.crypto.mac.Mac
+import live.lingting.framework.http.HttpMethod
+import live.lingting.framework.http.HttpRequest
+import live.lingting.framework.http.body.BodySource
+import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.util.ArrayUtils
+import live.lingting.framework.util.CollectionUtils
+import live.lingting.framework.util.DigestUtils
+import live.lingting.framework.util.StringUtils
+import live.lingting.framework.value.multi.StringMultiValue
+import java.security.InvalidAlgorithmParameterException
+import java.security.InvalidKeyException
+import java.security.NoSuchAlgorithmException
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
+import java.util.function.BiConsumer
 
 /**
  * @author lingting 2024-09-19 17:01
  */
-public class AwsS3SingV4 {
-
-	public static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'");
-
-	public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
-
-	protected static final String[] HEADER_INCLUDE = {"host", "content-md5", "range",};
-
-	public static final String ALGORITHM = "AWS4-HMAC-SHA256";
-
-	public static final String SCOPE_SUFFIX = "aws4_request";
-
-	protected final LocalDateTime dateTime;
-
-	protected final String method;
-
-	protected final String path;
-
-	protected final HttpHeaders headers;
-
-	protected final String bodySha256;
-
-	protected final StringMultiValue params;
-
-	protected final String region;
-
-	protected final String ak;
-
-	protected final String sk;
-
-	protected final String bucket;
-
-	public AwsS3SingV4(LocalDateTime dateTime, String method, String path, HttpHeaders headers, String bodySha256, StringMultiValue params, String region, String ak, String sk, String bucket) {
-		this.dateTime = dateTime;
-		this.method = method;
-		this.path = path;
-		this.headers = headers;
-		this.bodySha256 = bodySha256;
-		this.params = params;
-		this.region = region;
-		this.ak = ak;
-		this.sk = sk;
-		this.bucket = bucket;
-	}
-
-	public static S3SingV4Builder builder() {
-		return new S3SingV4Builder();
-	}
-
-	public static class S3SingV4Builder {
-
-		private LocalDateTime dateTime;
-
-		private String method;
-
-		private String path;
-
-		private HttpHeaders headers;
-
-		private String bodySha256;
-
-		private StringMultiValue params;
-
-		private String region;
-
-		private String ak;
-
-		private String sk;
-
-		private String bucket;
-
-		S3SingV4Builder() {
-		}
-
-		public S3SingV4Builder dateTime(LocalDateTime dateTime) {
-			this.dateTime = dateTime;
-			return this;
-		}
-
-		public S3SingV4Builder method(HttpMethod method) {
-			return method(method.name());
-		}
-
-		public S3SingV4Builder method(String method) {
-			this.method = method.toUpperCase();
-			return this;
-		}
-
-		public S3SingV4Builder path(String path) {
-			this.path = path;
-			return this;
-		}
-
-		public S3SingV4Builder headers(HttpHeaders headers) {
-			this.headers = headers;
-			return this;
-		}
-
-		public S3SingV4Builder bodyUnsigned() throws NoSuchAlgorithmException {
-			return body(PAYLOAD_UNSIGNED);
-		}
-
-		public S3SingV4Builder body(HttpRequest.Body body) throws NoSuchAlgorithmException {
-			return body(body.string());
-		}
-
-		public S3SingV4Builder body(BodySource body) throws NoSuchAlgorithmException {
-			return body(body.string());
-		}
-
-		public S3SingV4Builder body(String body) throws NoSuchAlgorithmException {
-			if (PAYLOAD_UNSIGNED.equals(body)) {
-				return bodySha256(PAYLOAD_UNSIGNED);
-			}
-			String hex = DigestUtils.sha256Hex(body);
-			return bodySha256(hex);
-		}
-
-		public S3SingV4Builder bodySha256(String bodySha256) {
-			this.bodySha256 = bodySha256;
-			return this;
-		}
-
-		public S3SingV4Builder params(StringMultiValue params) {
-			this.params = params;
-			return this;
-		}
-
-		public S3SingV4Builder region(String region) {
-			this.region = region;
-			return this;
-		}
-
-		public S3SingV4Builder ak(String ak) {
-			this.ak = ak;
-			return this;
-		}
-
-		public S3SingV4Builder sk(String sk) {
-			this.sk = sk;
-			return this;
-		}
-
-		public S3SingV4Builder bucket(String bucket) {
-			this.bucket = bucket;
-			return this;
-		}
-
-		public AwsS3SingV4 build() {
-			LocalDateTime time = this.dateTime == null ? LocalDateTime.now() : this.dateTime;
-			return new AwsS3SingV4(time, this.method, this.path, this.headers, this.bodySha256, this.params,
-				this.region, this.ak, this.sk, this.bucket);
-		}
-
-	}
-
-	public String date() {
-		return AwsS3Utils.format(dateTime, DATE_FORMATTER);
-	}
-
-	public String canonicalUri() {
-		StringBuilder builder = new StringBuilder("/");
-
-		if (StringUtils.hasText(path)) {
-			builder.append(path, path.startsWith("/") ? 1 : 0, path.length());
-		}
-
-		return builder.toString();
-	}
-
-	public String canonicalQuery() {
-		StringBuilder builder = new StringBuilder();
-		if (params != null && !params.isEmpty()) {
-			params.forEachSorted((k, vs) -> {
-				String name = AwsS3Utils.encode(k);
-				if (CollectionUtils.isEmpty(vs)) {
-					builder.append(name).append("=").append("&");
-					return;
-				}
-				vs.stream().sorted().forEach(v -> {
-					String value = AwsS3Utils.encode(v);
-					builder.append(name).append("=").append(value).append("&");
-				});
-			});
-		}
-		return deleteLast(builder).toString();
-	}
-
-	public void headersForEach(BiConsumer<String, Collection<String>> consumer) {
-		headers.forEachSorted((k, vs) -> {
-			if (!k.startsWith(HEADER_PREFIX) && !ArrayUtils.contains(HEADER_INCLUDE, k)) {
-				return;
-			}
-			consumer.accept(k, vs);
-		});
-	}
-
-	public String canonicalHeaders() {
-		StringBuilder builder = new StringBuilder();
-
-		headersForEach((k, vs) -> {
-			for (String v : vs) {
-				builder.append(k).append(":").append(v.trim()).append("\n");
-			}
-		});
-
-		return builder.toString();
-	}
-
-	public String signedHeaders() {
-		StringBuilder builder = new StringBuilder();
-
-		headersForEach((k, vs) -> builder.append(k).append(";"));
-
-		return deleteLast(builder).toString();
-	}
-
-	public String canonicalRequest() {
-		String uri = canonicalUri();
-		String query = canonicalQuery();
-		String canonicalHeaders = canonicalHeaders();
-		String signedHeaders = signedHeaders();
-
-		return canonicalRequest(uri, query, canonicalHeaders, signedHeaders);
-	}
-
-	public String canonicalRequest(String uri, String query, String canonicalHeaders, String signedHeaders) {
-		return method + "\n" + uri + "\n" + query + "\n" + canonicalHeaders + "\n" + signedHeaders + "\n" + bodySha256;
-	}
-
-	public String scope(String date) {
-		return date + "/" + region + "/s3/" + SCOPE_SUFFIX;
-	}
-
-	public String source(String date, String scope, String request) throws NoSuchAlgorithmException {
-		String requestSha = DigestUtils.sha256Hex(request);
-		return ALGORITHM + "\n" + date + "\n" + scope + "\n" + requestSha;
-	}
-
-	public String sourceHmacSha(String source, String scopeDate)
-		throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, InvalidKeyException {
-		Mac mac = Mac.hmacBuilder().sha256().secret("AWS4" + sk).build();
-		byte[] sourceKey1 = mac.calculate(scopeDate);
-		byte[] sourceKey2 = mac.useSecret(sourceKey1).calculate(region);
-		byte[] sourceKey3 = mac.useSecret(sourceKey2).calculate("s3");
-		byte[] sourceKey4 = mac.useSecret(sourceKey3).calculate(SCOPE_SUFFIX);
-
-		return mac.useSecret(sourceKey4).calculateHex(source);
-	}
-
-	/**
-	 * 计算前面
-	 */
-
-	public String calculate() {
-		String request = canonicalRequest();
-
-		String scopeDate = date();
-		String scope = scope(scopeDate);
-
-		String date = headers.first(HEADER_DATE);
-		String source = source(date, scope, request);
-		String sourceHmacSha = sourceHmacSha(source, scopeDate);
-
-		String signedHeaders = signedHeaders();
-		return ALGORITHM + " Credential=" + ak + "/" + scope + "," + "SignedHeaders=" + signedHeaders + ","
-			+ "Signature=" + sourceHmacSha;
-	}
-
+class AwsS3SingV4(protected val dateTime: LocalDateTime, protected val method: String?, protected val path: String?, @JvmField val headers: HttpHeaders?, protected val bodySha256: String?, protected val params: StringMultiValue?, protected val region: String?, protected val ak: String?, protected val sk: String?, protected val bucket: String?) {
+    class S3SingV4Builder internal constructor() {
+        private var dateTime: LocalDateTime? = null
+
+        private var method: String? = null
+
+        private var path: String? = null
+
+        private var headers: HttpHeaders? = null
+
+        private var bodySha256: String? = null
+
+        private var params: StringMultiValue? = null
+
+        private var region: String? = null
+
+        private var ak: String? = null
+
+        private var sk: String? = null
+
+        private var bucket: String? = null
+
+        fun dateTime(dateTime: LocalDateTime?): S3SingV4Builder {
+            this.dateTime = dateTime
+            return this
+        }
+
+        fun method(method: HttpMethod): S3SingV4Builder {
+            return method(method.name)
+        }
+
+        fun method(method: String): S3SingV4Builder {
+            this.method = method.uppercase(Locale.getDefault())
+            return this
+        }
+
+        fun path(path: String?): S3SingV4Builder {
+            this.path = path
+            return this
+        }
+
+        fun headers(headers: HttpHeaders?): S3SingV4Builder {
+            this.headers = headers
+            return this
+        }
+
+        @Throws(NoSuchAlgorithmException::class)
+        fun bodyUnsigned(): S3SingV4Builder {
+            return body(AwsS3Utils.Companion.PAYLOAD_UNSIGNED)
+        }
+
+        @Throws(NoSuchAlgorithmException::class)
+        fun body(body: HttpRequest.Body): S3SingV4Builder {
+            return body(body.string())
+        }
+
+        @Throws(NoSuchAlgorithmException::class)
+        fun body(body: BodySource): S3SingV4Builder {
+            return body(body.string())
+        }
+
+        @Throws(NoSuchAlgorithmException::class)
+        fun body(body: String?): S3SingV4Builder {
+            if (AwsS3Utils.Companion.PAYLOAD_UNSIGNED == body) {
+                return bodySha256(AwsS3Utils.Companion.PAYLOAD_UNSIGNED)
+            }
+            val hex = DigestUtils.sha256Hex(body!!)
+            return bodySha256(hex)
+        }
+
+        fun bodySha256(bodySha256: String?): S3SingV4Builder {
+            this.bodySha256 = bodySha256
+            return this
+        }
+
+        fun params(params: StringMultiValue?): S3SingV4Builder {
+            this.params = params
+            return this
+        }
+
+        fun region(region: String?): S3SingV4Builder {
+            this.region = region
+            return this
+        }
+
+        fun ak(ak: String?): S3SingV4Builder {
+            this.ak = ak
+            return this
+        }
+
+        fun sk(sk: String?): S3SingV4Builder {
+            this.sk = sk
+            return this
+        }
+
+        fun bucket(bucket: String?): S3SingV4Builder {
+            this.bucket = bucket
+            return this
+        }
+
+        fun build(): AwsS3SingV4 {
+            val time = if (this.dateTime == null) LocalDateTime.now() else dateTime!!
+            return AwsS3SingV4(
+                time, this.method, this.path, this.headers, this.bodySha256, this.params,
+                this.region, this.ak, this.sk, this.bucket
+            )
+        }
+    }
+
+    fun date(): String {
+        return AwsS3Utils.Companion.format(dateTime, DATE_FORMATTER)
+    }
+
+    fun canonicalUri(): String {
+        val builder = StringBuilder("/")
+
+        if (StringUtils.hasText(path)) {
+            builder.append(path, if (path!!.startsWith("/")) 1 else 0, path.length)
+        }
+
+        return builder.toString()
+    }
+
+    fun canonicalQuery(): String {
+        val builder = StringBuilder()
+        if (params != null && !params.isEmpty) {
+            params.forEachSorted(BiConsumer<String, Collection<String?>> { k: String, vs: Collection<String?> ->
+                val name: String = AwsS3Utils.Companion.encode(k)
+                if (CollectionUtils.isEmpty(vs)) {
+                    builder.append(name).append("=").append("&")
+                    return@forEachSorted
+                }
+                vs.stream().sorted().forEach { v: String ->
+                    val value: String = AwsS3Utils.Companion.encode(v)
+                    builder.append(name).append("=").append(value).append("&")
+                }
+            })
+        }
+        return deleteLast(builder).toString()
+    }
+
+    fun headersForEach(consumer: BiConsumer<String?, Collection<String>>) {
+        headers!!.forEachSorted(BiConsumer<String, Collection<String>> { k: String, vs: Collection<String> ->
+            if (!k.startsWith(AwsS3Utils.Companion.HEADER_PREFIX) && !ArrayUtils.contains(HEADER_INCLUDE, k)) {
+                return@forEachSorted
+            }
+            consumer.accept(k, vs)
+        })
+    }
+
+    fun canonicalHeaders(): String {
+        val builder = StringBuilder()
+
+        headersForEach { k: String?, vs: Collection<String> ->
+            for (v in vs) {
+                builder.append(k).append(":").append(v.trim { it <= ' ' }).append("\n")
+            }
+        }
+
+        return builder.toString()
+    }
+
+    fun signedHeaders(): String {
+        val builder = StringBuilder()
+
+        headersForEach { k: String?, vs: Collection<String>? -> builder.append(k).append(";") }
+
+        return deleteLast(builder).toString()
+    }
+
+    fun canonicalRequest(): String {
+        val uri = canonicalUri()
+        val query = canonicalQuery()
+        val canonicalHeaders = canonicalHeaders()
+        val signedHeaders = signedHeaders()
+
+        return canonicalRequest(uri, query, canonicalHeaders, signedHeaders)
+    }
+
+    fun canonicalRequest(uri: String, query: String, canonicalHeaders: String, signedHeaders: String): String {
+        return """
+            $method
+            $uri
+            $query
+            $canonicalHeaders
+            $signedHeaders
+            $bodySha256
+            """.trimIndent()
+    }
+
+    fun scope(date: String): String {
+        return date + "/" + region + "/s3/" + SCOPE_SUFFIX
+    }
+
+    @Throws(NoSuchAlgorithmException::class)
+    fun source(date: String?, scope: String, request: String?): String {
+        val requestSha = DigestUtils.sha256Hex(request!!)
+        return """
+            $ALGORITHM
+            $date
+            $scope
+            $requestSha
+            """.trimIndent()
+    }
+
+    @Throws(InvalidAlgorithmParameterException::class, NoSuchAlgorithmException::class, InvalidKeyException::class)
+    fun sourceHmacSha(source: String, scopeDate: String): String {
+        val mac = Mac.hmacBuilder().sha256().secret("AWS4$sk").build()
+        val sourceKey1 = mac.calculate(scopeDate)
+        val sourceKey2 = mac.useSecret(sourceKey1).calculate(region!!)
+        val sourceKey3 = mac.useSecret(sourceKey2).calculate("s3")
+        val sourceKey4 = mac.useSecret(sourceKey3).calculate(SCOPE_SUFFIX)
+
+        return mac.useSecret(sourceKey4).calculateHex(source)
+    }
+
+    /**
+     * 计算前面
+     */
+    fun calculate(): String {
+        val request = canonicalRequest()
+
+        val scopeDate = date()
+        val scope = scope(scopeDate)
+
+        val date = headers!!.first(AwsS3Utils.Companion.HEADER_DATE)
+        val source = source(date, scope, request)
+        val sourceHmacSha = sourceHmacSha(source, scopeDate)
+
+        val signedHeaders = signedHeaders()
+        return (ALGORITHM + " Credential=" + ak + "/" + scope + "," + "SignedHeaders=" + signedHeaders + ","
+                + "Signature=" + sourceHmacSha)
+    }
+
+    companion object {
+        @JvmField
+        val DATETIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'")
+
+        val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+
+        protected val HEADER_INCLUDE: Array<String> = arrayOf("host", "content-md5", "range")
+
+        const val ALGORITHM: String = "AWS4-HMAC-SHA256"
+
+        const val SCOPE_SUFFIX: String = "aws4_request"
+
+        @JvmStatic
+        fun builder(): S3SingV4Builder {
+            return S3SingV4Builder()
+        }
+    }
 }

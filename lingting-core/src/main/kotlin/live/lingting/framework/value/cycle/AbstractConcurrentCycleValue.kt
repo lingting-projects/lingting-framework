@@ -1,27 +1,20 @@
-package live.lingting.framework.value.cycle;
+package live.lingting.framework.value.cycle
 
-import live.lingting.framework.lock.JavaReentrantLock;
-
+import live.lingting.framework.lock.JavaReentrantLock
 
 /**
  * @author lingting 2024-02-27 19:19
  */
-public abstract class AbstractConcurrentCycleValue<T> extends AbstractCycleValue<T> {
+abstract class AbstractConcurrentCycleValue<T> : AbstractCycleValue<T?>() {
+    protected val lock: JavaReentrantLock = JavaReentrantLock()
 
-	protected final JavaReentrantLock lock = new JavaReentrantLock();
+    override fun reset() {
+        lock.runByInterruptibly { this.doReset() }
+    }
 
-	@Override
+    override fun next(): T? {
+        return lock.getByInterruptibly { super.next() }
+    }
 
-	public void reset() {
-		lock.runByInterruptibly(this::doReset);
-	}
-
-	@Override
-
-	public T next() {
-		return lock.getByInterruptibly(super::next);
-	}
-
-	public abstract void doReset();
-
+    abstract fun doReset()
 }

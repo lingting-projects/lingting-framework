@@ -1,61 +1,59 @@
-package live.lingting.framework.dingtalk;
+package live.lingting.framework.dingtalk
 
-import live.lingting.framework.dingtalk.message.DingTalkMessage;
-import live.lingting.framework.queue.WaitQueue;
-import org.slf4j.Logger;
-
-import java.util.Collection;
+import live.lingting.framework.dingtalk.message.DingTalkMessage
+import live.lingting.framework.queue.WaitQueue
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * 订单负载均衡消息发送
  *
  * @author lingting 2020/6/10 21:25
  */
-public class DingTalkBalancedSender {
+class DingTalkBalancedSender {
+    private val queue = WaitQueue<DingTalkSender>()
 
-	private static final Logger log = org.slf4j.LoggerFactory.getLogger(DingTalkBalancedSender.class);
-	private final WaitQueue<DingTalkSender> queue = new WaitQueue<>();
+    fun add(vararg senders: DingTalkSender): DingTalkBalancedSender {
+        for (sender in senders) {
+            queue.add(sender)
+        }
+        return this
+    }
 
-	public DingTalkBalancedSender add(DingTalkSender... senders) {
-		for (DingTalkSender sender : senders) {
-			queue.add(sender);
-		}
-		return this;
-	}
-
-	public DingTalkBalancedSender addAll(Collection<DingTalkSender> collection) {
-		queue.addAll(collection);
-		return this;
-	}
+    fun addAll(collection: Collection<DingTalkSender>): DingTalkBalancedSender {
+        queue.addAll(collection)
+        return this
+    }
 
 
-	protected DingTalkSender sender() {
-		return queue.poll();
-	}
+    protected fun sender(): DingTalkSender {
+        return queue.poll()
+    }
 
-	public DingTalkResponse send(DingTalkMessage message) {
-		DingTalkSender sender = sender();
-		try {
-			return sender.sendMessage(message);
-		}
-		finally {
-			queue.add(sender);
-		}
-	}
+    fun send(message: DingTalkMessage): DingTalkResponse? {
+        val sender = sender()
+        try {
+            return sender.sendMessage(message)
+        } finally {
+            queue.add(sender)
+        }
+    }
 
-	public void retry(DingTalkMessage message) {
-		while (true) {
-			try {
-				DingTalkResponse response = send(message);
-				if (response.isSuccess()) {
-					return;
-				}
-				log.error("钉钉消息发送失败! code: {}; message: {}", response.getCode(), response.getMessage());
-			}
-			catch (Exception e) {
-				log.error("钉钉消息发送异常!", e);
-			}
-		}
-	}
+    fun retry(message: DingTalkMessage) {
+        while (true) {
+            try {
+                val response = send(message)
+                if (response!!.isSuccess) {
+                    return
+                }
+                log.error("钉钉消息发送失败! code: {}; message: {}", response.code, response.message)
+            } catch (e: Exception) {
+                log.error("钉钉消息发送异常!", e)
+            }
+        }
+    }
 
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(DingTalkBalancedSender::class.java)
+    }
 }

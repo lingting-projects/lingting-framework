@@ -1,19 +1,16 @@
-package live.lingting.framework.aws.s3.interfaces;
+package live.lingting.framework.aws.s3.interfaces
 
-import live.lingting.framework.aws.s3.AwsS3Request;
-import live.lingting.framework.http.HttpResponse;
-import live.lingting.framework.http.header.HttpHeaders;
-import live.lingting.framework.value.multi.StringMultiValue;
-
-import java.time.LocalDateTime;
+import live.lingting.framework.aws.s3.AwsS3Request
+import live.lingting.framework.http.HttpResponse
+import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.value.multi.StringMultiValue
+import java.time.LocalDateTime
 
 /**
  * @author lingting 2024/11/5 14:47
  */
-public interface AwsS3Listener {
+interface AwsS3Listener {
+    fun onFailed(request: AwsS3Request?, response: HttpResponse)
 
-	void onFailed(AwsS3Request request, HttpResponse response);
-
-	void onAuthorization(AwsS3Request request, HttpHeaders headers, StringMultiValue params, LocalDateTime now);
-
+    fun onAuthorization(request: AwsS3Request, headers: HttpHeaders, params: StringMultiValue?, now: LocalDateTime)
 }

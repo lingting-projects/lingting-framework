@@ -1,69 +1,53 @@
+package live.lingting.polaris.grpc.resolver
 
-package live.lingting.polaris.grpc.resolver;
+import com.tencent.polaris.api.pojo.ServiceKey
+import com.tencent.polaris.client.api.SDKContext
+import java.net.URI
 
-import com.tencent.polaris.api.pojo.ServiceKey;
-import com.tencent.polaris.client.api.SDKContext;
+class ResolverContext {
+    var targetUri: URI? = null
+        private set
 
-import java.net.URI;
+    var context: SDKContext? = null
+        private set
 
-public class ResolverContext {
+    var sourceService: ServiceKey? = null
+        private set
 
-	private URI targetUri;
+    class ResolverContextBuilder {
+        private var targetUri: URI? = null
 
-	private SDKContext context;
+        private var context: SDKContext? = null
 
-	private ServiceKey sourceService;
+        private var sourceService: ServiceKey? = null
 
-	public static ResolverContextBuilder builder() {
-		return new ResolverContextBuilder();
-	}
+        fun targetUri(targetUri: URI?): ResolverContextBuilder {
+            this.targetUri = targetUri
+            return this
+        }
 
-	public URI getTargetUri() {
-		return targetUri;
-	}
+        fun context(context: SDKContext?): ResolverContextBuilder {
+            this.context = context
+            return this
+        }
 
-	public SDKContext getContext() {
-		return context;
-	}
+        fun sourceService(sourceService: ServiceKey?): ResolverContextBuilder {
+            this.sourceService = sourceService
+            return this
+        }
 
-	public ServiceKey getSourceService() {
-		return sourceService;
-	}
+        fun build(): ResolverContext {
+            val resolverContext = ResolverContext()
+            resolverContext.context = this.context
+            resolverContext.targetUri = this.targetUri
+            resolverContext.sourceService = this.sourceService
+            return resolverContext
+        }
+    }
 
-	public static final class ResolverContextBuilder {
-
-		private URI targetUri;
-
-		private SDKContext context;
-
-		private ServiceKey sourceService;
-
-		private ResolverContextBuilder() {
-		}
-
-		public ResolverContextBuilder targetUri(URI targetUri) {
-			this.targetUri = targetUri;
-			return this;
-		}
-
-		public ResolverContextBuilder context(SDKContext context) {
-			this.context = context;
-			return this;
-		}
-
-		public ResolverContextBuilder sourceService(ServiceKey sourceService) {
-			this.sourceService = sourceService;
-			return this;
-		}
-
-		public ResolverContext build() {
-			ResolverContext resolverContext = new ResolverContext();
-			resolverContext.context = this.context;
-			resolverContext.targetUri = this.targetUri;
-			resolverContext.sourceService = this.sourceService;
-			return resolverContext;
-		}
-
-	}
-
+    companion object {
+        fun builder(): ResolverContextBuilder {
+            return ResolverContextBuilder()
+        }
+    }
 }

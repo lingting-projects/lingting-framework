@@ -1,57 +1,46 @@
-package live.lingting.framework.crypto;
+package live.lingting.framework.crypto
 
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.Charset;
+import live.lingting.framework.api.R
+import java.nio.charset.Charset
+import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.SecretKeySpec
 
 /**
  * @author lingting 2024-09-04 13:59
  */
-public abstract class AbstractCrypt<R extends AbstractCrypt<R>> {
+abstract class AbstractCrypt<R : AbstractCrypt<R>>(
+    protected val algorithm: String,
+    protected val charset: Charset,
+    protected val secret: SecretKeySpec,
+    protected val iv: IvParameterSpec?,
+) {
+    fun useSecret(secret: SecretKeySpec): R {
+        return instance(algorithm, charset, secret, iv)
+    }
 
-	protected final String algorithm;
+    fun useSecret(secret: ByteArray): R {
+        val spec = SecretKeySpec(secret, algorithm)
+        return useSecret(spec)
+    }
 
-	protected final Charset charset;
+    fun useSecret(secret: String): R {
+        val bytes: ByteArray = secret.toByteArray(charset)
+        return useSecret(bytes)
+    }
 
-	protected final SecretKeySpec secret;
+    fun useIv(iv: IvParameterSpec?): R {
+        return instance(algorithm, charset, secret, iv)
+    }
 
-	protected final IvParameterSpec iv;
+    fun useIv(iv: ByteArray): R {
+        val spec = IvParameterSpec(iv)
+        return useIv(spec)
+    }
 
-	public AbstractCrypt(String algorithm, Charset charset, SecretKeySpec secret, IvParameterSpec iv) {
-		this.algorithm = algorithm;
-		this.charset = charset;
-		this.secret = secret;
-		this.iv = iv;
-	}
+    fun useIv(iv: String): R {
+        val bytes: ByteArray = iv.toByteArray(charset)
+        return useIv(bytes)
+    }
 
-	public R useSecret(SecretKeySpec secret) {
-		return instance(algorithm, charset, secret, iv);
-	}
-
-	public R useSecret(byte[] secret) {
-		SecretKeySpec spec = new SecretKeySpec(secret, algorithm);
-		return useSecret(spec);
-	}
-
-	public R useSecret(String secret) {
-		byte[] bytes = secret.getBytes(charset);
-		return useSecret(bytes);
-	}
-
-	public R useIv(IvParameterSpec iv) {
-		return instance(algorithm, charset, secret, iv);
-	}
-
-	public R useIv(byte[] iv) {
-		IvParameterSpec spec = new IvParameterSpec(iv);
-		return useIv(spec);
-	}
-
-	public R useIv(String iv) {
-		byte[] bytes = iv.getBytes(charset);
-		return useIv(bytes);
-	}
-
-	protected abstract R instance(String algorithm, Charset charset, SecretKeySpec secret, IvParameterSpec iv);
-
+    protected abstract fun instance(algorithm: String, charset: Charset, secret: SecretKeySpec, iv: IvParameterSpec?): R
 }

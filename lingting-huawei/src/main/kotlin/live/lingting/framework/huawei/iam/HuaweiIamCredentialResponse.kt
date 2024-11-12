@@ -1,63 +1,36 @@
-package live.lingting.framework.huawei.iam;
+package live.lingting.framework.huawei.iam
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
  * @author lingting 2024-09-13 14:00
  */
-public class HuaweiIamCredentialResponse {
+class HuaweiIamCredentialResponse {
+    var credential: Credential? = null
 
-	private Credential credential;
+    val access: String?
+        get() = credential!!.access
 
-	public String getAccess() {
-		return getCredential().getAccess();
-	}
+    val secret: String?
+        get() = credential!!.secret
 
-	public String getSecret() {
-		return getCredential().getSecret();
-	}
+    val securityToken: String?
+        get() = credential!!.securityToken
 
-	public String getSecurityToken() {
-		return getCredential().getSecurityToken();
-	}
+    val expire: String?
+        get() = credential!!.expire
 
-	public String getExpire() {
-		return getCredential().getExpire();
-	}
+    class Credential {
+        var access: String? = null
 
-	public Credential getCredential() {return this.credential;}
+        var secret: String? = null
 
-	public void setCredential(Credential credential) {this.credential = credential;}
+        @set:JsonProperty("securitytoken")
+        @JsonProperty("securitytoken")
+        var securityToken: String? = null
 
-	public static class Credential {
-
-		private String access;
-
-		private String secret;
-
-		@JsonProperty("securitytoken")
-		private String securityToken;
-
-		@JsonProperty("expires_at")
-		private String expire;
-
-		public String getAccess() {return this.access;}
-
-		public String getSecret() {return this.secret;}
-
-		public String getSecurityToken() {return this.securityToken;}
-
-		public String getExpire() {return this.expire;}
-
-		public void setAccess(String access) {this.access = access;}
-
-		public void setSecret(String secret) {this.secret = secret;}
-
-		@JsonProperty("securitytoken")
-		public void setSecurityToken(String securityToken) {this.securityToken = securityToken;}
-
-		@JsonProperty("expires_at")
-		public void setExpire(String expire) {this.expire = expire;}
-	}
-
+        @set:JsonProperty("expires_at")
+        @JsonProperty("expires_at")
+        var expire: String? = null
+    }
 }

@@ -75,8 +75,8 @@ class HuaweiObsTest {
 		List<AwsS3MultipartItem> items = obsBucket.multipartList();
 		if (!CollectionUtils.isEmpty(items)) {
 			items.forEach(item -> {
-				String k = item.key();
-				String v = item.uploadId();
+				String k = item.key;
+				String v = item.uploadId;
 				HuaweiObsObject obsObject = obsBucket.use(k);
 				obsObject.multipartCancel(v);
 			});
@@ -95,17 +95,17 @@ class HuaweiObsTest {
 		task.await();
 		if (task.hasFailed()) {
 			for (PartTask t : task.tasksFailed()) {
-				log.error("multipart error!", t.getT());
+				log.error("multipart error!", t.t);
 			}
 		}
 		assertTrue(task.isCompleted());
 		assertFalse(task.hasFailed());
-		Multipart multipart = task.getMultipart();
-		assertTrue(multipart.getPartSize() >= MULTIPART_MIN_PART_SIZE);
+		Multipart multipart = task.multipart;
+		assertTrue(multipart.partSize >= MULTIPART_MIN_PART_SIZE);
 		HuaweiObsHeaders head = obsObject.head();
 		assertNotNull(head);
 		assertEquals(bytes.length, head.contentLength());
-		assertEquals(task.getUploadId(), head.multipartUploadId());
+		assertEquals(task.uploadId, head.multipartUploadId());
 		HttpDownload await = HttpDownload.single(obsObject.publicUrl()).build().start().await();
 		String string = StreamUtils.toString(Files.newInputStream(await.getFile().toPath()));
 		assertEquals(source, string);

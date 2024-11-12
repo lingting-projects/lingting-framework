@@ -1,29 +1,27 @@
-package live.lingting.framework.security.convert;
+package live.lingting.framework.security.convert
 
-import live.lingting.framework.security.domain.AuthorizationVO;
-import live.lingting.framework.security.domain.SecurityScope;
+import live.lingting.framework.security.domain.AuthorizationVO
+import live.lingting.framework.security.domain.SecurityScope
 
 /**
  * @author lingting 2024-01-30 19:24
  */
-public interface SecurityConvert {
+interface SecurityConvert {
+    fun scopeExpand(scope: SecurityScope): SecurityScope {
+        return scope
+    }
 
-	default SecurityScope scopeExpand(SecurityScope scope) {
-		return scope;
-	}
+    fun voExpand(vo: AuthorizationVO): AuthorizationVO {
+        return vo
+    }
 
-	default AuthorizationVO voExpand(AuthorizationVO vo) {
-		return vo;
-	}
+    fun scopeToVo(scope: SecurityScope?): AuthorizationVO {
+        val rawVO: AuthorizationVO = SecurityMapstruct.Companion.INSTANCE.toVo(scope)
+        return voExpand(rawVO)
+    }
 
-	default AuthorizationVO scopeToVo(SecurityScope scope) {
-		AuthorizationVO rawVO = SecurityMapstruct.INSTANCE.toVo(scope);
-		return voExpand(rawVO);
-	}
-
-	default SecurityScope voToScope(AuthorizationVO vo) {
-		SecurityScope rawScope = SecurityMapstruct.INSTANCE.ofVo(vo);
-		return scopeExpand(rawScope);
-	}
-
+    fun voToScope(vo: AuthorizationVO?): SecurityScope {
+        val rawScope: SecurityScope = SecurityMapstruct.Companion.INSTANCE.ofVo(vo)
+        return scopeExpand(rawScope)
+    }
 }

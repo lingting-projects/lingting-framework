@@ -1,132 +1,105 @@
-package live.lingting.framework.thread;
+package live.lingting.framework.thread
 
-import live.lingting.framework.function.InterruptedRunnable;
-import live.lingting.framework.util.ThreadUtils;
-
-import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import live.lingting.framework.function.InterruptedRunnable
+import live.lingting.framework.util.ThreadUtils
+import java.time.Duration
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.TimeUnit
+import java.util.function.Predicate
+import java.util.function.Supplier
 
 /**
  * @author lingting 2024-05-31 11:14
  */
-public class Await<S> {
+class Await<S>(private val supplier: Supplier<S>?, private val predicate: Predicate<S>?, private val sleep: InterruptedRunnable, private val timeout: Duration?, private val executor: ExecutorService?) {
+    fun await(): S {
+        val supply = Supplier<S> {
+            while (true) {
+                val s = supplier!!.get()
+                if (predicate!!.test(s)) {
+                    return@Supplier s
+                }
 
-	private final Supplier<S> supplier;
+                sleep.run()
+            }
+        }
+        // 未设置超时
+        if (timeout == null || timeout.isNegative || timeout.isZero) {
+            return supply.get()
+        }
 
-	private final Predicate<S> predicate;
+        try {
+            // 设置超时
+            val future = CompletableFuture.supplyAsync(supply, executor)
+                .orTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS)
+            return future.get()
+        } catch (e: ExecutionException) {
+            throw e.cause!!
+        }
+    }
 
-	private final InterruptedRunnable sleep;
+    class AwaitBuilder<S> {
+        private var supplier: Supplier<S>? = null
 
-	private final Duration timeout;
+        private var predicate: Predicate<S>? = null
 
-	private final ExecutorService executor;
+        private var sleep: InterruptedRunnable = InterruptedRunnable.THREAD_SLEEP
 
-	public Await(Supplier<S> supplier, Predicate<S> predicate, InterruptedRunnable sleep, Duration timeout, ExecutorService executor) {
-		this.supplier = supplier;
-		this.predicate = predicate;
-		this.sleep = sleep;
-		this.timeout = timeout;
-		this.executor = executor;
-	}
+        private var timeout: Duration? = null
 
+        private var executor: ExecutorService? = VirtualThread.executor()
 
-	public S await() {
-		Supplier<S> supply = new Supplier<>() {
+        fun supplier(supplier: Supplier<S>?): AwaitBuilder<S> {
+            this.supplier = supplier
+            return this
+        }
 
-			@Override
-			public S get() {
-				while (true) {
-					S s = supplier.get();
-					if (predicate.test(s)) {
-						return s;
-					}
+        fun predicate(predicate: Predicate<S>?): AwaitBuilder<S> {
+            this.predicate = predicate
+            return this
+        }
 
-					sleep.run();
-				}
-			}
-		};
-		// 未设置超时
-		if (timeout == null || timeout.isNegative() || timeout.isZero()) {
-			return supply.get();
-		}
+        fun sleep(sleep: InterruptedRunnable): AwaitBuilder<S> {
+            this.sleep = sleep
+            return this
+        }
 
-		try {
-			// 设置超时
-			CompletableFuture<S> future = CompletableFuture.supplyAsync(supply, executor)
-				.orTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS);
-			return future.get();
-		}
-		catch (ExecutionException e) {
-			throw e.getCause();
-		}
-	}
+        fun timeout(timeout: Duration?): AwaitBuilder<S> {
+            this.timeout = timeout
+            return this
+        }
 
-	public static <S> AwaitBuilder<S> builder(Supplier<S> supplier, Predicate<S> predicate) {
-		return Await.<S>builder().supplier(supplier).predicate(predicate);
-	}
+        fun executor(executor: ExecutorService?): AwaitBuilder<S> {
+            this.executor = executor
+            return this
+        }
 
-	public static <S> AwaitBuilder<S> builder() {
-		return new AwaitBuilder<>();
-	}
+        fun useThreadPool(): AwaitBuilder<S> {
+            return executor(ThreadUtils.executor())
+        }
 
-	public static class AwaitBuilder<S> {
+        fun useThreadVirtual(): AwaitBuilder<S> {
+            return executor(VirtualThread.executor())
+        }
 
-		private Supplier<S> supplier;
+        fun build(): Await<S> {
+            return Await(supplier, predicate, sleep, timeout, executor)
+        }
 
-		private Predicate<S> predicate;
+        fun await(): S {
+            return build().await()
+        }
+    }
 
-		private InterruptedRunnable sleep = InterruptedRunnable.THREAD_SLEEP;
+    companion object {
+        fun <S> builder(supplier: Supplier<S>?, predicate: Predicate<S>?): AwaitBuilder<S> {
+            return builder<S>().supplier(supplier).predicate(predicate)
+        }
 
-		private Duration timeout;
-
-		private ExecutorService executor = VirtualThread.executor();
-
-		public AwaitBuilder<S> supplier(Supplier<S> supplier) {
-			this.supplier = supplier;
-			return this;
-		}
-
-		public AwaitBuilder<S> predicate(Predicate<S> predicate) {
-			this.predicate = predicate;
-			return this;
-		}
-
-		public AwaitBuilder<S> sleep(InterruptedRunnable sleep) {
-			this.sleep = sleep;
-			return this;
-		}
-
-		public AwaitBuilder<S> timeout(Duration timeout) {
-			this.timeout = timeout;
-			return this;
-		}
-
-		public AwaitBuilder<S> executor(ExecutorService executor) {
-			this.executor = executor;
-			return this;
-		}
-
-		public AwaitBuilder<S> useThreadPool() {
-			return executor(ThreadUtils.executor());
-		}
-
-		public AwaitBuilder<S> useThreadVirtual() {
-			return executor(VirtualThread.executor());
-		}
-
-		public Await<S> build() {
-			return new Await<>(supplier, predicate, sleep, timeout, executor);
-		}
-
-		public S await() {
-			return build().await();
-		}
-
-	}
-
+        fun <S> builder(): AwaitBuilder<S> {
+            return AwaitBuilder()
+        }
+    }
 }

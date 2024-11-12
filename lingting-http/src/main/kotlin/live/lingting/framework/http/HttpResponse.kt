@@ -1,126 +1,109 @@
-package live.lingting.framework.http;
+package live.lingting.framework.http
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import live.lingting.framework.http.header.HttpHeaders;
-import live.lingting.framework.jackson.JacksonUtils;
-import live.lingting.framework.lock.JavaReentrantLock;
-import live.lingting.framework.lock.LockRunnable;
-import live.lingting.framework.stream.CloneInputStream;
-import live.lingting.framework.util.StreamUtils;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Type;
-import java.net.URI;
-import java.util.function.Function;
+import com.fasterxml.jackson.core.type.TypeReference
+import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.jackson.JacksonUtils
+import live.lingting.framework.lock.JavaReentrantLock
+import live.lingting.framework.lock.LockRunnable
+import live.lingting.framework.stream.CloneInputStream
+import live.lingting.framework.util.StreamUtils
+import okhttp3.Cookie.Builder.value
+import java.io.Closeable
+import java.io.IOException
+import java.io.InputStream
+import java.lang.reflect.Type
+import java.net.URI
+import java.util.function.Function
 
 /**
  * @author lingting 2024-09-12 23:37
  */
-public class HttpResponse implements Closeable {
+class HttpResponse(protected val request: HttpRequest, protected val code: Int, protected val headers: HttpHeaders, protected val body: InputStream) : Closeable {
+    protected val lock: JavaReentrantLock = JavaReentrantLock()
 
-	protected final JavaReentrantLock lock = new JavaReentrantLock();
+    protected var string: String? = null
 
-	protected final HttpRequest request;
+    fun request(): HttpRequest {
+        return request
+    }
 
-	protected final int code;
+    fun uri(): URI? {
+        return request.uri()
+    }
 
-	protected final HttpHeaders headers;
+    fun code(): Int {
+        return code
+    }
 
-	protected final InputStream body;
+    fun headers(): HttpHeaders {
+        return headers
+    }
 
-	protected String string;
+    fun body(): InputStream {
+        return body
+    }
 
-	protected HttpResponse(HttpRequest request, int code, HttpHeaders headers, InputStream body) {
-		this.request = request;
-		this.code = code;
-		this.headers = headers;
-		this.body = body;
-	}
-
-	public HttpRequest request() {
-		return request;
-	}
-
-	public URI uri() {
-		return request.uri();
-	}
-
-	public int code() {
-		return code;
-	}
-
-	public HttpHeaders headers() {
-		return headers;
-	}
-
-	public InputStream body() {
-		return body;
-	}
-
-	public byte[] bytes() throws IOException {
-		try (InputStream in = body()) {
-			return in.readAllBytes();
-		}
-	}
+    @Throws(IOException::class)
+    fun bytes(): ByteArray {
+        body().use { `in` ->
+            return `in`.readAllBytes()
+        }
+    }
 
 
-	public String string() {
-		if (string != null) {
-			return string;
-		}
+    fun string(): String? {
+        if (string != null) {
+            return string
+        }
 
-		lock.runByInterruptibly(new LockRunnable() {
-			@Override
+        lock.runByInterruptibly(object : LockRunnable {
+            @Throws(InterruptedException::class)
+            override fun run() {
+                if (string != null) {
+                    return
+                }
+                body().use { stream ->
+                    string = if (stream == null) "" else StreamUtils.toString(stream)
+                }
+            }
+        })
+        return string
+    }
 
-			public void run() throws InterruptedException {
-				if (string != null) {
-					return;
-				}
-				try (InputStream stream = body()) {
-					string = stream == null ? "" : StreamUtils.toString(stream);
-				}
-			}
-		});
-		return string;
-	}
+    fun <T> convert(cls: Class<T>?): T {
+        val json = string()
+        return JacksonUtils.toObj(json!!, cls)
+    }
 
-	public <T> T convert(Class<T> cls) {
-		String json = string();
-		return JacksonUtils.toObj(json, cls);
-	}
+    fun <T> convert(type: Type?): T {
+        val json = string()
+        return JacksonUtils.toObj(json!!, type)
+    }
 
-	public <T> T convert(Type type) {
-		String json = string();
-		return JacksonUtils.toObj(json, type);
-	}
+    fun <T> convert(reference: TypeReference<T>?): T {
+        val json = string()
+        return JacksonUtils.toObj(json, reference)
+    }
 
-	public <T> T convert(TypeReference<T> reference) {
-		String json = string();
-		return JacksonUtils.toObj(json, reference);
-	}
+    fun <T> convert(function: Function<String?, T>): T {
+        val json = string()
+        return function.apply(json)
+    }
 
-	public <T> T convert(Function<String, T> function) {
-		String json = string();
-		return function.apply(json);
-	}
+    fun isRange(start: Int, end: Int): Boolean {
+        val status = code()
+        return status >= start && status <= end
+    }
 
-	public boolean isRange(int start, int end) {
-		int status = code();
-		return status >= start && status <= end;
-	}
+    fun is2xx(): Boolean {
+        return isRange(200, 299)
+    }
 
-	public boolean is2xx() {
-		return isRange(200, 299);
-	}
-
-	@Override
-	public void close() throws IOException {
-		if (body instanceof CloneInputStream clone) {
-			clone.setCloseAndDelete(true);
-		}
-		StreamUtils.close(body);
-	}
-
+    @Throws(IOException::class)
+    override fun close() {
+        if (body is CloneInputStream) {
+            body.isCloseAndDelete = true
+        }
+        StreamUtils.close(body)
+    }
 }

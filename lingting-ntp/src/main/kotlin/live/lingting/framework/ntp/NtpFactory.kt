@@ -1,141 +1,128 @@
-package live.lingting.framework.ntp;
+package live.lingting.framework.ntp
 
-import live.lingting.framework.util.IpUtils;
-import live.lingting.framework.util.ThreadUtils;
-import live.lingting.framework.value.CycleValue;
-import live.lingting.framework.value.StepValue;
-import live.lingting.framework.value.cycle.StepCycleValue;
-import live.lingting.framework.value.step.LongStepValue;
-import org.apache.commons.net.ntp.NTPUDPClient;
-import org.apache.commons.net.ntp.TimeInfo;
-import org.slf4j.Logger;
-
-import java.net.InetAddress;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
-import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
+import live.lingting.framework.util.IpUtils
+import live.lingting.framework.util.ThreadUtils
+import live.lingting.framework.value.CycleValue
+import live.lingting.framework.value.StepValue
+import live.lingting.framework.value.cycle.StepCycleValue
+import live.lingting.framework.value.step.LongStepValue
+import org.apache.commons.net.ntp.NTPUDPClient
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.net.InetAddress
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import java.time.Duration
+import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+import java.util.function.Supplier
+import java.util.stream.Collectors
 
 /**
  * @author lingting 2023-12-27 15:47
  */
-@SuppressWarnings("java:S6548")
-public class NtpFactory {
+class NtpFactory protected constructor() {
+    private val blockHosts: MutableSet<String> = HashSet()
 
-	public static final StepValue<Long> STEP_INIT = new LongStepValue(1, null, Long.valueOf(10));
+    @Throws(InterruptedException::class)
+    fun create(): Ntp? {
+        return create(*HOSTS)
+    }
 
-	public static final NtpFactory INSTANCE = new NtpFactory();
+    @Throws(InterruptedException::class)
+    fun create(vararg hosts: String?): Ntp? {
+        return create(Arrays.asList(*hosts))
+    }
 
-	private static final String[] HOSTS = {"time.windows.com", "time.nist.gov", "time.apple.com",
-		"time.asia.apple.com", "cn.ntp.org.cn", "ntp.ntsc.ac.cn", "cn.pool.ntp.org", "ntp.aliyun.com",
-		"ntp1.aliyun.com", "ntp2.aliyun.com", "ntp3.aliyun.com", "ntp4.aliyun.com", "ntp5.aliyun.com",
-		"ntp6.aliyun.com", "ntp7.aliyun.com",};
-	private static final Logger log = org.slf4j.LoggerFactory.getLogger(NtpFactory.class);
+    @Throws(InterruptedException::class)
+    fun create(hosts: Collection<String>): Ntp? {
+        val cycle: CycleValue<Long> = StepCycleValue(STEP_INIT)
+        for (host in hosts) {
+            if (blockHosts.contains(host)) {
+                log.debug("[{}] is block host! skip", host)
+                continue
+            }
+            try {
+                val ntp = createByFuture(cycle, host)
+                if (ntp != null) {
+                    return ntp
+                }
+            } catch (e: UnknownHostException) {
+                log.warn("[{}] host cannot be resolved!", host)
+                blockHosts.add(host)
+            } catch (e: InterruptedException) {
+                throw e
+            } catch (e: TimeoutException) {
+                log.warn("Ntp initialization timeout! host: {}", host)
+            } catch (e: Exception) {
+                log.error("Ntp initialization exception! host: {}", host)
+            }
+        }
+        return null
+    }
 
-	private final Set<String> blockHosts = new HashSet<>();
+    @Throws(UnknownHostException::class, ExecutionException::class, TimeoutException::class, InterruptedException::class)
+    fun createByFuture(cycle: CycleValue<Long>, host: String): Ntp? {
+        val ip = IpUtils.resolve(host)
 
-	protected NtpFactory() {}
+        var future: CompletableFuture<Ntp?> = ThreadUtils.async {
+            val diff = diff(host)
+            Ntp(host, diff)
+        }
+        try {
+            val next = cycle.next()
+            val ntp = future[next, TimeUnit.SECONDS]
+            if (ntp != null) {
+                return ntp
+            }
+        } finally {
+            future.cancel(true)
+        }
 
-	public static Set<String> getDefaultHosts() {
-		return Arrays.stream(HOSTS).collect(Collectors.toCollection(LinkedHashSet::new));
-	}
+        future = ThreadUtils.async { Ntp(ip, diff(ip)) }
+        try {
+            val next = cycle.next()
+            return future[next, TimeUnit.SECONDS]
+        } finally {
+            future.cancel(true)
+        }
+    }
 
-	public static NtpFactory getDefault() {
-		return INSTANCE;
-	}
+    fun diff(host: String?): Long {
+        try {
+            NTPUDPClient().use { client ->
+                client.setDefaultTimeout(Duration.ofSeconds(5))
+                client.open()
+                client.setSoTimeout(Duration.ofSeconds(3))
+                val time = client.getTime(InetAddress.getByName(host))
+                val system = System.currentTimeMillis()
+                val ntp = time.message.transmitTimeStamp.time
+                return ntp - system
+            }
+        } catch (e: SocketTimeoutException) {
+            throw NtpException("Ntp get diff timeout! host: %s".formatted(host), e)
+        } catch (e: Exception) {
+            throw NtpException("Ntp get diff error! host: %s".formatted(host), e)
+        }
+    }
 
-	public Ntp create() throws InterruptedException {
-		return create(HOSTS);
-	}
+    companion object {
+        val STEP_INIT: StepValue<Long> = LongStepValue(1, null, 10)
 
-	public Ntp create(String... hosts) throws InterruptedException {
-		return create(Arrays.asList(hosts));
-	}
+        val default: NtpFactory = NtpFactory()
 
-	public Ntp create(Collection<String> hosts) throws InterruptedException {
-		CycleValue<Long> cycle = new StepCycleValue<>(STEP_INIT);
-		for (String host : hosts) {
-			if (blockHosts.contains(host)) {
-				log.debug("[{}] is block host! skip", host);
-				continue;
-			}
-			try {
-				Ntp ntp = createByFuture(cycle, host);
-				if (ntp != null) {
-					return ntp;
-				}
-			}
-			catch (UnknownHostException e) {
-				log.warn("[{}] host cannot be resolved!", host);
-				blockHosts.add(host);
-			}
-			catch (InterruptedException e) {
-				throw e;
-			}
-			catch (TimeoutException e) {
-				log.warn("Ntp initialization timeout! host: {}", host);
-			}
-			catch (Exception e) {
-				log.error("Ntp initialization exception! host: {}", host);
-			}
-		}
-		return null;
-	}
+        private val HOSTS = arrayOf(
+            "time.windows.com", "time.nist.gov", "time.apple.com",
+            "time.asia.apple.com", "cn.ntp.org.cn", "ntp.ntsc.ac.cn", "cn.pool.ntp.org", "ntp.aliyun.com",
+            "ntp1.aliyun.com", "ntp2.aliyun.com", "ntp3.aliyun.com", "ntp4.aliyun.com", "ntp5.aliyun.com",
+            "ntp6.aliyun.com", "ntp7.aliyun.com",
+        )
+        private val log: Logger = LoggerFactory.getLogger(NtpFactory::class.java)
 
-	public Ntp createByFuture(CycleValue<Long> cycle, String host)
-		throws UnknownHostException, ExecutionException, TimeoutException, InterruptedException {
-		String ip = IpUtils.resolve(host);
-
-		CompletableFuture<Ntp> future = ThreadUtils.async(() -> {
-			long diff = diff(host);
-			return new Ntp(host, diff);
-		});
-		try {
-			Long next = cycle.next();
-			Ntp ntp = future.get(next, TimeUnit.SECONDS);
-			if (ntp != null) {
-				return ntp;
-			}
-		}
-		finally {
-			future.cancel(true);
-		}
-
-		future = ThreadUtils.async(() -> new Ntp(ip, diff(ip)));
-		try {
-			Long next = cycle.next();
-			return future.get(next, TimeUnit.SECONDS);
-		}
-		finally {
-			future.cancel(true);
-		}
-	}
-
-	public long diff(String host) {
-		try (NTPUDPClient client = new NTPUDPClient()) {
-			client.setDefaultTimeout(Duration.ofSeconds(5));
-			client.open();
-			client.setSoTimeout(Duration.ofSeconds(3));
-			TimeInfo time = client.getTime(InetAddress.getByName(host));
-			long system = System.currentTimeMillis();
-			long ntp = time.getMessage().getTransmitTimeStamp().getTime();
-			return ntp - system;
-		}
-		catch (SocketTimeoutException e) {
-			throw new NtpException("Ntp get diff timeout! host: %s".formatted(host), e);
-		}
-		catch (Exception e) {
-			throw new NtpException("Ntp get diff error! host: %s".formatted(host), e);
-		}
-	}
-
+        val defaultHosts: Set<String>
+            get() = Arrays.stream(HOSTS).collect(Collectors.toCollection(Supplier { LinkedHashSet() }))
+    }
 }

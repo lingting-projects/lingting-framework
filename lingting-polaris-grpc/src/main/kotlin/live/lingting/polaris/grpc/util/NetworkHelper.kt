@@ -1,109 +1,109 @@
+package live.lingting.polaris.grpc.util
 
-package live.lingting.polaris.grpc.util;
-
-import com.tencent.polaris.api.utils.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.Socket;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import com.tencent.polaris.api.utils.StringUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.io.IOException
+import java.net.InetAddress
+import java.net.NetworkInterface
+import java.net.Socket
 
 /**
  * @author lixiaoshuang
  */
-@SuppressWarnings("java:S1181")
-public final class NetworkHelper {
+class NetworkHelper private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(NetworkHelper.class);
+    companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(NetworkHelper::class.java)
 
-	private static final String LOCALHOST_VALUE = "127.0.0.1";
+        private const val LOCALHOST_VALUE = "127.0.0.1"
 
-	private NetworkHelper() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+        /**
+         * Gets the local address to which the socket is bound.
+         *
+         * @param host polaris server host
+         * @param port polaris server port
+         * @return local ip
+         */
+        fun getLocalHost(host: String?, port: Int): String? {
+            try {
+                Socket(host, port).use { socket ->
+                    val address = socket.localAddress
+                    return address.hostAddress
+                }
+            } catch (ex: IOException) {
+                LOGGER.error("getLocalHost through socket fail : {}", ex.message)
+                return localHostExactAddress
+            }
+        }
 
-	/**
-	 * Gets the local address to which the socket is bound.
-	 *
-	 * @param host polaris server host
-	 * @param port polaris server port
-	 * @return local ip
-	 */
-	public static String getLocalHost(String host, int port) {
-		try (Socket socket = new Socket(host, port)) {
-			InetAddress address = socket.getLocalAddress();
-			return address.getHostAddress();
-		}
-		catch (IOException ex) {
-			LOGGER.error("getLocalHost through socket fail : {}", ex.getMessage());
-			return getLocalHostExactAddress();
-		}
-	}
+        val localHostExactAddress: String?
+            /**
+             * Get real local ip.
+             *
+             *
+             * You can use getNetworkInterfaces()+getInetAddresses() to get all the IP addresses
+             * of the node, and then judge to find out the site-local address, this is a
+             * recommended solution.
+             *
+             * @return real ip
+             */
+            get() {
+                try {
+                    val networkInterfaces = NetworkInterface.getNetworkInterfaces()
+                    while (networkInterfaces.hasMoreElements()) {
+                        val iface = networkInterfaces.nextElement()
+                        val inetAddrs = iface.inetAddresses
+                        while (inetAddrs.hasMoreElements()) {
+                            val inetAddr = inetAddrs.nextElement()
+                            if (!inetAddr.isLoopbackAddress && inetAddr.isSiteLocalAddress) {
+                                return inetAddr.hostAddress
+                            }
+                        }
+                    }
+                    return localHost
+                } catch (e: Exception) {
+                    LOGGER.error("getLocalHostExactAddress error", e)
+                }
+                return null
+            }
 
-	/**
-	 * Get real local ip.
-	 * <p>
-	 * You can use getNetworkInterfaces()+getInetAddresses() to get all the IP addresses
-	 * of the node, and then judge to find out the site-local address, this is a
-	 * recommended solution.
-	 *
-	 * @return real ip
-	 */
-	public static String getLocalHostExactAddress() {
-		try {
-			Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-			while (networkInterfaces.hasMoreElements()) {
-				NetworkInterface iface = networkInterfaces.nextElement();
-				for (Enumeration<InetAddress> inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements(); ) {
-					InetAddress inetAddr = inetAddrs.nextElement();
-					if (!inetAddr.isLoopbackAddress() && inetAddr.isSiteLocalAddress()) {
-						return inetAddr.getHostAddress();
-					}
-				}
-			}
-			return getLocalHost();
-		}
-		catch (Exception e) {
-			LOGGER.error("getLocalHostExactAddress error", e);
-		}
-		return null;
-	}
+        val localHost: String
+            /**
+             * Get local ip.
+             *
+             *
+             * There are environmental restrictions. Different environments may get different ips.
+             */
+            get() {
+                var inetAddress: InetAddress? = null
+                try {
+                    inetAddress = InetAddress.getLocalHost()
+                } catch (e: Throwable) {
+                    LOGGER.error("get local host", e)
+                }
+                if (inetAddress == null) {
+                    return LOCALHOST_VALUE
+                }
+                return inetAddress.hostAddress
+            }
 
-	/**
-	 * Get local ip.
-	 * <p>
-	 * There are environmental restrictions. Different environments may get different ips.
-	 */
-	public static String getLocalHost() {
-		InetAddress inetAddress = null;
-		try {
-			inetAddress = InetAddress.getLocalHost();
-		}
-		catch (Throwable e) {
-			LOGGER.error("get local host", e);
-		}
-		if (inetAddress == null) {
-			return LOCALHOST_VALUE;
-		}
-		return inetAddress.getHostAddress();
-	}
-
-	public static Map<String, String> getUrlParams(String param) {
-		Map<String, String> map = new HashMap<>();
-		if (StringUtils.isBlank(param)) {
-			return map;
-		}
-		String[] params = param.split("&");
-		for (String s : params) {
-			String[] p = s.split("=");
-			if (p.length == 2) {
-				map.put(p[0], p[1]);
-			}
-		}
-		return map;
-	}
-
+        fun getUrlParams(param: String): Map<String, String?> {
+            val map: MutableMap<String, String?> = HashMap()
+            if (StringUtils.isBlank(param)) {
+                return map
+            }
+            val params = param.split("&".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            for (s in params) {
+                val p = s.split("=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                if (p.size == 2) {
+                    map[p[0]] = p[1]
+                }
+            }
+            return map
+        }
+    }
 }

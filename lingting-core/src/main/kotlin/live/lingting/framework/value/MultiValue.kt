@@ -1,112 +1,98 @@
-package live.lingting.framework.value;
+package live.lingting.framework.value
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiConsumer;
+import java.util.function.BiConsumer
 
 /**
  * @author lingting 2024-09-05 21:17
  */
-public interface MultiValue<K, V, C extends Collection<V>> {
+interface MultiValue<K, V, C : Collection<V>> {
+    // region fill
+    /**
+     * 为指定key创建一个槽位(如果不存在)
+     */
+    fun ifAbsent(key: K)
 
-	// region fill
+    fun add(key: K)
 
-	/**
-	 * 为指定key创建一个槽位(如果不存在)
-	 */
-	void ifAbsent(K key);
+    fun add(key: K, value: V)
 
-	void add(K key);
+    fun addAll(key: K, values: Collection<V>)
 
-	void add(K key, V value);
+    fun addAll(key: K, values: Iterable<V>)
 
-	void addAll(K key, Collection<V> values);
+    fun addAll(map: Map<K, Collection<V>>)
 
-	void addAll(K key, Iterable<V> values);
+    fun addAll(value: MultiValue<K, V, C>)
 
-	void addAll(Map<K, ? extends Collection<V>> map);
+    fun put(key: K, value: V)
 
-	void addAll(MultiValue<K, V, C> value);
+    fun putAll(key: K, values: Iterable<V>)
 
-	void put(K key, V value);
+    fun putAll(map: Map<K, Collection<V>>)
 
-	void putAll(K key, Iterable<V> values);
+    fun putAll(value: MultiValue<K, V, C>)
 
-	void putAll(Map<K, Collection<V>> map);
+    fun replace(oldKey: K, newKey: K)
 
-	void putAll(MultiValue<K, V, C> value);
+    // endregion
+    // region get
 
-	void replace(K oldKey, K newKey);
+    val isEmpty: Boolean
 
-	// endregion
+    fun isEmpty(key: K): Boolean
 
-	// region get
+    fun size(): Int
 
-	boolean isEmpty();
+    fun hasKey(key: K): Boolean
 
-	boolean isEmpty(K key);
+    fun get(key: K): C
 
-	int size();
+    fun iterator(key: K): Iterator<V>
 
-	boolean hasKey(K key);
+    fun first(key: K): V?
 
-	C get(K key);
+    fun first(key: K, defaultValue: V): V {
+        val v = first(key)
+        return v ?: defaultValue
+    }
 
-	Iterator<V> iterator(K key);
+    fun keys(): Set<K>
 
-	V first(K key);
+    fun values(): Collection<C>
 
-	default V first(K key, V defaultValue) {
-		V v = first(key);
-		return v == null ? defaultValue : v;
-	}
+    fun map(): Map<K, C>
 
-	Set<K> keys();
+    fun entries(): Set<Map.Entry<K, C>>
 
-	Collection<C> values();
+    fun unmodifiable(): MultiValue<K, V, Collection<V>>
 
-	Map<K, C> map();
+    // endregion
+    // region remove
+    fun clear()
 
-	Set<Map.Entry<K, C>> entries();
+    fun remove(key: K): C
 
-	MultiValue<K, V, Collection<V>> unmodifiable();
+    fun remove(key: K, value: V): Boolean
 
-	// endregion
+    // endregion
+    // region function
+    fun forEach(consumer: BiConsumer<K, C>)
 
-	// region remove
-	void clear();
+    fun each(consumer: BiConsumer<K, V>)
 
-	C remove(K key);
+    fun forEachSorted(consumer: BiConsumer<K, C>) {
+        keys().stream().sorted().forEach { key: K -> consumer.accept(key, get(key)) }
+    }
 
-	boolean remove(K key, V value);
+    fun forEachSorted(consumer: BiConsumer<K, C>, comparator: Comparator<K>) {
+        keys().stream().sorted(comparator).forEach { key: K -> consumer.accept(key, get(key)) }
+    }
 
-	// endregion
+    fun eachSorted(consumer: BiConsumer<K, V>) {
+        forEachSorted { k: K, c: C -> c.forEach { v: V -> consumer.accept(k, v) } }
+    }
 
-	// region function
-
-	void forEach(BiConsumer<K, C> consumer);
-
-	void each(BiConsumer<K, V> consumer);
-
-	default void forEachSorted(BiConsumer<K, C> consumer) {
-		keys().stream().sorted().forEach(key -> consumer.accept(key, get(key)));
-	}
-
-	default void forEachSorted(BiConsumer<K, C> consumer, Comparator<K> comparator) {
-		keys().stream().sorted(comparator).forEach(key -> consumer.accept(key, get(key)));
-	}
-
-	default void eachSorted(BiConsumer<K, V> consumer) {
-		forEachSorted((k, c) -> c.forEach(v -> consumer.accept(k, v)));
-	}
-
-	default void eachSorted(BiConsumer<K, V> consumer, Comparator<K> comparator) {
-		forEachSorted((k, c) -> c.forEach(v -> consumer.accept(k, v)), comparator);
-	}
-
-	// endregion
-
+    fun eachSorted(consumer: BiConsumer<K, V>, comparator: Comparator<K>) {
+        forEachSorted({ k: K, c: C -> c.forEach { v: V -> consumer.accept(k, v) } }, comparator)
+    } // endregion
 }

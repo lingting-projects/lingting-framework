@@ -1,28 +1,23 @@
-package live.lingting.framework.ntp;
+package live.lingting.framework.ntp
 
-import org.junit.jupiter.api.Test;
-
-import java.time.LocalDateTime;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import live.lingting.framework.ntp.NtpCn.Companion.currentMillis
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 /**
  * @author lingting 2024-01-29 17:38
  */
-class NtpTest {
-
-	@Test
-	void test() throws InterruptedException {
-		NtpFactory instance = NtpFactory.INSTANCE;
-		Ntp ntp = instance.create();
-		assertNotNull(ntp);
-		LocalDateTime now = ntp.now();
-		assertNotNull(now);
-		assertEquals(Ntp.DEFAULT_ZONE_ID, ntp.getZoneId());
-		long millis = NtpCn.currentMillis();
-		assertTrue(millis > 0);
-	}
-
+internal class NtpTest {
+    @Test
+    @Throws(InterruptedException::class)
+    fun test() {
+        val instance: NtpFactory = NtpFactory.INSTANCE
+        val ntp = instance.create()
+        Assertions.assertNotNull(ntp)
+        val now = ntp!!.now()
+        Assertions.assertNotNull(now)
+        Assertions.assertEquals(Ntp.DEFAULT_ZONE_ID, ntp.zoneId)
+        val millis = currentMillis()
+        Assertions.assertTrue(millis > 0)
+    }
 }

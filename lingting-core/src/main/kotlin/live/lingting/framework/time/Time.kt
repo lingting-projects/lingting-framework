@@ -1,117 +1,117 @@
-package live.lingting.framework.time;
+package live.lingting.framework.time
 
-import live.lingting.framework.util.LocalDateTimeUtils;
-
-import java.time.LocalDateTime;
-import java.time.temporal.TemporalAmount;
-import java.time.temporal.TemporalUnit;
+import java.time.LocalDateTime
+import java.time.temporal.TemporalAmount
+import java.time.temporal.TemporalUnit
 
 /**
  * @author lingting 2024-05-29 20:30
  */
-public final class Time {
+class Time private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	/**
-	 * 当前系统时间比实际真实时间慢多少毫秒
-	 */
-	private static long diff = 0;
+    companion object {
+        /**
+         * 当前系统时间比实际真实时间慢多少毫秒
+         */
+        private var diff: Long = 0
 
-	private Time() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+        fun setDiff(diff: Long) {
+            Companion.diff = diff
+        }
 
-	public static void setDiff(long diff) {
-		Time.diff = diff;
-	}
+        fun currentTimestamp(): Long {
+            return System.currentTimeMillis() + diff
+        }
 
-	public static long currentTimestamp() {
-		return System.currentTimeMillis() + diff;
-	}
+        fun current(): LocalDateTime {
+            return parse(currentTimestamp())
+        }
 
-	public static LocalDateTime current() {
-		return LocalDateTimeUtils.parse(currentTimestamp());
-	}
+        fun plus(amount: TemporalAmount): LocalDateTime {
+            return current().plus(amount)
+        }
 
-	public static LocalDateTime plus(TemporalAmount amount) {
-		return current().plus(amount);
-	}
+        fun plus(amountToAdd: Long, unit: TemporalUnit): LocalDateTime {
+            return current().plus(amountToAdd, unit)
+        }
 
-	public static LocalDateTime plus(long amountToAdd, TemporalUnit unit) {
-		return current().plus(amountToAdd, unit);
-	}
+        fun plusYears(years: Long): LocalDateTime {
+            return current().plusYears(years)
+        }
 
-	public static LocalDateTime plusYears(long years) {
-		return current().plusYears(years);
-	}
+        fun plusMonths(months: Long): LocalDateTime {
+            return current().plusMonths(months)
+        }
 
-	public static LocalDateTime plusMonths(long months) {
-		return current().plusMonths(months);
-	}
+        fun plusWeeks(weeks: Long): LocalDateTime {
+            return current().plusWeeks(weeks)
+        }
 
-	public static LocalDateTime plusWeeks(long weeks) {
-		return current().plusWeeks(weeks);
-	}
+        fun plusDays(days: Long): LocalDateTime {
+            return current().plusDays(days)
+        }
 
-	public static LocalDateTime plusDays(long days) {
-		return current().plusDays(days);
-	}
+        fun plusHours(hours: Long): LocalDateTime {
+            return current().plusHours(hours)
+        }
 
-	public static LocalDateTime plusHours(long hours) {
-		return current().plusHours(hours);
-	}
+        fun plusMinutes(minutes: Long): LocalDateTime {
+            return current().plusMinutes(minutes)
+        }
 
-	public static LocalDateTime plusMinutes(long minutes) {
-		return current().plusMinutes(minutes);
-	}
+        fun plusSeconds(seconds: Long): LocalDateTime {
+            return current().plusSeconds(seconds)
+        }
 
-	public static LocalDateTime plusSeconds(long seconds) {
-		return current().plusSeconds(seconds);
-	}
+        fun plusNanos(nanos: Long): LocalDateTime {
+            return current().plusNanos(nanos)
+        }
 
-	public static LocalDateTime plusNanos(long nanos) {
-		return current().plusNanos(nanos);
-	}
+        fun minus(amount: TemporalAmount): LocalDateTime {
+            return current().minus(amount)
+        }
 
-	public static LocalDateTime minus(TemporalAmount amount) {
-		return current().minus(amount);
-	}
+        fun minus(amountToAdd: Long, unit: TemporalUnit): LocalDateTime {
+            return current().minus(amountToAdd, unit)
+        }
 
-	public static LocalDateTime minus(long amountToAdd, TemporalUnit unit) {
-		return current().minus(amountToAdd, unit);
-	}
+        fun minusYears(years: Long): LocalDateTime {
+            return current().minusYears(years)
+        }
 
-	public static LocalDateTime minusYears(long years) {
-		return current().minusYears(years);
-	}
+        fun minusMonths(months: Long): LocalDateTime {
+            return current().minusMonths(months)
+        }
 
-	public static LocalDateTime minusMonths(long months) {
-		return current().minusMonths(months);
-	}
+        fun minusWeeks(weeks: Long): LocalDateTime {
+            return current().minusWeeks(weeks)
+        }
 
-	public static LocalDateTime minusWeeks(long weeks) {
-		return current().minusWeeks(weeks);
-	}
+        fun minusDays(days: Long): LocalDateTime {
+            return current().minusDays(days)
+        }
 
-	public static LocalDateTime minusDays(long days) {
-		return current().minusDays(days);
-	}
+        fun minusHours(hours: Long): LocalDateTime {
+            return current().minusHours(hours)
+        }
 
-	public static LocalDateTime minusHours(long hours) {
-		return current().minusHours(hours);
-	}
+        fun minusMinutes(minutes: Long): LocalDateTime {
+            return current().minusMinutes(minutes)
+        }
 
-	public static LocalDateTime minusMinutes(long minutes) {
-		return current().minusMinutes(minutes);
-	}
+        fun minusSeconds(seconds: Long): LocalDateTime {
+            return current().minusSeconds(seconds)
+        }
 
-	public static LocalDateTime minusSeconds(long seconds) {
-		return current().minusSeconds(seconds);
-	}
+        fun minusNanos(nanos: Long): LocalDateTime {
+            return current().minusNanos(nanos)
+        }
 
-	public static LocalDateTime minusNanos(long nanos) {
-		return current().minusNanos(nanos);
-	}
-
-	public static String format() {
-		return LocalDateTimeUtils.format(current());
-	}
-
+        fun format(): String {
+            return format(current())
+        }
+    }
 }

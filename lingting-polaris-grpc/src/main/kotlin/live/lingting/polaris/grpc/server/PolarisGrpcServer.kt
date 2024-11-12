@@ -1,252 +1,227 @@
+package live.lingting.polaris.grpc.server
 
-package live.lingting.polaris.grpc.server;
-
-import com.tencent.polaris.api.core.ProviderAPI;
-import com.tencent.polaris.api.rpc.InstanceDeregisterRequest;
-import com.tencent.polaris.api.rpc.InstanceRegisterRequest;
-import com.tencent.polaris.api.rpc.InstanceRegisterResponse;
-import com.tencent.polaris.api.utils.StringUtils;
-import com.tencent.polaris.client.api.SDKContext;
-import com.tencent.polaris.factory.api.DiscoveryAPIFactory;
-import io.grpc.Server;
-import io.grpc.ServerServiceDefinition;
-import live.lingting.polaris.grpc.server.impl.NoopDelayRegister;
-import live.lingting.polaris.grpc.util.NetworkHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.net.SocketAddress;
-import java.time.Duration;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import com.tencent.polaris.api.core.ProviderAPI
+import com.tencent.polaris.api.rpc.InstanceDeregisterRequest
+import com.tencent.polaris.api.rpc.InstanceRegisterRequest
+import com.tencent.polaris.api.utils.StringUtils
+import com.tencent.polaris.client.api.SDKContext
+import com.tencent.polaris.factory.api.DiscoveryAPIFactory
+import io.grpc.Server
+import io.grpc.ServerServiceDefinition
+import live.lingting.polaris.grpc.server.impl.NoopDelayRegister
+import live.lingting.polaris.grpc.util.NetworkHelper
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.io.IOException
+import java.net.SocketAddress
+import java.time.Duration
+import java.util.*
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.ScheduledThreadPoolExecutor
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * @author lixiaoshuang
  */
-public class PolarisGrpcServer extends Server {
+class PolarisGrpcServer internal constructor(private val builder: PolarisGrpcServerBuilder, private val context: SDKContext?, private var targetServer: Server) : Server() {
+    private val providerAPI: ProviderAPI = DiscoveryAPIFactory.createProviderAPIByContext(context)
 
-	private static final Logger LOG = LoggerFactory.getLogger(PolarisGrpcServer.class);
+    private val shutdownOnce = AtomicBoolean(false)
 
-	private final SDKContext context;
+    private val executorService: ScheduledExecutorService = ScheduledThreadPoolExecutor(2) { r: Runnable? ->
+        val t = Thread(r)
+        t.isDaemon = true
+        t.name = "polaris-grpc-server"
+        t
+    }
 
-	private final ProviderAPI providerAPI;
+    private var host: String? = null
 
-	private final PolarisGrpcServerBuilder builder;
+    private var delayRegister: DelayRegister = NoopDelayRegister()
 
-	private final AtomicBoolean shutdownOnce = new AtomicBoolean(false);
+    private var maxWaitDuration: Duration? = null
 
-	private final ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(2, r -> {
-		Thread t = new Thread(r);
-		t.setDaemon(true);
-		t.setName("polaris-grpc-server");
-		return t;
-	});
+    private val registerHook: RegisterHook? = builder.registerHook
 
-	private Server targetServer;
+    @Throws(IOException::class)
+    override fun start(): Server {
+        initLocalHost()
+        targetServer = targetServer.start()
 
-	private String host;
+        if (Objects.nonNull(delayRegister)) {
+            executorService.execute {
+                while (true) {
+                    if (delayRegister.allowRegis()) {
+                        break
+                    }
+                }
+                this.registerInstance(targetServer.services)
+            }
+        }
 
-	private DelayRegister delayRegister = new NoopDelayRegister();
+        return this
+    }
 
-	private Duration maxWaitDuration;
+    override fun getPort(): Int {
+        return targetServer.port
+    }
 
-	private RegisterHook registerHook;
+    override fun getListenSockets(): List<SocketAddress> {
+        return targetServer.listenSockets
+    }
 
-	PolarisGrpcServer(PolarisGrpcServerBuilder builder, SDKContext context, Server server) {
-		this.builder = builder;
-		this.registerHook = builder.getRegisterHook();
-		this.targetServer = server;
-		this.context = context;
-		this.providerAPI = DiscoveryAPIFactory.createProviderAPIByContext(context);
-	}
+    override fun getServices(): List<ServerServiceDefinition> {
+        return targetServer.services
+    }
 
-	@Override
-	public Server start() throws IOException {
-		initLocalHost();
-		targetServer = targetServer.start();
+    override fun getImmutableServices(): List<ServerServiceDefinition> {
+        return targetServer.immutableServices
+    }
 
-		if (Objects.nonNull(delayRegister)) {
-			executorService.execute(() -> {
-				for (; ; ) {
-					if (delayRegister.allowRegis()) {
-						break;
-					}
-				}
+    override fun getMutableServices(): List<ServerServiceDefinition> {
+        return targetServer.mutableServices
+    }
 
-				this.registerInstance(targetServer.getServices());
-			});
-		}
+    override fun shutdown(): Server {
+        if (shutdownOnce.compareAndSet(false, true)) {
+            executorService.shutdownNow()
+            // 将自己从注册中心反注册掉
+            this.deregister(targetServer.services)
+            providerAPI.destroy()
+        }
 
-		return this;
-	}
+        return GraceOffline(targetServer, maxWaitDuration, context).shutdown()
+    }
 
-	@Override
-	public int getPort() {
-		return targetServer.getPort();
-	}
+    override fun shutdownNow(): Server {
+        if (shutdownOnce.compareAndSet(false, true)) {
+            executorService.shutdownNow()
+            this.deregister(targetServer.services)
+            providerAPI.destroy()
+            context!!.close()
+        }
+        return targetServer.shutdownNow()
+    }
 
-	@Override
-	public List<? extends SocketAddress> getListenSockets() {
-		return targetServer.getListenSockets();
-	}
+    override fun isShutdown(): Boolean {
+        return targetServer.isShutdown
+    }
 
-	@Override
-	public List<ServerServiceDefinition> getServices() {
-		return targetServer.getServices();
-	}
+    override fun isTerminated(): Boolean {
+        return targetServer.isTerminated
+    }
 
-	@Override
-	public List<ServerServiceDefinition> getImmutableServices() {
-		return targetServer.getImmutableServices();
-	}
+    @Throws(InterruptedException::class)
+    override fun awaitTermination(timeout: Long, unit: TimeUnit): Boolean {
+        return targetServer.awaitTermination(timeout, unit)
+    }
 
-	@Override
-	public List<ServerServiceDefinition> getMutableServices() {
-		return targetServer.getMutableServices();
-	}
+    @Throws(InterruptedException::class)
+    override fun awaitTermination() {
+        targetServer.awaitTermination()
+    }
 
-	@Override
-	public Server shutdown() {
-		if (shutdownOnce.compareAndSet(false, true)) {
-			executorService.shutdownNow();
-			// 将自己从注册中心反注册掉
-			this.deregister(targetServer.getServices());
-			providerAPI.destroy();
-		}
+    fun setDelayRegister(delayRegister: DelayRegister?) {
+        if (delayRegister == null) {
+            return
+        }
+        this.delayRegister = delayRegister
+    }
 
-		return new GraceOffline(targetServer, maxWaitDuration, context).shutdown();
-	}
+    private fun initLocalHost() {
+        host = builder.host
+        if (StringUtils.isNotBlank(host)) {
+            return
+        }
+        val polarisServerAddr = context!!.config.global.serverConnector.addresses[0]
+        val detail = polarisServerAddr.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        host = NetworkHelper.Companion.getLocalHost(detail[0], detail[1].toInt())
+    }
 
-	@Override
-	public Server shutdownNow() {
-		if (shutdownOnce.compareAndSet(false, true)) {
-			executorService.shutdownNow();
-			this.deregister(targetServer.getServices());
-			providerAPI.destroy();
-			context.close();
-		}
-		return this.targetServer.shutdownNow();
-	}
+    /**
+     * This interface will determine whether it is an interface-level registration
+     * instance or an application-level instance registration based on
+     * grpcServiceRegister.
+     */
+    private fun registerInstance(definitions: List<ServerServiceDefinition>) {
+        if (StringUtils.isNotBlank(builder.applicationName)) {
+            this.registerOne(builder.applicationName)
+            return
+        }
+        for (definition in definitions) {
+            val grpcServiceName = definition.serviceDescriptor.name
+            this.registerOne(grpcServiceName)
+        }
+    }
 
-	@Override
-	public boolean isShutdown() {
-		return this.targetServer.isShutdown();
-	}
+    /**
+     * Register a service instance.
+     *
+     * @param serviceName service name
+     */
+    private fun registerOne(serviceName: String?) {
+        val request = InstanceRegisterRequest()
+        request.namespace = builder.namespace
+        request.service = serviceName
+        request.host = host
+        request.token = builder.token
+        request.version = builder.version
+        request.protocol = "grpc"
+        request.weight = builder.weight
+        request.port = targetServer.port
+        request.ttl = builder.heartbeatInterval
+        request.metadata = builder.metaData
 
-	@Override
-	public boolean isTerminated() {
-		return this.targetServer.isTerminated();
-	}
+        if (Objects.nonNull(registerHook)) {
+            registerHook!!.beforeRegister(request)
+        }
 
-	@Override
-	public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-		return this.targetServer.awaitTermination(timeout, unit);
-	}
+        val response = providerAPI.registerInstance(request)
 
-	@Override
-	public void awaitTermination() throws InterruptedException {
-		this.targetServer.awaitTermination();
-	}
+        if (Objects.nonNull(registerHook)) {
+            registerHook!!.afterRegister(response)
+        }
 
-	public void setDelayRegister(DelayRegister delayRegister) {
-		if (delayRegister == null) {
-			return;
-		}
-		this.delayRegister = delayRegister;
-	}
+        LOG.info("[grpc-polaris] register polaris success, instance-id:{}", response.instanceId)
+    }
 
-	private void initLocalHost() {
-		host = builder.getHost();
-		if (StringUtils.isNotBlank(host)) {
-			return;
-		}
-		String polarisServerAddr = context.getConfig().getGlobal().getServerConnector().getAddresses().get(0);
-		String[] detail = polarisServerAddr.split(":");
-		host = NetworkHelper.getLocalHost(detail[0], Integer.parseInt(detail[1]));
-	}
+    /**
+     * Service deregister.
+     *
+     * @param definitions Definition of a service
+     */
+    private fun deregister(definitions: List<ServerServiceDefinition>) {
+        LOG.info("[grpc-polaris] begin do deregister grpc service")
+        if (StringUtils.isNotBlank(builder.applicationName)) {
+            this.deregisterOne(builder.applicationName)
+            return
+        }
+        for (definition in definitions) {
+            val grpcServiceName = definition.serviceDescriptor.name
+            this.deregisterOne(grpcServiceName)
+        }
+    }
 
-	/**
-	 * This interface will determine whether it is an interface-level registration
-	 * instance or an application-level instance registration based on
-	 * grpcServiceRegister.
-	 */
-	private void registerInstance(List<ServerServiceDefinition> definitions) {
-		if (StringUtils.isNotBlank(builder.getApplicationName())) {
-			this.registerOne(builder.getApplicationName());
-			return;
-		}
-		for (ServerServiceDefinition definition : definitions) {
-			String grpcServiceName = definition.getServiceDescriptor().getName();
-			this.registerOne(grpcServiceName);
-		}
-	}
+    /**
+     * deregister a service instance.
+     *
+     * @param serviceName service name
+     */
+    private fun deregisterOne(serviceName: String?) {
+        val request = InstanceDeregisterRequest()
+        request.namespace = builder.namespace
+        request.service = serviceName
+        request.host = host
+        request.port = targetServer.port
+        providerAPI.deRegister(request)
+    }
 
-	/**
-	 * Register a service instance.
-	 *
-	 * @param serviceName service name
-	 */
-	private void registerOne(String serviceName) {
-		InstanceRegisterRequest request = new InstanceRegisterRequest();
-		request.setNamespace(builder.getNamespace());
-		request.setService(serviceName);
-		request.setHost(host);
-		request.setToken(builder.getToken());
-		request.setVersion(builder.getVersion());
-		request.setProtocol("grpc");
-		request.setWeight(builder.getWeight());
-		request.setPort(targetServer.getPort());
-		request.setTtl(builder.getHeartbeatInterval());
-		request.setMetadata(builder.getMetaData());
+    fun setMaxWaitDuration(maxWaitDuration: Duration?) {
+        this.maxWaitDuration = maxWaitDuration
+    }
 
-		if (Objects.nonNull(registerHook)) {
-			registerHook.beforeRegister(request);
-		}
-
-		InstanceRegisterResponse response = providerAPI.registerInstance(request);
-
-		if (Objects.nonNull(registerHook)) {
-			registerHook.afterRegister(response);
-		}
-
-		LOG.info("[grpc-polaris] register polaris success, instance-id:{}", response.getInstanceId());
-	}
-
-	/**
-	 * Service deregister.
-	 *
-	 * @param definitions Definition of a service
-	 */
-	private void deregister(List<ServerServiceDefinition> definitions) {
-		LOG.info("[grpc-polaris] begin do deregister grpc service");
-		if (StringUtils.isNotBlank(builder.getApplicationName())) {
-			this.deregisterOne(builder.getApplicationName());
-			return;
-		}
-		for (ServerServiceDefinition definition : definitions) {
-			String grpcServiceName = definition.getServiceDescriptor().getName();
-			this.deregisterOne(grpcServiceName);
-		}
-	}
-
-	/**
-	 * deregister a service instance.
-	 *
-	 * @param serviceName service name
-	 */
-	private void deregisterOne(String serviceName) {
-		InstanceDeregisterRequest request = new InstanceDeregisterRequest();
-		request.setNamespace(builder.getNamespace());
-		request.setService(serviceName);
-		request.setHost(host);
-		request.setPort(targetServer.getPort());
-		providerAPI.deRegister(request);
-	}
-
-	public void setMaxWaitDuration(Duration maxWaitDuration) {this.maxWaitDuration = maxWaitDuration;}
+    companion object {
+        private val LOG: Logger = LoggerFactory.getLogger(PolarisGrpcServer::class.java)
+    }
 }

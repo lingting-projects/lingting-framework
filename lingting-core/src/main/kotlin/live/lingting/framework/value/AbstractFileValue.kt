@@ -1,99 +1,99 @@
-package live.lingting.framework.value;
+package live.lingting.framework.value
 
-import live.lingting.framework.function.ThrowingFunction;
-import live.lingting.framework.util.FileUtils;
-import live.lingting.framework.util.StreamUtils;
-import live.lingting.framework.util.StringUtils;
-import org.slf4j.Logger;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.Optional;
-import java.util.function.Supplier;
+import live.lingting.framework.function.ThrowingFunction
+import live.lingting.framework.util.FileUtils
+import live.lingting.framework.util.StringUtils
+import live.lingting.framework.value.AbstractFileValue
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.io.File
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.util.*
+import java.util.function.Supplier
 
 /**
  * @author lingting 2023-05-23 09:12
  */
-@SuppressWarnings("java:S1181")
-public abstract class AbstractFileValue<T> {
+abstract class AbstractFileValue<T> {
+    protected val file: File
 
-	private static final Logger log = org.slf4j.LoggerFactory.getLogger(AbstractFileValue.class);
-	protected final File file;
+    protected var value: T? = null
 
-	protected T value;
+    protected constructor(dir: File?, filename: Any?) {
+        val filledFilename = fillFilename(filename)
+        this.file = File(dir, filledFilename)
+    }
 
-	protected AbstractFileValue(File dir, Object filename) {
-		String filledFilename = fillFilename(filename);
-		this.file = new File(dir, filledFilename);
-	}
+    protected constructor(file: File) {
+        this.file = file
+    }
 
-	protected AbstractFileValue(File file) {
-		this.file = file;
-	}
+    /**
+     * 文件名处理, 用于调整后缀
+     *
+     * @return 返回真实的文件名
+     */
+    abstract fun fillFilename(filename: Any?): String
 
-	/**
-	 * 文件名处理, 用于调整后缀
-	 *
-	 * @return 返回真实的文件名
-	 */
-	public abstract String fillFilename(Object filename);
+    protected abstract fun ofClass(str: String?, cls: Class<T>?): T
 
-	protected abstract T ofClass(String str, Class<T> cls);
+    protected abstract fun toString(t: T): String
 
-	protected abstract String toString(T t);
+    fun optional(function: ThrowingFunction<String?, T>): Optional<T> {
+        if (!file.exists()) {
+            return Optional.empty()
+        }
+        if (value != null) {
+            return Optional.of(value!!)
+        }
+        try {
+            Files.newInputStream(file.toPath()).use { `in` ->
+                val string = toString(`in`)
+                value = if (!StringUtils.hasText(string)) {
+                    null
+                } else {
+                    function.apply(string)
+                }
+                return Optional.ofNullable(value)
+            }
+        } catch (e: Throwable) {
+            log.error("解析文件内容异常! 文件: {}", file.absolutePath, e)
+            return Optional.empty()
+        }
+    }
 
-	public Optional<T> optional(ThrowingFunction<String, T> function) {
-		if (!file.exists()) {
-			return Optional.empty();
-		}
-		if (value != null) {
-			return Optional.of(value);
-		}
-		try (InputStream in = Files.newInputStream(file.toPath())) {
-			String string = StreamUtils.toString(in);
-			if (!StringUtils.hasText(string)) {
-				value = null;
-			}
-			else {
-				value = function.apply(string);
-			}
-			return Optional.ofNullable(value);
-		}
-		catch (Throwable e) {
-			log.error("解析文件内容异常! 文件: {}", file.getAbsolutePath(), e);
-			return Optional.empty();
-		}
-	}
+    fun optional(cls: Class<T>?): Optional<T?> {
+        return optional(ThrowingFunction { str: String? -> ofClass(str, cls) })
+    }
 
-	public Optional<T> optional(Class<T> cls) {
-		return optional(str -> ofClass(str, cls));
-	}
 
-	public void set(T t) throws IOException {
-		value = t;
-		FileUtils.createFile(file);
-		try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
-			String str = toString(t);
-			writer.write(str);
-		}
-	}
+    fun set(t: T) {
+        value = t
+        FileUtils.createFile(file)
+        Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8).use { writer ->
+            val str = toString(t)
+            writer.write(str)
+        }
+    }
 
-	public T orElseGet(Supplier<T> supplier, Class<T> cls) throws IOException {
-		return orElseGet(supplier, () -> optional(cls));
-	}
 
-	public T orElseGet(Supplier<T> supplier, Supplier<Optional<T>> optionalSupplier) throws IOException {
-		Optional<T> optional = optionalSupplier.get();
-		if (optional.isPresent()) {
-			return optional.get();
-		}
-		T t = supplier.get();
-		set(t);
-		return t;
-	}
+    fun orElseGet(supplier: Supplier<T>, cls: Class<T>?): T {
+        return orElseGet(supplier) { optional(cls) }
+    }
 
+
+    fun orElseGet(supplier: Supplier<T>, optionalSupplier: Supplier<Optional<T?>>): T {
+        val optional = optionalSupplier.get()
+        if (optional.isPresent) {
+            return optional.get()
+        }
+        val t = supplier.get()
+        set(t)
+        return t
+    }
+
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(AbstractFileValue::class.java)
+    }
 }

@@ -1,66 +1,57 @@
-package live.lingting.framework.stream;
+package live.lingting.framework.stream
 
-import live.lingting.framework.util.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import live.lingting.framework.util.FileUtils
+import java.io.File
+import java.io.OutputStream
+import java.io.RandomAccessFile
+import java.nio.file.Files
+import java.nio.file.Path
 
 /**
  * @author lingting 2024-01-16 20:29
  */
-public class RandomAccessOutputStream extends OutputStream {
+class RandomAccessOutputStream constructor(file: File = FileUtils.createTemp(".output", TEMP_DIR)) : OutputStream() {
+    protected val file: RandomAccessFile
 
-	public static final String MODE = "rw";
+    val path: Path
 
-	public static final File TEMP_DIR = FileUtils.createTempDir("random");
+    constructor(path: String) : this(File(path))
 
-	protected final RandomAccessFile file;
+    constructor(path: Path) : this(path.toFile())
 
-	protected final Path path;
+    init {
+        this.file = RandomAccessFile(file, MODE)
+        this.path = file.toPath()
+    }
 
-	public RandomAccessOutputStream() throws IOException {
-		this(FileUtils.createTemp(".output", TEMP_DIR));
-	}
 
-	public RandomAccessOutputStream(String path) throws IOException {
-		this(new File(path));
-	}
+    fun seek(pos: Long) {
+        file.seek(pos)
+    }
 
-	public RandomAccessOutputStream(Path path) throws IOException {
-		this(path.toFile());
-	}
 
-	public RandomAccessOutputStream(File file) throws IOException {
-		this.file = new RandomAccessFile(file, MODE);
-		this.path = file.toPath();
-	}
+    fun size(): Long {
+        return Files.size(path)
+    }
 
-	public void seek(long pos) throws IOException {
-		file.seek(pos);
-	}
 
-	public long size() throws IOException {
-		return Files.size(path);
-	}
+    override fun write(b: ByteArray, off: Int, len: Int) {
+        file.write(b, off, len)
+    }
 
-	@Override
-	public void write(byte[] b, int off, int len) throws IOException {
-		file.write(b, off, len);
-	}
 
-	@Override
-	public void close() throws IOException {
-		file.close();
-	}
+    override fun close() {
+        file.close()
+    }
 
-	@Override
-	public void write(int b) throws IOException {
-		file.write(b);
-	}
 
-	public Path getPath() {return this.path;}
+    override fun write(b: Int) {
+        file.write(b)
+    }
+
+    companion object {
+        const val MODE: String = "rw"
+
+        val TEMP_DIR: File = FileUtils.createTempDir("random")
+    }
 }

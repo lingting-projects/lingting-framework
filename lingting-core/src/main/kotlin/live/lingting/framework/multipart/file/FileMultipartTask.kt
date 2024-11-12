@@ -1,60 +1,44 @@
-package live.lingting.framework.multipart.file;
+package live.lingting.framework.multipart.file
 
-import live.lingting.framework.multipart.Multipart;
-import live.lingting.framework.multipart.MultipartTask;
-import live.lingting.framework.thread.Async;
-
-import static live.lingting.framework.multipart.file.FileMultipartTaskStatus.CANCELED;
-import static live.lingting.framework.multipart.file.FileMultipartTaskStatus.MERGED;
-import static live.lingting.framework.multipart.file.FileMultipartTaskStatus.RUNNING;
-import static live.lingting.framework.multipart.file.FileMultipartTaskStatus.WAIT;
+import live.lingting.framework.multipart.Multipart
+import live.lingting.framework.multipart.MultipartTask
+import live.lingting.framework.thread.Async
 
 /**
  * @author lingting 2024-09-06 16:31
  */
-public abstract class FileMultipartTask<I extends FileMultipartTask<I>> extends MultipartTask<I> {
+abstract class FileMultipartTask<I : FileMultipartTask<I>> : MultipartTask<I> {
+    var taskStatus: FileMultipartTaskStatus = FileMultipartTaskStatus.WAIT
+        protected set
 
-	protected FileMultipartTaskStatus taskStatus = WAIT;
+    protected constructor(multipart: Multipart) : super(multipart)
 
-	protected FileMultipartTask(Multipart multipart) {
-		super(multipart);
-	}
+    protected constructor(multipart: Multipart, async: Async) : super(multipart, async)
 
-	protected FileMultipartTask(Multipart multipart, Async async) {
-		super(multipart, async);
-	}
+    override val isCompleted: Boolean
+        get() = super.isCompleted && (taskStatus == FileMultipartTaskStatus.MERGED || taskStatus == FileMultipartTaskStatus.CANCELED)
 
-	@Override
-	public boolean isCompleted() {
-		return super.isCompleted() && (taskStatus == MERGED || taskStatus == CANCELED);
-	}
+    override fun onStarted() {
+        taskStatus = FileMultipartTaskStatus.RUNNING
+    }
 
-	@Override
-	protected void onStarted() {
-		taskStatus = RUNNING;
-	}
+    override fun onCompleted() {
+        val id = id
+        if (failedNumber > 0) {
+            log.debug("[{}] onCancel", id)
+            onCancel()
+            log.debug("[{}] onCanceled", id)
+            taskStatus = FileMultipartTaskStatus.CANCELED
+        } else {
+            log.debug("[{}] onMerge", id)
+            onMerge()
+            log.debug("[{}] onMerged", id)
+            taskStatus = FileMultipartTaskStatus.MERGED
+        }
+        multipart.clear()
+    }
 
-	@Override
-	protected void onCompleted() {
-		String id = getId();
-		if (failedNumber > 0) {
-			log.debug("[{}] onCancel", id);
-			onCancel();
-			log.debug("[{}] onCanceled", id);
-			taskStatus = CANCELED;
-		}
-		else {
-			log.debug("[{}] onMerge", id);
-			onMerge();
-			log.debug("[{}] onMerged", id);
-			taskStatus = MERGED;
-		}
-		multipart.clear();
-	}
+    protected abstract fun onMerge()
 
-	protected abstract void onMerge();
-
-	protected abstract void onCancel();
-
-	public FileMultipartTaskStatus getTaskStatus() {return this.taskStatus;}
+    protected abstract fun onCancel()
 }

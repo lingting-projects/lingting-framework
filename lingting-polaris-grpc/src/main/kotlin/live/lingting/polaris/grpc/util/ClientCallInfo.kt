@@ -1,101 +1,59 @@
+package live.lingting.polaris.grpc.util
 
-package live.lingting.polaris.grpc.util;
-
-import com.tencent.polaris.api.core.ConsumerAPI;
-import com.tencent.polaris.api.pojo.Instance;
+import com.tencent.polaris.api.core.ConsumerAPI
+import com.tencent.polaris.api.pojo.Instance
 
 /**
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
+ * @author [liaochuntao](mailto:liaochuntao@live.com)
  */
-public class ClientCallInfo {
+class ClientCallInfo(
+    val method: String?, val instance: Instance?, val consumerAPI: ConsumerAPI?, val targetNamespace: String?,
+    val targetService: String?
+) {
+    class ClientCallInfoBuilder {
+        private var method: String? = null
 
-	private final String method;
+        private var instance: Instance? = null
 
-	private final Instance instance;
+        private var consumerAPI: ConsumerAPI? = null
 
-	private final ConsumerAPI consumerAPI;
+        private var targetNamespace: String? = null
 
-	private final String targetNamespace;
+        private var targetService: String? = null
 
-	private final String targetService;
+        fun method(method: String?): ClientCallInfoBuilder {
+            this.method = method
+            return this
+        }
 
-	public ClientCallInfo(String method, Instance instance, ConsumerAPI consumerAPI, String targetNamespace,
-			String targetService) {
-		this.method = method;
-		this.instance = instance;
-		this.consumerAPI = consumerAPI;
-		this.targetNamespace = targetNamespace;
-		this.targetService = targetService;
-	}
+        fun instance(instance: Instance?): ClientCallInfoBuilder {
+            this.instance = instance
+            return this
+        }
 
-	public static ClientCallInfoBuilder builder() {
-		return new ClientCallInfoBuilder();
-	}
+        fun consumerAPI(consumerAPI: ConsumerAPI?): ClientCallInfoBuilder {
+            this.consumerAPI = consumerAPI
+            return this
+        }
 
-	public String getMethod() {
-		return method;
-	}
+        fun targetNamespace(targetNamespace: String?): ClientCallInfoBuilder {
+            this.targetNamespace = targetNamespace
+            return this
+        }
 
-	public Instance getInstance() {
-		return instance;
-	}
+        fun targetService(targetService: String?): ClientCallInfoBuilder {
+            this.targetService = targetService
+            return this
+        }
 
-	public ConsumerAPI getConsumerAPI() {
-		return consumerAPI;
-	}
+        fun build(): ClientCallInfo {
+            return ClientCallInfo(method, instance, consumerAPI, targetNamespace, targetService)
+        }
+    }
 
-	public String getTargetNamespace() {
-		return targetNamespace;
-	}
-
-	public String getTargetService() {
-		return targetService;
-	}
-
-	public static final class ClientCallInfoBuilder {
-
-		private String method;
-
-		private Instance instance;
-
-		private ConsumerAPI consumerAPI;
-
-		private String targetNamespace;
-
-		private String targetService;
-
-		private ClientCallInfoBuilder() {
-		}
-
-		public ClientCallInfoBuilder method(String method) {
-			this.method = method;
-			return this;
-		}
-
-		public ClientCallInfoBuilder instance(Instance instance) {
-			this.instance = instance;
-			return this;
-		}
-
-		public ClientCallInfoBuilder consumerAPI(ConsumerAPI consumerAPI) {
-			this.consumerAPI = consumerAPI;
-			return this;
-		}
-
-		public ClientCallInfoBuilder targetNamespace(String targetNamespace) {
-			this.targetNamespace = targetNamespace;
-			return this;
-		}
-
-		public ClientCallInfoBuilder targetService(String targetService) {
-			this.targetService = targetService;
-			return this;
-		}
-
-		public ClientCallInfo build() {
-			return new ClientCallInfo(method, instance, consumerAPI, targetNamespace, targetService);
-		}
-
-	}
-
+    companion object {
+        fun builder(): ClientCallInfoBuilder {
+            return ClientCallInfoBuilder()
+        }
+    }
 }

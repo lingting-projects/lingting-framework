@@ -1,16 +1,10 @@
-package live.lingting.framework.aws.exception;
+package live.lingting.framework.aws.exception
 
 /**
  * @author lingting 2024-09-19 15:14
  */
-public class AwsS3Exception extends AwsException {
+class AwsS3Exception : AwsException {
+    constructor(message: String?) : super(message)
 
-	public AwsS3Exception(String message) {
-		super(message);
-	}
-
-	public AwsS3Exception(String message, Throwable cause) {
-		super(message, cause);
-	}
-
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
 }

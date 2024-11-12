@@ -1,58 +1,47 @@
-package live.lingting.framework.aws.s3.request;
+package live.lingting.framework.aws.s3.request
 
-import live.lingting.framework.aws.s3.AwsS3Request;
-import live.lingting.framework.http.HttpMethod;
-import live.lingting.framework.http.body.BodySource;
-import live.lingting.framework.multipart.Part;
-
-import java.io.InputStream;
+import live.lingting.framework.aws.s3.AwsS3Request
+import live.lingting.framework.http.HttpMethod
+import live.lingting.framework.http.body.BodySource
+import live.lingting.framework.http.body.BodySource.Companion.of
+import live.lingting.framework.multipart.Part
+import java.io.InputStream
 
 /**
  * @author lingting 2024-09-13 16:31
  */
-public class AwsS3ObjectPutRequest extends AwsS3Request {
+class AwsS3ObjectPutRequest : AwsS3Request() {
+    var stream: InputStream? = null
 
-	protected InputStream stream;
+    var uploadId: String? = null
+        protected set
 
-	protected String uploadId;
+    var part: Part? = null
+        protected set
 
-	protected Part part;
+    fun multipart(id: String?, part: Part?) {
+        this.uploadId = id
+        this.part = part
+    }
 
-	public void multipart(String id, Part part) {
-		this.uploadId = id;
-		this.part = part;
-	}
-
-	@Override
-	public HttpMethod method() {
-		return HttpMethod.PUT;
-	}
+    override fun method(): HttpMethod {
+        return HttpMethod.PUT
+    }
 
 
-	@Override
-	public BodySource body() {
-		InputStream inputStream = getStream();
-		return BodySource.of(inputStream);
-	}
+    override fun body(): BodySource? {
+        val inputStream = stream
+        return of(inputStream!!)
+    }
 
-	@Override
-	public void onCall() {
-		headers.contentType("application/octet-stream");
-	}
+    override fun onCall() {
+        headers.contentType("application/octet-stream")
+    }
 
-	@Override
-	public void onParams() {
-		if (part != null) {
-			getParams().add("partNumber", Long.toString(part.getIndex() + 1));
-			getParams().add("uploadId", uploadId);
-		}
-	}
-
-	public InputStream getStream() {return this.stream;}
-
-	public String getUploadId() {return this.uploadId;}
-
-	public Part getPart() {return this.part;}
-
-	public void setStream(InputStream stream) {this.stream = stream;}
+    override fun onParams() {
+        if (part != null) {
+            params.add("partNumber", (part!!.index + 1).toString())
+            params.add("uploadId", uploadId!!)
+        }
+    }
 }

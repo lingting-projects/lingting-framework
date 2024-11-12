@@ -1,206 +1,177 @@
-package live.lingting.framework.huawei;
+package live.lingting.framework.huawei
 
-import live.lingting.framework.aws.policy.Credential;
-import live.lingting.framework.http.HttpResponse;
-import live.lingting.framework.http.api.ApiClient;
-import live.lingting.framework.http.header.HttpHeaders;
-import live.lingting.framework.huawei.exception.HuaweiIamException;
-import live.lingting.framework.huawei.iam.HuaweiIamCredentialRequest;
-import live.lingting.framework.huawei.iam.HuaweiIamCredentialResponse;
-import live.lingting.framework.huawei.iam.HuaweiIamRequest;
-import live.lingting.framework.huawei.iam.HuaweiIamToken;
-import live.lingting.framework.huawei.iam.HuaweiIamTokenRequest;
-import live.lingting.framework.huawei.iam.HuaweiIamTokenResponse;
-import live.lingting.framework.huawei.properties.HuaweiIamProperties;
-import live.lingting.framework.huawei.properties.HuaweiObsProperties;
-import live.lingting.framework.util.StringUtils;
-import live.lingting.framework.value.WaitValue;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import static live.lingting.framework.huawei.HuaweiUtils.CREDENTIAL_EXPIRE;
-import static live.lingting.framework.huawei.HuaweiUtils.TOKEN_EARLY_EXPIRE;
+import live.lingting.framework.aws.policy.Credential
+import live.lingting.framework.http.HttpResponse
+import live.lingting.framework.http.api.ApiClient
+import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.huawei.exception.HuaweiIamException
+import live.lingting.framework.huawei.iam.HuaweiIamCredentialRequest
+import live.lingting.framework.huawei.iam.HuaweiIamCredentialResponse
+import live.lingting.framework.huawei.iam.HuaweiIamRequest
+import live.lingting.framework.huawei.iam.HuaweiIamToken
+import live.lingting.framework.huawei.iam.HuaweiIamTokenRequest
+import live.lingting.framework.huawei.iam.HuaweiIamTokenResponse
+import live.lingting.framework.huawei.properties.HuaweiIamProperties
+import live.lingting.framework.huawei.properties.HuaweiObsProperties
+import live.lingting.framework.util.StringUtils
+import live.lingting.framework.value.WaitValue
+import java.time.Duration
+import java.time.LocalDateTime
+import java.util.*
 
 /**
  * @author lingting 2024-09-12 21:27
  */
-public class HuaweiIam extends ApiClient<HuaweiIamRequest> {
+class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<HuaweiIamRequest?>(properties.host) {
+    // endregion
+    /**
+     * token 提前多久过期
+     */
+    var tokenEarlyExpire: Duration = HuaweiUtils.Companion.TOKEN_EARLY_EXPIRE
 
-	protected final HuaweiIamProperties properties;
-
-	/**
-	 * token 提前多久过期
-	 */
-	protected Duration tokenEarlyExpire = TOKEN_EARLY_EXPIRE;
-
-	/**
-	 * token 需要外部维护
-	 */
-	protected WaitValue<HuaweiIamToken> tokenValue = WaitValue.of();
-
-	public HuaweiIam(HuaweiIamProperties properties) {
-		super(properties.getHost());
-		this.properties = properties;
-	}
+    /**
+     * token 需要外部维护
+     */
+    var tokenValue: WaitValue<HuaweiIamToken> = WaitValue.of()
+        protected set
 
 
-	@Override
-	protected void customize(HuaweiIamRequest request, HttpHeaders headers) {
-		if (request.usingToken()) {
-			HuaweiIamToken token = getTokenValue().notNull();
-			headers.put("X-Auth-Token", token.getValue());
-		}
-	}
+    override fun customize(request: HuaweiIamRequest, headers: HttpHeaders) {
+        if (request.usingToken()) {
+            val token = tokenValue.notNull()
+            headers.put("X-Auth-Token", token.getValue())
+        }
+    }
 
-	@Override
-	protected HttpResponse checkout(HuaweiIamRequest request, HttpResponse response) {
-		if (response.code() == 401) {
-			log.debug("HuaweiIam token expired!");
-			refreshToken(true);
-			return call(request);
-		}
+    override fun checkout(request: HuaweiIamRequest, response: HttpResponse): HttpResponse {
+        if (response.code() == 401) {
+            log.debug("HuaweiIam token expired!")
+            refreshToken(true)
+            return call(request)
+        }
 
-		String string = response.string();
-		if (!response.is2xx()) {
-			log.error("HuaweiIam request error! uri: {}; code: {}; body:\n{}", response.uri(), response.code(), string);
-			throw new HuaweiIamException("request error! code: " + response.code());
-		}
-		return response;
-	}
+        val string = response.string()
+        if (!response.is2xx()) {
+            log.error("HuaweiIam request error! uri: {}; code: {}; body:\n{}", response.uri(), response.code(), string)
+            throw HuaweiIamException("request error! code: " + response.code())
+        }
+        return response
+    }
 
-	public void refreshToken() {
-		refreshToken(false);
-	}
+    @JvmOverloads
+    fun refreshToken(force: Boolean = false) {
+        if (!force) {
+            val value = tokenValue.getValue()
+            if (value != null && !value.isExpired(tokenEarlyExpire)) {
+                return
+            }
+        }
+
+        val token = token()
+        tokenValue.update(token)
+    }
 
 
-	public void refreshToken(boolean force) {
-		if (!force) {
-			HuaweiIamToken value = getTokenValue().getValue();
-			if (value != null && !value.isExpired(getTokenEarlyExpire())) {
-				return;
-			}
-		}
+    fun token(): HuaweiIamToken {
+        val request = HuaweiIamTokenRequest()
+        request.domain = properties.domain
+        request.username = properties.username
+        request.password = properties.password
 
-		HuaweiIamToken token = token();
-		tokenValue.update(token);
-	}
+        val response = call(request)
+        val convert = response.convert(HuaweiIamTokenResponse::class.java)
 
-	public HuaweiIamToken token() {
-		HuaweiIamTokenRequest request = new HuaweiIamTokenRequest();
-		request.setDomain(properties.getDomain());
-		request.setUsername(properties.getUsername());
-		request.setPassword(properties.getPassword());
+        val token = response.headers().first("X-Subject-Token")
+        val expire: LocalDateTime = HuaweiUtils.Companion.parse(convert.expire, properties.zone)
+        val issued: LocalDateTime = HuaweiUtils.Companion.parse(convert.issued, properties.zone)
+        return HuaweiIamToken(token, expire, issued)
+    }
 
-		HttpResponse response = call(request);
-		HuaweiIamTokenResponse convert = response.convert(HuaweiIamTokenResponse.class);
+    fun credential(statement: HuaweiStatement): Credential {
+        return credential(setOf(statement))
+    }
 
-		String token = response.headers().first("X-Subject-Token");
-		LocalDateTime expire = HuaweiUtils.parse(convert.getExpire(), properties.getZone());
-		LocalDateTime issued = HuaweiUtils.parse(convert.getIssued(), properties.getZone());
-		return new HuaweiIamToken(token, expire, issued);
-	}
+    fun credential(statement: HuaweiStatement, vararg statements: HuaweiStatement?): Credential {
+        val list: MutableList<HuaweiStatement> = ArrayList(statements.size + 1)
+        list.add(statement)
+        list.addAll(Arrays.asList(*statements))
+        return credential(list)
+    }
 
-	public Credential credential(HuaweiStatement statement) {
-		return credential(Collections.singleton(statement));
-	}
+    fun credential(statements: Collection<HuaweiStatement>?): Credential {
+        return credential(HuaweiUtils.Companion.CREDENTIAL_EXPIRE, statements)
+    }
 
-	public Credential credential(HuaweiStatement statement, HuaweiStatement... statements) {
-		List<HuaweiStatement> list = new ArrayList<>(statements.length + 1);
-		list.add(statement);
-		list.addAll(Arrays.asList(statements));
-		return credential(list);
-	}
+    fun credential(timeout: Duration?, statements: Collection<HuaweiStatement>?): Credential {
+        val request = HuaweiIamCredentialRequest()
+        request.timeout = timeout
+        request.statements = statements
+        val response = call(request)
+        val convert = response.convert(HuaweiIamCredentialResponse::class.java)
+        val ak = convert.access
+        val sk = convert.secret
+        val token = convert.securityToken
+        val expire: LocalDateTime = HuaweiUtils.Companion.parse(convert.expire, properties.zone)
+        return Credential(ak!!, sk!!, token!!, expire)
+    }
 
-	public Credential credential(Collection<HuaweiStatement> statements) {
-		return credential(CREDENTIAL_EXPIRE, statements);
-	}
+    // region obs
+    fun obsBucket(region: String?, bucket: String?): HuaweiObsBucket {
+        val s = HuaweiObsProperties()
+        s.region = region
+        s.bucket = bucket
+        return obsBucket(s)
+    }
 
-	public Credential credential(Duration timeout, Collection<HuaweiStatement> statements) {
-		HuaweiIamCredentialRequest request = new HuaweiIamCredentialRequest();
-		request.setTimeout(timeout);
-		request.setStatements(statements);
-		HttpResponse response = call(request);
-		HuaweiIamCredentialResponse convert = response.convert(HuaweiIamCredentialResponse.class);
-		String ak = convert.getAccess();
-		String sk = convert.getSecret();
-		String token = convert.getSecurityToken();
-		LocalDateTime expire = HuaweiUtils.parse(convert.getExpire(), properties.getZone());
-		return new Credential(ak, sk, token, expire);
-	}
+    fun obsBucket(region: String?, bucket: String?, actions: Collection<String?>): HuaweiObsBucket {
+        val s = HuaweiObsProperties()
+        s.region = region
+        s.bucket = bucket
+        return obsBucket(s, actions)
+    }
 
-	// region obs
+    fun obsBucket(properties: HuaweiObsProperties): HuaweiObsBucket {
+        return obsBucket(properties, HuaweiActions.Companion.OBS_BUCKET_DEFAULT)
+    }
 
-	public HuaweiObsBucket obsBucket(String region, String bucket) {
-		HuaweiObsProperties s = new HuaweiObsProperties();
-		s.setRegion(region);
-		s.setBucket(bucket);
-		return obsBucket(s);
-	}
+    fun obsBucket(properties: HuaweiObsProperties, actions: Collection<String?>): HuaweiObsBucket {
+        val bucket = if (StringUtils.hasText(properties.bucket)) properties.bucket else "*"
+        val statement: HuaweiStatement = HuaweiStatement.Companion.allow()
+        statement.addAction(actions)
+        statement.addResource("obs:*:*:bucket:%s".formatted(bucket))
+        statement.addResource("obs:*:*:object:%s/*".formatted(bucket))
+        val credential = credential(statement)
+        val copy = properties.copy()
+        copy!!.useCredential(credential)
+        return HuaweiObsBucket(copy)
+    }
 
-	public HuaweiObsBucket obsBucket(String region, String bucket, Collection<String> actions) {
-		HuaweiObsProperties s = new HuaweiObsProperties();
-		s.setRegion(region);
-		s.setBucket(bucket);
-		return obsBucket(s, actions);
-	}
+    fun obsObject(region: String?, bucket: String?, key: String?): HuaweiObsObject {
+        val s = HuaweiObsProperties()
+        s.region = region
+        s.bucket = bucket
+        return obsObject(s, key)
+    }
 
-	public HuaweiObsBucket obsBucket(HuaweiObsProperties properties) {
-		return obsBucket(properties, HuaweiActions.OBS_BUCKET_DEFAULT);
-	}
+    fun obsObject(region: String?, bucket: String?, key: String?, actions: Collection<String?>): HuaweiObsObject {
+        val s = HuaweiObsProperties()
+        s.region = region
+        s.bucket = bucket
+        return obsObject(s, key, actions)
+    }
 
-	public HuaweiObsBucket obsBucket(HuaweiObsProperties properties, Collection<String> actions) {
-		String bucket = StringUtils.hasText(properties.getBucket()) ? properties.getBucket() : "*";
-		HuaweiStatement statement = HuaweiStatement.allow();
-		statement.addAction(actions);
-		statement.addResource("obs:*:*:bucket:%s".formatted(bucket));
-		statement.addResource("obs:*:*:object:%s/*".formatted(bucket));
-		Credential credential = credential(statement);
-		HuaweiObsProperties copy = properties.copy();
-		copy.useCredential(credential);
-		return new HuaweiObsBucket(copy);
-	}
+    fun obsObject(properties: HuaweiObsProperties, key: String?): HuaweiObsObject {
+        return obsObject(properties, key, HuaweiActions.Companion.OBS_OBJECT_DEFAULT)
+    }
 
-	public HuaweiObsObject obsObject(String region, String bucket, String key) {
-		HuaweiObsProperties s = new HuaweiObsProperties();
-		s.setRegion(region);
-		s.setBucket(bucket);
-		return obsObject(s, key);
-	}
-
-	public HuaweiObsObject obsObject(String region, String bucket, String key, Collection<String> actions) {
-		HuaweiObsProperties s = new HuaweiObsProperties();
-		s.setRegion(region);
-		s.setBucket(bucket);
-		return obsObject(s, key, actions);
-	}
-
-	public HuaweiObsObject obsObject(HuaweiObsProperties properties, String key) {
-		return obsObject(properties, key, HuaweiActions.OBS_OBJECT_DEFAULT);
-	}
-
-	public HuaweiObsObject obsObject(HuaweiObsProperties properties, String key, Collection<String> actions) {
-		String bucket = properties.getBucket();
-		HuaweiStatement statement = HuaweiStatement.allow();
-		statement.addAction(actions);
-		statement.addResource("obs:*:*:object:%s/%s".formatted(bucket, key));
-		Credential credential = credential(statement);
-		HuaweiObsProperties copy = properties.copy();
-		copy.useCredential(credential);
-		return new HuaweiObsObject(copy, key);
-	}
-
-	public Duration getTokenEarlyExpire() {return this.tokenEarlyExpire;}
-
-	public WaitValue<HuaweiIamToken> getTokenValue() {return this.tokenValue;}
-
-	public void setTokenEarlyExpire(Duration tokenEarlyExpire) {this.tokenEarlyExpire = tokenEarlyExpire;}
-
-	// endregion
-
+    fun obsObject(properties: HuaweiObsProperties, key: String?, actions: Collection<String?>): HuaweiObsObject {
+        val bucket = properties.bucket
+        val statement: HuaweiStatement = HuaweiStatement.Companion.allow()
+        statement.addAction(actions)
+        statement.addResource("obs:*:*:object:%s/%s".formatted(bucket, key))
+        val credential = credential(statement)
+        val copy = properties.copy()
+        copy!!.useCredential(credential)
+        return HuaweiObsObject(copy, key)
+    }
 }

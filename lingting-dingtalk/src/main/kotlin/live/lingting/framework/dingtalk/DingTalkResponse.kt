@@ -1,76 +1,71 @@
-package live.lingting.framework.dingtalk;
+package live.lingting.framework.dingtalk
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import live.lingting.framework.jackson.JacksonUtils;
+import com.fasterxml.jackson.annotation.JsonProperty
+import live.lingting.framework.jackson.JacksonUtils
 
 /**
  * 钉钉返回信息
  *
  * @author lingting 2020/6/11 0:23
  */
+class DingTalkResponse {
+    @JsonProperty("errcode")
+    var code: Long? = null
+        private set
 
-public class DingTalkResponse {
+    /**
+     * 值为ok表示无异常
+     */
+    @JsonProperty("errmsg")
+    var message: String? = null
+        private set
 
-	public static final Long SUCCESS_CODE = 0L;
+    /**
+     * 钉钉返回信息
+     */
+    var response: String? = null
+        private set
 
-	@JsonProperty("errcode")
-	private Long code;
+    /**
+     * 是否发送成功
+     */
+    var isSuccess: Boolean = false
+        private set
 
-	/**
-	 * 值为ok表示无异常
-	 */
-	@JsonProperty("errmsg")
-	private String message;
+    override fun toString(): String {
+        return response!!
+    }
 
-	/**
-	 * 钉钉返回信息
-	 */
-	private String response;
+    @JsonProperty("errcode")
+    fun setCode(code: Long?): DingTalkResponse {
+        this.code = code
+        return this
+    }
 
-	/**
-	 * 是否发送成功
-	 */
-	private boolean success;
+    @JsonProperty("errmsg")
+    fun setMessage(message: String?): DingTalkResponse {
+        this.message = message
+        return this
+    }
 
-	public static DingTalkResponse of(String res) {
-		DingTalkResponse value = JacksonUtils.toObj(res, DingTalkResponse.class);
-		value.setResponse(res);
-		value.setSuccess(SUCCESS_CODE.equals(value.code));
-		return value;
-	}
+    fun setResponse(response: String?): DingTalkResponse {
+        this.response = response
+        return this
+    }
 
-	@Override
-	public String toString() {
-		return response;
-	}
+    fun setSuccess(success: Boolean): DingTalkResponse {
+        this.isSuccess = success
+        return this
+    }
 
-	public Long getCode() {return this.code;}
+    companion object {
+        const val SUCCESS_CODE: Long = 0L
 
-	public String getMessage() {return this.message;}
-
-	public String getResponse() {return this.response;}
-
-	public boolean isSuccess() {return this.success;}
-
-	@JsonProperty("errcode")
-	public DingTalkResponse setCode(Long code) {
-		this.code = code;
-		return this;
-	}
-
-	@JsonProperty("errmsg")
-	public DingTalkResponse setMessage(String message) {
-		this.message = message;
-		return this;
-	}
-
-	public DingTalkResponse setResponse(String response) {
-		this.response = response;
-		return this;
-	}
-
-	public DingTalkResponse setSuccess(boolean success) {
-		this.success = success;
-		return this;
-	}
+        fun of(res: String?): DingTalkResponse {
+            val value = JacksonUtils.toObj(res!!, DingTalkResponse::class.java)
+            value.setResponse(res)
+            value.setSuccess(SUCCESS_CODE == value.code)
+            return value
+        }
+    }
 }

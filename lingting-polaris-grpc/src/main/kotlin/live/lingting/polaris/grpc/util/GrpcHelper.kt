@@ -1,88 +1,75 @@
+package live.lingting.polaris.grpc.util
 
-package live.lingting.polaris.grpc.util;
-
-import io.grpc.Attributes;
-import io.grpc.ConnectivityStateInfo;
-import io.grpc.EquivalentAddressGroup;
-import io.grpc.LoadBalancer.Subchannel;
-import live.lingting.polaris.grpc.loadbalance.PolarisLoadBalancer.Tuple;
-import live.lingting.polaris.grpc.loadbalance.PolarisSubChannel;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static io.grpc.ConnectivityState.READY;
-import static io.grpc.ConnectivityState.SHUTDOWN;
+import com.google.common.base.Preconditions
+import io.grpc.Attributes
+import io.grpc.ConnectivityState
+import io.grpc.ConnectivityStateInfo
+import io.grpc.EquivalentAddressGroup
+import io.grpc.LoadBalancer
+import live.lingting.polaris.grpc.loadbalance.PolarisLoadBalancer
+import live.lingting.polaris.grpc.loadbalance.PolarisSubChannel
+import java.util.concurrent.atomic.AtomicReference
+import kotlin.concurrent.Volatile
 
 /**
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
+ * @author [liaochuntao](mailto:liaochuntao@live.com)
  */
-public final class GrpcHelper {
+class GrpcHelper private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	public static final Attributes.Key<Ref<ConnectivityStateInfo>> STATE_INFO = Attributes.Key.create("state-info");
+    class Ref<T>(@field:Volatile var value: T) {
+        fun getValue(): T {
+            return value
+        }
 
-	private GrpcHelper() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+        fun setValue(value: T) {
+            this.value = value
+        }
+    }
 
-	public static <T> Set<T> setsDifference(Set<T> a, Set<T> b) {
-		Set<T> aCopy = new HashSet<>(a);
-		aCopy.removeAll(b);
-		return aCopy;
-	}
+    companion object {
+        val STATE_INFO: Attributes.Key<Ref<ConnectivityStateInfo>> = Attributes.Key.create("state-info")
 
-	public static Ref<ConnectivityStateInfo> getSubChannelStateInfoRef(Subchannel subchannel) {
-		return checkNotNull(subchannel.getAttributes().get(STATE_INFO), "STATE_INFO");
-	}
+        fun <T> setsDifference(a: Set<T>, b: Set<T>): Set<T> {
+            val aCopy: MutableSet<T> = HashSet(a)
+            aCopy.removeAll(b)
+            return aCopy
+        }
 
-	static boolean isReady(Subchannel subchannel) {
-		return getSubChannelStateInfoRef(subchannel).value.getState() == READY;
-	}
+        fun getSubChannelStateInfoRef(subchannel: LoadBalancer.Subchannel): Ref<ConnectivityStateInfo> {
+            return Preconditions.checkNotNull(subchannel.attributes.get(STATE_INFO), "STATE_INFO")
+        }
 
-	public static void shutdownSubChannel(Subchannel channel) {
-		if (channel == null) {
-			return;
-		}
+        fun isReady(subchannel: LoadBalancer.Subchannel): Boolean {
+            return getSubChannelStateInfoRef(subchannel).value.state == ConnectivityState.READY
+        }
 
-		channel.shutdown();
-		getSubChannelStateInfoRef(channel).value = ConnectivityStateInfo.forNonError(SHUTDOWN);
-	}
+        fun shutdownSubChannel(channel: LoadBalancer.Subchannel?) {
+            if (channel == null) {
+                return
+            }
 
-	public static Map<PolarisSubChannel, PolarisSubChannel> filterNonFailingSubChannels(
-		Map<String, Tuple<EquivalentAddressGroup, PolarisSubChannel>> subChannels,
-		AtomicReference<Attributes> attributeHolder) {
-		Map<PolarisSubChannel, PolarisSubChannel> readySubChannels = new HashMap<>();
+            channel.shutdown()
+            getSubChannelStateInfoRef(channel).value = ConnectivityStateInfo.forNonError(ConnectivityState.SHUTDOWN)
+        }
 
-		subChannels.forEach((key, val) -> {
-			PolarisSubChannel channel = val.getB();
-			if (isReady(channel)) {
-				attributeHolder.set(channel.getAttributes());
-				readySubChannels.put(channel, channel);
-			}
-		});
+        fun filterNonFailingSubChannels(
+            subChannels: Map<String, PolarisLoadBalancer.Tuple<EquivalentAddressGroup, PolarisSubChannel>>,
+            attributeHolder: AtomicReference<Attributes?>
+        ): Map<PolarisSubChannel?, PolarisSubChannel?> {
+            val readySubChannels: MutableMap<PolarisSubChannel?, PolarisSubChannel?> = HashMap()
 
-		return readySubChannels;
-	}
+            subChannels.forEach { (key: String?, `val`: PolarisLoadBalancer.Tuple<EquivalentAddressGroup?, PolarisSubChannel?>?) ->
+                val channel: PolarisSubChannel = `val`.getB()
+                if (isReady(channel)) {
+                    attributeHolder.set(channel.attributes)
+                    readySubChannels[channel] = channel
+                }
+            }
 
-	@SuppressWarnings("java:S3077")
-	public static final class Ref<T> {
-
-		volatile T value;
-
-		public Ref(T value) {
-			this.value = value;
-		}
-
-		public T getValue() {
-			return value;
-		}
-
-		public void setValue(T value) {
-			this.value = value;
-		}
-
-	}
-
+            return readySubChannels
+        }
+    }
 }

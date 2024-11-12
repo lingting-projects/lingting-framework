@@ -1,72 +1,78 @@
-package live.lingting.framework.elasticsearch;
+package live.lingting.framework.elasticsearch
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.json.JsonpMapper;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.ElasticsearchTransport;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataPermissionHandler;
-import live.lingting.framework.jackson.JacksonUtils;
-import org.apache.http.HttpHost;
-import org.elasticsearch.client.RestClient;
-
-import java.util.Arrays;
-import java.util.function.Function;
+import co.elastic.clients.elasticsearch.ElasticsearchClient
+import co.elastic.clients.json.JsonpMapper
+import co.elastic.clients.json.jackson.JacksonJsonpMapper
+import co.elastic.clients.transport.ElasticsearchTransport
+import co.elastic.clients.transport.rest_client.RestClientTransport
+import com.fasterxml.jackson.databind.ObjectMapper
+import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataPermissionHandler
+import live.lingting.framework.jackson.JacksonUtils
+import org.apache.http.HttpHost
+import org.elasticsearch.client.RestClient
+import java.util.*
+import java.util.function.Function
 
 /**
  * @author lingting 2024-03-06 20:00
  */
-public final class ElasticsearchProvider {
+class ElasticsearchProvider private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	private ElasticsearchProvider() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+    companion object {
+        @JvmStatic
+        fun restClient(vararg hosts: String): RestClient {
+            return restClient(*Arrays.stream<String>(hosts).map<HttpHost> { s: String? -> HttpHost.create(s) }.toArray<HttpHost> { _Dummy_.__Array__() })
+        }
 
-	public static RestClient restClient(String... hosts) {
-		return restClient(Arrays.stream(hosts).map(HttpHost::create).toArray(HttpHost[]::new));
-	}
+        @JvmStatic
+        fun restClient(vararg hosts: HttpHost?): RestClient {
+            return RestClient.builder(*hosts).build()
+        }
 
-	public static RestClient restClient(HttpHost... hosts) {
-		return RestClient.builder(hosts).build();
-	}
+        @JvmStatic
+        @JvmOverloads
+        fun jacksonMapper(mapper: ObjectMapper = JacksonUtils.getMapper()): JsonpMapper {
+            return JacksonJsonpMapper(mapper)
+        }
 
-	public static JsonpMapper jacksonMapper() {
-		return jacksonMapper(JacksonUtils.getMapper());
-	}
+        @JvmStatic
+        @JvmOverloads
+        fun transport(restClient: RestClient?, jsonpMapper: JsonpMapper? = jacksonMapper()): RestClientTransport {
+            return RestClientTransport(restClient, jsonpMapper)
+        }
 
-	public static JsonpMapper jacksonMapper(ObjectMapper mapper) {
-		return new JacksonJsonpMapper(mapper);
-	}
+        @JvmStatic
+        fun client(vararg hosts: HttpHost?): ElasticsearchClient {
+            return client(restClient(*hosts))
+        }
 
-	public static RestClientTransport transport(RestClient restClient) {
-		return transport(restClient, jacksonMapper());
-	}
+        @JvmStatic
+        fun client(restClient: RestClient?): ElasticsearchClient {
+            return client(transport(restClient))
+        }
 
-	public static RestClientTransport transport(RestClient restClient, JsonpMapper jsonpMapper) {
-		return new RestClientTransport(restClient, jsonpMapper);
-	}
+        @JvmStatic
+        fun client(transport: ElasticsearchTransport?): ElasticsearchClient {
+            return ElasticsearchClient(transport)
+        }
 
-	public static ElasticsearchClient client(HttpHost... hosts) {
-		return client(restClient(hosts));
-	}
+        fun <T> api(
+            cls: Class<T>, idFunc: Function<T, String?>,
+            properties: ElasticsearchProperties, handler: ElasticsearchDataPermissionHandler?,
+            client: ElasticsearchClient
+        ): ElasticsearchApi<T> {
+            return ElasticsearchApi(cls, idFunc, properties, handler, client)
+        }
 
-	public static ElasticsearchClient client(RestClient restClient) {
-		return client(transport(restClient));
-	}
-
-	public static ElasticsearchClient client(ElasticsearchTransport transport) {
-		return new ElasticsearchClient(transport);
-	}
-
-	public static <T> ElasticsearchApi<T> api(Class<T> cls, Function<T, String> idFunc,
-											  ElasticsearchProperties properties, ElasticsearchDataPermissionHandler handler,
-											  ElasticsearchClient client) {
-		return new ElasticsearchApi<>(cls, idFunc, properties, handler, client);
-	}
-
-	public static <T> ElasticsearchApi<T> api(String index, Class<T> cls, Function<T, String> idFunc,
-											  ElasticsearchProperties properties, ElasticsearchDataPermissionHandler handler,
-											  ElasticsearchClient client) {
-		return new ElasticsearchApi<>(index, cls, idFunc, properties, handler, client);
-	}
-
+        fun <T> api(
+            index: String, cls: Class<T>, idFunc: Function<T, String?>,
+            properties: ElasticsearchProperties, handler: ElasticsearchDataPermissionHandler?,
+            client: ElasticsearchClient
+        ): ElasticsearchApi<T> {
+            return ElasticsearchApi(index, cls, idFunc, properties, handler, client)
+        }
+    }
 }

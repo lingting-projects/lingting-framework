@@ -1,12 +1,11 @@
-package live.lingting.framework.function;
+package live.lingting.framework.function
+
+import live.lingting.framework.api.R
 
 /**
  * @author lingting 2023/2/2 17:36
  */
-@FunctionalInterface
-@SuppressWarnings("java:S112")
-public interface ThrowingBiFunctionE<T, D, R, E extends Exception> {
+fun interface ThrowingBiFunctionE<T, D, R, E : Exception?> {
 
-	R apply(T t, D d) throws E;
-
+    fun apply(t: T, d: D): R
 }

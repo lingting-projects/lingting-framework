@@ -1,39 +1,14 @@
-package live.lingting.framework.exception;
+package live.lingting.framework.exception
 
-import live.lingting.framework.api.ResultCode;
+import live.lingting.framework.api.ResultCode
 
 /**
  * @author lingting 2022/9/22 12:11
  */
-public class BizException extends RuntimeException {
+class BizException constructor(val code: Int?, override val message: String, e: Exception? = null) : RuntimeException(message, e) {
+    constructor(resultCode: ResultCode) : this(resultCode.code, resultCode.message, null)
 
-	private final Integer code;
+    constructor(resultCode: ResultCode, e: Exception?) : this(resultCode, resultCode.message, e)
 
-	private final String message;
-
-	public BizException(ResultCode resultCode) {
-		this(resultCode.getCode(), resultCode.getMessage(), null);
-	}
-
-	public BizException(ResultCode resultCode, Exception e) {
-		this(resultCode, resultCode.getMessage(), e);
-	}
-
-	public BizException(ResultCode resultCode, String message, Exception e) {
-		this(resultCode.getCode(), message, e);
-	}
-
-	public BizException(Integer code, String message) {
-		this(code, message, null);
-	}
-
-	public BizException(Integer code, String message, Exception e) {
-		super(message, e);
-		this.message = message;
-		this.code = code;
-	}
-
-	public Integer getCode() {return this.code;}
-
-	public String getMessage() {return this.message;}
+    constructor(resultCode: ResultCode, message: String, e: Exception?) : this(resultCode.code, message, e)
 }

@@ -1,67 +1,60 @@
-package live.lingting.framework.thread;
+package live.lingting.framework.thread
 
-import live.lingting.framework.context.ContextHolder;
-import live.lingting.framework.util.ThreadUtils;
-import live.lingting.framework.util.ValueUtils;
-import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
-import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import live.lingting.framework.context.ContextHolder.start
+import live.lingting.framework.retry.Retry.value
+import live.lingting.framework.util.ThreadUtils
+import live.lingting.framework.util.ValueUtils
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import java.time.Duration
+import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * @author lingting 2023-12-20 21:53
  */
-class AbstractTimerTest {
+internal class AbstractTimerTest {
+    var executor: Executor? = null
 
-	Executor executor;
+    @Test
+    @Throws(InterruptedException::class)
+    fun test() {
+        executor = ThreadUtils.executor()
+        doTest()
+        executor = VirtualThread.executor()
+        doTest()
+    }
 
-	@Test
-	void test() throws InterruptedException {
-		executor = ThreadUtils.executor();
-		doTest();
-		executor = VirtualThread.executor();
-		doTest();
-	}
+    @Throws(InterruptedException::class)
+    fun doTest() {
+        start()
+        val atomic = AtomicInteger(0)
 
-	void doTest() throws InterruptedException {
-		ContextHolder.start();
-		AtomicInteger atomic = new AtomicInteger(0);
+        val timer: AbstractTimer = object : AbstractTimer() {
+            override fun executor(): Executor? {
+                return executor
+            }
 
-		AbstractTimer timer = new AbstractTimer() {
-			@Override
-			protected Executor executor() {
-				return executor;
-			}
+            override val timeout: Duration
+                get() =// 设置执行间隔
+                    Duration.ofMinutes(30)
 
-			@Override
-			public Duration getTimeout() {
-				// 设置执行间隔
-				return Duration.ofMinutes(30);
-			}
+            @Throws(Exception::class)
+            override fun process() {
+                atomic.set(atomic.get() + 1)
+            }
+        }
 
-			@Override
-			protected void process() throws Exception {
-				atomic.set(atomic.get() + 1);
-			}
-		};
-
-		timer.onApplicationStart();
-		ValueUtils.await(atomic::get, v -> v > 0);
-		assertEquals(1, atomic.get());
-		timer.wake();
-		ValueUtils.await(atomic::get, v -> v > 1);
-		assertEquals(2, atomic.get());
-		Thread thread = timer.threadValue.getValue();
-		assertNotNull(thread);
-		assertFalse(thread.isInterrupted());
-		thread.interrupt();
-		assertTrue(thread.isInterrupted());
-	}
-
+        timer.onApplicationStart()
+        ValueUtils.await({ atomic.get() }, { v -> v > 0 })
+        Assertions.assertEquals(1, atomic.get())
+        timer.wake()
+        ValueUtils.await({ atomic.get() }, { v -> v > 1 })
+        Assertions.assertEquals(2, atomic.get())
+        val thread = timer.threadValue.getValue()
+        Assertions.assertNotNull(thread)
+        Assertions.assertFalse(thread.isInterrupted)
+        thread.interrupt()
+        Assertions.assertTrue(thread.isInterrupted)
+    }
 }

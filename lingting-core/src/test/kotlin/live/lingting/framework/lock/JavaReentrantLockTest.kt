@@ -1,39 +1,33 @@
-package live.lingting.framework.lock;
+package live.lingting.framework.lock
 
-import live.lingting.framework.thread.Async;
-import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import live.lingting.framework.thread.Async
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * @author lingting 2024-01-26 11:25
  */
-class JavaReentrantLockTest {
+internal class JavaReentrantLockTest {
+    @Test
+    fun test() {
+        val lock = JavaReentrantLock()
 
-	@Test
-	void test() {
-		JavaReentrantLock lock = new JavaReentrantLock();
+        val value = AtomicInteger()
+        val count = 2
+        val async = Async()
 
-		AtomicInteger value = new AtomicInteger();
-		int count = 2;
-		Async async = new Async();
+        for (i in 0 until count) {
+            async.submit("async-$i") {
+                for (j in 0 until count) {
+                    lock.run {
+                        value.set(value.get() + 1)
+                    }
+                }
+            }
+        }
 
-		for (int i = 0; i < count; i++) {
-			async.submit("async-" + i, () -> {
-
-				for (int j = 0; j < count; j++) {
-					lock.run(() -> {
-						value.set(value.get() + 1);
-					});
-				}
-
-			});
-		}
-
-		async.await();
-		assertEquals(count * count, value.get());
-	}
-
+        async.await()
+        Assertions.assertEquals(count * count, value.get())
+    }
 }

@@ -1,29 +1,25 @@
-package live.lingting.framework.value.cycle;
+package live.lingting.framework.value.cycle
 
-import live.lingting.framework.value.StepValue;
+import live.lingting.framework.value.StepValue
 
 /**
  * @author lingting 2024-01-23 15:22
  */
-public class StepCycleValue<T> extends AbstractConcurrentCycleValue<T> {
+class StepCycleValue<T>(step: StepValue<T>) : AbstractConcurrentCycleValue<T>() {
+    private val step: StepValue<T?>
 
-	private final StepValue<T> step;
+    init {
+        this.step = step
+    }
 
-	public StepCycleValue(StepValue<T> step) {
-		this.step = step;
-	}
+    override fun doReset() {
+        step.reset()
+    }
 
-	@Override
-	public void doReset() {
-		step.reset();
-	}
-
-	@Override
-	public T doNext() {
-		if (!step.hasNext()) {
-			step.reset();
-		}
-		return step.next();
-	}
-
+    override fun doNext(): T? {
+        if (!step.hasNext()) {
+            step.reset()
+        }
+        return step.next()
+    }
 }

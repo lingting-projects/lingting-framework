@@ -1,139 +1,116 @@
-package live.lingting.framework.dingtalk.message;
+package live.lingting.framework.dingtalk.message
 
-import live.lingting.framework.MarkdownBuilder;
-import live.lingting.framework.dingtalk.DingTalkParams;
-import live.lingting.framework.dingtalk.enums.ActionBtnOrientationEnum;
-import live.lingting.framework.dingtalk.enums.MessageTypeEnum;
-
-import java.util.ArrayList;
-import java.util.List;
+import live.lingting.framework.MarkdownBuilder
+import live.lingting.framework.dingtalk.DingTalkParams
+import live.lingting.framework.dingtalk.DingTalkParams.ActionCard
+import live.lingting.framework.dingtalk.enums.ActionBtnOrientationEnum
+import live.lingting.framework.dingtalk.enums.MessageTypeEnum
 
 /**
  * 跳转 ActionCard类型
  *
  * @author lingting 2020/6/10 23:39
  */
+class DingTalkActionCardMessage : AbstractDingTalkMessage() {
+    var title: String? = null
+        private set
 
-public class DingTalkActionCardMessage extends AbstractDingTalkMessage {
+    /**
+     * 内容
+     */
+    var text: MarkdownBuilder? = null
+        private set
 
-	private String title;
+    /**
+     * 按钮排列样式 默认横
+     */
+    var orientation: ActionBtnOrientationEnum = ActionBtnOrientationEnum.HORIZONTAL
+        private set
 
-	/**
-	 * 内容
-	 */
-	private MarkdownBuilder text;
+    /**
+     * 单个按钮的标题
+     */
+    var singleTitle: String? = null
+        private set
 
-	/**
-	 * 按钮排列样式 默认横
-	 */
-	private ActionBtnOrientationEnum orientation = ActionBtnOrientationEnum.HORIZONTAL;
+    /**
+     * 点击singleTitle按钮触发的URL
+     */
+    var singleUrl: String? = null
+        private set
 
-	/**
-	 * 单个按钮的标题
-	 */
-	private String singleTitle;
+    /**
+     * 自定义按钮组 如果配置了 按钮组 则 单按钮配置无效
+     */
+    private var buttons: MutableList<Button> = ArrayList()
 
-	/**
-	 * 点击singleTitle按钮触发的URL
-	 */
-	private String singleUrl;
+    /**
+     * 添加按钮
+     */
+    fun addButton(title: String?, url: String?): DingTalkActionCardMessage {
+        buttons.add(Button(title, url))
+        return this
+    }
 
-	/**
-	 * 自定义按钮组 如果配置了 按钮组 则 单按钮配置无效
-	 */
-	private List<Button> buttons = new ArrayList<>();
+    override val type: MessageTypeEnum
+        get() = MessageTypeEnum.ACTION_CARD
 
-	/**
-	 * 添加按钮
-	 */
-	public DingTalkActionCardMessage addButton(String title, String url) {
-		buttons.add(new Button(title, url));
-		return this;
-	}
+    override fun put(params: DingTalkParams): DingTalkParams {
+        val card = ActionCard().setTitle(title)
+            .setText(text!!.build())
+            .setBtnOrientation(orientation.getVal())
 
-	@Override
-	public MessageTypeEnum getType() {
-		return MessageTypeEnum.ACTION_CARD;
-	}
+        // 当 单按钮的 文本和链接都不为空时
+        if (buttons.isEmpty()) {
+            card.setSingleTitle(singleTitle).setSingleUrl(singleUrl)
+        } else {
+            card.setButtons(buttons)
+        }
+        return params.setActionCard(card)
+    }
 
-	@Override
-	public DingTalkParams put(DingTalkParams params) {
-		DingTalkParams.ActionCard card = new DingTalkParams.ActionCard().setTitle(title)
-			.setText(text.build())
-			.setBtnOrientation(orientation.getVal());
+    fun getButtons(): List<Button> {
+        return this.buttons
+    }
 
-		// 当 单按钮的 文本和链接都不为空时
-		if (buttons.isEmpty()) {
-			card.setSingleTitle(singleTitle).setSingleUrl(singleUrl);
-		}
-		else {
-			card.setButtons(buttons);
-		}
-		return params.setActionCard(card);
-	}
+    fun setTitle(title: String?): DingTalkActionCardMessage {
+        this.title = title
+        return this
+    }
 
-	public String getTitle() {return this.title;}
+    fun setText(text: MarkdownBuilder?): DingTalkActionCardMessage {
+        this.text = text
+        return this
+    }
 
-	public MarkdownBuilder getText() {return this.text;}
+    fun setOrientation(orientation: ActionBtnOrientationEnum): DingTalkActionCardMessage {
+        this.orientation = orientation
+        return this
+    }
 
-	public ActionBtnOrientationEnum getOrientation() {return this.orientation;}
+    fun setSingleTitle(singleTitle: String?): DingTalkActionCardMessage {
+        this.singleTitle = singleTitle
+        return this
+    }
 
-	public String getSingleTitle() {return this.singleTitle;}
+    fun setSingleUrl(singleUrl: String?): DingTalkActionCardMessage {
+        this.singleUrl = singleUrl
+        return this
+    }
 
-	public String getSingleUrl() {return this.singleUrl;}
+    fun setButtons(buttons: MutableList<Button>): DingTalkActionCardMessage {
+        this.buttons = buttons
+        return this
+    }
 
-	public List<Button> getButtons() {return this.buttons;}
-
-	public DingTalkActionCardMessage setTitle(String title) {
-		this.title = title;
-		return this;
-	}
-
-	public DingTalkActionCardMessage setText(MarkdownBuilder text) {
-		this.text = text;
-		return this;
-	}
-
-	public DingTalkActionCardMessage setOrientation(ActionBtnOrientationEnum orientation) {
-		this.orientation = orientation;
-		return this;
-	}
-
-	public DingTalkActionCardMessage setSingleTitle(String singleTitle) {
-		this.singleTitle = singleTitle;
-		return this;
-	}
-
-	public DingTalkActionCardMessage setSingleUrl(String singleUrl) {
-		this.singleUrl = singleUrl;
-		return this;
-	}
-
-	public DingTalkActionCardMessage setButtons(List<Button> buttons) {
-		this.buttons = buttons;
-		return this;
-	}
-
-	public static class Button {
-
-		/**
-		 * 标题
-		 */
-		private final String title;
-
-		/**
-		 * 跳转路径
-		 */
-		private final String actionURL;
-
-		public Button(String title, String actionURL) {
-			this.title = title;
-			this.actionURL = actionURL;
-		}
-
-		public String getTitle() {return this.title;}
-
-		public String getActionURL() {return this.actionURL;}
-	}
-
+    class Button(
+        /**
+         * 标题
+         */
+        val title: String?,
+        /**
+         * 跳转路径
+         */
+        val actionURL: String?
+    )
 }

@@ -1,62 +1,46 @@
-package live.lingting.framework.aws.s3;
+package live.lingting.framework.aws.s3
 
-import live.lingting.framework.aws.AwsS3Object;
-import live.lingting.framework.multipart.Multipart;
-import live.lingting.framework.multipart.Part;
-import live.lingting.framework.multipart.file.FileMultipartTask;
-import live.lingting.framework.thread.Async;
-
-import java.io.InputStream;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import live.lingting.framework.aws.AwsS3Object
+import live.lingting.framework.multipart.Multipart
+import live.lingting.framework.multipart.Part
+import live.lingting.framework.multipart.file.FileMultipartTask
+import live.lingting.framework.thread.Async
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * @author lingting 2024-09-19 20:26
  */
-public class AwsS3MultipartTask extends FileMultipartTask<AwsS3MultipartTask> {
+class AwsS3MultipartTask(multipart: Multipart, async: Async, protected val s3: AwsS3Object) : FileMultipartTask<AwsS3MultipartTask?>(multipart, async) {
+    protected val map: MutableMap<Part, String?> = ConcurrentHashMap(multipart.parts.size)
 
-	protected final AwsS3Object s3;
+    @JvmField
+    val uploadId: String = multipart.id
 
-	protected final Map<Part, String> map;
+    constructor(multipart: Multipart, s3: AwsS3Object) : this(multipart, Async(), s3)
 
-	protected final String uploadId;
+    init {
+        maxRetryCount = 10
+    }
 
-	public AwsS3MultipartTask(Multipart multipart, AwsS3Object s3) {
-		this(multipart, new Async(), s3);
-	}
+    override fun onMerge() {
+        try {
+            s3.multipartMerge(uploadId, map)
+        } catch (e: Exception) {
+            log.warn("[{}] onMerge exception", uploadId, e)
+            onCancel()
+            log.debug("[{}] onCanceled", uploadId)
+        }
+    }
 
-	public AwsS3MultipartTask(Multipart multipart, Async async, AwsS3Object s3) {
-		super(multipart, async);
-		this.s3 = s3;
-		this.map = new ConcurrentHashMap<>(multipart.getParts().size());
-		this.uploadId = multipart.getId();
-		setMaxRetryCount(10);
-	}
+    override fun onCancel() {
+        s3.multipartCancel(uploadId)
+    }
 
-	@Override
-	protected void onMerge() {
-		try {
-			s3.multipartMerge(uploadId, map);
-		}
-		catch (Exception e) {
-			log.warn("[{}] onMerge exception", uploadId, e);
-			onCancel();
-			log.debug("[{}] onCanceled", uploadId);
-		}
-	}
-
-	@Override
-	protected void onCancel() {
-		s3.multipartCancel(uploadId);
-	}
-
-	@Override
-	protected void onPart(Part part) throws Throwable {
-		try (InputStream in = multipart.stream(part)) {
-			String etag = s3.multipartUpload(uploadId, part, in);
-			map.put(part, etag);
-		}
-	}
-
-	public String getUploadId() {return this.uploadId;}
+    @Throws(Throwable::class)
+    override fun onPart(part: Part) {
+        multipart.stream(part).use { `in` ->
+            val etag = s3.multipartUpload(uploadId, part, `in`)
+            map.put(part, etag)
+        }
+    }
 }

@@ -1,95 +1,89 @@
-package live.lingting.framework.http.download;
+package live.lingting.framework.http.download
 
-import live.lingting.framework.download.MultipartDownload;
-import live.lingting.framework.exception.DownloadException;
-import live.lingting.framework.http.HttpClient;
-import live.lingting.framework.http.HttpRequest;
-import live.lingting.framework.http.HttpResponse;
-import live.lingting.framework.http.header.HttpHeaders;
-import live.lingting.framework.multipart.Part;
-import live.lingting.framework.util.StreamUtils;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URI;
+import live.lingting.framework.download.MultipartDownload
+import live.lingting.framework.exception.DownloadException
+import live.lingting.framework.http.HttpClient
+import live.lingting.framework.http.HttpRequest
+import live.lingting.framework.multipart.Part
+import live.lingting.framework.util.StreamUtils
+import okhttp3.Cookie.Builder.value
+import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
+import java.net.URI
 
 /**
  * @author lingting 2023-12-20 16:43
  */
-@SuppressWarnings("java:S1452")
-public class HttpDownload extends MultipartDownload<HttpDownload> {
+class HttpDownload(builder: HttpDownloadBuilder) : MultipartDownload<HttpDownload?>(builder) {
+    protected val client: HttpClient? = builder.client
 
-	protected final HttpClient client;
+    protected val uri: URI = URI.create(url)
 
-	protected final URI uri;
+    @Throws(IOException::class)
+    fun write(request: HttpRequest, output: OutputStream?) {
+        val response = client!!.request(request)
 
-	public HttpDownload(HttpDownloadBuilder builder) throws IOException {
-		super(builder);
-		this.client = builder.client;
-		this.uri = URI.create(url);
-	}
+        if (!response!!.is2xx) {
+            throw DownloadException(String.format("response status: %d", response.code()))
+        }
 
-	public static HttpDownloadBuilder builder(String url) {
-		return new HttpDownloadBuilder(url);
-	}
+        response.body().use { input ->
+            StreamUtils.write(input, output!!)
+        }
+    }
 
-	public static HttpDownloadBuilder single(String url) {
-		return new HttpDownloadBuilder(url).single();
-	}
+    @Throws(IOException::class)
+    override fun size(): Long {
+        val builder: HttpRequest.Builder = HttpRequest.Companion.builder().url(uri).header("Accept-Encoding", "identity")
+        val response = client!!.request(builder.build())
+        val headers = response!!.headers()
+        return headers!!.contentLength()
+    }
 
-	public static HttpDownloadBuilder multi(String url) {
-		return new HttpDownloadBuilder(url).multi();
-	}
+    @Throws(Exception::class)
+    override fun download(part: Part): InputStream {
+        val builder: HttpRequest.Builder = HttpRequest.Companion.builder().get().url(uri)
+        if (isMulti) {
+            builder.header("Range", String.format("bytes=%d-%d", part.start, part.end))
+        }
 
-	public static HttpDownloadBuilder builder(URI url) {
-		return new HttpDownloadBuilder(url);
-	}
+        val request = builder.build()
+        val response = client!!.request(request)
 
-	public static HttpDownloadBuilder single(URI url) {
-		return new HttpDownloadBuilder(url).single();
-	}
+        if (!response!!.is2xx) {
+            throw DownloadException(String.format("response status: %d", response.code()))
+        }
 
-	public static HttpDownloadBuilder multi(URI url) {
-		return new HttpDownloadBuilder(url).multi();
-	}
+        return response.body()
+    }
 
-	void write(HttpRequest request, OutputStream output) throws IOException {
-		HttpResponse response = client.request(request);
+    companion object {
+        fun builder(url: String): HttpDownloadBuilder {
+            return HttpDownloadBuilder(url)
+        }
 
-		if (!response.is2xx()) {
-			throw new DownloadException(String.format("response status: %d", response.code()));
-		}
+        @JvmStatic
+        fun single(url: String): HttpDownloadBuilder {
+            return HttpDownloadBuilder(url).single()!!
+        }
 
-		try (InputStream input = response.body()) {
-			StreamUtils.write(input, output);
-		}
+        fun multi(url: String): HttpDownloadBuilder {
+            return HttpDownloadBuilder(url).multi()!!
+        }
 
-	}
+        fun builder(url: URI): HttpDownloadBuilder {
+            return HttpDownloadBuilder(url)
+        }
 
-	@Override
-	public long size() throws IOException {
-		HttpRequest.Builder builder = HttpRequest.builder().url(uri).header("Accept-Encoding", "identity");
-		HttpResponse response = client.request(builder.build());
-		HttpHeaders headers = response.headers();
-		return headers.contentLength();
-	}
+        @JvmStatic
+        fun single(url: URI): HttpDownloadBuilder {
+            return HttpDownloadBuilder(url).single()!!
+        }
 
-	@Override
-	public InputStream download(Part part) throws Exception {
-		HttpRequest.Builder builder = HttpRequest.builder().get().url(uri);
-		if (multi) {
-			builder.header("Range", String.format("bytes=%d-%d", part.getStart(), part.getEnd()));
-		}
-
-		HttpRequest request = builder.build();
-		HttpResponse response = client.request(request);
-
-		if (!response.is2xx()) {
-			throw new DownloadException(String.format("response status: %d", response.code()));
-		}
-
-		return response.body();
-	}
-
+        @JvmStatic
+        fun multi(url: URI): HttpDownloadBuilder {
+            return HttpDownloadBuilder(url).multi()!!
+        }
+    }
 }

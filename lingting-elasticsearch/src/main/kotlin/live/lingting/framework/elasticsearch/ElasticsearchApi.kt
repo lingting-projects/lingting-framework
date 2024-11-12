@@ -1,554 +1,570 @@
-package live.lingting.framework.elasticsearch;
+package live.lingting.framework.elasticsearch
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._types.ErrorCause;
-import co.elastic.clients.elasticsearch._types.Refresh;
-import co.elastic.clients.elasticsearch._types.Result;
-import co.elastic.clients.elasticsearch._types.Script;
-import co.elastic.clients.elasticsearch._types.SortOptions;
-import co.elastic.clients.elasticsearch._types.Time;
-import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
-import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch.core.BulkRequest;
-import co.elastic.clients.elasticsearch.core.BulkResponse;
-import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest;
-import co.elastic.clients.elasticsearch.core.DeleteByQueryResponse;
-import co.elastic.clients.elasticsearch.core.GetRequest;
-import co.elastic.clients.elasticsearch.core.ScrollRequest;
-import co.elastic.clients.elasticsearch.core.ScrollResponse;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
-import co.elastic.clients.elasticsearch.core.UpdateByQueryRequest;
-import co.elastic.clients.elasticsearch.core.UpdateByQueryResponse;
-import co.elastic.clients.elasticsearch.core.UpdateRequest;
-import co.elastic.clients.elasticsearch.core.UpdateResponse;
-import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
-import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem;
-import co.elastic.clients.elasticsearch.core.search.Hit;
-import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
-import co.elastic.clients.elasticsearch.core.search.TotalHits;
-import co.elastic.clients.elasticsearch.core.search.TrackHits;
-import co.elastic.clients.util.ObjectBuilder;
-import live.lingting.framework.api.LimitCursor;
-import live.lingting.framework.api.PaginationParams;
-import live.lingting.framework.api.PaginationResult;
-import live.lingting.framework.api.ScrollCursor;
-import live.lingting.framework.api.ScrollParams;
-import live.lingting.framework.api.ScrollResult;
-import live.lingting.framework.elasticsearch.builder.QueryBuilder;
-import live.lingting.framework.elasticsearch.composer.SortComposer;
-import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataPermissionHandler;
-import live.lingting.framework.function.ThrowingRunnable;
-import live.lingting.framework.function.ThrowingSupplier;
-import live.lingting.framework.retry.Retry;
-import live.lingting.framework.util.CollectionUtils;
-import live.lingting.framework.util.StringUtils;
-import org.slf4j.Logger;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.UnaryOperator;
+import co.elastic.clients.elasticsearch.ElasticsearchClient
+import co.elastic.clients.elasticsearch._types.Refresh
+import co.elastic.clients.elasticsearch._types.Result
+import co.elastic.clients.elasticsearch._types.Script
+import co.elastic.clients.elasticsearch._types.SortOptions
+import co.elastic.clients.elasticsearch._types.Time
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregate
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregation
+import co.elastic.clients.elasticsearch._types.query_dsl.Query
+import co.elastic.clients.elasticsearch.core.BulkRequest
+import co.elastic.clients.elasticsearch.core.BulkResponse
+import co.elastic.clients.elasticsearch.core.ClearScrollRequest
+import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest
+import co.elastic.clients.elasticsearch.core.GetRequest
+import co.elastic.clients.elasticsearch.core.ScrollRequest
+import co.elastic.clients.elasticsearch.core.SearchRequest
+import co.elastic.clients.elasticsearch.core.SearchResponse
+import co.elastic.clients.elasticsearch.core.UpdateByQueryRequest
+import co.elastic.clients.elasticsearch.core.UpdateRequest
+import co.elastic.clients.elasticsearch.core.bulk.BulkOperation
+import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem
+import co.elastic.clients.elasticsearch.core.bulk.CreateOperation
+import co.elastic.clients.elasticsearch.core.search.Hit
+import co.elastic.clients.elasticsearch.core.search.HitsMetadata
+import co.elastic.clients.elasticsearch.core.search.TotalHits
+import co.elastic.clients.elasticsearch.core.search.TrackHits
+import co.elastic.clients.util.ObjectBuilder
+import live.lingting.framework.api.LimitCursor
+import live.lingting.framework.api.PaginationParams
+import live.lingting.framework.api.PaginationResult
+import live.lingting.framework.api.ScrollCursor
+import live.lingting.framework.api.ScrollParams
+import live.lingting.framework.api.ScrollResult
+import live.lingting.framework.elasticsearch.ElasticsearchApi
+import live.lingting.framework.elasticsearch.builder.QueryBuilder
+import live.lingting.framework.elasticsearch.composer.SortComposer
+import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataPermissionHandler
+import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataScope
+import live.lingting.framework.function.ThrowingFunction
+import live.lingting.framework.function.ThrowingRunnable
+import live.lingting.framework.function.ThrowingSupplier
+import live.lingting.framework.retry.Retry
+import live.lingting.framework.util.CollectionUtils
+import live.lingting.framework.util.StringUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.io.IOException
+import java.util.*
+import java.util.function.BiConsumer
+import java.util.function.Consumer
+import java.util.function.Function
+import java.util.function.UnaryOperator
 
 /**
  * @author lingting 2024-03-06 16:41
  */
-public class ElasticsearchApi<T> {
-
-	private static final Logger log = org.slf4j.LoggerFactory.getLogger(ElasticsearchApi.class);
-	protected final String index;
-
-	protected final Class<T> cls;
-
-	protected final Function<T, String> idFunc;
-
-	protected final ElasticsearchDataPermissionHandler handler;
-
-	protected final ElasticsearchClient client;
-
-	protected final ElasticsearchProperties.Retry retryProperties;
-
-	protected final Long scrollSize;
-
-	protected final Time scrollTime;
-
-	public ElasticsearchApi(Class<T> cls, Function<T, String> idFunc, ElasticsearchProperties properties,
-							ElasticsearchDataPermissionHandler handler, ElasticsearchClient client) {
-		this(ElasticsearchUtils.index(cls), cls, idFunc, properties, handler, client);
-	}
-
-	public ElasticsearchApi(String index, Class<T> cls, Function<T, String> idFunc, ElasticsearchProperties properties,
-							ElasticsearchDataPermissionHandler handler, ElasticsearchClient client) {
-		this.index = index;
-		this.cls = cls;
-		this.idFunc = idFunc;
-		this.handler = handler;
-		this.client = client;
-		this.retryProperties = properties.getRetry();
-		Long currentScrollSize = null;
-		Time currentScrollTime = null;
-
-		ElasticsearchProperties.Scroll scroll = properties.getScroll();
-		if (scroll != null) {
-			currentScrollSize = scroll.getSize();
-			if (scroll.getTimeout() != null) {
-				currentScrollTime = Time.of(t -> t.time("%ds".formatted(scroll.getTimeout().toSeconds())));
-			}
-		}
-
-		this.scrollSize = currentScrollSize;
-		this.scrollTime = currentScrollTime;
-	}
-
-	public String documentId(T t) {
-		return idFunc.apply(t);
-	}
-
-	public void retry(ThrowingRunnable runnable) throws Exception {
-		retry(() -> {
-			runnable.run();
-			return null;
-		});
-	}
-
-
-	public <R> R retry(ThrowingSupplier<R> supplier) throws Exception {
-		if (retryProperties == null || !retryProperties.isEnabled()) {
-			return supplier.get();
-		}
-
-		Retry<R> retry = new ElasticsearchRetry<>(retryProperties, supplier);
-		return retry.get();
-	}
-
-	public Query merge(Query... arrays) {
-		QueryBuilder<T> builder = QueryBuilder.builder();
-		Arrays.stream(arrays).filter(Objects::nonNull).forEach(builder::addMust);
-		return merge(builder);
-	}
-
-	public Query merge(QueryBuilder<T> builder) {
-		if (handler != null && !handler.ignorePermissionControl(index)) {
-			handler.filterDataScopes(index).forEach(scope -> builder.addMust(scope.invoke(index)));
-		}
-
-		return builder.build();
-	}
-
-	public T get(String id) throws IOException {
-		GetRequest request = GetRequest.of(gr -> gr.index(index).id(id));
-		return client.get(request, cls).source();
-	}
-
-	public T getByQuery(Query... queries) throws IOException {
-		return getByQuery(QueryBuilder.builder(queries));
-	}
-
-	public T getByQuery(QueryBuilder<T> queries) throws IOException {
-		return getByQuery(builder -> builder, queries);
-	}
-
-	public T getByQuery(UnaryOperator<SearchRequest.Builder> operator, QueryBuilder<T> queries) throws IOException {
-		return search(builder -> operator.apply(builder).size(1), queries).hits()
-			.stream()
-			.findFirst()
-			.map(Hit::source)
-			.orElse(null);
-	}
-
-	public long count(Query... queries) throws IOException {
-		return count(QueryBuilder.builder(queries));
-	}
-
-	public long count(QueryBuilder<T> queries) throws IOException {
-		HitsMetadata<T> metadata = search(builder -> builder.size(0), queries);
-		TotalHits hits = metadata.total();
-		return hits == null ? 0 : hits.value();
-	}
-
-	public HitsMetadata<T> search(Query... queries) throws IOException {
-		return search(QueryBuilder.builder(queries));
-	}
-
-	public HitsMetadata<T> search(QueryBuilder<T> queries) throws IOException {
-		return search(builder -> builder, queries);
-	}
-
-	public HitsMetadata<T> search(UnaryOperator<SearchRequest.Builder> operator, QueryBuilder<T> queries)
-		throws IOException {
-		Query query = merge(queries);
-
-		SearchRequest.Builder builder = operator.apply(new SearchRequest.Builder()
-			// 返回匹配的所有文档数量
-			.trackTotalHits(TrackHits.of(th -> th.enabled(true)))
-
-		);
-		builder.index(index);
-		builder.query(query);
-
-		SearchResponse<T> searchResponse = client.search(builder.build(), cls);
-		return searchResponse.hits();
-	}
-
-	public List<SortOptions> ofLimitSort(Collection<PaginationParams.Sort> sorts) {
-		if (CollectionUtils.isEmpty(sorts)) {
-			return new ArrayList<>();
-		}
-		return sorts.stream().map(sort -> {
-			String field = StringUtils.underscoreToHump(sort.getField());
-			return SortComposer.sort(field, sort.getDesc());
-		}).toList();
-	}
-
-	public PaginationResult<T> page(PaginationParams params, QueryBuilder<T> queries) throws IOException {
-		List<SortOptions> sorts = ofLimitSort(params.getSorts());
-
-		int from = (int) params.start();
-		int size = (int) params.getSize();
-
-		HitsMetadata<T> hitsMetadata = search(builder -> builder.size(size).from(from).sort(sorts), queries);
-
-		List<T> list = hitsMetadata.hits().stream().map(Hit::source).toList();
-		long total = Optional.ofNullable(hitsMetadata.total()).map(TotalHits::value).orElse(0L);
-
-		return new PaginationResult<>(total, list);
-	}
-
-	public void aggs(BiConsumer<String, Aggregate> consumer, Map<String, Aggregation> aggregationMap,
-					 QueryBuilder<T> queries) throws IOException {
-		aggs(builder -> builder, consumer, aggregationMap, queries);
-	}
-
-	public void aggs(UnaryOperator<SearchRequest.Builder> operator, BiConsumer<String, Aggregate> consumer,
-					 Map<String, Aggregation> aggregationMap, QueryBuilder<T> queries) throws IOException {
-		aggs(operator, response -> {
-			Map<String, Aggregate> aggregations = response.aggregations();
-			Set<Map.Entry<String, Aggregate>> entries = aggregations.entrySet();
-			for (Map.Entry<String, Aggregate> entry : entries) {
-				String key = entry.getKey();
-				Aggregate aggregate = entry.getValue();
-				consumer.accept(key, aggregate);
-			}
-		}, aggregationMap, queries);
-	}
-
-	public void aggs(UnaryOperator<SearchRequest.Builder> operator, Consumer<SearchResponse<T>> consumer,
-					 Map<String, Aggregation> aggregationMap, QueryBuilder<T> queries) throws IOException {
-		Query query = merge(queries);
-
-		SearchRequest.Builder builder = operator.apply(new SearchRequest.Builder()
-			// 返回匹配的所有文档数量
-			.trackTotalHits(TrackHits.of(th -> th.enabled(true)))
-
-		);
-		builder.size(0);
-		builder.index(index);
-		builder.query(query);
-		builder.aggregations(aggregationMap);
-
-		SearchResponse<T> response = client.search(builder.build(), cls);
-		consumer.accept(response);
-	}
-
-	public boolean update(String documentId, Function<Script.Builder, ObjectBuilder<Script>> scriptOperator)
-		throws IOException {
-		return update(documentId, scriptOperator.apply(new Script.Builder()).build());
-	}
-
-	public boolean update(String documentId, Script script) throws IOException {
-		return update(builder -> builder, documentId, script);
-	}
-
-	public boolean update(UnaryOperator<UpdateRequest.Builder<T, T>> operator, String documentId, Script script)
-		throws IOException {
-		return update(builder -> operator.apply(builder).script(script), documentId);
-	}
-
-	public boolean update(T t) throws IOException {
-		return update(builder -> builder.doc(t), documentId(t));
-	}
-
-	public boolean upsert(T doc) throws IOException {
-		return update(builder -> builder.doc(doc).docAsUpsert(true), documentId(doc));
-	}
-
-	public boolean upsert(T doc, Script script) throws IOException {
-		return update(builder -> builder.doc(doc).script(script), documentId(doc));
-	}
-
-	public boolean update(UnaryOperator<UpdateRequest.Builder<T, T>> operator, String documentId) throws IOException {
-		UpdateRequest.Builder<T, T> builder = operator.apply(new UpdateRequest.Builder<T, T>()
-			// 刷新策略
-			.refresh(Refresh.WaitFor)
-			// 版本冲突时自动重试次数
-			.retryOnConflict(5));
-
-		builder.index(index).id(documentId);
-
-		UpdateResponse<T> response = client.update(builder.build(), cls);
-		Result result = response.result();
-		return Result.Updated.equals(result);
-	}
-
-	public boolean updateByQuery(Script script, Query... queries) throws IOException {
-		return updateByQuery(script, QueryBuilder.builder(queries));
-	}
-
-	public boolean updateByQuery(Function<Script.Builder, ObjectBuilder<Script>> scriptOperator,
-								 QueryBuilder<T> queries) throws IOException {
-		return updateByQuery(scriptOperator.apply(new Script.Builder()).build(), queries);
-	}
-
-	public boolean updateByQuery(Script script, QueryBuilder<T> queries) throws IOException {
-		return updateByQuery(builder -> builder, script, queries);
-	}
-
-	public boolean updateByQuery(UnaryOperator<UpdateByQueryRequest.Builder> operator, Script script,
-								 QueryBuilder<T> queries) throws IOException {
-		Query query = merge(queries);
-
-		UpdateByQueryRequest.Builder builder = operator.apply(new UpdateByQueryRequest.Builder()
-			// 刷新策略
-			.refresh(false));
-		builder.index(index).query(query).script(script);
-
-		UpdateByQueryResponse response = client.updateByQuery(builder.build());
-		Long total = response.total();
-		return total != null && total > 0;
-	}
-
-	public BulkResponse bulk(BulkOperation... operations) throws IOException {
-		return bulk(Arrays.stream(operations).toList());
-	}
-
-	public BulkResponse bulk(List<BulkOperation> operations) throws IOException {
-		return bulk(builder -> builder, operations);
-	}
-
-	public BulkResponse bulk(UnaryOperator<BulkRequest.Builder> operator, List<BulkOperation> operations)
-		throws IOException {
-		BulkRequest.Builder builder = operator.apply(new BulkRequest.Builder().refresh(Refresh.WaitFor));
-		builder.index(index);
-		builder.operations(operations);
-		return client.bulk(builder.build());
-	}
-
-	public void save(T t) throws IOException {
-		saveBatch(Collections.singleton(t));
-	}
-
-	public void saveBatch(Collection<T> collection) throws IOException {
-		saveBatch(builder -> builder, collection);
-	}
-
-	public void saveBatch(UnaryOperator<BulkRequest.Builder> operator, Collection<T> collection) throws IOException {
-		batch(operator, collection, t -> {
-			String documentId = documentId(t);
-
-			BulkOperation.Builder ob = new BulkOperation.Builder();
-			ob.create(create -> create.id(documentId).document(t));
-			return ob.build();
-		});
-	}
-
-	public <E> BulkResponse batch(Collection<E> collection, Function<E, BulkOperation> function) throws IOException {
-		return batch(builder -> builder, collection, function);
-	}
-
-	public <E> BulkResponse batch(UnaryOperator<BulkRequest.Builder> operator, Collection<E> collection,
-								  Function<E, BulkOperation> function) throws IOException {
-		if (CollectionUtils.isEmpty(collection)) {
-			return BulkResponse.of(br -> br.errors(false).items(Collections.emptyList()).ingestTook(0L).took(0));
-		}
-
-		List<BulkOperation> operations = new ArrayList<>();
-
-		for (E e : collection) {
-			operations.add(function.apply(e));
-		}
-
-		BulkResponse response = bulk(builder -> operator.apply(builder.refresh(Refresh.WaitFor)), operations);
-		if (response.errors()) {
-			List<BulkResponseItem> collect = response.items().stream().filter(item -> item.error() != null).toList();
-			boolean allError = collect.size() == collection.size();
-			for (int i = (allError ? 1 : 0); i < collect.size(); i++) {
-				ErrorCause error = collect.get(i).error();
-				log.warn("save error: {}", error);
-			}
-
-			// 全部保存失败, 抛异常
-			if (allError) {
-				throw new IOException("bulk save error! " + collect.get(0).error());
-			}
-		}
-		return response;
-	}
-
-	public boolean deleteByQuery(Query... queries) throws IOException {
-		return deleteByQuery(QueryBuilder.builder(queries));
-	}
-
-	public boolean deleteByQuery(QueryBuilder<T> queries) throws IOException {
-		return deleteByQuery(builder -> builder, queries);
-	}
-
-	public boolean deleteByQuery(UnaryOperator<DeleteByQueryRequest.Builder> operator, QueryBuilder<T> queries)
-		throws IOException {
-		Query query = merge(queries);
-
-		DeleteByQueryRequest.Builder builder = operator.apply(new DeleteByQueryRequest.Builder().refresh(false));
-		builder.index(index);
-		builder.query(query);
-
-		DeleteByQueryResponse response = client.deleteByQuery(builder.build());
-		Long deleted = response.deleted();
-		return deleted != null && deleted > 0;
-	}
-
-	public List<T> list(Query... queries) throws IOException {
-		return list(QueryBuilder.builder(queries));
-	}
-
-	public List<T> list(QueryBuilder<T> queries) throws IOException {
-		return list(builder -> builder, queries);
-	}
-
-	public List<T> list(UnaryOperator<SearchRequest.Builder> operator, Query... queries) throws IOException {
-		return list(operator, QueryBuilder.builder(queries));
-	}
-
-	public List<T> list(UnaryOperator<SearchRequest.Builder> operator, QueryBuilder<T> queries) throws IOException {
-		List<T> list = new ArrayList<>();
-
-		ScrollParams<String> params = new ScrollParams<>(scrollSize, null);
-		List<T> records;
-
-		do {
-			ScrollResult<T, String> result = scroll(operator, params, queries);
-			records = result.getRecords();
-			params.setCursor(result.getCursor());
-
-			if (!CollectionUtils.isEmpty(records)) {
-				list.addAll(records);
-			}
-
-		}
-		while (!CollectionUtils.isEmpty(records) && params.getCursor() != null);
-
-		return list;
-	}
-
-	public ScrollResult<T, String> scroll(ScrollParams<String> params, Query... queries) throws IOException {
-		return scroll(params, QueryBuilder.builder(queries));
-	}
-
-	public ScrollResult<T, String> scroll(ScrollParams<String> params, QueryBuilder<T> queries) throws IOException {
-		return scroll(builder -> builder, params, queries);
-	}
-
-	public ScrollResult<T, String> scroll(UnaryOperator<SearchRequest.Builder> operator, ScrollParams<String> params,
-										  QueryBuilder<T> queries) throws IOException {
-		String scrollId = null;
-		if (params.getCursor() != null) {
-			scrollId = params.getCursor();
-		}
-		// 非首次滚动查询, 直接使用 scrollId
-		if (StringUtils.hasText(scrollId)) {
-			return scroll(builder -> builder.scroll(scrollTime), scrollId);
-		}
-
-		Query query = merge(queries);
-		SearchRequest.Builder builder = operator.apply(new SearchRequest.Builder().scroll(scrollTime)
-			// 返回匹配的所有文档数量
-			.trackTotalHits(TrackHits.of(th -> th.enabled(true)))).index(index).query(query);
-
-		if (params.getSize() != null) {
-			builder.size(params.getSize().intValue());
-		}
-
-		SearchResponse<T> search = client.search(builder.build(), cls);
-		List<T> collect = search.hits().hits().stream().map(Hit::source).filter(Objects::nonNull).toList();
-
-		String nextScrollId = search.scrollId();
-
-		// 如果首次滚动查询结果为空, 直接清除滚动上下文
-		if (CollectionUtils.isEmpty(collect)) {
-			clearScroll(nextScrollId);
-		}
-
-		return ScrollResult.of(collect, nextScrollId);
-	}
-
-	public ScrollResult<T, String> scroll(UnaryOperator<ScrollRequest.Builder> operator, String scrollId)
-		throws IOException {
-		ScrollRequest.Builder builder = operator.apply(new ScrollRequest.Builder()).scrollId(scrollId);
-
-		ScrollResponse<T> response = client.scroll(builder.build(), cls);
-		List<T> collect = response.hits().hits().stream().map(Hit::source).toList();
-		String nextScrollId = response.scrollId();
-
-		if (CollectionUtils.isEmpty(collect)) {
-			clearScroll(nextScrollId);
-			return ScrollResult.empty();
-		}
-		return ScrollResult.of(collect, nextScrollId);
-	}
-
-	public void clearScroll(String scrollId) throws IOException {
-		if (!StringUtils.hasText(scrollId)) {
-			return;
-		}
-		client.clearScroll(scr -> scr.scrollId(scrollId));
-	}
-
-	public LimitCursor<T> pageCursor(PaginationParams params, Query... queries) {
-		return pageCursor(params, QueryBuilder.builder(queries));
-	}
-
-	public LimitCursor<T> pageCursor(PaginationParams params, QueryBuilder<T> queries) {
-		return new LimitCursor<>(page -> {
-			params.setPage(page);
-			return page(params, queries);
-		});
-	}
-
-	public ScrollCursor<T, String> scrollCursor(ScrollParams<String> params, Query... queries) throws IOException {
-		return scrollCursor(params, QueryBuilder.builder(queries));
-	}
-
-	public ScrollCursor<T, String> scrollCursor(ScrollParams<String> params, QueryBuilder<T> queries)
-		throws IOException {
-		ScrollResult<T, String> scroll = scroll(params, queries);
-		return new ScrollCursor<>(scrollId -> {
-			params.setCursor(scrollId);
-			return scroll(params, queries);
-		}, scroll.getCursor(), scroll.getRecords());
-	}
-
-	public String getIndex() {return this.index;}
-
-	public Class<T> getCls() {return this.cls;}
-
-	public Function<T, String> getIdFunc() {return this.idFunc;}
-
-	public ElasticsearchDataPermissionHandler getHandler() {return this.handler;}
-
-	public ElasticsearchClient getClient() {return this.client;}
-
-	public ElasticsearchProperties.Retry getRetryProperties() {return this.retryProperties;}
-
-	public Long getScrollSize() {return this.scrollSize;}
-
-	public Time getScrollTime() {return this.scrollTime;}
+class ElasticsearchApi<T>(
+    val index: String, val cls: Class<T>, val idFunc: Function<T, String?>, properties: ElasticsearchProperties,
+    val handler: ElasticsearchDataPermissionHandler?, val client: ElasticsearchClient
+) {
+    val retryProperties: ElasticsearchProperties.Retry? = properties.getRetry()
+
+    val scrollSize: Long?
+
+    val scrollTime: Time?
+
+    constructor(
+        cls: Class<T>, idFunc: Function<T, String?>, properties: ElasticsearchProperties,
+        handler: ElasticsearchDataPermissionHandler?, client: ElasticsearchClient
+    ) : this(ElasticsearchUtils.Companion.index(cls), cls, idFunc, properties, handler, client)
+
+    init {
+        var currentScrollSize: Long? = null
+        var currentScrollTime: Time? = null
+
+        val scroll = properties.getScroll()
+        if (scroll != null) {
+            currentScrollSize = scroll.size
+            if (scroll.timeout != null) {
+                currentScrollTime = Time.of { t: Time.Builder -> t.time("%ds".formatted(scroll.timeout.toSeconds())) }
+            }
+        }
+
+        this.scrollSize = currentScrollSize
+        this.scrollTime = currentScrollTime
+    }
+
+    fun documentId(t: T): String? {
+        return idFunc.apply(t)
+    }
+
+    @Throws(Exception::class)
+    fun retry(runnable: ThrowingRunnable) {
+        retry<Any>(ThrowingSupplier<Any> {
+            runnable.run()
+            null
+        })
+    }
+
+
+    @Throws(Exception::class)
+    fun <R> retry(supplier: ThrowingSupplier<R>): R? {
+        if (retryProperties == null || !retryProperties.isEnabled) {
+            return supplier.get()
+        }
+
+        val retry: Retry<R> = ElasticsearchRetry(retryProperties, supplier)
+        return retry.get()
+    }
+
+    fun merge(vararg arrays: Query): Query? {
+        val builder: QueryBuilder<T> = QueryBuilder.Companion.builder<T>()
+        Arrays.stream(arrays).filter { obj: Query? -> Objects.nonNull(obj) }.forEach { queries: Query? -> builder.addMust(queries) }
+        return merge(builder)
+    }
+
+    fun merge(builder: QueryBuilder<T>): Query? {
+        if (handler != null && !handler.ignorePermissionControl(index)) {
+            handler.filterDataScopes(index).forEach(Consumer { scope: ElasticsearchDataScope? -> builder.addMust(scope!!.invoke(index)) })
+        }
+
+        return builder.build()
+    }
+
+    @Throws(IOException::class)
+    fun get(id: String?): T? {
+        val request = GetRequest.of { gr: GetRequest.Builder -> gr.index(index).id(id) }
+        return client.get(request, cls).source()
+    }
+
+    @Throws(IOException::class)
+    fun getByQuery(vararg queries: Query?): T? {
+        return getByQuery(QueryBuilder.Companion.builder<T>(*queries))
+    }
+
+    @Throws(IOException::class)
+    fun getByQuery(queries: QueryBuilder<T>): T? {
+        return getByQuery({ builder: SearchRequest.Builder -> builder }, queries)
+    }
+
+    @Throws(IOException::class)
+    fun getByQuery(operator: UnaryOperator<SearchRequest.Builder>, queries: QueryBuilder<T>): T? {
+        return search({ builder: SearchRequest.Builder -> operator.apply(builder).size(1) }, queries).hits()
+            .stream()
+            .findFirst()
+            .map { obj: Hit<T> -> obj.source() }
+            .orElse(null)
+    }
+
+    @Throws(IOException::class)
+    fun count(vararg queries: Query?): Long {
+        return count(QueryBuilder.Companion.builder<T>(*queries))
+    }
+
+    @Throws(IOException::class)
+    fun count(queries: QueryBuilder<T>): Long {
+        val metadata = search({ builder: SearchRequest.Builder -> builder.size(0) }, queries)
+        val hits = metadata.total()
+        return hits?.value() ?: 0
+    }
+
+    @Throws(IOException::class)
+    fun search(vararg queries: Query?): HitsMetadata<T> {
+        return search(QueryBuilder.Companion.builder<T>(*queries))
+    }
+
+    @Throws(IOException::class)
+    fun search(queries: QueryBuilder<T>): HitsMetadata<T> {
+        return search({ builder: SearchRequest.Builder -> builder }, queries)
+    }
+
+    @Throws(IOException::class)
+    fun search(operator: UnaryOperator<SearchRequest.Builder>, queries: QueryBuilder<T>): HitsMetadata<T> {
+        val query = merge(queries)
+
+        val builder = operator.apply(
+            SearchRequest.Builder() // 返回匹配的所有文档数量
+                .trackTotalHits(TrackHits.of { th: TrackHits.Builder -> th.enabled(true) })
+
+        )
+        builder.index(index)
+        builder.query(query)
+
+        val searchResponse = client.search(builder.build(), cls)
+        return searchResponse.hits()
+    }
+
+    fun ofLimitSort(sorts: Collection<PaginationParams.Sort?>): List<SortOptions> {
+        if (CollectionUtils.isEmpty(sorts)) {
+            return ArrayList()
+        }
+        return sorts.stream().map<SortOptions> { sort: PaginationParams.Sort? ->
+            val field = StringUtils.underscoreToHump(sort!!.field)
+            SortComposer.Companion.sort(field, sort.desc)
+        }.toList()
+    }
+
+    @Throws(IOException::class)
+    fun page(params: PaginationParams, queries: QueryBuilder<T>): PaginationResult<T?> {
+        val sorts = ofLimitSort(params.sorts)
+
+        val from = params.start().toInt()
+        val size = params.size.toInt()
+
+        val hitsMetadata = search({ builder: SearchRequest.Builder -> builder.size(size).from(from).sort(sorts) }, queries)
+
+        val list = hitsMetadata.hits().stream().map { obj: Hit<T> -> obj.source() }.toList()
+        val total = Optional.ofNullable(hitsMetadata.total()).map { obj: TotalHits -> obj.value() }.orElse(0L)
+
+        return PaginationResult(total, list)
+    }
+
+    @Throws(IOException::class)
+    fun aggs(
+        consumer: BiConsumer<String?, Aggregate?>, aggregationMap: Map<String?, Aggregation?>?,
+        queries: QueryBuilder<T>
+    ) {
+        aggs({ builder: SearchRequest.Builder -> builder }, consumer, aggregationMap, queries)
+    }
+
+    @Throws(IOException::class)
+    fun aggs(
+        operator: UnaryOperator<SearchRequest.Builder>, consumer: BiConsumer<String?, Aggregate?>,
+        aggregationMap: Map<String?, Aggregation?>?, queries: QueryBuilder<T>
+    ) {
+        aggs(operator, { response: SearchResponse<T> ->
+            val aggregations = response.aggregations()
+            val entries: Set<Map.Entry<String, Aggregate>> = aggregations.entries
+            for ((key, aggregate) in entries) {
+                consumer.accept(key, aggregate)
+            }
+        }, aggregationMap, queries)
+    }
+
+    @Throws(IOException::class)
+    fun aggs(
+        operator: UnaryOperator<SearchRequest.Builder>, consumer: Consumer<SearchResponse<T>>,
+        aggregationMap: Map<String?, Aggregation?>?, queries: QueryBuilder<T>
+    ) {
+        val query = merge(queries)
+
+        val builder = operator.apply(
+            SearchRequest.Builder() // 返回匹配的所有文档数量
+                .trackTotalHits(TrackHits.of { th: TrackHits.Builder -> th.enabled(true) })
+
+        )
+        builder.size(0)
+        builder.index(index)
+        builder.query(query)
+        builder.aggregations(aggregationMap)
+
+        val response = client.search(builder.build(), cls)
+        consumer.accept(response)
+    }
+
+    @Throws(IOException::class)
+    fun update(documentId: String?, scriptOperator: Function<Script.Builder?, ObjectBuilder<Script?>>): Boolean {
+        return update(documentId, scriptOperator.apply(Script.Builder()).build())
+    }
+
+    @Throws(IOException::class)
+    fun update(documentId: String?, script: Script?): Boolean {
+        return update({ builder: UpdateRequest.Builder<T, T?> -> builder }, documentId, script)
+    }
+
+    @Throws(IOException::class)
+    fun update(operator: UnaryOperator<UpdateRequest.Builder<T, T?>>, documentId: String?, script: Script?): Boolean {
+        return update({ builder: UpdateRequest.Builder<T, T?> -> operator.apply(builder).script(script) }, documentId)
+    }
+
+    @Throws(IOException::class)
+    fun update(t: T): Boolean {
+        return update({ builder: UpdateRequest.Builder<T, T?> -> builder.doc(t) }, documentId(t))
+    }
+
+    @Throws(IOException::class)
+    fun upsert(doc: T): Boolean {
+        return update({ builder: UpdateRequest.Builder<T, T?> -> builder.doc(doc).docAsUpsert(true) }, documentId(doc))
+    }
+
+    @Throws(IOException::class)
+    fun upsert(doc: T, script: Script?): Boolean {
+        return update({ builder: UpdateRequest.Builder<T, T?> -> builder.doc(doc).script(script) }, documentId(doc))
+    }
+
+    @Throws(IOException::class)
+    fun update(operator: UnaryOperator<UpdateRequest.Builder<T, T?>>, documentId: String?): Boolean {
+        val builder = operator.apply(
+            UpdateRequest.Builder<T, T?>() // 刷新策略
+                .refresh(Refresh.WaitFor) // 版本冲突时自动重试次数
+                .retryOnConflict(5)
+        )
+
+        builder.index(index).id(documentId)
+
+        val response = client.update(builder.build(), cls)
+        val result = response.result()
+        return Result.Updated == result
+    }
+
+    @Throws(IOException::class)
+    fun updateByQuery(script: Script?, vararg queries: Query?): Boolean {
+        return updateByQuery(script, QueryBuilder.Companion.builder<T>(*queries))
+    }
+
+    @Throws(IOException::class)
+    fun updateByQuery(
+        scriptOperator: Function<Script.Builder?, ObjectBuilder<Script?>>,
+        queries: QueryBuilder<T>
+    ): Boolean {
+        return updateByQuery(scriptOperator.apply(Script.Builder()).build(), queries)
+    }
+
+    @Throws(IOException::class)
+    fun updateByQuery(script: Script?, queries: QueryBuilder<T>): Boolean {
+        return updateByQuery({ builder: UpdateByQueryRequest.Builder -> builder }, script, queries)
+    }
+
+    @Throws(IOException::class)
+    fun updateByQuery(
+        operator: UnaryOperator<UpdateByQueryRequest.Builder>, script: Script?,
+        queries: QueryBuilder<T>
+    ): Boolean {
+        val query = merge(queries)
+
+        val builder = operator.apply(
+            UpdateByQueryRequest.Builder() // 刷新策略
+                .refresh(false)
+        )
+        builder.index(index).query(query).script(script)
+
+        val response = client.updateByQuery(builder.build())
+        val total = response.total()
+        return total != null && total > 0
+    }
+
+    @Throws(IOException::class)
+    fun bulk(vararg operations: BulkOperation): BulkResponse {
+        return bulk(Arrays.stream(operations).toList())
+    }
+
+    @Throws(IOException::class)
+    fun bulk(operations: List<BulkOperation>?): BulkResponse {
+        return bulk({ builder: BulkRequest.Builder -> builder }, operations)
+    }
+
+    @Throws(IOException::class)
+    fun bulk(operator: UnaryOperator<BulkRequest.Builder>, operations: List<BulkOperation>?): BulkResponse {
+        val builder = operator.apply(BulkRequest.Builder().refresh(Refresh.WaitFor))
+        builder.index(index)
+        builder.operations(operations)
+        return client.bulk(builder.build())
+    }
+
+    @Throws(IOException::class)
+    fun save(t: T) {
+        saveBatch(setOf(t))
+    }
+
+    @Throws(IOException::class)
+    fun saveBatch(collection: Collection<T>) {
+        saveBatch({ builder: BulkRequest.Builder -> builder }, collection)
+    }
+
+    @Throws(IOException::class)
+    fun saveBatch(operator: UnaryOperator<BulkRequest.Builder>, collection: Collection<T>) {
+        batch<T>(operator, collection, Function { t: T ->
+            val documentId = documentId(t)
+            val ob = BulkOperation.Builder()
+            ob.create { create: CreateOperation.Builder<Any?> -> create.id(documentId).document(t) }
+            ob.build()
+        })
+    }
+
+    @Throws(IOException::class)
+    fun <E> batch(collection: Collection<E>, function: Function<E, BulkOperation>): BulkResponse {
+        return batch<E>(UnaryOperator { builder: BulkRequest.Builder -> builder }, collection, function)
+    }
+
+    @Throws(IOException::class)
+    fun <E> batch(
+        operator: UnaryOperator<BulkRequest.Builder>, collection: Collection<E?>,
+        function: Function<E?, BulkOperation>
+    ): BulkResponse {
+        if (CollectionUtils.isEmpty(collection)) {
+            return BulkResponse.of { br: BulkResponse.Builder -> br.errors(false).items(emptyList()).ingestTook(0L).took(0) }
+        }
+
+        val operations: MutableList<BulkOperation> = ArrayList()
+
+        for (e in collection) {
+            operations.add(function.apply(e))
+        }
+
+        val response = bulk({ builder: BulkRequest.Builder -> operator.apply(builder.refresh(Refresh.WaitFor)) }, operations)
+        if (response.errors()) {
+            val collect = response.items().stream().filter { item: BulkResponseItem -> item.error() != null }.toList()
+            val allError = collect.size == collection.size
+            for (i in (if (allError) 1 else 0) until collect.size) {
+                val error = collect[i].error()
+                log.warn("save error: {}", error)
+            }
+
+            // 全部保存失败, 抛异常
+            if (allError) {
+                throw IOException("bulk save error! " + collect[0].error())
+            }
+        }
+        return response
+    }
+
+    @Throws(IOException::class)
+    fun deleteByQuery(vararg queries: Query?): Boolean {
+        return deleteByQuery(QueryBuilder.Companion.builder<T>(*queries))
+    }
+
+    @Throws(IOException::class)
+    fun deleteByQuery(queries: QueryBuilder<T>): Boolean {
+        return deleteByQuery({ builder: DeleteByQueryRequest.Builder -> builder }, queries)
+    }
+
+    @Throws(IOException::class)
+    fun deleteByQuery(operator: UnaryOperator<DeleteByQueryRequest.Builder>, queries: QueryBuilder<T>): Boolean {
+        val query = merge(queries)
+
+        val builder = operator.apply(DeleteByQueryRequest.Builder().refresh(false))
+        builder.index(index)
+        builder.query(query)
+
+        val response = client.deleteByQuery(builder.build())
+        val deleted = response.deleted()
+        return deleted != null && deleted > 0
+    }
+
+    @Throws(IOException::class)
+    fun list(vararg queries: Query?): List<T?> {
+        return list(QueryBuilder.Companion.builder<T>(*queries))
+    }
+
+    @Throws(IOException::class)
+    fun list(queries: QueryBuilder<T>): List<T?> {
+        return list({ builder: SearchRequest.Builder -> builder }, queries)
+    }
+
+    @Throws(IOException::class)
+    fun list(operator: UnaryOperator<SearchRequest.Builder>, vararg queries: Query?): List<T?> {
+        return list(operator, QueryBuilder.Companion.builder<T>(*queries))
+    }
+
+    @Throws(IOException::class)
+    fun list(operator: UnaryOperator<SearchRequest.Builder>, queries: QueryBuilder<T>): List<T?> {
+        val list: MutableList<T?> = ArrayList()
+
+        val params = ScrollParams<String?>(scrollSize!!, null)
+        var records: List<T?>
+
+        do {
+            val result = scroll(operator, params, queries)
+            records = result.records
+            params.cursor = result.cursor
+
+            if (!CollectionUtils.isEmpty(records)) {
+                list.addAll(records)
+            }
+        } while (!CollectionUtils.isEmpty(records) && params.cursor != null)
+
+        return list
+    }
+
+    @Throws(IOException::class)
+    fun scroll(params: ScrollParams<String?>, vararg queries: Query?): ScrollResult<T, String> {
+        return scroll(params, QueryBuilder.Companion.builder<T>(*queries))
+    }
+
+    @Throws(IOException::class)
+    fun scroll(params: ScrollParams<String?>, queries: QueryBuilder<T>): ScrollResult<T, String> {
+        return scroll({ builder: SearchRequest.Builder -> builder }, params, queries)
+    }
+
+    @Throws(IOException::class)
+    fun scroll(
+        operator: UnaryOperator<SearchRequest.Builder>, params: ScrollParams<String?>,
+        queries: QueryBuilder<T>
+    ): ScrollResult<T, String> {
+        var scrollId: String? = null
+        if (params.cursor != null) {
+            scrollId = params.cursor
+        }
+        // 非首次滚动查询, 直接使用 scrollId
+        if (StringUtils.hasText(scrollId)) {
+            return scroll({ builder: ScrollRequest.Builder -> builder.scroll(scrollTime) }, scrollId)
+        }
+
+        val query = merge(queries)
+        val builder = operator.apply(
+            SearchRequest.Builder().scroll(scrollTime) // 返回匹配的所有文档数量
+                .trackTotalHits(TrackHits.of { th: TrackHits.Builder -> th.enabled(true) })
+        ).index(index).query(query)
+
+        if (params.size != null) {
+            builder.size(params.size.intValue())
+        }
+
+        val search = client.search(builder.build(), cls)
+        val collect = search.hits().hits().stream().map { obj: Hit<T> -> obj.source() }.filter { obj: T? -> Objects.nonNull(obj) }.toList()
+
+        val nextScrollId = search.scrollId()
+
+        // 如果首次滚动查询结果为空, 直接清除滚动上下文
+        if (CollectionUtils.isEmpty(collect)) {
+            clearScroll(nextScrollId)
+        }
+
+        return ScrollResult.of(collect, nextScrollId)
+    }
+
+    @Throws(IOException::class)
+    fun scroll(operator: UnaryOperator<ScrollRequest.Builder>, scrollId: String?): ScrollResult<T, String> {
+        val builder = operator.apply(ScrollRequest.Builder()).scrollId(scrollId)
+
+        val response = client.scroll(builder.build(), cls)
+        val collect = response.hits().hits().stream().map { obj: Hit<T> -> obj.source() }.toList()
+        val nextScrollId = response.scrollId()
+
+        if (CollectionUtils.isEmpty(collect)) {
+            clearScroll(nextScrollId)
+            return ScrollResult.empty()
+        }
+        return ScrollResult.of(collect, nextScrollId)!!
+    }
+
+    @Throws(IOException::class)
+    fun clearScroll(scrollId: String?) {
+        if (!StringUtils.hasText(scrollId)) {
+            return
+        }
+        client.clearScroll { scr: ClearScrollRequest.Builder -> scr.scrollId(scrollId) }
+    }
+
+    fun pageCursor(params: PaginationParams, vararg queries: Query?): LimitCursor<T> {
+        return pageCursor(params, QueryBuilder.Companion.builder<T>(*queries))
+    }
+
+    fun pageCursor(params: PaginationParams, queries: QueryBuilder<T>): LimitCursor<T> {
+        return LimitCursor(ThrowingFunction<Long, PaginationResult<T>> { page: Long? ->
+            params.page = page!!
+            page(params, queries)
+        })
+    }
+
+    @Throws(IOException::class)
+    fun scrollCursor(params: ScrollParams<String?>, vararg queries: Query?): ScrollCursor<T, String> {
+        return scrollCursor(params, QueryBuilder.Companion.builder<T>(*queries))
+    }
+
+    @Throws(IOException::class)
+    fun scrollCursor(params: ScrollParams<String?>, queries: QueryBuilder<T>): ScrollCursor<T, String> {
+        val scroll = scroll(params, queries)
+        return ScrollCursor(ThrowingFunction<String, ScrollResult<T, String>> { scrollId: String? ->
+            params.cursor = scrollId
+            scroll(params, queries)
+        }, scroll.cursor, scroll.records)
+    }
+
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(ElasticsearchApi::class.java)
+    }
 }

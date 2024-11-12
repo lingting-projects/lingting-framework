@@ -1,327 +1,296 @@
-package live.lingting.framework.datascope.parser;
+package live.lingting.framework.datascope.parser
 
-import live.lingting.framework.datascope.JsqlDataScope;
-import live.lingting.framework.datascope.holder.DataScopeHolder;
-import live.lingting.framework.datascope.holder.DataScopeMatchNumHolder;
-import live.lingting.framework.datascope.util.SqlParseUtils;
-import live.lingting.framework.util.CollectionUtils;
-import net.sf.jsqlparser.expression.BinaryExpression;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.NotExpression;
-import net.sf.jsqlparser.expression.Parenthesis;
-import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
-import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
-import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
-import net.sf.jsqlparser.expression.operators.relational.InExpression;
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.delete.Delete;
-import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.FromItem;
-import net.sf.jsqlparser.statement.select.Join;
-import net.sf.jsqlparser.statement.select.ParenthesedFromItem;
-import net.sf.jsqlparser.statement.select.ParenthesedSelect;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.WithItem;
-import net.sf.jsqlparser.statement.update.Update;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import live.lingting.framework.datascope.JsqlDataScope
+import live.lingting.framework.datascope.holder.DataScopeHolder
+import live.lingting.framework.datascope.holder.DataScopeMatchNumHolder
+import live.lingting.framework.datascope.util.SqlParseUtils
+import live.lingting.framework.util.CollectionUtils
+import net.sf.jsqlparser.expression.BinaryExpression
+import net.sf.jsqlparser.expression.Expression
+import net.sf.jsqlparser.expression.NotExpression
+import net.sf.jsqlparser.expression.Parenthesis
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression
+import net.sf.jsqlparser.expression.operators.conditional.OrExpression
+import net.sf.jsqlparser.expression.operators.relational.ExistsExpression
+import net.sf.jsqlparser.expression.operators.relational.InExpression
+import net.sf.jsqlparser.schema.Table
+import net.sf.jsqlparser.statement.delete.Delete
+import net.sf.jsqlparser.statement.insert.Insert
+import net.sf.jsqlparser.statement.select.FromItem
+import net.sf.jsqlparser.statement.select.Join
+import net.sf.jsqlparser.statement.select.ParenthesedFromItem
+import net.sf.jsqlparser.statement.select.ParenthesedSelect
+import net.sf.jsqlparser.statement.select.PlainSelect
+import net.sf.jsqlparser.statement.select.Select
+import net.sf.jsqlparser.statement.select.SelectItem
+import net.sf.jsqlparser.statement.select.WithItem
+import net.sf.jsqlparser.statement.update.Update
+import java.util.*
+import java.util.function.Consumer
 
 /**
  * @author lingting 2024-01-19 16:01
  */
-public class DefaultDataScopeParser extends DataScopeParser {
+class DefaultDataScopeParser : DataScopeParser() {
+    override fun insert(insert: Insert?, index: Int, sql: String?) {
+        // 不处理
+    }
 
-	@Override
-	protected void insert(Insert insert, int index, String sql) {
-		// 不处理
-	}
+    override fun delete(delete: Delete, index: Int, sql: String?) {
+        val expression = delete.where
+        val table = delete.table
+        val injected = injectExpression(table, expression)
+        delete.where = injected
+    }
 
-	@Override
-	protected void delete(Delete delete, int index, String sql) {
-		Expression expression = delete.getWhere();
-		Table table = delete.getTable();
-		Expression injected = injectExpression(table, expression);
-		delete.setWhere(injected);
-	}
+    override fun update(update: Update, index: Int, sql: String?) {
+        val expression = update.where
+        val table = update.table
+        val injected = injectExpression(table, expression)
+        update.where = injected
+    }
 
-	@Override
-	protected void update(Update update, int index, String sql) {
-		Expression expression = update.getWhere();
-		Table table = update.getTable();
-		Expression injected = injectExpression(table, expression);
-		update.setWhere(injected);
-	}
+    override fun select(select: Select, index: Int, sql: String?) {
+        processSelect(select)
+        val list = select.withItemsList
+        if (!CollectionUtils.isEmpty(list)) {
+            list.forEach(Consumer { select: WithItem? -> this.processSelect(select) })
+        }
+    }
 
-	@Override
-	protected void select(Select select, int index, String sql) {
-		processSelect(select);
-		List<WithItem> list = select.getWithItemsList();
-		if (!CollectionUtils.isEmpty(list)) {
-			list.forEach(this::processSelect);
-		}
-	}
+    fun processSelect(select: Select?) {
+        if (select == null) {
+            return
+        }
 
-	void processSelect(Select select) {
-		if (select == null) {
-			return;
-		}
+        // 普通查询
+        if (select is PlainSelect) {
+            processPlainSelect(select)
+        } else if (select is ParenthesedSelect) {
+            processSelect(select.select)
+        }
+    }
 
-		// 普通查询
-		if (select instanceof PlainSelect plain) {
-			processPlainSelect(plain);
-		}
-		else if (select instanceof ParenthesedSelect parenthesed) {
-			processSelect(parenthesed.getSelect());
-		}
-	}
+    fun processPlainSelect(plainSelect: PlainSelect) {
+        // 处理所有查询项中的子查询
+        val selectItems = plainSelect.selectItems
+        if (!CollectionUtils.isEmpty(selectItems)) {
+            selectItems.forEach(Consumer { item: SelectItem<*> -> this.processSelectItem(item) })
+        }
 
-	void processPlainSelect(PlainSelect plainSelect) {
-		// 处理所有查询项中的子查询
-		List<SelectItem<?>> selectItems = plainSelect.getSelectItems();
-		if (!CollectionUtils.isEmpty(selectItems)) {
-			selectItems.forEach(this::processSelectItem);
-		}
+        // 处理where条件中的查询
+        processExpression(plainSelect.where)
 
-		// 处理where条件中的查询
-		processExpression(plainSelect.getWhere());
+        // 处理来源, 获取所有涉及到的表
+        var tables = processFromItem(plainSelect.fromItem, true)
 
-		// 处理来源, 获取所有涉及到的表
-		List<Table> tables = processFromItem(plainSelect.getFromItem(), true);
+        // 处理join
+        tables = processJoins(tables, plainSelect.joins)
 
-		// 处理join
-		tables = processJoins(tables, plainSelect.getJoins());
+        // 追加where条件
+        if (!CollectionUtils.isEmpty(tables)) {
+            val expression: Expression = injectExpression(tables, plainSelect.where)
+            plainSelect.where = expression
+        }
+    }
 
-		// 追加where条件
-		if (!CollectionUtils.isEmpty(tables)) {
-			Expression expression = injectExpression(tables, plainSelect.getWhere());
-			plainSelect.setWhere(expression);
-		}
-	}
+    fun processSelectItem(item: SelectItem<*>) {
+        val expression = item.expression
+        if (expression is Select) {
+            processSelect(expression)
+        }
+    }
 
-	void processSelectItem(SelectItem<?> item) {
-		Expression expression = item.getExpression();
-		if (expression instanceof Select select) {
-			processSelect(select);
-		}
-	}
+    fun processExpression(expression: Expression?) {
+        if (expression == null) {
+            return
+        }
+        if (expression is FromItem) {
+            processDeepFromItem(expression)
+        }
+        val isSelect = expression.toString().contains("SELECT")
+        // 有子查询
+        if (isSelect) {
+            // 比较符号 , and , or , 等等
+            if (expression is BinaryExpression) {
+                processExpression(expression.leftExpression)
+                processExpression(expression.rightExpression)
+            } else if (expression is InExpression) {
+                val right = expression.rightExpression
+                if (right is Select) {
+                    processSelect(right)
+                }
+            } else if (expression is ExistsExpression) {
+                processExpression(expression.rightExpression)
+            } else if (expression is NotExpression) {
+                processExpression(expression.expression)
+            } else if (expression is Parenthesis) {
+                processExpression(expression.expression)
+            }
+        }
+    }
 
-	void processExpression(Expression expression) {
-		if (expression == null) {
-			return;
-		}
-		if (expression instanceof FromItem item) {
-			processDeepFromItem(item);
-		}
-		boolean isSelect = expression.toString().contains("SELECT");
-		// 有子查询
-		if (isSelect) {
-			// 比较符号 , and , or , 等等
-			if (expression instanceof BinaryExpression binary) {
-				processExpression(binary.getLeftExpression());
-				processExpression(binary.getRightExpression());
-			}
-			// in
-			else if (expression instanceof InExpression in) {
-				Expression right = in.getRightExpression();
-				if (right instanceof Select select) {
-					processSelect(select);
-				}
-			}
-			// exists
-			else if (expression instanceof ExistsExpression exists) {
-				processExpression(exists.getRightExpression());
-			}
-			else if (expression instanceof NotExpression not) {
-				processExpression(not.getExpression());
-			}
-			else if (expression instanceof Parenthesis parenthesis) {
-				processExpression(parenthesis.getExpression());
-			}
-		}
-	}
+    /**
+     * 处理来源项
+     * @param item 来源项
+     * @param isDeep 是否深度处理
+     * @return 查到的表
+     */
+    fun processFromItem(item: FromItem, isDeep: Boolean): MutableList<Table?> {
+        val list: MutableList<Table?> = ArrayList()
+        if (item is Table) {
+            list.add(item)
+        } else if (item is ParenthesedFromItem) {
+            val lefts = processFromItem(item.fromItem, isDeep)
+            val tables: List<Table?> = processJoins(lefts, item.joins)
+            list.addAll(tables)
+        } else if (isDeep) {
+            processDeepFromItem(item)
+        }
+        return list
+    }
 
-	/**
-	 * 处理来源项
-	 * @param item 来源项
-	 * @param isDeep 是否深度处理
-	 * @return 查到的表
-	 */
-	List<Table> processFromItem(FromItem item, boolean isDeep) {
-		List<Table> list = new ArrayList<>();
-		if (item instanceof Table table) {
-			list.add(table);
-		}
-		else if (item instanceof ParenthesedFromItem pfi) {
-			List<Table> lefts = processFromItem(pfi.getFromItem(), isDeep);
-			List<Table> tables = processJoins(lefts, pfi.getJoins());
-			list.addAll(tables);
-		}
-		else if (isDeep) {
-			processDeepFromItem(item);
-		}
-		return list;
-	}
+    fun processDeepFromItem(item: FromItem?) {
+        if (item is Select) {
+            processSelect(item)
+        }
+    }
 
-	void processDeepFromItem(FromItem item) {
-		if (item instanceof Select select) {
-			processSelect(select);
-		}
-	}
+    fun processJoins(tables: MutableList<Table?>, joins: List<Join>): MutableList<Table?> {
+        var tables = tables
+        if (CollectionUtils.isEmpty(joins)) {
+            return tables
+        }
 
-	@SuppressWarnings({ "java:S3776", "java:S6541" })
-	List<Table> processJoins(List<Table> tables, List<Join> joins) {
-		if (CollectionUtils.isEmpty(joins)) {
-			return tables;
-		}
+        // 主表
+        var mainTable: Table? = null
+        // 左表
+        var leftTable: Table? = null
+        if (tables.size == 1) {
+            mainTable = tables[0]
+            leftTable = mainTable
+        }
 
-		// 主表
-		Table mainTable = null;
-		// 左表
-		Table leftTable = null;
-		if (tables.size() == 1) {
-			mainTable = tables.get(0);
-			leftTable = mainTable;
-		}
+        // 对于 on 表达式写在最后的 join，需要记录下前面多个 on 的表名
+        val onTableDeque: Deque<List<Table>?> = LinkedList()
 
-		// 对于 on 表达式写在最后的 join，需要记录下前面多个 on 的表名
-		Deque<List<Table>> onTableDeque = new LinkedList<>();
+        for (join in joins) {
+            val joinItem = join.rightItem
 
-		for (Join join : joins) {
-			FromItem joinItem = join.getRightItem();
+            // 涉及到的表
+            val joinTables: List<Table?> = processFromItem(joinItem, false)
+            // 没有关联表, 深度处理该项
+            if (joinTables.isEmpty()) {
+                processDeepFromItem(joinItem)
+                leftTable = null
+            } else if (join.isSimple) {
+                tables.addAll(joinTables)
+            } else {
+                // 当前表
+                val joinTable = joinTables[0]
 
-			// 涉及到的表
-			List<Table> joinTables = processFromItem(joinItem, false);
-			// 没有关联表, 深度处理该项
-			if (joinTables.isEmpty()) {
-				processDeepFromItem(joinItem);
-				leftTable = null;
-			}
-			// 隐式内连接
-			else if (join.isSimple()) {
-				tables.addAll(joinTables);
-			}
-			else {
-				// 当前表
-				Table joinTable = joinTables.get(0);
+                var onTables: List<Table>? = null
+                // 如果不要忽略，且是右连接，则记录下当前表
+                if (join.isRight) {
+                    mainTable = joinTable
+                    if (leftTable != null) {
+                        onTables = listOf(leftTable)
+                    }
+                } else if (join.isLeft) {
+                    onTables = listOf<Table>(joinTable)
+                } else if (join.isInner || join.astNode.jjtGetFirstToken().toString().equals("JOIN", ignoreCase = true)) {
+                    onTables = if (mainTable == null) {
+                        listOf<Table>(joinTable)
+                    } else {
+                        Arrays.asList(mainTable, joinTable)
+                    }
+                    mainTable = null
+                }
 
-				List<Table> onTables = null;
-				// 如果不要忽略，且是右连接，则记录下当前表
-				if (join.isRight()) {
-					mainTable = joinTable;
-					if (leftTable != null) {
-						onTables = Collections.singletonList(leftTable);
-					}
-				}
-				else if (join.isLeft()) {
-					onTables = Collections.singletonList(joinTable);
-				}
-				// JOIN 等同于 INNER JOIN
-				else if (join.isInner() || join.getASTNode().jjtGetFirstToken().toString().equalsIgnoreCase("JOIN")) {
-					if (mainTable == null) {
-						onTables = Collections.singletonList(joinTable);
-					}
-					else {
-						onTables = Arrays.asList(mainTable, joinTable);
-					}
-					mainTable = null;
-				}
+                tables = ArrayList()
+                if (mainTable != null) {
+                    tables.add(mainTable)
+                }
 
-				tables = new ArrayList<>();
-				if (mainTable != null) {
-					tables.add(mainTable);
-				}
+                // 获取 join 尾缀的 on 表达式列表
+                val originOnExpressions = join.onExpressions
+                // 正常 join on 表达式只有一个，立刻处理
+                if (originOnExpressions.size == 1 && onTables != null) {
+                    val onExpressions: MutableList<Expression?> = LinkedList()
+                    val injected = injectExpression(onTables, originOnExpressions.iterator().next())
+                    onExpressions.add(injected)
+                    join.setOnExpressions(onExpressions)
+                    leftTable = joinTable
+                    continue
+                }
+                // 表名压栈，忽略的表压入 null，以便后续不处理
+                onTableDeque.push(onTables)
+                // 尾缀多个 on 表达式的时候统一处理
+                if (originOnExpressions.size > 1) {
+                    val onExpressions: MutableCollection<Expression?> = LinkedList()
+                    for (originOnExpression in originOnExpressions) {
+                        val currentTableList = onTableDeque.poll()!!
+                        if (CollectionUtils.isEmpty(currentTableList)) {
+                            onExpressions.add(originOnExpression)
+                        } else {
+                            val injected = injectExpression(currentTableList, originOnExpression)
+                            onExpressions.add(injected)
+                        }
+                    }
+                    join.setOnExpressions(onExpressions)
+                }
+                leftTable = joinTable
+            }
+        }
+        return tables
+    }
 
-				// 获取 join 尾缀的 on 表达式列表
-				Collection<Expression> originOnExpressions = join.getOnExpressions();
-				// 正常 join on 表达式只有一个，立刻处理
-				if (originOnExpressions.size() == 1 && onTables != null) {
-					List<Expression> onExpressions = new LinkedList<>();
-					Expression injected = injectExpression(onTables, originOnExpressions.iterator().next());
-					onExpressions.add(injected);
-					join.setOnExpressions(onExpressions);
-					leftTable = joinTable;
-					continue;
-				}
-				// 表名压栈，忽略的表压入 null，以便后续不处理
-				onTableDeque.push(onTables);
-				// 尾缀多个 on 表达式的时候统一处理
-				if (originOnExpressions.size() > 1) {
-					Collection<Expression> onExpressions = new LinkedList<>();
-					for (Expression originOnExpression : originOnExpressions) {
-						List<Table> currentTableList = onTableDeque.poll();
-						if (CollectionUtils.isEmpty(currentTableList)) {
-							onExpressions.add(originOnExpression);
-						}
-						else {
-							Expression injected = injectExpression(currentTableList, originOnExpression);
-							onExpressions.add(injected);
-						}
-					}
-					join.setOnExpressions(onExpressions);
-				}
-				leftTable = joinTable;
-			}
+    fun injectExpression(table: Table, expression: Expression?): Expression {
+        return injectExpression(listOf(table), expression)!!
+    }
 
-		}
-		return tables;
-	}
+    fun injectExpression(tables: List<Table>, expression: Expression?): Expression? {
+        val list: MutableList<Expression?> = ArrayList(tables.size)
+        // 生成数据权限条件
+        for (table in tables) {
+            // 获取表名
+            val tableName: String = SqlParseUtils.Companion.getTableName(table.name)
 
-	Expression injectExpression(Table table, Expression expression) {
-		return injectExpression(Collections.singletonList(table), expression);
-	}
+            // 进行 dataScope 的表名匹配
+            val matchDataScopes: List<JsqlDataScope?> = DataScopeHolder.Companion.peek()
+                .stream()
+                .filter { x: JsqlDataScope? -> x!!.includes(tableName) }
+                .toList()
 
-	Expression injectExpression(List<Table> tables, Expression expression) {
-		List<Expression> list = new ArrayList<>(tables.size());
-		// 生成数据权限条件
-		for (Table table : tables) {
-			// 获取表名
-			String tableName = SqlParseUtils.getTableName(table.getName());
+            // 存在匹配成功的
+            if (!CollectionUtils.isEmpty(matchDataScopes)) {
+                // 计数
+                DataScopeMatchNumHolder.Companion.incrementMatchNumIfPresent()
+                // 获取到数据权限过滤的表达式
+                matchDataScopes.stream()
+                    .map { x: JsqlDataScope? -> x!!.getExpression(tableName, table.alias) }
+                    .filter { obj: Expression? -> Objects.nonNull(obj) }
+                    .reduce { leftExpression: Expression?, rightExpression: Expression? -> AndExpression(leftExpression, rightExpression) }
+                    .ifPresent { e: Expression? -> list.add(e) }
+            }
+        }
 
-			// 进行 dataScope 的表名匹配
-			List<JsqlDataScope> matchDataScopes = DataScopeHolder.peek()
-				.stream()
-				.filter(x -> x.includes(tableName))
-				.toList();
+        if (list.isEmpty()) {
+            return expression
+        }
 
-			// 存在匹配成功的
-			if (!CollectionUtils.isEmpty(matchDataScopes)) {
-				// 计数
-				DataScopeMatchNumHolder.incrementMatchNumIfPresent();
-				// 获取到数据权限过滤的表达式
-				matchDataScopes.stream()
-					.map(x -> x.getExpression(tableName, table.getAlias()))
-					.filter(Objects::nonNull)
-					.reduce(AndExpression::new)
-					.ifPresent(list::add);
-			}
-		}
+        var inject = list[0]
 
-		if (list.isEmpty()) {
-			return expression;
-		}
+        for (i in 1 until list.size) {
+            inject = AndExpression(inject, list[i])
+        }
 
-		Expression inject = list.get(0);
+        if (expression == null) {
+            return inject
+        }
 
-		for (int i = 1; i < list.size(); i++) {
-			inject = new AndExpression(inject, list.get(i));
-		}
+        val left = if (expression is OrExpression) Parenthesis(expression) else expression
 
-		if (expression == null) {
-			return inject;
-		}
-
-		Expression left = expression instanceof OrExpression ? new Parenthesis(expression) : expression;
-
-		return new AndExpression(left, inject);
-	}
-
+        return AndExpression(left, inject)
+    }
 }

@@ -1,20 +1,12 @@
-package live.lingting.framework.exception;
+package live.lingting.framework.exception
 
 /**
  * @author lingting 2024-01-29 16:05
  */
-public class HttpException extends RuntimeException {
+class HttpException : RuntimeException {
+    constructor(message: String?) : super(message)
 
-	public HttpException(String message) {
-		super(message);
-	}
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
 
-	public HttpException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public HttpException(Throwable cause) {
-		super(cause);
-	}
-
+    constructor(cause: Throwable?) : super(cause)
 }

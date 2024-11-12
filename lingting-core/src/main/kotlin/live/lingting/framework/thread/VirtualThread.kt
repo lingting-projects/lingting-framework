@@ -1,95 +1,89 @@
-package live.lingting.framework.thread;
+package live.lingting.framework.thread
 
-import live.lingting.framework.function.ThrowableRunnable;
-import live.lingting.framework.util.ClassUtils;
-
-import java.lang.reflect.Method;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.function.Supplier;
+import live.lingting.framework.function.ThrowableRunnable
+import live.lingting.framework.util.ClassUtils
+import java.lang.reflect.Method
+import java.util.concurrent.Callable
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.function.Supplier
 
 /**
  * @author lingting 2024-09-18 19:59
  */
-@SuppressWarnings("java:S1845")
-public final class VirtualThread {
+class VirtualThread private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	static final boolean SUPPORT;
+    class Impl : ThreadService {
+        protected var executor: ExecutorService
 
-	static final VirtualThread.Impl instance;
+        init {
+            // 如果不支持虚拟线程则使用线程池
+            this.executor = if (isSupport) Executors.newVirtualThreadPerTaskExecutor() else ThreadPool.executor()
+        }
 
-	static {
-		Method method = ClassUtils.method(Thread.class, "ofVirtual");
-		SUPPORT = method != null;
-		instance = new VirtualThread.Impl();
-	}
+        override fun executor(): ExecutorService {
+            return executor
+        }
 
-	private VirtualThread() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+        fun executor(executor: ExecutorService): Impl {
+            this.executor = executor
+            return this
+        }
+    }
 
-	public static VirtualThread.Impl instance() {
-		return instance;
-	}
+    companion object {
+        val isSupport: Boolean
 
-	public static ExecutorService executor() {
-		return instance.executor();
-	}
+        val instance: Impl
 
-	public static VirtualThread.Impl update(ExecutorService executor) {
-		return instance().executor(executor);
-	}
+        init {
+            val method: Method = ClassUtils.method(Thread::class.java, "ofVirtual")
+            isSupport = method != null
+            instance = Impl()
+        }
 
-	public static boolean isSupport() {
-		return SUPPORT;
-	}
+        fun instance(): Impl {
+            return instance
+        }
 
-	/**
-	 * 线程池是否运行中
-	 */
-	public static boolean isRunning() {
-		return instance.isRunning();
-	}
 
-	public static void execute(ThrowableRunnable runnable) {
-		instance.execute(runnable);
-	}
+        fun executor(): ExecutorService {
+            return instance.executor()
+        }
 
-	public static void execute(String name, ThrowableRunnable runnable) {
-		instance.execute(name, runnable);
-	}
+        fun update(executor: ExecutorService): Impl {
+            return instance().executor(executor)
+        }
 
-	public static void execute(KeepRunnable runnable) {
-		instance.execute(runnable);
-	}
+        val isRunning: Boolean
+            /**
+             * 线程池是否运行中
+             */
+            get() = instance.isRunning
 
-	public static <T> CompletableFuture<T> async(Supplier<T> supplier) {
-		return instance.async(supplier);
-	}
+        fun execute(runnable: ThrowableRunnable?) {
+            instance.execute(runnable!!)
+        }
 
-	public static <T> Future<T> submit(Callable<T> callable) {
-		return instance.submit(callable);
-	}
+        fun execute(name: String?, runnable: ThrowableRunnable?) {
+            instance.execute(name, runnable!!)
+        }
 
-	public static class Impl implements ThreadService {
+        fun execute(runnable: KeepRunnable?) {
+            instance.execute(runnable!!)
+        }
 
-		protected ExecutorService executor;
+        fun <T> async(supplier: Supplier<T>): CompletableFuture<T?> {
+            return instance.async(supplier)
+        }
 
-		public Impl() {
-			// 如果不支持虚拟线程则使用线程池
-			this.executor = isSupport() ? Executors.newVirtualThreadPerTaskExecutor() : ThreadPool.executor();
-		}
-
-		public ExecutorService executor() {
-			return executor;
-		}
-
-		public VirtualThread.Impl executor(ExecutorService executor) {
-			this.executor = executor;
-			return this;
-		}
-
-	}
-
+        fun <T> submit(callable: Callable<T>): Future<T?> {
+            return instance.submit(callable)
+        }
+    }
 }

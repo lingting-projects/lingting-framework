@@ -1,18 +1,16 @@
-package live.lingting.framework.security.store;
+package live.lingting.framework.security.store
 
-import live.lingting.framework.security.domain.SecurityScope;
+import live.lingting.framework.security.domain.SecurityScope
 
 /**
  * @author lingting 2023-04-06 15:55
  */
-public interface SecurityStore {
+interface SecurityStore {
+    fun save(scope: SecurityScope)
 
-	void save(SecurityScope scope);
+    fun update(scope: SecurityScope)
 
-	void update(SecurityScope scope);
+    fun deleted(scope: SecurityScope)
 
-	void deleted(SecurityScope scope);
-
-	SecurityScope get(String token);
-
+    fun get(token: String?): SecurityScope?
 }

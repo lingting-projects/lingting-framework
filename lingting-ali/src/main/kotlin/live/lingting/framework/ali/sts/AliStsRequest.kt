@@ -1,32 +1,29 @@
-package live.lingting.framework.ali.sts;
+package live.lingting.framework.ali.sts
 
-import live.lingting.framework.ali.AliRequest;
-import live.lingting.framework.id.Snowflake;
-import live.lingting.framework.util.StringUtils;
-import live.lingting.framework.value.WaitValue;
-
+import live.lingting.framework.ali.AliRequest
+import live.lingting.framework.id.Snowflake
+import live.lingting.framework.util.StringUtils
+import live.lingting.framework.value.WaitValue
 
 /**
  * @author lingting 2024-09-18 16:51
  */
-public abstract class AliStsRequest extends AliRequest {
+abstract class AliStsRequest : AliRequest() {
+    protected var snowflake: Snowflake = Snowflake(5, 7)
 
-	protected Snowflake snowflake = new Snowflake(5, 7);
+    protected val nonceValue: WaitValue<String> = WaitValue.of()
 
-	protected final WaitValue<String> nonceValue = WaitValue.of();
+    abstract fun name(): String
 
-	public abstract String name();
-
-	public abstract String version();
+    abstract fun version(): String
 
 
-	public String nonce() {
-		return nonceValue.compute(v -> {
-			if (StringUtils.hasText(v)) {
-				return v;
-			}
-			return snowflake.nextStr();
-		});
-	}
-
+    fun nonce(): String? {
+        return nonceValue.compute { v: String? ->
+            if (StringUtils.hasText(v)) {
+                return@compute v
+            }
+            snowflake.nextStr()
+        }
+    }
 }

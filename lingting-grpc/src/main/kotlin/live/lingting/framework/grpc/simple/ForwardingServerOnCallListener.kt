@@ -1,113 +1,103 @@
-package live.lingting.framework.grpc.simple;
+package live.lingting.framework.grpc.simple
 
-import io.grpc.ForwardingServerCallListener;
-import io.grpc.Metadata;
-import io.grpc.ServerCall;
-import io.grpc.ServerCallHandler;
+import io.grpc.ForwardingServerCallListener
+import io.grpc.Metadata
+import io.grpc.ServerCall
+import io.grpc.ServerCallHandler
 
 /**
  * @author lingting 2023-12-18 19:10
  */
+open class ForwardingServerOnCallListener<S, R> protected constructor(call: ServerCall<S?, R?>?, headers: Metadata?, next: ServerCallHandler<S?, R?>) : ForwardingServerCallListener<S?>() {
+    private var delegate: ServerCall.Listener<S?>? = null
 
-public class ForwardingServerOnCallListener<S, R> extends ForwardingServerCallListener<S> {
+    init {
+        try {
+            this.delegate = next.startCall(call, headers)
+        } catch (e: Exception) {
+            onFinally()
+            throw e
+        }
+    }
 
-	private final ServerCall.Listener<S> delegate;
+    override fun delegate(): ServerCall.Listener<S?>? {
+        return delegate
+    }
 
-	protected ForwardingServerOnCallListener(ServerCall<S, R> call, Metadata headers, ServerCallHandler<S, R> next) {
-		try {
-			this.delegate = next.startCall(call, headers);
-		}
-		catch (Exception e) {
-			onFinally();
-			throw e;
-		}
-	}
+    override fun onMessage(message: S?) {
+        onMessageBefore(message)
+        super.onMessage(message)
+        onMessageAfter(message)
+    }
 
-	@Override
-	protected ServerCall.Listener<S> delegate() {
-		return delegate;
-	}
+    override fun onHalfClose() {
+        onHalfCloseBefore()
+        super.onHalfClose()
+        onHalfCloseAfter()
+        onFinally()
+    }
 
-	@Override
-	public void onMessage(S message) {
-		onMessageBefore(message);
-		super.onMessage(message);
-		onMessageAfter(message);
-	}
+    override fun onCancel() {
+        onCancelBefore()
+        super.onCancel()
+        onCancelAfter()
+        onFinally()
+    }
 
-	@Override
-	public void onHalfClose() {
-		onHalfCloseBefore();
-		super.onHalfClose();
-		onHalfCloseAfter();
-		onFinally();
-	}
+    override fun onComplete() {
+        onCompleteBefore()
+        super.onComplete()
+        onCompleteAfter()
+        onFinally()
+    }
 
-	@Override
-	public void onCancel() {
-		onCancelBefore();
-		super.onCancel();
-		onCancelAfter();
-		onFinally();
-	}
+    override fun onReady() {
+        onReadyBefore()
+        super.onReady()
+        onReadyAfter()
+    }
 
-	@Override
-	public void onComplete() {
-		onCompleteBefore();
-		super.onComplete();
-		onCompleteAfter();
-		onFinally();
-	}
+    fun onMessageBefore(message: S?) {
+        //
+    }
 
-	@Override
-	public void onReady() {
-		onReadyBefore();
-		super.onReady();
-		onReadyAfter();
-	}
+    fun onMessageAfter(message: S?) {
+        //
+    }
 
-	public void onMessageBefore(S message) {
-		//
-	}
+    fun onHalfCloseBefore() {
+        //
+    }
 
-	public void onMessageAfter(S message) {
-		//
-	}
+    fun onHalfCloseAfter() {
+        //
+    }
 
-	public void onHalfCloseBefore() {
-		//
-	}
+    fun onCancelBefore() {
+        //
+    }
 
-	public void onHalfCloseAfter() {
-		//
-	}
+    fun onCancelAfter() {
+        //
+    }
 
-	public void onCancelBefore() {
-		//
-	}
+    fun onCompleteBefore() {
+        //
+    }
 
-	public void onCancelAfter() {
-		//
-	}
+    fun onCompleteAfter() {
+        //
+    }
 
-	public void onCompleteBefore() {
-		//
-	}
+    fun onReadyBefore() {
+        //
+    }
 
-	public void onCompleteAfter() {
-		//
-	}
+    fun onReadyAfter() {
+        //
+    }
 
-	public void onReadyBefore() {
-		//
-	}
-
-	public void onReadyAfter() {
-		//
-	}
-
-	public void onFinally() {
-		//
-	}
-
+    open fun onFinally() {
+        //
+    }
 }

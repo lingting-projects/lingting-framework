@@ -1,77 +1,65 @@
-package live.lingting.framework.ntp;
+package live.lingting.framework.ntp
 
-import org.slf4j.Logger;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.util.concurrent.TimeUnit
 
 /**
  * ntp 校时服务
  *
  * @author lingting 2022/11/18 13:40
  */
-public class Ntp {
+class Ntp(val host: String, val diff: Long) {
+    var zoneId: ZoneId = DEFAULT_ZONE_ID
+        private set
 
-	public static final ZoneOffset DEFAULT_ZONE_OFFSET = ZoneOffset.of("+0");
+    fun zoneId(zoneId: ZoneId): Ntp {
+        if (zoneId == null) {
+            throw NtpException("ZoneId must be not null!")
+        }
+        this.zoneId = zoneId
+        return this
+    }
 
-	public static final ZoneId DEFAULT_ZONE_ID = DEFAULT_ZONE_OFFSET.normalized();
-	private static final Logger log = org.slf4j.LoggerFactory.getLogger(Ntp.class);
+    fun currentMillis(): Long {
+        return System.currentTimeMillis() + diff
+    }
 
-	private final String host;
+    fun diff(): Long {
+        return diff
+    }
 
-	private final long diff;
+    fun instant(): Instant {
+        val millis = currentMillis()
+        return Instant.ofEpochMilli(millis)
+    }
 
-	private ZoneId zoneId = DEFAULT_ZONE_ID;
+    fun now(): LocalDateTime {
+        val instant = instant()
+        return LocalDateTime.ofInstant(instant, zoneId)
+    }
 
-	public Ntp(String host, long diff) {
-		this.host = host;
-		this.diff = diff;
-	}
+    fun plusSeconds(seconds: Long): Long {
+        return plusMillis(seconds * 1000)
+    }
 
-	public Ntp zoneId(ZoneId zoneId) {
-		if (zoneId == null) {
-			throw new NtpException("ZoneId must be not null!");
-		}
-		this.zoneId = zoneId;
-		return this;
-	}
+    fun plusMillis(millis: Long): Long {
+        return currentMillis() + millis
+    }
 
-	public long currentMillis() {
-		return System.currentTimeMillis() + diff;
-	}
+    fun plus(time: Long, unit: TimeUnit): Long {
+        return plusMillis(unit.toMillis(time))
+    }
 
-	public long diff() {
-		return diff;
-	}
+    companion object {
+        val DEFAULT_ZONE_OFFSET: ZoneOffset = ZoneOffset.of("+0")
 
-	public Instant instant() {
-		long millis = currentMillis();
-		return Instant.ofEpochMilli(millis);
-	}
-
-	public LocalDateTime now() {
-		Instant instant = instant();
-		return LocalDateTime.ofInstant(instant, zoneId);
-	}
-
-	public long plusSeconds(long seconds) {
-		return plusMillis(seconds * 1000);
-	}
-
-	public long plusMillis(long millis) {
-		return currentMillis() + millis;
-	}
-
-	public long plus(long time, TimeUnit unit) {
-		return plusMillis(unit.toMillis(time));
-	}
-
-	public String getHost() {return this.host;}
-
-	public long getDiff() {return this.diff;}
-
-	public ZoneId getZoneId() {return this.zoneId;}
+        @JvmField
+        val DEFAULT_ZONE_ID: ZoneId = DEFAULT_ZONE_OFFSET.normalized()
+        private val log: Logger = LoggerFactory.getLogger(Ntp::class.java)
+    }
 }

@@ -1,69 +1,61 @@
-package live.lingting.framework.value.step;
+package live.lingting.framework.value.step
 
-import live.lingting.framework.value.StepValue;
-
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import live.lingting.framework.value.StepValue
+import java.math.BigInteger
 
 /**
  * @author lingting 2024-02-27 14:11
  */
-public abstract class AbstractStepValue<T> implements StepValue<T> {
+abstract class AbstractStepValue<T> : StepValue<T?> {
+    protected var index: BigInteger = DEFAULT_INDEX
 
-	public static final BigInteger DEFAULT_INDEX = BigInteger.valueOf(0);
+    protected var values: List<T?>? = null
 
-	protected BigInteger index = DEFAULT_INDEX;
+    override fun index(): BigInteger? {
+        return index
+    }
 
-	protected List<T> values;
+    override fun reset() {
+        index = DEFAULT_INDEX
+    }
 
-	@Override
-	public BigInteger index() {
-		return index;
-	}
+    override fun values(): List<T?> {
+        if (values != null) {
+            return values
+        }
+        val list: MutableList<T?> = ArrayList()
+        val copy = copy()
+        while (copy!!.hasNext()) {
+            list.add(copy.next())
+        }
+        values = list
+        return list
+    }
 
-	@Override
-	public void reset() {
-		index = DEFAULT_INDEX;
-	}
+    override fun next(): T? {
+        if (!hasNext()) {
+            throw NoSuchElementException()
+        }
+        val increasing = increasing()
+        if (increasing!!.compareTo(BigInteger.ZERO) == 0) {
+            return firt()
+        }
+        return calculate(increasing)
+    }
 
-	@Override
-	public List<T> values() {
-		if (values != null) {
-			return values;
-		}
-		List<T> list = new ArrayList<>();
-		StepValue<T> copy = copy();
-		while (copy.hasNext()) {
-			list.add(copy.next());
-		}
-		values = list;
-		return list;
-	}
+    open fun increasing(): BigInteger? {
+        val current = index.add(BigInteger.ONE)
+        index = current
+        return current
+    }
 
-	@Override
-	public T next() {
-		if (!hasNext()) {
-			throw new NoSuchElementException();
-		}
-		BigInteger increasing = increasing();
-		if (increasing.compareTo(BigInteger.ZERO) == 0) {
-			return firt();
-		}
-		return calculate(increasing);
-	}
+    open fun calculateNext(): T {
+        return calculate(index.add(BigInteger.ONE))
+    }
 
-	public BigInteger increasing() {
-		BigInteger current = index.add(BigInteger.ONE);
-		index = current;
-		return current;
-	}
+    abstract fun calculate(index: BigInteger?): T
 
-	public T calculateNext() {
-		return calculate(index.add(BigInteger.ONE));
-	}
-
-	public abstract T calculate(BigInteger index);
-
+    companion object {
+        val DEFAULT_INDEX: BigInteger = BigInteger.valueOf(0)
+    }
 }

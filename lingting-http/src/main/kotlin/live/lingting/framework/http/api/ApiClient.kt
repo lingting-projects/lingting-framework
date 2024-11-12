@@ -1,99 +1,95 @@
-package live.lingting.framework.http.api;
+package live.lingting.framework.http.api
 
-import live.lingting.framework.http.HttpClient;
-import live.lingting.framework.http.HttpMethod;
-import live.lingting.framework.http.HttpRequest;
-import live.lingting.framework.http.HttpResponse;
-import live.lingting.framework.http.HttpUrlBuilder;
-import live.lingting.framework.http.body.BodySource;
-import live.lingting.framework.http.header.HttpHeaders;
-import live.lingting.framework.value.multi.StringMultiValue;
-import org.slf4j.Logger;
-
-import java.net.URI;
-import java.time.Duration;
+import live.lingting.framework.http.HttpClient
+import live.lingting.framework.http.HttpRequest
+import live.lingting.framework.http.HttpResponse
+import live.lingting.framework.http.HttpUrlBuilder
+import live.lingting.framework.http.body.BodySource
+import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.value.multi.StringMultiValue
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.time.Duration
 
 /**
  * @author lingting 2024-09-14 15:33
  */
-public abstract class ApiClient<R extends ApiRequest> {
+abstract class ApiClient<R : ApiRequest?> protected constructor(@JvmField protected val host: String) {
+    @JvmField
+    val log: Logger = LoggerFactory.getLogger(javaClass)
 
-	static HttpClient defaultClient = HttpClient.okhttp()
-		.disableSsl()
-		.timeout(Duration.ofSeconds(15), Duration.ofSeconds(30))
-		.build();
+    protected var client: HttpClient = defaultClient
 
-	protected final Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
+    protected open fun customize(request: R) {
+        //
+    }
 
-	protected final String host;
+    protected fun customize(headers: HttpHeaders?) {
+        //
+    }
 
-	protected HttpClient client = defaultClient;
+    protected open fun customize(request: R, headers: HttpHeaders?) {
+        //
+    }
 
-	protected ApiClient(String host) {
-		this.host = host;
-	}
+    protected fun customize(builder: HttpUrlBuilder?) {
+        //
+    }
 
-	public static void setDefaultClient(HttpClient defaultClient) {ApiClient.defaultClient = defaultClient;}
+    protected fun customize(request: R, builder: HttpRequest.Builder?) {
+        //
+    }
 
-	protected void customize(R request) {
-		//
-	}
+    protected open fun customize(request: R, headers: HttpHeaders?, source: BodySource?, params: StringMultiValue?) {
+        //
+    }
 
-	protected void customize(HttpHeaders headers) {
-		//
-	}
-
-	protected void customize(R request, HttpHeaders headers) {
-		//
-	}
-
-	protected void customize(HttpUrlBuilder builder) {
-		//
-	}
-
-	protected void customize(R request, HttpRequest.Builder builder) {
-		//
-	}
-
-	protected void customize(R request, HttpHeaders headers, BodySource source, StringMultiValue params) {
-		//
-	}
-
-	protected abstract HttpResponse checkout(R request, HttpResponse response);
+    protected abstract fun checkout(request: R, response: HttpResponse?): HttpResponse
 
 
-	protected HttpResponse call(R r) {
-		r.onCall();
-		customize(r);
+    protected fun call(r: R): HttpResponse {
+        r!!.onCall()
+        customize(r)
 
-		HttpMethod method = r.method();
-		HttpHeaders headers = HttpHeaders.of(r.getHeaders());
-		BodySource body = r.body();
+        val method = r.method()
+        val headers: HttpHeaders = HttpHeaders.Companion.of(r.getHeaders())
+        val body = r.body()
 
-		customize(headers);
-		customize(r, headers);
+        customize(headers)
+        customize(r, headers)
 
-		String path = r.path();
-		r.onParams();
-		HttpUrlBuilder urlBuilder = HttpUrlBuilder.builder().https().host(host).uri(path).addParams(r.getParams());
-		customize(urlBuilder);
+        val path = r.path()
+        r.onParams()
+        val urlBuilder = HttpUrlBuilder.builder().https().host(host).uri(path!!).addParams(r.getParams())
+        customize(urlBuilder)
 
-		HttpRequest.Builder builder = HttpRequest.builder();
-		URI uri = urlBuilder.buildUri();
-		builder.url(uri);
-		headers.host(uri.getHost());
+        val builder: HttpRequest.Builder = HttpRequest.Companion.builder()
+        val uri = urlBuilder.buildUri()
+        builder.url(uri)
+        headers.host(uri.host)
 
-		customize(r, builder);
-		customize(r, headers, body, urlBuilder.params());
-		builder.headers(headers);
-		builder.method(method.name()).body(body);
+        customize(r, builder)
+        customize(r, headers, body, urlBuilder.params())
+        builder.headers(headers)
+        builder.method(method!!.name).body(body)
 
-		HttpRequest request = builder.build();
-		HttpResponse response = client.request(request);
-		return checkout(r, response);
-	}
+        val request = builder.build()
+        val response = client.request(request)
+        return checkout(r, response)
+    }
 
-	public Logger getLog() {return this.log;}
+    fun setClient(client: HttpClient) {
+        this.client = client
+    }
 
-	public void setClient(HttpClient client) {this.client = client;}
+    companion object {
+        var defaultClient: HttpClient = HttpClient.Companion.okhttp()
+            .disableSsl()
+            .timeout(Duration.ofSeconds(15), Duration.ofSeconds(30))
+            .build()
+
+        fun setDefaultClient(defaultClient: HttpClient) {
+            Companion.defaultClient = defaultClient
+        }
+    }
 }

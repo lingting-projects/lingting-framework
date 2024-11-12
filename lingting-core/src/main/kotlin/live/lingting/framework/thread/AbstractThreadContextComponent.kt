@@ -1,147 +1,142 @@
-package live.lingting.framework.thread;
+package live.lingting.framework.thread
 
-import live.lingting.framework.context.ContextComponent;
-import live.lingting.framework.context.ContextHolder;
-import live.lingting.framework.util.StringUtils;
-import live.lingting.framework.util.ThreadUtils;
-import live.lingting.framework.util.ValueUtils;
-import live.lingting.framework.value.WaitValue;
-import org.slf4j.Logger;
-
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import live.lingting.framework.context.ContextComponent
+import live.lingting.framework.context.ContextHolder
+import live.lingting.framework.util.StringUtils
+import live.lingting.framework.util.ThreadUtils
+import live.lingting.framework.util.ValueUtils
+import live.lingting.framework.value.WaitValue
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
+import java.util.function.Consumer
+import java.util.function.Function
+import java.util.function.Supplier
 
 /**
  * @author lingting 2023-04-22 10:40
  */
-@SuppressWarnings("java:S2142")
-public abstract class AbstractThreadContextComponent implements ContextComponent {
-
-	protected final Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
-
-	protected final WaitValue<Thread> threadValue = WaitValue.of();
-
-	private ExecutorService executor = VirtualThread.executor();
-
-	protected void thread(Consumer<Thread> consumer) {
-		thread(thread -> {
-			consumer.accept(thread);
-			return null;
-		}, null);
-	}
-
-	protected <T> T thread(Function<Thread, T> function, T defaultValue) {
-		if (!threadValue.isNull()) {
-			Thread value = threadValue.getValue();
-			return function.apply(value);
-		}
-		return defaultValue;
-	}
-
-	protected long threadId() {
-		return thread(Thread::threadId, -1L);
-	}
+abstract class AbstractThreadContextComponent : ContextComponent {
+    protected val log: Logger = LoggerFactory.getLogger(javaClass)
 
 
-	protected void interrupt() {
-		thread(t -> {
-			if (!t.isInterrupted()) {
-				t.interrupt();
-			}
-		});
-		threadValue.update((Thread) null);
-	}
+    val threadValue: WaitValue<Thread> = WaitValue.of<Thread>()
 
-	protected void init() {
+    private var executor: ExecutorService? = VirtualThread.executor()
 
-	}
+    protected fun thread(consumer: Consumer<Thread?>) {
+        thread<Any?>({ thread: Thread? ->
+            consumer.accept(thread)
+            null
+        }, null)
+    }
 
-	public boolean isRun() {
-		boolean threadAvailable = thread(thread -> !thread.isInterrupted() && thread.isAlive(), false);
-		return threadAvailable && !ContextHolder.isStop();
-	}
+    protected fun <T> thread(function: Function<Thread?, T>, defaultValue: T): T {
+        if (!threadValue.isNull) {
+            val value = threadValue.value
+            return function.apply(value)
+        }
+        return defaultValue
+    }
 
-	protected Executor executor() {
-		return executor;
-	}
+    protected fun threadId(): Long {
+        return thread({ obj: Thread? -> obj!!.threadId() }, -1L)
+    }
 
-	public void useThreadPool() {
-		executor = ThreadUtils.executor();
-	}
 
-	public void useThreadVirtual() {
-		executor = VirtualThread.executor();
-	}
+    protected fun interrupt() {
+        thread { t: Thread? ->
+            if (!t!!.isInterrupted) {
+                t.interrupt()
+            }
+        }
+        threadValue.update(null as Thread?)
+    }
 
-	@Override
-	public void onApplicationStart() {
-		String name = getSimpleName();
-		Executor current = executor();
-		current.execute(new KeepRunnable(name) {
-			@Override
-			protected void process() throws Throwable {
-				Thread thread = Thread.currentThread();
-				threadValue.update(thread);
-				try {
-					AbstractThreadContextComponent.this.run();
-				}
-				finally {
-					threadValue.update((Thread) null);
-				}
-			}
-		});
-	}
+    protected fun init() {
+    }
 
-	@Override
-	public void onApplicationStop() {
-		log.warn("Class: {}; ThreadId: {}; closing!", getSimpleName(), threadId());
-		interrupt();
-	}
+    open val isRun: Boolean
+        get() {
+            val threadAvailable = thread({ thread: Thread? -> !thread!!.isInterrupted && thread.isAlive }, false)
+            return threadAvailable && !ContextHolder.isStop()
+        }
 
-	public String getSimpleName() {
-		String simpleName = getClass().getSimpleName();
-		if (StringUtils.hasText(simpleName)) {
-			return simpleName;
-		}
-		return getClass().getName();
-	}
+    protected open fun executor(): Executor? {
+        return executor
+    }
 
-	public void run() {
-		init();
-		while (isRun()) {
-			try {
-				doRun();
-			}
-			catch (InterruptedException e) {
-				interrupt();
-				shutdown();
-			}
-			catch (Exception e) {
-				error(e);
-			}
-		}
-	}
+    fun useThreadPool() {
+        executor = ThreadUtils.executor()
+    }
 
-	@SuppressWarnings("java:S112")
-	protected abstract void doRun() throws Exception;
+    fun useThreadVirtual() {
+        executor = VirtualThread.executor()
+    }
 
-	/**
-	 * 线程被中断触发.
-	 */
-	protected void shutdown() {
-		log.warn("Class: {}; ThreadId: {}; shutdown!", getSimpleName(), threadId());
-	}
+    override fun onApplicationStart() {
+        val name = simpleName
+        val current = executor()
+        current!!.execute(object : KeepRunnable(name) {
 
-	protected void error(Exception e) {
-		log.error("Class: {}; ThreadId: {}; error!", getSimpleName(), threadId(), e);
-	}
+            override fun process() {
+                val thread = Thread.currentThread()
+                threadValue.update(thread)
+                try {
+                    this@AbstractThreadContextComponent.run()
+                } finally {
+                    threadValue.update(null as Thread?)
+                }
+            }
+        })
+    }
 
-	public void awaitTerminated() {
-		log.debug("wait thread terminated.");
-		ValueUtils.awaitTrue(() -> thread(thread -> Thread.State.TERMINATED.equals(thread.getState()), true));
-		log.debug("thread terminated.");
-	}
+    override fun onApplicationStop() {
+        log.warn("Class: {}; ThreadId: {}; closing!", simpleName, threadId())
+        interrupt()
+    }
 
+    val simpleName: String
+        get() {
+            val simpleName: String = javaClass.getSimpleName()
+            if (StringUtils.hasText(simpleName)) {
+                return simpleName
+            }
+            return javaClass.getName()
+        }
+
+    fun run() {
+        init()
+        while (isRun) {
+            try {
+                doRun()
+            } catch (e: InterruptedException) {
+                interrupt()
+                shutdown()
+            } catch (e: Exception) {
+                error(e)
+            }
+        }
+    }
+
+
+    protected abstract fun doRun()
+
+    /**
+     * 线程被中断触发.
+     */
+    protected open fun shutdown() {
+        log.warn("Class: {}; ThreadId: {}; shutdown!", simpleName, threadId())
+    }
+
+    protected fun error(e: Exception?) {
+        log.error("Class: {}; ThreadId: {}; error!", simpleName, threadId(), e)
+    }
+
+    fun awaitTerminated() {
+        log.debug("wait thread terminated.")
+        ValueUtils.awaitTrue(Supplier<Boolean?> { thread<Boolean>({ thread: Thread? -> Thread.State.TERMINATED == thread!!.state }, true) })
+        log.debug("thread terminated.")
+    }
 }

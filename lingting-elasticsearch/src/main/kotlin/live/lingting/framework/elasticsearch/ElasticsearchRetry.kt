@@ -1,79 +1,57 @@
-package live.lingting.framework.elasticsearch;
+package live.lingting.framework.elasticsearch
 
-import live.lingting.framework.function.ThrowingSupplier;
-import live.lingting.framework.retry.Retry;
-import live.lingting.framework.retry.RetryFunction;
-
-import java.time.Duration;
-
-import static live.lingting.framework.elasticsearch.ElasticsearchUtils.isVersionConflictException;
+import live.lingting.framework.function.ThrowingSupplier
+import live.lingting.framework.retry.Retry
+import live.lingting.framework.retry.RetryFunction
+import java.time.Duration
 
 /**
  * @author lingting 2023-12-19 14:19
  */
-public class ElasticsearchRetry<T> extends Retry<T> {
+class ElasticsearchRetry<T>(retry: ElasticsearchProperties.Retry, supplier: ThrowingSupplier<T>) : Retry<T>(supplier, ElasticsearchRetryFunction(retry)) {
+    class ElasticsearchRetryFunction(val retry: ElasticsearchProperties.Retry) : RetryFunction {
+        var versionConflictCount: Int = 0
+            protected set
 
-	public ElasticsearchRetry(ElasticsearchProperties.Retry retry, ThrowingSupplier<T> supplier) {
-		super(supplier, new ElasticsearchRetryFunction(retry));
-	}
+        var count: Int = 0
+            protected set
 
-	public static class ElasticsearchRetryFunction implements RetryFunction {
+        override fun allowRetry(retryCount: Int, e: Exception?): Boolean {
+            if (!retry.isEnabled) {
+                return false
+            }
 
-		protected final ElasticsearchProperties.Retry retry;
+            // 版本控制异常
+            if (ElasticsearchUtils.Companion.isVersionConflictException(e)) {
+                return allowVersionConflictRetry()
+            }
 
-		protected int versionConflictCount = 0;
+            // 已重试次数大于等于设置重试次数
+            if (retryCount >= retry.maxRetry) {
+                return false
+            }
 
-		protected int count = 0;
+            // 计数
+            count++
+            return true
+        }
 
-		public ElasticsearchRetryFunction(ElasticsearchProperties.Retry retry) {
-			this.retry = retry;
-		}
+        protected fun allowVersionConflictRetry(): Boolean {
+            // 非无限重试时,已重试次数大于等于设置重试次数
+            if (retry.versionConflictMaxRetry > 0 && versionConflictCount >= retry.versionConflictMaxRetry) {
+                return false
+            }
 
-		@Override
-		public boolean allowRetry(int retryCount, Exception e) {
-			if (!retry.isEnabled()) {
-				return false;
-			}
+            // 允许重试, 计数
+            versionConflictCount++
+            return true
+        }
 
-			// 版本控制异常
-			if (isVersionConflictException(e)) {
-				return allowVersionConflictRetry();
-			}
-
-			// 已重试次数大于等于设置重试次数
-			if (retryCount >= retry.getMaxRetry()) {
-				return false;
-			}
-
-			// 计数
-			count++;
-			return true;
-		}
-
-		protected boolean allowVersionConflictRetry() {
-			// 非无限重试时,已重试次数大于等于设置重试次数
-			if (retry.getVersionConflictMaxRetry() > 0 && versionConflictCount >= retry.getVersionConflictMaxRetry()) {
-				return false;
-			}
-
-			// 允许重试, 计数
-			versionConflictCount++;
-			return true;
-		}
-
-		@Override
-		public Duration getDelay(int retryCount, Exception e) {
-			if (isVersionConflictException(e) && retry.getVersionConflictDelay() != null) {
-				return retry.getVersionConflictDelay();
-			}
-			return retry.getDelay();
-		}
-
-		public ElasticsearchProperties.Retry getRetry() {return this.retry;}
-
-		public int getVersionConflictCount() {return this.versionConflictCount;}
-
-		public int getCount() {return this.count;}
-	}
-
+        override fun getDelay(retryCount: Int, e: Exception?): Duration? {
+            if (ElasticsearchUtils.Companion.isVersionConflictException(e) && retry.versionConflictDelay != null) {
+                return retry.versionConflictDelay
+            }
+            return retry.delay
+        }
+    }
 }

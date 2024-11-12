@@ -1,40 +1,44 @@
-package live.lingting.framework.util;
+package live.lingting.framework.util
 
 /**
  * @author lingting 2023-05-06 14:16
  */
-public final class BooleanUtils {
+class BooleanUtils private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	private static final String[] STR_TRUE = {"1", "true", "yes", "ok", "y", "t"};
+    companion object {
+        private val STR_TRUE = arrayOf("1", "true", "yes", "ok", "y", "t")
 
-	private static final String[] STR_FALSE = {"0", "false", "no", "n", "f"};
+        private val STR_FALSE = arrayOf("0", "false", "no", "n", "f")
 
-	private BooleanUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
 
-	public static boolean isTrue(Object obj) {
-		if (obj instanceof String string) {
-			return ArrayUtils.containsIgnoreCase(STR_TRUE, string);
-		}
-		if (obj instanceof Number number) {
-			return number.doubleValue() > 0;
-		}
-		if (obj instanceof Boolean b) {
-			return Boolean.TRUE.equals(b);
-		}
-		return false;
-	}
+        fun isTrue(obj: Any): Boolean {
+            if (obj is String) {
+                return ArrayUtils.containsIgnoreCase(STR_TRUE, obj)
+            }
+            if (obj is Number) {
+                return obj.toDouble() > 0
+            }
+            if (obj is Boolean) {
+                return java.lang.Boolean.TRUE == obj
+            }
+            return false
+        }
 
-	public static boolean isFalse(Object obj) {
-		if (obj instanceof String string) {
-			return ArrayUtils.containsIgnoreCase(STR_FALSE, string);
-		}
-		if (obj instanceof Number number) {
-			return number.doubleValue() <= 0;
-		}
-		if (obj instanceof Boolean b) {
-			return Boolean.FALSE.equals(b);
-		}
-		return false;
-	}
 
+        fun isFalse(obj: Any): Boolean {
+            if (obj is String) {
+                return ArrayUtils.containsIgnoreCase(STR_FALSE, obj)
+            }
+            if (obj is Number) {
+                return obj.toDouble() <= 0
+            }
+            if (obj is Boolean) {
+                return java.lang.Boolean.FALSE == obj
+            }
+            return false
+        }
+    }
 }

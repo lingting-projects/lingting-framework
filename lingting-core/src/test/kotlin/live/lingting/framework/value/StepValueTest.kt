@@ -1,92 +1,80 @@
-package live.lingting.framework.value;
+package live.lingting.framework.value
 
-import live.lingting.framework.value.step.DecimalStepValue;
-import live.lingting.framework.value.step.IteratorStepValue;
-import live.lingting.framework.value.step.LongStepValue;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.NoSuchElementException;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import live.lingting.framework.value.step.DecimalStepValue
+import live.lingting.framework.value.step.IteratorStepValue
+import live.lingting.framework.value.step.LongStepValue
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import java.math.BigDecimal
+import java.math.BigInteger
 
 /**
  * @author lingting 2023-12-19 11:41
  */
-class StepValueTest {
+internal class StepValueTest {
+    fun assertNumber(step: StepValue<out Number?>) {
+        Assertions.assertTrue(step.hasNext())
+        Assertions.assertEquals(1, step.next()!!.toLong())
+        Assertions.assertEquals(2, step.next()!!.toLong())
+        Assertions.assertEquals(3, step.next()!!.toLong())
+        Assertions.assertFalse(step.hasNext())
+        Assertions.assertThrowsExactly(NoSuchElementException::class.java) { step.next() }
+        val values = step.values()
+        Assertions.assertEquals(3, values.size)
+        Assertions.assertEquals(1, values[0]!!.toLong())
+    }
 
-	void assertNumber(StepValue<? extends Number> step) {
-		assertTrue(step.hasNext());
-		assertEquals(1, step.next().longValue());
-		assertEquals(2, step.next().longValue());
-		assertEquals(3, step.next().longValue());
-		assertFalse(step.hasNext());
-		assertThrowsExactly(NoSuchElementException.class, step::next);
-		List<? extends Number> values = step.values();
-		assertEquals(3, values.size());
-		assertEquals(1, values.get(0).longValue());
-	}
+    @Test
+    fun testLong() {
+        val step = LongStepValue(1, 3L, null)
+        assertNumber(step)
+        val copy = step.copy()
+        assertNumber(copy)
 
-	@Test
-	void testLong() {
-		LongStepValue step = new LongStepValue(1, 3L, null);
-		assertNumber(step);
-		StepValue<Long> copy = step.copy();
-		assertNumber(copy);
+        val max: StepValue<Long> = LongStepValue(5, null, 15L).start(5L)
+        Assertions.assertEquals(10, max.next())
+        Assertions.assertEquals(15, max.next())
+        Assertions.assertFalse(max.hasNext())
+    }
 
-		StepValue<Long> max = new LongStepValue(5, null, 15L).start(5L);
-		assertEquals(10, max.next());
-		assertEquals(15, max.next());
-		assertFalse(max.hasNext());
-	}
+    @Test
+    fun testDecimal() {
+        val step = DecimalStepValue(BigDecimal.ONE, BigInteger.valueOf(3), null)
+        assertNumber(step)
+        val copy = step.copy()
+        assertNumber(copy)
 
-	@Test
-	void testDecimal() {
-		DecimalStepValue step = new DecimalStepValue(BigDecimal.ONE, BigInteger.valueOf(3), null);
-		assertNumber(step);
-		StepValue<BigDecimal> copy = step.copy();
-		assertNumber(copy);
+        val max = DecimalStepValue(BigDecimal.valueOf(5), null, BigDecimal.valueOf(15))
+            .start(BigDecimal.valueOf(5))
+        Assertions.assertEquals(10, max.next()!!.toLong())
+        Assertions.assertEquals(15, max.next()!!.toLong())
+        Assertions.assertFalse(max.hasNext())
+    }
 
-		DecimalStepValue max = new DecimalStepValue(BigDecimal.valueOf(5), null, BigDecimal.valueOf(15))
-			.start(BigDecimal.valueOf(5));
-		assertEquals(10, max.next().longValue());
-		assertEquals(15, max.next().longValue());
-		assertFalse(max.hasNext());
-	}
-
-	@Test
-	void testIterator() {
-		List<Integer> list = new ArrayList<>(Arrays.asList(1, 2, 3));
-		IteratorStepValue<Integer> step = new IteratorStepValue<>(list.iterator());
-		assertNumber(step);
-		StepValue<Integer> copy = step.copy();
-		assertNumber(copy);
-		IteratorStepValue<Integer> remove = new IteratorStepValue<>(list.iterator());
-		List<Integer> values = remove.values();
-		assertEquals(3, values.size());
-		assertThrowsExactly(IllegalStateException.class, remove::remove);
-		assertEquals(1, remove.next());
-		assertDoesNotThrow(remove::remove);
-		assertEquals(BigInteger.ZERO, remove.index());
-		assertEquals(2, remove.next());
-		assertEquals(3, remove.next());
-		assertDoesNotThrow(remove::remove);
-		assertFalse(remove.hasNext());
-		assertThrowsExactly(NoSuchElementException.class, remove::next);
-		remove.reset();
-		assertEquals(2, remove.next());
-		assertFalse(remove.hasNext());
-		assertDoesNotThrow(remove::remove);
-		remove.reset();
-		assertFalse(remove.hasNext());
-	}
-
+    @Test
+    fun testIterator() {
+        val list: List<Int> = ArrayList(mutableListOf(1, 2, 3))
+        val step = IteratorStepValue<Int?>(list.iterator())
+        assertNumber(step)
+        val copy = step.copy()
+        assertNumber(copy)
+        val remove = IteratorStepValue<Int?>(list.iterator())
+        val values = remove.values()
+        Assertions.assertEquals(3, values.size)
+        Assertions.assertThrowsExactly(IllegalStateException::class.java) { remove.remove() }
+        Assertions.assertEquals(1, remove.next())
+        Assertions.assertDoesNotThrow { remove.remove() }
+        Assertions.assertEquals(BigInteger.ZERO, remove.index())
+        Assertions.assertEquals(2, remove.next())
+        Assertions.assertEquals(3, remove.next())
+        Assertions.assertDoesNotThrow { remove.remove() }
+        Assertions.assertFalse(remove.hasNext())
+        Assertions.assertThrowsExactly(NoSuchElementException::class.java) { remove.next() }
+        remove.reset()
+        Assertions.assertEquals(2, remove.next())
+        Assertions.assertFalse(remove.hasNext())
+        Assertions.assertDoesNotThrow { remove.remove() }
+        remove.reset()
+        Assertions.assertFalse(remove.hasNext())
+    }
 }

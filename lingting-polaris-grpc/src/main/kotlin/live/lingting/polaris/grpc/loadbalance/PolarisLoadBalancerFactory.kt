@@ -1,19 +1,13 @@
+package live.lingting.polaris.grpc.loadbalance
 
-package live.lingting.polaris.grpc.loadbalance;
-
-import com.tencent.polaris.client.api.SDKContext;
-import io.grpc.LoadBalancerRegistry;
+import com.tencent.polaris.client.api.SDKContext
+import io.grpc.LoadBalancerRegistry
 
 /**
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
+ * @author [liaochuntao](mailto:liaochuntao@live.com)
  */
-public final class PolarisLoadBalancerFactory {
-
-	private PolarisLoadBalancerFactory() {
-	}
-
-	public static void init(final SDKContext context) {
-		LoadBalancerRegistry.getDefaultRegistry().register(new PolarisLoadBalancerProvider(context));
-	}
-
+object PolarisLoadBalancerFactory {
+    fun init(context: SDKContext?) {
+        LoadBalancerRegistry.getDefaultRegistry().register(PolarisLoadBalancerProvider(context))
+    }
 }

@@ -1,30 +1,18 @@
-package live.lingting.framework.api;
+package live.lingting.framework.api
 
-import live.lingting.framework.function.ThrowingFunction;
-import live.lingting.framework.value.CursorValue;
-
-import java.util.List;
+import live.lingting.framework.function.ThrowingFunction
+import live.lingting.framework.value.CursorValue
 
 /**
  * @author lingting 2023-12-29 11:32
  */
-public class LimitCursor<T> extends CursorValue<T> {
-
-	private final ThrowingFunction<Long, PaginationResult<T>> limit;
-
-	private long index;
-
-	public LimitCursor(ThrowingFunction<Long, PaginationResult<T>> limit) {
-		this.limit = limit;
-		this.index = 1;
-	}
+class LimitCursor<T>(private val limit: ThrowingFunction<Long, PaginationResult<T>>) : CursorValue<T>() {
+    private var index: Long = 1
 
 
-	@Override
-	protected List<T> nextBatchData() {
-		PaginationResult<T> result = limit.apply(index);
-		index++;
-		return result.getRecords();
-	}
-
+    override fun nextBatchData(): List<T> {
+        val result = limit.apply(index)
+        index++
+        return result.records
+    }
 }

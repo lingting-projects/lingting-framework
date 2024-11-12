@@ -1,77 +1,67 @@
-package live.lingting.framework.thread;
+package live.lingting.framework.thread
 
 /**
  * @author lingting 2024-04-29 10:41
  */
-@SuppressWarnings("java:S112")
-public abstract class StateKeepRunnable extends KeepRunnable {
+abstract class StateKeepRunnable : KeepRunnable {
+    protected var thread: Thread? = null
 
-	protected Thread thread;
+    protected var start: Long = 0
 
-	protected long start;
+    protected var end: Long = 0
 
-	protected long end;
+    protected var state: State = State.WAIT
 
-	protected State state = State.WAIT;
+    protected constructor() : super()
 
-	protected StateKeepRunnable() {
-		super();
-	}
+    protected constructor(name: String?) : super(name)
 
-	protected StateKeepRunnable(String name) {
-		super(name);
-	}
 
-	@Override
-	protected void process() throws Throwable {
-		start = System.currentTimeMillis();
-		state = State.RUNNING;
-		thread = Thread.currentThread();
-		doProcess();
-	}
+    override fun process() {
+        start = System.currentTimeMillis()
+        state = State.RUNNING
+        thread = Thread.currentThread()
+        doProcess()
+    }
 
-	protected abstract void doProcess() throws Throwable;
 
-	@Override
-	protected void onFinally() {
-		end = System.currentTimeMillis();
-		state = State.FINISH;
-	}
+    protected abstract fun doProcess()
 
-	public boolean isFinish() {
-		return state == State.FINISH;
-	}
+    override fun onFinally() {
+        end = System.currentTimeMillis()
+        state = State.FINISH
+    }
 
-	/**
-	 * 执行时长, 单位: 毫秒
-	 */
-	public long time() {
-		if (state == State.WAIT) {
-			return 0;
-		}
-		if (state == State.FINISH) {
-			return end - start;
-		}
-		return System.currentTimeMillis() - start;
-	}
+    val isFinish: Boolean
+        get() = state == State.FINISH
 
-	/**
-	 * 结束
-	 */
-	public void interrupt() {
-		if (thread != null && !isFinish() && !thread.isInterrupted()) {
-			thread.interrupt();
-		}
-	}
+    /**
+     * 执行时长, 单位: 毫秒
+     */
+    fun time(): Long {
+        if (state == State.WAIT) {
+            return 0
+        }
+        if (state == State.FINISH) {
+            return end - start
+        }
+        return System.currentTimeMillis() - start
+    }
 
-	public enum State {
+    /**
+     * 结束
+     */
+    fun interrupt() {
+        if (thread != null && !isFinish && !thread!!.isInterrupted) {
+            thread!!.interrupt()
+        }
+    }
 
-		WAIT,
+    enum class State {
+        WAIT,
 
-		RUNNING,
+        RUNNING,
 
-		FINISH,
-
-	}
-
+        FINISH,
+    }
 }

@@ -1,29 +1,25 @@
-package live.lingting.framework.api;
+package live.lingting.framework.api
 
-import live.lingting.framework.exception.BizException;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import live.lingting.framework.exception.BizException
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 /**
  * @author lingting 2024-01-25 16:02
  */
-class ApiResultCodeTest {
-
-	@Test
-	void test() {
-		ApiResultCode resultCode = ApiResultCode.SERVER_ERROR;
-		R<Object> r = R.failed(resultCode);
-		assertEquals(resultCode.getCode(), r.code());
-		assertEquals(resultCode.getMessage(), r.message());
-		String message = "testMessage";
-		ResultCode with = resultCode.with(message);
-		assertEquals(message, with.getMessage());
-		assertThrows(BizException.class, with::throwException);
-		BizException exception = with.toException();
-		assertEquals(with.getMessage(), exception.getMessage());
-		assertEquals(with.getCode(), exception.getCode());
-	}
-
+internal class ApiResultCodeTest {
+    @Test
+    fun test() {
+        val resultCode = ApiResultCode.SERVER_ERROR
+        val r: R<Any> = R.failed(resultCode)
+        Assertions.assertEquals(resultCode.code, r.code)
+        Assertions.assertEquals(resultCode.message, r.message)
+        val message = "testMessage"
+        val with = resultCode.with(message)
+        assertEquals(message, with.message)
+        Assertions.assertThrows(BizException::class.java) { with.throwException() }
+        val exception = with.toException()
+        assertEquals(with.message, exception.message)
+        assertEquals(with.code, exception.code)
+    }
 }

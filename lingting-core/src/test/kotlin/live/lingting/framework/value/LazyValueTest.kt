@@ -1,25 +1,19 @@
-package live.lingting.framework.value;
+package live.lingting.framework.value
 
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 /**
  * @author lingting 2024-09-28 15:33
  */
-class LazyValueTest {
-
-	@Test
-	void test() {
-		LazyValue<String> lazyValue = new LazyValue<>(() -> "test");
-		assertNull(lazyValue.t);
-		assertTrue(lazyValue.isFirst());
-		assertEquals("test", lazyValue.get());
-		assertEquals("test", lazyValue.t);
-		assertFalse(lazyValue.isFirst());
-	}
-
+internal class LazyValueTest {
+    @Test
+    fun test() {
+        val lazyValue = LazyValue { "test" }
+        Assertions.assertNull(lazyValue.t)
+        Assertions.assertTrue(lazyValue.isFirst())
+        Assertions.assertEquals("test", lazyValue.get())
+        Assertions.assertEquals("test", lazyValue.t)
+        Assertions.assertFalse(lazyValue.isFirst())
+    }
 }

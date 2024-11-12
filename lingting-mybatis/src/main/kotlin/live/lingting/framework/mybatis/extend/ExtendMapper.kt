@@ -1,52 +1,47 @@
-package live.lingting.framework.mybatis.extend;
+package live.lingting.framework.mybatis.extend
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.metadata.OrderItem;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import live.lingting.framework.api.PaginationParams;
-import live.lingting.framework.api.PaginationResult;
-import live.lingting.framework.util.CollectionUtils;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.baomidou.mybatisplus.core.conditions.Wrapper
+import com.baomidou.mybatisplus.core.mapper.BaseMapper
+import com.baomidou.mybatisplus.core.metadata.IPage
+import com.baomidou.mybatisplus.core.metadata.OrderItem
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page
+import live.lingting.framework.api.PaginationParams
+import live.lingting.framework.api.PaginationResult
+import live.lingting.framework.util.CollectionUtils
 
 /**
  * @author lingting 2022/9/26 17:07
  */
-public interface ExtendMapper<T> extends BaseMapper<T> {
+interface ExtendMapper<T> : BaseMapper<T> {
+    fun toIpage(params: PaginationParams): Page<T> {
+        val page = Page<T>()
+        page.setCurrent(params.page)
+        page.setSize(params.size)
 
-	default Page<T> toIpage(PaginationParams params) {
-		Page<T> page = new Page<>();
-		page.setCurrent(params.getPage());
-		page.setSize(params.getSize());
+        val sorts = params.sorts
+        if (!CollectionUtils.isEmpty(sorts)) {
+            val orders = ArrayList<OrderItem>()
 
-		List<PaginationParams.Sort> sorts = params.getSorts();
-		if (!CollectionUtils.isEmpty(sorts)) {
-			ArrayList<OrderItem> orders = new ArrayList<>();
+            for ((field, desc) in sorts) {
+                val item = OrderItem()
+                item.setAsc(!desc)
+                item.setColumn(field)
+                orders.add(item)
+            }
 
-			for (PaginationParams.Sort sort : sorts) {
-				OrderItem item = new OrderItem();
-				item.setAsc(!sort.getDesc());
-				item.setColumn(sort.getField());
-				orders.add(item);
-			}
+            page.setOrders(orders)
+        }
 
-			page.setOrders(orders);
-		}
+        return page
+    }
 
-		return page;
-	}
+    fun convert(iPage: IPage<T>): PaginationResult<T> {
+        return PaginationResult(iPage.total, iPage.records)
+    }
 
-	default PaginationResult<T> convert(IPage<T> iPage) {
-		return new PaginationResult<>(iPage.getTotal(), iPage.getRecords());
-	}
-
-	default PaginationResult<T> selectPage(PaginationParams limit, Wrapper<T> queryWrapper) {
-		Page<T> iPage = toIpage(limit);
-		Page<T> tPage = selectPage(iPage, queryWrapper);
-		return convert(tPage);
-	}
-
+    fun selectPage(limit: PaginationParams, queryWrapper: Wrapper<T>?): PaginationResult<T> {
+        val iPage = toIpage(limit)
+        val tPage = selectPage(iPage, queryWrapper)
+        return convert(tPage)
+    }
 }

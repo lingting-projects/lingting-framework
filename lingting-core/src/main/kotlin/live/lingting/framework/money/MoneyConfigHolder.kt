@@ -1,26 +1,28 @@
-package live.lingting.framework.money;
+package live.lingting.framework.money
 
-import live.lingting.framework.thread.StackThreadLocal;
+import live.lingting.framework.thread.StackThreadLocal
 
 /**
  * @author lingting 2023-05-07 18:00
  */
-public final class MoneyConfigHolder {
+class MoneyConfigHolder private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	private static final StackThreadLocal<MoneyConfig> THREAD_LOCAL = new StackThreadLocal<>();
+    companion object {
+        private val THREAD_LOCAL = StackThreadLocal<MoneyConfig>()
 
-	private MoneyConfigHolder() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+        fun get(): MoneyConfig? {
+            return THREAD_LOCAL.get()
+        }
 
-	public static MoneyConfig get() {
-		return THREAD_LOCAL.get();
-	}
+        fun put(config: MoneyConfig?) {
+            THREAD_LOCAL.put(config!!)
+        }
 
-	public static void put(MoneyConfig config) {
-		THREAD_LOCAL.put(config);
-	}
-
-	public static void pop() {
-		THREAD_LOCAL.pop();
-	}
-
+        fun pop() {
+            THREAD_LOCAL.pop()
+        }
+    }
 }

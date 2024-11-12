@@ -1,26 +1,16 @@
-package live.lingting.framework.security.exception;
+package live.lingting.framework.security.exception
 
 /**
  * 权限异常, 不满足指定访问权限
  *
  * @author lingting 2023-03-29 20:57
  */
-public class PermissionsException extends SecurityException {
+class PermissionsException : SecurityException {
+    constructor() : super()
 
-	public PermissionsException() {
-		super();
-	}
+    constructor(s: String?) : super(s)
 
-	public PermissionsException(String s) {
-		super(s);
-	}
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
 
-	public PermissionsException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public PermissionsException(Throwable cause) {
-		super(cause);
-	}
-
+    constructor(cause: Throwable?) : super(cause)
 }

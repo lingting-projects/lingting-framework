@@ -1,50 +1,48 @@
-package live.lingting.framework.api;
+package live.lingting.framework.api
 
-import java.io.Serial;
-import java.io.Serializable;
+import java.io.Serializable
 
 /**
  * @author lingting 2024-01-25 11:12
  */
-public record R<T>(Integer code, T data, String message) implements Serializable {
 
-	@Serial
-	private static final long serialVersionUID = 20240125;
+data class R<T>(val code: Int, val data: T?, val message: String) : Serializable {
+    companion object {
 
-	public static <T> R<T> of(int code, String message) {
-		return of(code, message, null);
-	}
+        fun <T> of(code: Int, message: String): R<T> {
+            return of<T>(code, message, null)
+        }
 
-	public static <T> R<T> of(int code, String message, T data) {
-		return new R<>(code, data, message);
-	}
+        fun <T> of(code: Int, message: String, data: T?): R<T> {
+            return R(code, data, message)
+        }
 
-	public static <T> R<T> ok() {
-		return ok(null);
-	}
+        fun <T> ok(): R<T> {
+            return ok(null)
+        }
 
-	public static <T> R<T> ok(T data) {
-		return ok(ApiResultCode.SUCCESS, data);
-	}
+        fun <T> ok(data: T?): R<T> {
+            return ok(ApiResultCode.SUCCESS, data)
+        }
 
-	public static <T> R<T> ok(ResultCode code, T data) {
-		return of(code.getCode(), data, code.getMessage());
-	}
+        fun <T> ok(code: ResultCode, data: T?): R<T> {
+            return of(code.code, data, code.message)
+        }
 
-	public static <T> R<T> failed(ResultCode code) {
-		return of(code.getCode(), code.getMessage());
-	}
+        fun <T> failed(code: ResultCode): R<T> {
+            return of(code.code, code.message)
+        }
 
-	public static <T> R<T> failed(ResultCode code, String message) {
-		return of(code.getCode(), message);
-	}
+        fun <T> failed(code: ResultCode, message: String): R<T> {
+            return of(code.code, message)
+        }
 
-	public static <T> R<T> failed(Integer code, String message) {
-		return of(code, null, message);
-	}
+        fun <T> failed(code: Int, message: String): R<T> {
+            return of(code, null, message)
+        }
 
-	public static <T> R<T> of(Integer code, T data, String message) {
-		return new R<>(code, data, message);
-	}
-
+        fun <T> of(code: Int, data: T?, message: String): R<T> {
+            return R(code, data, message)
+        }
+    }
 }

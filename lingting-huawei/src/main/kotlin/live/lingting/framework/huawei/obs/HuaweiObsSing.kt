@@ -1,228 +1,203 @@
-package live.lingting.framework.huawei.obs;
+package live.lingting.framework.huawei.obs
 
-import live.lingting.framework.crypto.mac.Mac;
-import live.lingting.framework.http.HttpMethod;
-import live.lingting.framework.http.HttpRequest;
-import live.lingting.framework.http.HttpUrlBuilder;
-import live.lingting.framework.http.body.BodySource;
-import live.lingting.framework.http.header.HttpHeaders;
-import live.lingting.framework.huawei.HuaweiUtils;
-import live.lingting.framework.util.DigestUtils;
-import live.lingting.framework.util.StringUtils;
-import live.lingting.framework.value.multi.StringMultiValue;
-
-import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
-import java.util.Collection;
-
-import static live.lingting.framework.aws.s3.AwsS3Utils.PAYLOAD_UNSIGNED;
-import static live.lingting.framework.huawei.HuaweiObs.HEADER_PREFIX;
-import static live.lingting.framework.huawei.HuaweiUtils.CHARSET;
+import live.lingting.framework.aws.s3.AwsS3Utils
+import live.lingting.framework.crypto.mac.Mac
+import live.lingting.framework.http.HttpMethod
+import live.lingting.framework.http.HttpRequest
+import live.lingting.framework.http.HttpUrlBuilder
+import live.lingting.framework.http.body.BodySource
+import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.huawei.HuaweiObs
+import live.lingting.framework.huawei.HuaweiUtils
+import live.lingting.framework.util.DigestUtils
+import live.lingting.framework.util.StringUtils
+import live.lingting.framework.value.multi.StringMultiValue
+import java.security.NoSuchAlgorithmException
+import java.time.LocalDateTime
+import java.util.*
 
 /**
  * @author lingting 2024/11/5 11:18
  */
-public class HuaweiObsSing {
+class HuaweiObsSing(protected val dateTime: LocalDateTime, protected val method: String?, protected val path: String?, protected val headers: HttpHeaders?, protected val bodySha256: String?, protected val params: StringMultiValue?, protected val region: String?, protected val ak: String?, protected val sk: String?, protected val bucket: String?) {
+    class HuaweiObsSingBuilder {
+        private var dateTime: LocalDateTime? = null
 
-	protected final LocalDateTime dateTime;
+        private var method: String? = null
 
-	protected final String method;
+        private var path: String? = null
 
-	protected final String path;
+        private var headers: HttpHeaders? = null
 
-	protected final HttpHeaders headers;
+        private var bodySha256: String? = null
 
-	protected final String bodySha256;
+        private var params: StringMultiValue? = null
 
-	protected final StringMultiValue params;
+        private var region: String? = null
 
-	protected final String region;
+        private var ak: String? = null
 
-	protected final String ak;
+        private var sk: String? = null
 
-	protected final String sk;
+        private var bucket: String? = null
 
-	protected final String bucket;
+        fun dateTime(dateTime: LocalDateTime?): HuaweiObsSingBuilder {
+            this.dateTime = dateTime
+            return this
+        }
 
-	public HuaweiObsSing(LocalDateTime dateTime, String method, String path, HttpHeaders headers, String bodySha256, StringMultiValue params, String region, String ak, String sk, String bucket) {
-		this.dateTime = dateTime;
-		this.method = method;
-		this.path = path;
-		this.headers = headers;
-		this.bodySha256 = bodySha256;
-		this.params = params;
-		this.region = region;
-		this.ak = ak;
-		this.sk = sk;
-		this.bucket = bucket;
-	}
+        fun method(method: HttpMethod): HuaweiObsSingBuilder {
+            return method(method.name)
+        }
 
-	public static HuaweiObsSingBuilder builder() {
-		return new HuaweiObsSingBuilder();
-	}
+        fun method(method: String): HuaweiObsSingBuilder {
+            this.method = method.uppercase(Locale.getDefault())
+            return this
+        }
 
-	public static class HuaweiObsSingBuilder {
+        fun path(path: String?): HuaweiObsSingBuilder {
+            this.path = path
+            return this
+        }
 
-		private LocalDateTime dateTime;
+        fun headers(headers: HttpHeaders?): HuaweiObsSingBuilder {
+            this.headers = headers
+            return this
+        }
 
-		private String method;
+        @Throws(NoSuchAlgorithmException::class)
+        fun bodyUnsigned(): HuaweiObsSingBuilder {
+            return body(AwsS3Utils.PAYLOAD_UNSIGNED)
+        }
 
-		private String path;
+        @Throws(NoSuchAlgorithmException::class)
+        fun body(body: HttpRequest.Body): HuaweiObsSingBuilder {
+            return body(body.string())
+        }
 
-		private HttpHeaders headers;
+        @Throws(NoSuchAlgorithmException::class)
+        fun body(body: BodySource): HuaweiObsSingBuilder {
+            return body(body.string())
+        }
 
-		private String bodySha256;
+        @Throws(NoSuchAlgorithmException::class)
+        fun body(body: String?): HuaweiObsSingBuilder {
+            if (AwsS3Utils.PAYLOAD_UNSIGNED == body) {
+                return bodySha256(AwsS3Utils.PAYLOAD_UNSIGNED)
+            }
+            val hex = DigestUtils.sha256Hex(body!!)
+            return bodySha256(hex)
+        }
 
-		private StringMultiValue params;
+        fun bodySha256(bodySha256: String?): HuaweiObsSingBuilder {
+            this.bodySha256 = bodySha256
+            return this
+        }
 
-		private String region;
+        fun params(params: StringMultiValue?): HuaweiObsSingBuilder {
+            this.params = params
+            return this
+        }
 
-		private String ak;
+        fun region(region: String?): HuaweiObsSingBuilder {
+            this.region = region
+            return this
+        }
 
-		private String sk;
+        fun ak(ak: String?): HuaweiObsSingBuilder {
+            this.ak = ak
+            return this
+        }
 
-		private String bucket;
+        fun sk(sk: String?): HuaweiObsSingBuilder {
+            this.sk = sk
+            return this
+        }
 
-		public HuaweiObsSingBuilder dateTime(LocalDateTime dateTime) {
-			this.dateTime = dateTime;
-			return this;
-		}
+        fun bucket(bucket: String?): HuaweiObsSingBuilder {
+            this.bucket = bucket
+            return this
+        }
 
-		public HuaweiObsSingBuilder method(HttpMethod method) {
-			return method(method.name());
-		}
+        fun build(): HuaweiObsSing {
+            val time = if (this.dateTime == null) LocalDateTime.now() else dateTime!!
+            return HuaweiObsSing(
+                time, this.method, this.path, this.headers, this.bodySha256, this.params,
+                this.region, this.ak, this.sk, this.bucket
+            )
+        }
+    }
 
-		public HuaweiObsSingBuilder method(String method) {
-			this.method = method.toUpperCase();
-			return this;
-		}
+    fun contentType(): String? {
+        val type = headers!!.contentType()
+        return if (StringUtils.hasText(type)) type else ""
+    }
 
-		public HuaweiObsSingBuilder path(String path) {
-			this.path = path;
-			return this;
-		}
+    fun date(): String {
+        return HuaweiUtils.Companion.format(dateTime)
+    }
 
-		public HuaweiObsSingBuilder headers(HttpHeaders headers) {
-			this.headers = headers;
-			return this;
-		}
+    fun canonicalizedHeaders(): String {
+        val builder = StringBuilder()
+        headers!!.keys().stream().filter { k: String -> k.startsWith(HuaweiObs.Companion.HEADER_PREFIX) }.sorted().forEach { k: String ->
+            val vs = headers.get(k)
+            if (vs!!.isEmpty()) {
+                return@forEach
+            }
+            builder.append(k).append(":").append(java.lang.String.join(",", vs)).append("\n")
+        }
+        return builder.toString()
+    }
 
-		public HuaweiObsSingBuilder bodyUnsigned() throws NoSuchAlgorithmException {
-			return body(PAYLOAD_UNSIGNED);
-		}
+    fun query(): String {
+        return HttpUrlBuilder.buildQuery(params!!)
+    }
 
-		public HuaweiObsSingBuilder body(HttpRequest.Body body) throws NoSuchAlgorithmException {
-			return body(body.string());
-		}
+    fun canonicalizedResource(): String {
+        val query = query()
+        return canonicalizedResource(query)
+    }
 
-		public HuaweiObsSingBuilder body(BodySource body) throws NoSuchAlgorithmException {
-			return body(body.string());
-		}
+    fun canonicalizedResource(query: String?): String {
+        val builder = StringBuilder()
+        builder.append("/").append(bucket).append("/")
+        if (StringUtils.hasText(path)) {
+            builder.append(path, if (path!!.startsWith("/")) 1 else 0, path.length)
+        }
 
-		public HuaweiObsSingBuilder body(String body) throws NoSuchAlgorithmException {
-			if (PAYLOAD_UNSIGNED.equals(body)) {
-				return bodySha256(PAYLOAD_UNSIGNED);
-			}
-			String hex = DigestUtils.sha256Hex(body);
-			return bodySha256(hex);
-		}
+        if (StringUtils.hasText(query)) {
+            builder.append("?").append(query)
+        }
+        return builder.toString()
+    }
 
-		public HuaweiObsSingBuilder bodySha256(String bodySha256) {
-			this.bodySha256 = bodySha256;
-			return this;
-		}
-
-		public HuaweiObsSingBuilder params(StringMultiValue params) {
-			this.params = params;
-			return this;
-		}
-
-		public HuaweiObsSingBuilder region(String region) {
-			this.region = region;
-			return this;
-		}
-
-		public HuaweiObsSingBuilder ak(String ak) {
-			this.ak = ak;
-			return this;
-		}
-
-		public HuaweiObsSingBuilder sk(String sk) {
-			this.sk = sk;
-			return this;
-		}
-
-		public HuaweiObsSingBuilder bucket(String bucket) {
-			this.bucket = bucket;
-			return this;
-		}
-
-		public HuaweiObsSing build() {
-			LocalDateTime time = this.dateTime == null ? LocalDateTime.now() : this.dateTime;
-			return new HuaweiObsSing(time, this.method, this.path, this.headers, this.bodySha256, this.params,
-				this.region, this.ak, this.sk, this.bucket);
-		}
-
-	}
-
-	public String contentType() {
-		String type = headers.contentType();
-		return StringUtils.hasText(type) ? type : "";
-	}
-
-	public String date() {
-		return HuaweiUtils.format(dateTime);
-	}
-
-	public String canonicalizedHeaders() {
-		StringBuilder builder = new StringBuilder();
-		headers.keys().stream().filter(k -> k.startsWith(HEADER_PREFIX)).sorted().forEach(k -> {
-			Collection<String> vs = headers.get(k);
-			if (vs.isEmpty()) {
-				return;
-			}
-			builder.append(k).append(":").append(String.join(",", vs)).append("\n");
-		});
-		return builder.toString();
-	}
-
-	public String query() {
-		return HttpUrlBuilder.buildQuery(params);
-	}
-
-	public String canonicalizedResource() {
-		String query = query();
-		return canonicalizedResource(query);
-	}
-
-	public String canonicalizedResource(String query) {
-		StringBuilder builder = new StringBuilder();
-		builder.append("/").append(bucket).append("/");
-		if (StringUtils.hasText(path)) {
-			builder.append(path, path.startsWith("/") ? 1 : 0, path.length());
-		}
-
-		if (StringUtils.hasText(query)) {
-			builder.append("?").append(query);
-		}
-		return builder.toString();
-	}
-
-	public String source() {
-		String md5 = "";
-		String type = contentType();
-		String date = date();
-		String canonicalizedHeaders = canonicalizedHeaders();
-		String canonicalizedResource = canonicalizedResource();
-		return method + "\n" + md5 + "\n" + type + "\n" + date + "\n" + canonicalizedHeaders + canonicalizedResource;
-	}
+    fun source(): String {
+        val md5 = ""
+        val type = contentType()
+        val date = date()
+        val canonicalizedHeaders = canonicalizedHeaders()
+        val canonicalizedResource = canonicalizedResource()
+        return """
+            $method
+            $md5
+            $type
+            $date
+            $canonicalizedHeaders$canonicalizedResource
+            """.trimIndent()
+    }
 
 
-	public String calculate() {
-		String source = source();
-		Mac mac = Mac.hmacBuilder().sha1().secret(sk).charset(CHARSET).build();
-		String base64 = mac.calculateBase64(source);
-		return "OBS %s:%s".formatted(ak, base64);
-	}
+    fun calculate(): String {
+        val source = source()
+        val mac = Mac.hmacBuilder().sha1().secret(sk!!).charset(HuaweiUtils.Companion.CHARSET).build()
+        val base64 = mac.calculateBase64(source)
+        return "OBS %s:%s".formatted(ak, base64)
+    }
 
+    companion object {
+        @JvmStatic
+        fun builder(): HuaweiObsSingBuilder {
+            return HuaweiObsSingBuilder()
+        }
+    }
 }

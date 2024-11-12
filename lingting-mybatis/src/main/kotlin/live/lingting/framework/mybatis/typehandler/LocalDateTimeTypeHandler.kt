@@ -1,98 +1,91 @@
-package live.lingting.framework.mybatis.typehandler;
+package live.lingting.framework.mybatis.typehandler
 
-import live.lingting.framework.util.StringUtils;
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
-import org.slf4j.Logger;
-
-import java.sql.CallableStatement;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.HashMap;
-import java.util.Map;
+import live.lingting.framework.util.StringUtils
+import org.apache.ibatis.type.BaseTypeHandler
+import org.apache.ibatis.type.JdbcType
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.sql.CallableStatement
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+import java.sql.SQLException
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
+import kotlin.math.max
 
 /**
  * @author lingting 2022/8/22 9:41
  */
-@SuppressWarnings("java:S6485")
-public class LocalDateTimeTypeHandler extends BaseTypeHandler<LocalDateTime>
-	implements AutoRegisterTypeHandler<LocalDateTime> {
+class LocalDateTimeTypeHandler : BaseTypeHandler<LocalDateTime?>(), AutoRegisterTypeHandler<LocalDateTime?> {
+    @Throws(SQLException::class)
+    override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: LocalDateTime?, jdbcType: JdbcType?) {
+        if (parameter == null) {
+            ps.setObject(i, null)
+        } else if (jdbcType == null) {
+            ps.setObject(i, format(parameter))
+        } else {
+            ps.setObject(i, format(parameter), jdbcType.TYPE_CODE)
+        }
+    }
 
-	public static final String MICROSECONDS_DELIMITER = ".";
+    @Throws(SQLException::class)
+    override fun getNullableResult(rs: ResultSet, columnName: String): LocalDateTime? {
+        return parse(rs.getString(columnName))
+    }
 
-	public static final String MICROSECONDS = "S";
+    @Throws(SQLException::class)
+    override fun getNullableResult(rs: ResultSet, columnIndex: Int): LocalDateTime? {
+        return parse(rs.getString(columnIndex))
+    }
 
-	public static final String STR_FORMAT_NORMAL = "yyyy-MM-dd HH:mm:ss";
+    @Throws(SQLException::class)
+    override fun getNullableResult(cs: CallableStatement, columnIndex: Int): LocalDateTime? {
+        return parse(cs.getString(columnIndex))
+    }
 
-	public static final DateTimeFormatter FORMAT_NORMAL = DateTimeFormatter.ofPattern(STR_FORMAT_NORMAL);
+    fun format(localDate: LocalDateTime): String {
+        return localDate.format(FORMAT_NORMAL)
+    }
 
-	private static final Map<Integer, DateTimeFormatter> CACHE = new HashMap<>(16);
-	private static final Logger log = org.slf4j.LoggerFactory.getLogger(LocalDateTimeTypeHandler.class);
+    companion object {
+        const val MICROSECONDS_DELIMITER: String = "."
 
-	public static LocalDateTime parse(String val) {
-		if (!StringUtils.hasText(val)) {
-			return null;
-		}
+        const val MICROSECONDS: String = "S"
 
-		// 微秒处理
-		if (val.contains(MICROSECONDS_DELIMITER)) {
-			int number = val.length() - val.indexOf(MICROSECONDS_DELIMITER) - 1;
+        const val STR_FORMAT_NORMAL: String = "yyyy-MM-dd HH:mm:ss"
 
-			DateTimeFormatter dateTimeFormatter = CACHE.computeIfAbsent(number, k -> {
-				String builder = STR_FORMAT_NORMAL + MICROSECONDS_DELIMITER + MICROSECONDS.repeat(Math.max(0, number));
-				return DateTimeFormatter.ofPattern(builder);
-			});
+        val FORMAT_NORMAL: DateTimeFormatter = DateTimeFormatter.ofPattern(STR_FORMAT_NORMAL)
 
-			return LocalDateTime.parse(val, dateTimeFormatter);
-		}
+        private val CACHE: MutableMap<Int, DateTimeFormatter> = HashMap(16)
+        private val log: Logger = LoggerFactory.getLogger(LocalDateTimeTypeHandler::class.java)
 
-		// 数据类型声明紊乱处理
-		try {
-			return LocalDateTime.parse(val, FORMAT_NORMAL);
-		}
-		catch (DateTimeParseException e) {
-			log.error("Unable to convert string [{}] to LocalDataTime! using LocalDate.asStartOfDay", val, e);
-			// 使用当天0点处理
-			return LocalDate.parse(val, LocalDateTypeHandler.FORMATTER).atStartOfDay();
-		}
-	}
+        fun parse(`val`: String): LocalDateTime? {
+            if (!StringUtils.hasText(`val`)) {
+                return null
+            }
 
-	@Override
-	public void setNonNullParameter(PreparedStatement ps, int i, LocalDateTime parameter, JdbcType jdbcType)
-		throws SQLException {
-		if (parameter == null) {
-			ps.setObject(i, null);
-		}
-		else if (jdbcType == null) {
-			ps.setObject(i, format(parameter));
-		}
-		else {
-			ps.setObject(i, format(parameter), jdbcType.TYPE_CODE);
-		}
-	}
+            // 微秒处理
+            if (`val`.contains(MICROSECONDS_DELIMITER)) {
+                val number = `val`.length - `val`.indexOf(MICROSECONDS_DELIMITER) - 1
 
-	@Override
-	public LocalDateTime getNullableResult(ResultSet rs, String columnName) throws SQLException {
-		return parse(rs.getString(columnName));
-	}
+                val dateTimeFormatter = CACHE.computeIfAbsent(number) { k: Int? ->
+                    val builder = STR_FORMAT_NORMAL + MICROSECONDS_DELIMITER + MICROSECONDS.repeat(max(0.0, number.toDouble()).toInt())
+                    DateTimeFormatter.ofPattern(builder)
+                }
 
-	@Override
-	public LocalDateTime getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-		return parse(rs.getString(columnIndex));
-	}
+                return LocalDateTime.parse(`val`, dateTimeFormatter)
+            }
 
-	@Override
-	public LocalDateTime getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-		return parse(cs.getString(columnIndex));
-	}
-
-	public String format(LocalDateTime localDate) {
-		return localDate.format(FORMAT_NORMAL);
-	}
-
+            // 数据类型声明紊乱处理
+            try {
+                return LocalDateTime.parse(`val`, FORMAT_NORMAL)
+            } catch (e: DateTimeParseException) {
+                log.error("Unable to convert string [{}] to LocalDataTime! using LocalDate.asStartOfDay", `val`, e)
+                // 使用当天0点处理
+                return LocalDate.parse(`val`, LocalDateTypeHandler.Companion.FORMATTER).atStartOfDay()
+            }
+        }
+    }
 }

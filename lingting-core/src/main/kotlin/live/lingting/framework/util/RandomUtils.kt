@@ -1,100 +1,102 @@
-package live.lingting.framework.util;
+package live.lingting.framework.util
 
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.ThreadLocalRandom
 
 /**
  * @author lingting
  */
-public final class RandomUtils {
+class RandomUtils private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	/**
-	 * 用于随机选的数字
-	 */
-	public static final String NUMBER = "0123456789";
+    companion object {
+        /**
+         * 用于随机选的数字
+         */
+        const val NUMBER: String = "0123456789"
 
-	/**
-	 * 用于随机选的字母
-	 */
-	public static final String LETTER = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        /**
+         * 用于随机选的字母
+         */
+        const val LETTER: String = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-	/**
-	 * 用于生成16进制
-	 */
-	public static final String HEX = "0123456789ABCEDF";
+        /**
+         * 用于生成16进制
+         */
+        const val HEX: String = "0123456789ABCEDF"
 
-	/**
-	 * 用于随机选的字符
-	 */
-	public static final String STRING = NUMBER + LETTER;
+        /**
+         * 用于随机选的字符
+         */
+        const val STRING: String = NUMBER + LETTER
 
-	private RandomUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+        val random: ThreadLocalRandom
+            get() = ThreadLocalRandom.current()
 
-	public static ThreadLocalRandom getRandom() {
-		return ThreadLocalRandom.current();
-	}
+        /**
+         * 随机数
+         *
+         * @param max 最大值 - 不包括该值
+         * @return int
+         */
+        fun nextInt(max: Int): Int {
+            return nextInt(0, max)
+        }
 
-	/**
-	 * 随机数
-	 *
-	 * @param max 最大值 - 不包括该值
-	 * @return int
-	 */
-	public static int nextInt(int max) {
-		return nextInt(0, max);
-	}
+        /**
+         * 随机数
+         *
+         * @param min 最小值 - 包括该值
+         * @param max 最大值 - 不包括该值
+         * @return int
+         */
+        fun nextInt(min: Int, max: Int): Int {
+            return random.nextInt(min, max)
+        }
 
-	/**
-	 * 随机数
-	 *
-	 * @param min 最小值 - 包括该值
-	 * @param max 最大值 - 不包括该值
-	 * @return int
-	 */
-	public static int nextInt(int min, int max) {
-		return getRandom().nextInt(min, max);
-	}
+        /**
+         * 从指定字符串中随机生成字符串
+         *
+         * @param base 根字符
+         * @param len  长度
+         * @return java.lang.String
+         */
+        fun nextStr(base: String, len: Int): String {
+            var base = base
+            if (!StringUtils.hasText(base)) {
+                base = STRING
+            }
 
-	/**
-	 * 从指定字符串中随机生成字符串
-	 *
-	 * @param base 根字符
-	 * @param len  长度
-	 * @return java.lang.String
-	 */
-	public static String nextStr(String base, int len) {
-		if (!StringUtils.hasText(base)) {
-			base = STRING;
-		}
+            val builder = StringBuilder(len)
 
-		StringBuilder builder = new StringBuilder(len);
+            for (i in 0 until len) {
+                val index = nextInt(base.length)
+                val c = base[index]
+                builder.append(c)
+            }
 
-		for (int i = 0; i < len; i++) {
-			int index = nextInt(base.length());
-			char c = base.charAt(index);
-			builder.append(c);
-		}
+            return builder.toString()
+        }
 
-		return builder.toString();
-	}
+        fun nextStr(len: Int): String {
+            return nextStr(STRING, len)
+        }
 
-	public static String nextStr(int len) {
-		return nextStr(STRING, len);
-	}
+        fun nextLetter(len: Int): String {
+            return nextStr(LETTER, len)
+        }
 
-	public static String nextLetter(int len) {
-		return nextStr(LETTER, len);
-	}
+        fun nextNumber(len: Int): String {
+            return nextStr(NUMBER, len)
+        }
 
-	public static String nextNumber(int len) {
-		return nextStr(NUMBER, len);
-	}
-
-	public static String nextHex(int len) {
-		final String hex = nextStr(HEX, len);
-		if (len > 1 && hex.charAt(0) == 0) {
-			return hex.substring(1) + nextHex(1);
-		}
-		return hex;
-	}
-
+        fun nextHex(len: Int): String {
+            val hex = nextStr(HEX, len)
+            if (len > 1 && hex[0].code == 0) {
+                return hex.substring(1) + nextHex(1)
+            }
+            return hex
+        }
+    }
 }

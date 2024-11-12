@@ -1,133 +1,128 @@
-package live.lingting.framework.lock;
+package live.lingting.framework.lock
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Supplier;
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.Condition
+import java.util.concurrent.locks.ReentrantLock
+import java.util.function.Supplier
 
 /**
  * @author lingting 2023-04-22 10:55
  */
-public class JavaReentrantLock {
+class JavaReentrantLock {
+    /**
+     * 锁
+     */
+    val lock: ReentrantLock = ReentrantLock()
 
-	/**
-	 * 锁
-	 */
-	protected final ReentrantLock lock = new ReentrantLock();
+    /**
+     * 激活与休眠线程
+     */
+    val defaultCondition: Condition = lock.newCondition()
 
-	/**
-	 * 激活与休眠线程
-	 */
-	protected final Condition defaultCondition = lock.newCondition();
+    fun newCondition(): Condition {
+        return lock.newCondition()
+    }
 
-	public Condition newCondition() {
-		return getLock().newCondition();
-	}
+    fun lock() {
+        lock.lock()
+    }
 
-	public void lock() {
-		getLock().lock();
-	}
 
-	public void lockInterruptibly() throws InterruptedException {
-		getLock().lockInterruptibly();
-	}
+    fun lockInterruptibly() {
+        lock.lockInterruptibly()
+    }
 
-	public boolean lockTry() throws InterruptedException {
-		return lockTry(1, TimeUnit.MILLISECONDS);
-	}
 
-	public boolean lockTry(long timeout, TimeUnit unit) throws InterruptedException {
-		return getLock().tryLock(timeout, unit);
-	}
+    fun lockTry(timeout: Long = 1, unit: TimeUnit = TimeUnit.MILLISECONDS): Boolean {
+        return lock.tryLock(timeout, unit)
+    }
 
-	public void run(Runnable runnable) {
-		lock();
-		try {
-			runnable.run();
-		}
-		finally {
-			unlock();
-		}
-	}
+    fun run(runnable: Runnable) {
+        lock()
+        try {
+            runnable.run()
+        } finally {
+            unlock()
+        }
+    }
 
-	public void runByInterruptibly(LockRunnable runnable) throws InterruptedException {
-		lockInterruptibly();
-		try {
-			runnable.run();
-		}
-		finally {
-			unlock();
-		}
-	}
 
-	public void runByTry(LockRunnable runnable) throws InterruptedException {
-		if (lockTry()) {
-			try {
-				runnable.run();
-			}
-			finally {
-				unlock();
-			}
-		}
-	}
+    fun runByInterruptibly(runnable: () -> Unit) {
+        lockInterruptibly()
+        try {
+            runnable()
+        } finally {
+            unlock()
+        }
+    }
 
-	public void runByTry(LockRunnable runnable, long timeout, TimeUnit unit) throws InterruptedException {
-		if (lockTry(timeout, unit)) {
-			try {
-				runnable.run();
-			}
-			finally {
-				unlock();
-			}
-		}
-	}
 
-	public <R> R get(Supplier<R> runnable) {
-		ReentrantLock reentrantLock = getLock();
-		reentrantLock.lock();
-		try {
-			return runnable.get();
-		}
-		finally {
-			reentrantLock.unlock();
-		}
-	}
+    fun runByTry(runnable: LockRunnable) {
+        if (lockTry()) {
+            try {
+                runnable.run()
+            } finally {
+                unlock()
+            }
+        }
+    }
 
-	public <R> R getByInterruptibly(LockSupplier<R> runnable) throws InterruptedException {
-		ReentrantLock reentrantLock = getLock();
-		reentrantLock.lockInterruptibly();
-		try {
-			return runnable.get();
-		}
-		finally {
-			reentrantLock.unlock();
-		}
-	}
 
-	public void unlock() {
-		getLock().unlock();
-	}
+    fun runByTry(runnable: LockRunnable, timeout: Long, unit: TimeUnit) {
+        if (lockTry(timeout, unit)) {
+            try {
+                runnable.run()
+            } finally {
+                unlock()
+            }
+        }
+    }
 
-	public void signal() throws InterruptedException {
-		runByInterruptibly(() -> getDefaultCondition().signal());
-	}
+    fun <R> get(runnable: Supplier<R>): R {
+        val reentrantLock = lock
+        reentrantLock.lock()
+        try {
+            return runnable.get()
+        } finally {
+            reentrantLock.unlock()
+        }
+    }
 
-	public void signalAll() throws InterruptedException {
-		runByInterruptibly(() -> getDefaultCondition().signalAll());
-	}
 
-	public void await() throws InterruptedException {
-		runByInterruptibly(() -> getDefaultCondition().await());
-	}
+    fun <R> getByInterruptibly(runnable: () -> R): R {
+        val reentrantLock = lock
+        reentrantLock.lockInterruptibly()
+        try {
+            return runnable()
+        } finally {
+            reentrantLock.unlock()
+        }
+    }
 
-	/**
-	 * @return 是否被唤醒
-	 */
-	public boolean await(long time, TimeUnit timeUnit) throws InterruptedException {
-		return getByInterruptibly(() -> getDefaultCondition().await(time, timeUnit));
-	}
+    fun unlock() {
+        lock.unlock()
+    }
 
-	public ReentrantLock getLock() {return this.lock;}
 
-	public Condition getDefaultCondition() {return this.defaultCondition;}
+    fun signal() {
+        runByInterruptibly { defaultCondition.signal() }
+    }
+
+
+    fun signalAll() {
+        runByInterruptibly { defaultCondition.signalAll() }
+    }
+
+
+    fun await() {
+        runByInterruptibly { defaultCondition.await() }
+    }
+
+    /**
+     * @return 是否被唤醒
+     */
+
+    fun await(time: Long, timeUnit: TimeUnit): Boolean {
+        return getByInterruptibly { defaultCondition.await(time, timeUnit) }
+    }
 }

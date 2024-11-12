@@ -1,61 +1,61 @@
-package live.lingting.framework.aws.s3.interfaces;
+package live.lingting.framework.aws.s3.interfaces
 
-import live.lingting.framework.aws.policy.Acl;
-import live.lingting.framework.aws.s3.AwsS3MultipartTask;
-import live.lingting.framework.http.header.HttpHeaders;
-import live.lingting.framework.multipart.Part;
-import live.lingting.framework.stream.CloneInputStream;
-import live.lingting.framework.thread.Async;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
+import live.lingting.framework.aws.policy.Acl
+import live.lingting.framework.aws.s3.AwsS3MultipartTask
+import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.multipart.Part
+import live.lingting.framework.stream.CloneInputStream
+import live.lingting.framework.thread.Async
+import java.io.File
+import java.io.IOException
+import java.io.InputStream
 
 /**
  * @author lingting 2024-09-19 21:59
  */
-public interface AwsS3ObjectInterface {
+interface AwsS3ObjectInterface {
+    // region get
+    val key: String?
 
-	// region get
+    fun publicUrl(): String?
 
-	String getKey();
+    fun head(): HttpHeaders
 
-	String publicUrl();
+    // endregion
+    // region put
+    @Throws(IOException::class)
+    fun put(file: File?)
 
-	HttpHeaders head();
+    @Throws(IOException::class)
+    fun put(file: File?, acl: Acl?)
 
-	// endregion
-	// region put
-	void put(File file) throws IOException;
+    @Throws(IOException::class)
+    fun put(`in`: InputStream)
 
-	void put(File file, Acl acl) throws IOException;
+    @Throws(IOException::class)
+    fun put(`in`: InputStream, acl: Acl?)
 
-	void put(InputStream in) throws IOException;
+    fun put(`in`: CloneInputStream)
 
-	void put(InputStream in, Acl acl) throws IOException;
+    fun put(`in`: CloneInputStream, acl: Acl?)
 
-	void put(CloneInputStream in);
+    fun delete()
 
-	void put(CloneInputStream in, Acl acl);
+    // endregion
+    // region multipart
+    fun multipartInit(): String?
 
-	void delete();
+    fun multipartInit(acl: Acl?): String?
 
-	// endregion
-	// region multipart
-	String multipartInit();
+    @Throws(IOException::class)
+    fun multipart(source: InputStream?): AwsS3MultipartTask?
 
-	String multipartInit(Acl acl);
+    @Throws(IOException::class)
+    fun multipart(source: InputStream?, parSize: Long, async: Async): AwsS3MultipartTask
 
-	AwsS3MultipartTask multipart(InputStream source) throws IOException;
+    fun multipartUpload(uploadId: String?, part: Part?, `in`: InputStream?): String?
 
-	AwsS3MultipartTask multipart(InputStream source, long parSize, Async async) throws IOException;
+    fun multipartMerge(uploadId: String?, map: Map<Part, String?>?)
 
-	String multipartUpload(String uploadId, Part part, InputStream in);
-
-	void multipartMerge(String uploadId, Map<Part, String> map);
-
-	void multipartCancel(String uploadId);
-	// endregion
-
+    fun multipartCancel(uploadId: String) // endregion
 }

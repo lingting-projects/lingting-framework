@@ -1,117 +1,108 @@
-package live.lingting.framework.jackson.module;
+package live.lingting.framework.jackson.module
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.TreeNode;
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.DeserializationConfig;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
-import com.fasterxml.jackson.databind.module.SimpleDeserializers;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.node.IntNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.TextNode;
-import live.lingting.framework.api.R;
-
-import java.io.IOException;
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.core.TreeNode
+import com.fasterxml.jackson.databind.BeanDescription
+import com.fasterxml.jackson.databind.DeserializationConfig
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JavaType
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.JsonMappingException
+import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition
+import com.fasterxml.jackson.databind.module.SimpleDeserializers
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.databind.node.IntNode
+import com.fasterxml.jackson.databind.node.NullNode
+import com.fasterxml.jackson.databind.node.TextNode
+import live.lingting.framework.api.R
+import java.io.IOException
 
 /**
  * @author lingting 2023-09-27 11:25
  */
-public class RModule extends SimpleModule {
+class RModule : SimpleModule() {
+    init {
+        init()
+    }
 
-	public static final String FIELD_CODE = "code";
+    protected fun init() {
+        setDeserializers(RJacksonDeserializers())
+    }
 
-	public static final String FIELD_DATA = "data";
+    class RJacksonDeserializers : SimpleDeserializers() {
+        @Throws(JsonMappingException::class)
+        override fun findBeanDeserializer(
+            type: JavaType, config: DeserializationConfig,
+            beanDesc: BeanDescription
+        ): JsonDeserializer<*> {
+            val rawClass = type.rawClass
+            if (R::class.java.isAssignableFrom(rawClass)) {
+                return RDeserializer(beanDesc)
+            }
+            return super.findBeanDeserializer(type, config, beanDesc)
+        }
+    }
 
-	public static final String FIELD_MESSAGE = "message";
+    class RDeserializer(private val beanDesc: BeanDescription) : JsonDeserializer<R<*>>() {
+        @Throws(IOException::class)
+        override fun deserialize(p: JsonParser, ctxt: DeserializationContext): R<*> {
+            val root = p.codec.readTree<TreeNode>(p)
+            val code = getCode(root)
+            val message = getMessage(root)
+            val data = getData(root, getDefinition(FIELD_DATA)!!, ctxt)
+            return R.of(code, data, message!!)
+        }
 
-	public RModule() {
-		init();
-	}
+        fun getCode(root: TreeNode): Int {
+            val node = root[FIELD_CODE]
+            if (isNull(node) || !node.isValueNode || node !is IntNode) {
+                return -1
+            }
+            return node.asInt()
+        }
 
-	protected void init() {
-		setDeserializers(new RJacksonDeserializers());
-	}
+        fun getMessage(root: TreeNode): String? {
+            val node = root[FIELD_MESSAGE]
+            if (isNull(node) || !node.isValueNode || node !is TextNode) {
+                return null
+            }
+            return node.asText()
+        }
 
-	public static class RJacksonDeserializers extends SimpleDeserializers {
+        @Throws(IOException::class)
+        fun getData(root: TreeNode, definition: BeanPropertyDefinition, ctxt: DeserializationContext): Any? {
+            val node = root[FIELD_DATA]
+            if (isNull(node)) {
+                return null
+            }
+            val javaType = definition.primaryType
 
-		@Override
-		public JsonDeserializer<?> findBeanDeserializer(JavaType type, DeserializationConfig config,
-														BeanDescription beanDesc) throws JsonMappingException {
-			Class<?> rawClass = type.getRawClass();
-			if (R.class.isAssignableFrom(rawClass)) {
-				return new RDeserializer(beanDesc);
-			}
-			return super.findBeanDeserializer(type, config, beanDesc);
-		}
+            val deserializer = ctxt.findRootValueDeserializer(javaType)
 
-	}
+            node.traverse().use { parser ->
+                parser.nextToken()
+                return deserializer.deserialize(parser, ctxt)
+            }
+        }
 
-	public static class RDeserializer extends JsonDeserializer<R<?>> {
+        fun getDefinition(field: String): BeanPropertyDefinition? {
+            return beanDesc.findProperties()
+                .stream()
+                .filter { definition: BeanPropertyDefinition -> definition.name == field }
+                .findFirst()
+                .orElse(null)
+        }
 
-		private final BeanDescription beanDesc;
+        fun isNull(node: TreeNode?): Boolean {
+            return node == null || node is NullNode
+        }
+    }
 
-		public RDeserializer(BeanDescription beanDesc) {
-			this.beanDesc = beanDesc;
-		}
+    companion object {
+        const val FIELD_CODE: String = "code"
 
-		@Override
-		public R<?> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-			TreeNode root = p.getCodec().readTree(p);
-			int code = getCode(root);
-			String message = getMessage(root);
-			Object data = getData(root, getDefinition(FIELD_DATA), ctxt);
-			return R.of(code, data, message);
-		}
+        const val FIELD_DATA: String = "data"
 
-		int getCode(TreeNode root) {
-			TreeNode node = root.get(FIELD_CODE);
-			if (isNull(node) || !node.isValueNode() || !(node instanceof IntNode)) {
-				return -1;
-			}
-			return ((IntNode) node).asInt();
-		}
-
-		String getMessage(TreeNode root) {
-			TreeNode node = root.get(FIELD_MESSAGE);
-			if (isNull(node) || !node.isValueNode() || !(node instanceof TextNode)) {
-				return null;
-			}
-			return ((TextNode) node).asText();
-		}
-
-		Object getData(TreeNode root, BeanPropertyDefinition definition, DeserializationContext ctxt)
-			throws IOException {
-			TreeNode node = root.get(FIELD_DATA);
-			if (isNull(node)) {
-				return null;
-			}
-			JavaType javaType = definition.getPrimaryType();
-
-			JsonDeserializer<Object> deserializer = ctxt.findRootValueDeserializer(javaType);
-
-			try (JsonParser parser = node.traverse()) {
-				parser.nextToken();
-				return deserializer.deserialize(parser, ctxt);
-			}
-		}
-
-		BeanPropertyDefinition getDefinition(String field) {
-			return beanDesc.findProperties()
-				.stream()
-				.filter(definition -> definition.getName().equals(field))
-				.findFirst()
-				.orElse(null);
-		}
-
-		boolean isNull(TreeNode node) {
-			return node == null || node instanceof NullNode;
-		}
-
-	}
-
+        const val FIELD_MESSAGE: String = "message"
+    }
 }

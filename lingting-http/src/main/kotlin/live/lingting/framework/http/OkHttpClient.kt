@@ -1,223 +1,229 @@
-package live.lingting.framework.http;
+package live.lingting.framework.http
 
-import live.lingting.framework.function.ThrowingFunction;
-import live.lingting.framework.http.header.HttpHeaders;
-import live.lingting.framework.http.okhttp.OkHttpCookie;
-import live.lingting.framework.http.okhttp.OkHttpRequestBody;
-import live.lingting.framework.jackson.JacksonUtils;
-import okhttp3.Authenticator;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Dispatcher;
-import okhttp3.HttpUrl;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
-import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
+import live.lingting.framework.flow.FutureSubscriber.get
+import live.lingting.framework.function.ThrowingFunction
+import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.http.okhttp.OkHttpCookie
+import live.lingting.framework.http.okhttp.OkHttpRequestBody
+import live.lingting.framework.jackson.JacksonUtils
+import live.lingting.framework.value.LazyValue.get
+import okhttp3.Authenticator
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.Cookie.Builder.value
+import okhttp3.Dispatcher
+import okhttp3.HttpUrl
+import okhttp3.OkHttpClient.Builder.cookieJar
+import okhttp3.OkHttpClient.Builder.followRedirects
+import okhttp3.OkHttpClient.Builder.followSslRedirects
+import okhttp3.OkHttpClient.Builder.sslSocketFactory
+import okhttp3.Request
+import okhttp3.Request.Builder.get
+import okhttp3.Request.Builder.header
+import okhttp3.Request.Builder.method
+import okhttp3.Request.Builder.post
+import okhttp3.Request.Builder.url
+import okhttp3.RequestBody
+import okhttp3.Response
+import java.io.IOException
+import java.net.ProxySelector
+import java.time.Duration
+import java.util.function.Consumer
+import java.util.function.Supplier
+import javax.net.SocketFactory
+import javax.net.ssl.HostnameVerifier
 
 /**
  * @author lingting 2024-09-02 15:36
  */
-public class OkHttpClient extends HttpClient {
+class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
+    override fun client(): okhttp3.OkHttpClient {
+        return client
+    }
 
-	protected final okhttp3.OkHttpClient client;
+    @Throws(IOException::class)
+    override fun request(request: HttpRequest): HttpResponse {
+        val okhttp = convert(request)
 
-	public OkHttpClient(okhttp3.OkHttpClient client) {
-		this.client = client;
-	}
+        request(okhttp).use { response ->
+            return convert(request, response)
+        }
+    }
 
-	@Override
-	public okhttp3.OkHttpClient client() {
-		return client;
-	}
+    @Throws(IOException::class)
+    override fun request(request: HttpRequest, callback: ResponseCallback) {
+        val okhttp = convert(request)
+        request(okhttp, object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                callback.onError(request, e)
+            }
 
-	public static Request convert(HttpRequest request) throws IOException {
-		HttpMethod method = request.method();
-		URI uri = request.uri();
-		HttpHeaders headers = request.headers();
-		HttpRequest.Body body = request.body();
+            @Throws(IOException::class)
+            override fun onResponse(call: Call, r: Response) {
+                try {
+                    val response = convert(request, r)
+                    callback.onResponse(response)
+                } catch (e: Throwable) {
+                    callback.onError(request, e)
+                }
+            }
+        })
+    }
 
-		Request.Builder builder = new Request.Builder();
-		// 请求头
-		headers.each((k, v) -> {
-			if (HEADERS_DISABLED.contains(k)) {
-				return;
-			}
-			builder.header(k, v);
-		});
-		// 请求地址
-		builder.url(uri.toURL());
-		builder.method(method.name(), method.allowBody() ? new OkHttpRequestBody(body) : null);
-		return builder.build();
-	}
+    // region 原始请求
+    @Throws(IOException::class)
+    fun request(request: Request): Response {
+        val call = client.newCall(request)
+        return call.execute()
+    }
 
-	public static HttpResponse convert(HttpRequest request, Response response) throws IOException {
-		int code = response.code();
-		ResponseBody body = response.body();
-		InputStream stream = wrap(body == null ? null : body.byteStream());
-		Map<String, List<String>> map = response.headers().toMultimap();
-		HttpHeaders headers = HttpHeaders.of(map);
-		return new HttpResponse(request, code, headers, stream);
-	}
-
-	@Override
-	public HttpResponse request(HttpRequest request) throws IOException {
-		Request okhttp = convert(request);
-
-		try (Response response = request(okhttp)) {
-			return convert(request, response);
-		}
-	}
-
-	@Override
-	public void request(HttpRequest request, ResponseCallback callback) throws IOException {
-		Request okhttp = convert(request);
-		request(okhttp, new Callback() {
-			@Override
-			public void onFailure(@NotNull Call call, @NotNull IOException e) {
-				callback.onError(request, e);
-			}
-
-			@Override
-			public void onResponse(@NotNull Call call, @NotNull Response r) throws IOException {
-				try {
-					HttpResponse response = convert(request, r);
-					callback.onResponse(response);
-				}
-				catch (Throwable e) {
-					callback.onError(request, e);
-				}
-			}
-		});
-	}
-
-	// region 原始请求
-
-	public Response request(Request request) throws IOException {
-		Call call = client.newCall(request);
-		return call.execute();
-	}
-
-	public void request(Request request, Callback callback) {
-		Call call = client.newCall(request);
-		call.enqueue(callback);
-	}
+    fun request(request: Request, callback: Callback) {
+        val call = client.newCall(request)
+        call.enqueue(callback)
+    }
 
 
-	public <T> T request(Request request, ThrowingFunction<Response, T> function) throws IOException {
-		try (Response response = request(request)) {
-			return function.apply(response);
-		}
-	}
+    @Throws(IOException::class)
+    fun <T> request(request: Request, function: ThrowingFunction<Response?, T>): T {
+        request(request).use { response ->
+            return function.apply(response)
+        }
+    }
 
-	@SuppressWarnings("unchecked")
-	public <T> T request(Request request, Class<T> cls) throws IOException {
-		return request(request, response -> {
-			ResponseBody responseBody = response.body();
-			if (responseBody == null) {
-				return null;
-			}
+    @Throws(IOException::class)
+    fun <T> request(request: Request, cls: Class<T>): T? {
+        return request<T>(request, ThrowingFunction<Response, T> { response: Response ->
+            val responseBody = response.body()
+            if (responseBody == null) {
+                return@request null
+            }
 
-			String string = responseBody.string();
-			if (cls.isAssignableFrom(String.class)) {
-				return (T) string;
-			}
-			return JacksonUtils.toObj(string, cls);
-		});
-	}
+            val string = responseBody!!.string()
+            if (cls.isAssignableFrom(String::class.java)) {
+                return@request string as T
+            }
+            JacksonUtils.toObj(string, cls)
+        })
+    }
 
-	public Response get(String url) throws IOException {
-		Request.Builder builder = new Request.Builder().url(url).get();
-		return request(builder.build());
-	}
+    @Throws(IOException::class)
+    fun get(url: String): Response {
+        val builder: Builder = Builder().url(url).get()
+        return request(builder.build())
+    }
 
-	public <T> T get(String url, Class<T> cls) throws IOException {
-		Request.Builder builder = new Request.Builder().url(url).get();
-		return request(builder.build(), cls);
-	}
+    @Throws(IOException::class)
+    fun <T> get(url: String, cls: Class<T>): T {
+        val builder: Builder = Builder().url(url).get()
+        return request<T>(builder.build(), cls)
+    }
 
-	public Response get(HttpUrl url) throws IOException {
-		Request.Builder builder = new Request.Builder().url(url).get();
-		return request(builder.build());
-	}
+    @Throws(IOException::class)
+    fun get(url: HttpUrl): Response {
+        val builder: Builder = Builder().url(url).get()
+        return request(builder.build())
+    }
 
-	public <T> T get(HttpUrl url, Class<T> cls) throws IOException {
-		Request.Builder builder = new Request.Builder().url(url).get();
-		return request(builder.build(), cls);
-	}
+    @Throws(IOException::class)
+    fun <T> get(url: HttpUrl, cls: Class<T>): T {
+        val builder: Builder = Builder().url(url).get()
+        return request<T>(builder.build(), cls)
+    }
 
-	public Response post(String url, RequestBody body) throws IOException {
-		Request.Builder builder = new Request.Builder().url(url).post(body);
-		return request(builder.build());
-	}
+    @Throws(IOException::class)
+    fun post(url: String, body: RequestBody): Response {
+        val builder: Builder = Builder().url(url).post(body)
+        return request(builder.build())
+    }
 
-	public <T> T post(String url, RequestBody requestBody, Class<T> cls) throws IOException {
-		Request.Builder builder = new Request.Builder().url(url).post(requestBody);
-		return request(builder.build(), cls);
-	}
+    @Throws(IOException::class)
+    fun <T> post(url: String, requestBody: RequestBody, cls: Class<T>): T {
+        val builder: Builder = Builder().url(url).post(requestBody)
+        return request<T>(builder.build(), cls)
+    }
 
-	// endregion
+    // endregion
+    class Builder : HttpClient.Builder<OkHttpClient, Builder?>() {
+        protected var authenticator: Authenticator? = null
 
-	public static class Builder extends HttpClient.Builder<OkHttpClient, OkHttpClient.Builder> {
+        private var dispatcher: Dispatcher? = null
 
-		protected Authenticator authenticator;
+        fun authenticator(authenticator: Authenticator?): Builder {
+            this.authenticator = authenticator
+            return this
+        }
 
-		private Dispatcher dispatcher;
+        fun dispatcher(dispatcher: Dispatcher?): Builder {
+            this.dispatcher = dispatcher
+            return this
+        }
 
-		public Builder authenticator(Authenticator authenticator) {
-			this.authenticator = authenticator;
-			return this;
-		}
+        fun build(supplier: Supplier<Builder>): OkHttpClient {
+            val builder = supplier.get()
+            builder.followRedirects(redirects).followSslRedirects(redirects)
+            nonNull(socketFactory, Consumer { socketFactory: SocketFactory? -> builder.socketFactory(socketFactory) })
+            nonNull(hostnameVerifier, Consumer { hostnameVerifier: HostnameVerifier? -> builder.hostnameVerifier(hostnameVerifier) })
 
-		public Builder dispatcher(Dispatcher dispatcher) {
-			this.dispatcher = dispatcher;
-			return this;
-		}
+            if (sslContext != null && trustManager != null) {
+                builder.sslSocketFactory(sslContext!!.socketFactory, trustManager)
+            }
 
-		public OkHttpClient build(Supplier<okhttp3.OkHttpClient.Builder> supplier) {
-			okhttp3.OkHttpClient.Builder builder = supplier.get();
-			builder.followRedirects(redirects).followSslRedirects(redirects);
-			nonNull(socketFactory, builder::socketFactory);
-			nonNull(hostnameVerifier, builder::hostnameVerifier);
+            nonNull(callTimeout, Consumer { duration: Duration? -> builder.callTimeout(duration) })
+            nonNull(connectTimeout, Consumer { duration: Duration? -> builder.connectTimeout(duration) })
+            nonNull(readTimeout, Consumer { duration: Duration? -> builder.readTimeout(duration) })
+            nonNull(writeTimeout, Consumer { duration: Duration? -> builder.writeTimeout(duration) })
+            nonNull(proxySelector, Consumer { proxySelector: ProxySelector? -> builder.proxySelector(proxySelector) })
+            nonNull(authenticator, Consumer { authenticator: Authenticator? -> builder.authenticator(authenticator) })
 
-			if (sslContext != null && trustManager != null) {
-				builder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
-			}
+            if (cookie != null) {
+                builder.cookieJar(OkHttpCookie(cookie!!))
+            }
 
-			nonNull(callTimeout, builder::callTimeout);
-			nonNull(connectTimeout, builder::connectTimeout);
-			nonNull(readTimeout, builder::readTimeout);
-			nonNull(writeTimeout, builder::writeTimeout);
-			nonNull(proxySelector, builder::proxySelector);
-			nonNull(authenticator, builder::authenticator);
+            if (dispatcher == null && executor != null) {
+                dispatcher = Dispatcher(executor)
+            }
 
-			if (cookie != null) {
-				builder.cookieJar(new OkHttpCookie(cookie));
-			}
+            nonNull(dispatcher, Consumer { dispatcher: Dispatcher? -> builder.dispatcher(dispatcher) })
 
-			if (dispatcher == null && executor != null) {
-				dispatcher = new Dispatcher(executor);
-			}
+            val client: okhttp3.OkHttpClient = builder.build()
+            return OkHttpClient(client)
+        }
 
-			nonNull(dispatcher, builder::dispatcher);
+        override fun doBuild(): OkHttpClient {
+            return build { Builder() }
+        }
+    }
 
-			okhttp3.OkHttpClient client = builder.build();
-			return new OkHttpClient(client);
-		}
+    companion object {
+        @Throws(IOException::class)
+        fun convert(request: HttpRequest): Request {
+            val method = request.method()
+            val uri = request.uri()
+            val headers = request.headers()
+            val body = request.body()
 
-		@Override
-		protected OkHttpClient doBuild() {
-			return build(okhttp3.OkHttpClient.Builder::new);
-		}
+            val builder = Builder()
+            // 请求头
+            headers!!.each { k: String, v: String? ->
+                if (HttpClient.Companion.HEADERS_DISABLED.contains(k)) {
+                    return@each
+                }
+                builder.header(k, v)
+            }
+            // 请求地址
+            builder.url(uri!!.toURL())
+            builder.method(method!!.name, if (method.allowBody()) OkHttpRequestBody(body!!) else null)
+            return builder.build()
+        }
 
-	}
-
+        @Throws(IOException::class)
+        fun convert(request: HttpRequest, response: Response): HttpResponse {
+            val code = response.code()
+            val body = response.body()
+            val stream = wrap(body?.byteStream())
+            val map: Map<String?, List<String?>?> = response.headers().toMultimap()
+            val headers: HttpHeaders = HttpHeaders.Companion.of(map)
+            return HttpResponse(request, code, headers, stream)
+        }
+    }
 }

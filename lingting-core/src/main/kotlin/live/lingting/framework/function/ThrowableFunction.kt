@@ -1,12 +1,11 @@
-package live.lingting.framework.function;
+package live.lingting.framework.function
+
+import live.lingting.framework.api.R
 
 /**
  * @author lingting 2023/1/16 17:46
  */
-@FunctionalInterface
-@SuppressWarnings("java:S112")
-public interface ThrowableFunction<T, R> {
+fun interface ThrowableFunction<T, R> {
 
-	R apply(T t) throws Throwable;
-
+    fun apply(t: T): R
 }

@@ -1,21 +1,17 @@
-package live.lingting.framework.huawei;
+package live.lingting.framework.huawei
 
-import live.lingting.framework.http.HttpMethod;
-import live.lingting.framework.http.api.ApiRequest;
+import live.lingting.framework.http.HttpMethod
+import live.lingting.framework.http.api.ApiRequest
 
 /**
  * @author lingting 2024-09-12 21:43
  */
-public abstract class HuaweiRequest extends ApiRequest {
+abstract class HuaweiRequest : ApiRequest() {
+    override fun method(): HttpMethod {
+        return HttpMethod.POST
+    }
 
-	@Override
-	public HttpMethod method() {
-		return HttpMethod.POST;
-	}
-
-	@Override
-	public void onCall() {
-		headers.contentType("application/json;charset=utf8");
-	}
-
+    override fun onCall() {
+        headers.contentType("application/json;charset=utf8")
+    }
 }

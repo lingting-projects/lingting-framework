@@ -1,226 +1,185 @@
+package live.lingting.polaris.grpc.loadbalance
 
-package live.lingting.polaris.grpc.loadbalance;
-
-import com.google.common.base.Preconditions;
-import com.tencent.polaris.api.pojo.CircuitBreakerStatus;
-import com.tencent.polaris.api.pojo.Instance;
-import com.tencent.polaris.api.pojo.StatusDimension;
-import com.tencent.polaris.api.utils.StringUtils;
-import io.grpc.Attributes;
-import io.grpc.Channel;
-import io.grpc.ChannelLogger;
-import io.grpc.EquivalentAddressGroup;
-import io.grpc.LoadBalancer.Subchannel;
-import io.grpc.LoadBalancer.SubchannelStateListener;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import com.google.common.base.Preconditions
+import com.tencent.polaris.api.pojo.CircuitBreakerStatus
+import com.tencent.polaris.api.pojo.Instance
+import com.tencent.polaris.api.pojo.StatusDimension
+import com.tencent.polaris.api.utils.StringUtils
+import io.grpc.Attributes
+import io.grpc.Channel
+import io.grpc.ChannelLogger
+import io.grpc.EquivalentAddressGroup
+import io.grpc.LoadBalancer
+import io.grpc.LoadBalancer.SubchannelStateListener
+import kotlin.concurrent.Volatile
 
 /**
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
+ * @author [liaochuntao](mailto:liaochuntao@live.com)
  */
-@SuppressWarnings({ "java:S3077", "java:S1874" })
-public class PolarisSubChannel extends Subchannel implements Instance {
+class PolarisSubChannel : LoadBalancer.Subchannel, Instance {
+    val channel: LoadBalancer.Subchannel?
 
-	private static final String NLP_MESSAGE = "instance";
+    @Volatile
+    private var instance: Instance?
 
-	private final Subchannel channel;
+    internal constructor(instance: Instance?) {
+        Preconditions.checkNotNull(instance, NLP_MESSAGE)
+        this.channel = null
+        this.instance = instance
+    }
 
-	private volatile Instance instance;
+    constructor(channel: LoadBalancer.Subchannel?, instance: Instance?) {
+        Preconditions.checkNotNull(channel, "channel")
+        Preconditions.checkNotNull(instance, NLP_MESSAGE)
+        this.channel = channel
+        this.instance = instance
+    }
 
-	PolarisSubChannel(Instance instance) {
-		Preconditions.checkNotNull(instance, NLP_MESSAGE);
-		this.channel = null;
-		this.instance = instance;
-	}
+    fun getInstance(): Instance? {
+        return instance
+    }
 
-	public PolarisSubChannel(Subchannel channel, Instance instance) {
-		Preconditions.checkNotNull(channel, "channel");
-		Preconditions.checkNotNull(instance, NLP_MESSAGE);
-		this.channel = channel;
-		this.instance = instance;
-	}
+    fun setInstance(instance: Instance?) {
+        Preconditions.checkNotNull(instance, NLP_MESSAGE)
+        this.instance = instance
+    }
 
-	public Subchannel getChannel() {
-		return channel;
-	}
+    override fun getNamespace(): String {
+        return instance!!.namespace
+    }
 
-	public Instance getInstance() {
-		return instance;
-	}
+    override fun getService(): String {
+        return instance!!.service
+    }
 
-	public void setInstance(Instance instance) {
-		Preconditions.checkNotNull(instance, NLP_MESSAGE);
-		this.instance = instance;
-	}
+    override fun getRevision(): String {
+        return instance!!.revision
+    }
 
-	@Override
-	public String getNamespace() {
-		return instance.getNamespace();
-	}
+    override fun getCircuitBreakerStatus(): CircuitBreakerStatus {
+        return instance!!.circuitBreakerStatus
+    }
 
-	@Override
-	public String getService() {
-		return instance.getService();
-	}
+    override fun getStatusDimensions(): Collection<StatusDimension> {
+        return instance!!.statusDimensions
+    }
 
-	@Override
-	public String getRevision() {
-		return instance.getRevision();
-	}
+    override fun getCircuitBreakerStatus(statusDimension: StatusDimension): CircuitBreakerStatus {
+        return instance!!.getCircuitBreakerStatus(statusDimension)
+    }
 
-	@Override
-	public CircuitBreakerStatus getCircuitBreakerStatus() {
-		return instance.getCircuitBreakerStatus();
-	}
+    override fun isHealthy(): Boolean {
+        return instance!!.isHealthy
+    }
 
-	@Override
-	public Collection<StatusDimension> getStatusDimensions() {
-		return instance.getStatusDimensions();
-	}
+    override fun isIsolated(): Boolean {
+        return instance!!.isIsolated
+    }
 
-	@Override
-	public CircuitBreakerStatus getCircuitBreakerStatus(StatusDimension statusDimension) {
-		return instance.getCircuitBreakerStatus(statusDimension);
-	}
+    override fun getProtocol(): String {
+        return instance!!.protocol
+    }
 
-	@Override
-	public boolean isHealthy() {
-		return instance.isHealthy();
-	}
+    override fun getId(): String {
+        return instance!!.id
+    }
 
-	@Override
-	public boolean isIsolated() {
-		return instance.isIsolated();
-	}
+    override fun getHost(): String {
+        return instance!!.host
+    }
 
-	@Override
-	public String getProtocol() {
-		return instance.getProtocol();
-	}
+    override fun getPort(): Int {
+        return instance!!.port
+    }
 
-	@Override
-	public String getId() {
-		return instance.getId();
-	}
+    override fun getVersion(): String {
+        return instance!!.version
+    }
 
-	@Override
-	public String getHost() {
-		return instance.getHost();
-	}
+    override fun getMetadata(): Map<String, String> {
+        return instance!!.metadata
+    }
 
-	@Override
-	public int getPort() {
-		return instance.getPort();
-	}
+    override fun isEnableHealthCheck(): Boolean {
+        return instance!!.isEnableHealthCheck
+    }
 
-	@Override
-	public String getVersion() {
-		return instance.getVersion();
-	}
+    override fun getRegion(): String {
+        return instance!!.region
+    }
 
-	@Override
-	public Map<String, String> getMetadata() {
-		return instance.getMetadata();
-	}
+    override fun getZone(): String {
+        return instance!!.zone
+    }
 
-	@Override
-	public boolean isEnableHealthCheck() {
-		return instance.isEnableHealthCheck();
-	}
+    override fun getCampus(): String {
+        return instance!!.campus
+    }
 
-	@Override
-	public String getRegion() {
-		return instance.getRegion();
-	}
+    override fun getPriority(): Int {
+        return instance!!.priority
+    }
 
-	@Override
-	public String getZone() {
-		return instance.getZone();
-	}
+    override fun getWeight(): Int {
+        return instance!!.weight
+    }
 
-	@Override
-	public String getCampus() {
-		return instance.getCampus();
-	}
+    override fun getLogicSet(): String {
+        return instance!!.logicSet
+    }
 
-	@Override
-	public int getPriority() {
-		return instance.getPriority();
-	}
+    override fun shutdown() {
+        channel!!.shutdown()
+    }
 
-	@Override
-	public int getWeight() {
-		return instance.getWeight();
-	}
+    override fun start(listener: SubchannelStateListener) {
+        channel!!.start(listener)
+    }
 
-	@Override
-	public String getLogicSet() {
-		return instance.getLogicSet();
-	}
+    override fun getAllAddresses(): List<EquivalentAddressGroup> {
+        return channel!!.allAddresses
+    }
 
-	@Override
-	public void shutdown() {
-		channel.shutdown();
-	}
+    override fun asChannel(): Channel {
+        return channel!!.asChannel()
+    }
 
-	@Override
-	public void start(SubchannelStateListener listener) {
-		channel.start(listener);
-	}
+    override fun getChannelLogger(): ChannelLogger {
+        return channel!!.channelLogger
+    }
 
-	@Override
-	public List<EquivalentAddressGroup> getAllAddresses() {
-		return channel.getAllAddresses();
-	}
+    override fun updateAddresses(addrs: List<EquivalentAddressGroup>) {
+        channel!!.updateAddresses(addrs)
+    }
 
-	@Override
-	public Channel asChannel() {
-		return channel.asChannel();
-	}
+    override fun getInternalSubchannel(): Any {
+        return channel!!.internalSubchannel
+    }
 
-	@Override
-	public ChannelLogger getChannelLogger() {
-		return channel.getChannelLogger();
-	}
+    override fun requestConnection() {
+        channel!!.requestConnection()
+    }
 
-	@Override
-	public void updateAddresses(List<EquivalentAddressGroup> addrs) {
-		channel.updateAddresses(addrs);
-	}
+    override fun getAttributes(): Attributes {
+        return channel!!.attributes
+    }
 
-	@Override
-	public Object getInternalSubchannel() {
-		return channel.getInternalSubchannel();
-	}
+    override fun compareTo(o: Instance): Int {
+        return instance!!.compareTo(o)
+    }
 
-	@Override
-	public void requestConnection() {
-		channel.requestConnection();
-	}
+    override fun equals(o: Any?): Boolean {
+        if (o is PolarisSubChannel) {
+            return StringUtils.equals(this.id, o.id)
+        }
+        return false
+    }
 
-	@Override
-	public Attributes getAttributes() {
-		return channel.getAttributes();
-	}
+    override fun hashCode(): Int {
+        return getInstance()!!.id.hashCode()
+    }
 
-	@Override
-	public int compareTo(Instance o) {
-		return instance.compareTo(o);
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (o instanceof PolarisSubChannel other) {
-			return StringUtils.equals(this.getId(), other.getId());
-		}
-		return false;
-	}
-
-	@Override
-	public int hashCode() {
-		return getInstance().getId().hashCode();
-	}
-
+    companion object {
+        private const val NLP_MESSAGE = "instance"
+    }
 }

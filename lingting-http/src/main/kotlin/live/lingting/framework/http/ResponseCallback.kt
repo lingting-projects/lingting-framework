@@ -1,13 +1,13 @@
-package live.lingting.framework.http;
+package live.lingting.framework.http
+
+import okhttp3.Cookie.Builder.value
 
 /**
  * @author lingting 2024-05-07 17:20
  */
-@SuppressWarnings("java:S112")
-public interface ResponseCallback {
+interface ResponseCallback {
+    fun onError(request: HttpRequest?, e: Throwable?)
 
-	void onError(HttpRequest request, Throwable e);
-
-	void onResponse(HttpResponse response) throws Throwable;
-
+    @Throws(Throwable::class)
+    fun onResponse(response: HttpResponse?)
 }

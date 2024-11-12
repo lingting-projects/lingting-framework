@@ -1,15 +1,13 @@
-package live.lingting.framework.security.resolver;
+package live.lingting.framework.security.resolver
 
-import live.lingting.framework.security.domain.SecurityScope;
-import live.lingting.framework.security.domain.SecurityToken;
+import live.lingting.framework.security.domain.SecurityScope
+import live.lingting.framework.security.domain.SecurityToken
 
 /**
  * @author lingting 2024-05-27 16:36
  */
-public interface SecurityTokenResolver {
+interface SecurityTokenResolver {
+    fun isSupport(token: SecurityToken?): Boolean
 
-	boolean isSupport(SecurityToken token);
-
-	SecurityScope resolver(SecurityToken token);
-
+    fun resolver(token: SecurityToken): SecurityScope?
 }

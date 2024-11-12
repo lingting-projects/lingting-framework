@@ -1,56 +1,56 @@
-package live.lingting.framework.elasticsearch.composer;
+package live.lingting.framework.elasticsearch.composer
 
-import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
-import live.lingting.framework.elasticsearch.ElasticsearchFunction;
-
-import java.util.function.UnaryOperator;
-
-import static live.lingting.framework.elasticsearch.ElasticsearchUtils.fieldName;
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregation
+import co.elastic.clients.elasticsearch._types.aggregations.TermsAggregation
+import live.lingting.framework.elasticsearch.ElasticsearchFunction
+import live.lingting.framework.elasticsearch.ElasticsearchUtils
+import java.util.function.UnaryOperator
 
 /**
  * @author lingting 2024-03-06 17:47
  */
-public final class AggComposer {
+class AggComposer private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	private AggComposer() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+    companion object {
+        fun <E> terms(function: ElasticsearchFunction<E, *>): Aggregation {
+            return terms(ElasticsearchUtils.Companion.fieldName(function))
+        }
 
-	public static Aggregation terms(String field) {
-		return terms(field, null);
-	}
+        fun <E> terms(function: ElasticsearchFunction<E, *>, size: Int?): Aggregation {
+            return terms(ElasticsearchUtils.Companion.fieldName(function), size)
+        }
 
-	public static Aggregation terms(String field, Integer size) {
-		return terms(field, size, builder -> builder);
-	}
+        @JvmOverloads
+        fun terms(
+            field: String?, size: Int? = null,
+            operator: UnaryOperator<Aggregation.Builder.ContainerBuilder?> = UnaryOperator { builder: Aggregation.Builder.ContainerBuilder? -> builder }
+        ): Aggregation {
+            return Aggregation.of { agg: Aggregation.Builder ->
+                val builder = agg.terms { ta: TermsAggregation.Builder ->
+                    if (size != null) {
+                        ta.size(size)
+                    }
+                    ta.field(field)
+                }
+                operator.apply(builder)
+            }
+        }
 
-	public static <E> Aggregation terms(ElasticsearchFunction<E, ?> function) {
-		return terms(fieldName(function));
-	}
+        fun <E> terms(
+            function: ElasticsearchFunction<E, *>,
+            operator: UnaryOperator<Aggregation.Builder.ContainerBuilder?>
+        ): Aggregation {
+            return terms(function, null, operator)
+        }
 
-	public static <E> Aggregation terms(ElasticsearchFunction<E, ?> function, Integer size) {
-		return terms(fieldName(function), size);
-	}
-
-	public static Aggregation terms(String field, Integer size,
-									UnaryOperator<Aggregation.Builder.ContainerBuilder> operator) {
-		return Aggregation.of(agg -> {
-			Aggregation.Builder.ContainerBuilder builder = agg.terms(ta -> {
-				if (size != null) {
-					ta.size(size);
-				}
-				return ta.field(field);
-			});
-			return operator.apply(builder);
-		});
-	}
-
-	public static <E> Aggregation terms(ElasticsearchFunction<E, ?> function,
-										UnaryOperator<Aggregation.Builder.ContainerBuilder> operator) {
-		return terms(function, null, operator);
-	}
-
-	public static <E> Aggregation terms(ElasticsearchFunction<E, ?> function, Integer size,
-										UnaryOperator<Aggregation.Builder.ContainerBuilder> operator) {
-		return terms(fieldName(function), size, operator);
-	}
-
+        fun <E> terms(
+            function: ElasticsearchFunction<E, *>, size: Int?,
+            operator: UnaryOperator<Aggregation.Builder.ContainerBuilder?>
+        ): Aggregation {
+            return terms(ElasticsearchUtils.Companion.fieldName(function), size, operator)
+        }
+    }
 }

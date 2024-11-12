@@ -1,56 +1,43 @@
-package live.lingting.framework.value;
+package live.lingting.framework.value
 
-import live.lingting.framework.function.ThrowableSupplier;
-import live.lingting.framework.lock.JavaReentrantLock;
-import live.lingting.framework.lock.LockSupplier;
-
-import java.util.concurrent.atomic.AtomicBoolean;
+import live.lingting.framework.function.ThrowableSupplier
+import live.lingting.framework.lock.JavaReentrantLock
+import live.lingting.framework.lock.LockSupplier
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * @author lingting 2024-09-28 15:29
  */
-public class LazyValue<T> {
+class LazyValue<T>(protected val supplier: ThrowableSupplier<T>) {
+    protected val lock: JavaReentrantLock = JavaReentrantLock()
 
-	protected final JavaReentrantLock lock = new JavaReentrantLock();
-
-	protected final AtomicBoolean first = new AtomicBoolean(true);
-
-	protected T t;
-
-	protected final ThrowableSupplier<T> supplier;
-
-	public LazyValue(ThrowableSupplier<T> supplier) {
-		this.supplier = supplier;
-	}
+    protected val first: AtomicBoolean = AtomicBoolean(true)
 
 
-	public T get() {
-		if (!isFirst()) {
-			return t;
-		}
+    var t: T? = null
 
-		t = lock.getByInterruptibly(new LockSupplier<T>() {
-			@Override
 
-			public T get() throws InterruptedException {
-				// 非首次进入锁
-				if (!first.compareAndSet(true, false)) {
-					return t;
-				}
-				// 首次进入时初始化
-				return supplier.get();
-			}
-		});
-		return t;
-	}
+    fun get(): T? {
+        if (!isFirst()) {
+            return t
+        }
 
-	public void set(T t) {
-		this.t = t;
-		first.set(false);
-	}
+        t = lock.getByInterruptibly(LockSupplier { // 非首次进入锁
+            if (!first.compareAndSet(true, false)) {
+                return@LockSupplier t
+            }
+            // 首次进入时初始化
+            supplier.get()
+        })
+        return t
+    }
 
-	public boolean isFirst() {
-		return first.get();
-	}
+    fun set(t: T) {
+        this.t = t
+        first.set(false)
+    }
 
+    fun isFirst(): Boolean {
+        return first.get()
+    }
 }

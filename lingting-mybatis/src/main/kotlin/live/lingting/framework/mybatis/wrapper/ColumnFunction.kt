@@ -1,22 +1,21 @@
-package live.lingting.framework.mybatis.wrapper;
+package live.lingting.framework.mybatis.wrapper
 
-import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction
 
 /**
  * 连表查询时，从其他表获取的查询条件
  *
  * @author hccake
  */
-@FunctionalInterface
-public interface ColumnFunction<T> extends SFunction<T, String> {
-
-	/**
-	 * 快捷的创建一个 ColumnFunction
-	 * @param columnString 实际的 column
-	 * @return ColumnFunction
-	 */
-	static <T> ColumnFunction<T> create(String columnString) {
-		return o -> columnString;
-	}
-
+interface ColumnFunction<T> : SFunction<T, String?> {
+    companion object {
+        /**
+         * 快捷的创建一个 ColumnFunction
+         * @param columnString 实际的 column
+         * @return ColumnFunction
+         */
+        fun <T> create(columnString: String?): ColumnFunction<T> {
+            return ColumnFunction<T> { o: T -> columnString }
+        }
+    }
 }

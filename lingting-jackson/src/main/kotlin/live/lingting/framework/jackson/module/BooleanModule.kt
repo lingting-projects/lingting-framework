@@ -1,75 +1,75 @@
-package live.lingting.framework.jackson.module;
+package live.lingting.framework.jackson.module
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import live.lingting.framework.util.BooleanUtils;
-
-import java.io.IOException;
-import java.math.BigDecimal;
+import com.fasterxml.jackson.core.JsonParseException
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.core.JsonToken
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.module.SimpleModule
+import live.lingting.framework.util.BooleanUtils
+import java.io.IOException
+import java.math.BigDecimal
+import java.util.*
 
 /**
  * @author lingting 2023-04-18 15:22
  */
-public class BooleanModule extends SimpleModule {
+class BooleanModule : SimpleModule() {
+    init {
+        init()
+    }
 
-	public BooleanModule() {
-		init();
-	}
+    protected fun init() {
+        super.addDeserializer(Boolean::class.java, BooleanDeserializer())
+    }
 
-	protected void init() {
-		super.addDeserializer(Boolean.class, new BooleanDeserializer());
-	}
+    class BooleanDeserializer : JsonDeserializer<Boolean?>() {
+        @Throws(IOException::class)
+        override fun deserialize(jsonParser: JsonParser, deserializationContext: DeserializationContext): Boolean? {
+            return when (jsonParser.currentToken) {
+                JsonToken.NOT_AVAILABLE, JsonToken.VALUE_NULL -> null
+                JsonToken.VALUE_STRING -> {
+                    val text = jsonParser.text.trim { it <= ' ' }.lowercase(Locale.getDefault())
+                    if (BooleanUtils.isTrue(text)) {
+                        true
+                    }
+                    if (BooleanUtils.isFalse(text)) {
+                        false
+                    }
 
-	public static class BooleanDeserializer extends JsonDeserializer<Boolean> {
+                    // 转数值
+                    try {
+                        val decimal = BigDecimal(text)
+                        byNumber(decimal)
+                    } catch (e: Exception) {
+                        throw JsonParseException(
+                            jsonParser,
+                            "Converting text [%s] to Boolean is not supported!".formatted(text), e
+                        )
+                    }
+                }
 
-		@Override
-		public Boolean deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
-				throws IOException {
-			return switch (jsonParser.getCurrentToken()) {
-				case NOT_AVAILABLE, VALUE_NULL -> null;
-				case VALUE_STRING -> {
-					String text = jsonParser.getText().trim().toLowerCase();
-					if (BooleanUtils.isTrue(text)) {
-						yield true;
-					}
-					if (BooleanUtils.isFalse(text)) {
-						yield false;
-					}
+                JsonToken.VALUE_NUMBER_INT, JsonToken.VALUE_NUMBER_FLOAT -> {
+                    val decimal = jsonParser.decimalValue
+                    byNumber(decimal)
+                }
 
-					// 转数值
-					try {
-						BigDecimal decimal = new BigDecimal(text);
-						yield byNumber(decimal);
-					}
-					catch (Exception e) {
-						throw new JsonParseException(jsonParser,
-								"Converting text [%s] to Boolean is not supported!".formatted(text), e);
-					}
-				}
-				case VALUE_NUMBER_INT, VALUE_NUMBER_FLOAT -> {
-					BigDecimal decimal = jsonParser.getDecimalValue();
-					yield byNumber(decimal);
-				}
-				case VALUE_TRUE -> true;
-				case VALUE_FALSE -> false;
-				default -> throw new JsonParseException(jsonParser,
-						"Unable to convert type [%s] to boolean!".formatted(jsonParser.getCurrentToken()));
-			};
+                JsonToken.VALUE_TRUE -> true
+                JsonToken.VALUE_FALSE -> false
+                else -> throw JsonParseException(
+                    jsonParser,
+                    "Unable to convert type [%s] to boolean!".formatted(jsonParser.currentToken)
+                )
+            }
+        }
 
-		}
+        fun byNumber(decimal: BigDecimal?): Boolean? {
+            if (decimal == null) {
+                return null
+            }
 
-		Boolean byNumber(BigDecimal decimal) {
-			if (decimal == null) {
-				return null;
-			}
-
-			int compare = decimal.compareTo(BigDecimal.ZERO);
-			return compare > 0;
-		}
-
-	}
-
+            val compare = decimal.compareTo(BigDecimal.ZERO)
+            return compare > 0
+        }
+    }
 }

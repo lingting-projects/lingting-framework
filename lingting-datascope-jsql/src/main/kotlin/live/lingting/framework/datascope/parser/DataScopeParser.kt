@@ -1,130 +1,121 @@
-package live.lingting.framework.datascope.parser;
+package live.lingting.framework.datascope.parser
 
-import live.lingting.framework.datascope.JsqlDataScope;
-import live.lingting.framework.datascope.exception.DataScopeException;
-import live.lingting.framework.datascope.holder.DataScopeHolder;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.Statements;
-import net.sf.jsqlparser.statement.delete.Delete;
-import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.update.Update;
-import org.slf4j.Logger;
-
-import java.util.List;
+import live.lingting.framework.datascope.JsqlDataScope
+import live.lingting.framework.datascope.exception.DataScopeException
+import live.lingting.framework.datascope.holder.DataScopeHolder
+import net.sf.jsqlparser.parser.CCJSqlParserUtil
+import net.sf.jsqlparser.statement.Statement
+import net.sf.jsqlparser.statement.Statements
+import net.sf.jsqlparser.statement.delete.Delete
+import net.sf.jsqlparser.statement.insert.Insert
+import net.sf.jsqlparser.statement.select.Select
+import net.sf.jsqlparser.statement.update.Update
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2024-01-19 15:48
  */
-public abstract class DataScopeParser {
+abstract class DataScopeParser {
+    protected val log: Logger = LoggerFactory.getLogger(javaClass)
 
-	protected final Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
+    fun parser(sql: String?, scopes: List<JsqlDataScope>, isMulti: Boolean): String {
+        try {
+            DataScopeHolder.Companion.push(scopes)
+            val statements = parser(sql, isMulti)
 
-	public String parser(String sql, List<JsqlDataScope> scopes, boolean isMulti) {
-		try {
-			DataScopeHolder.push(scopes);
-			Statements statements = parser(sql, isMulti);
+            val builder = StringBuilder()
 
-			StringBuilder builder = new StringBuilder();
+            for (i in statements!!.indices) {
+                if (i > 0) {
+                    builder.append(";")
+                }
 
-			for (int i = 0; i < statements.size(); i++) {
-				if (i > 0) {
-					builder.append(";");
-				}
+                val statement = statements[0]
+                val parser = parser(statement, i, sql)
+                builder.append(parser)
+            }
 
-				Statement statement = statements.get(0);
-				String parser = parser(statement, i, sql);
-				builder.append(parser);
-			}
+            return builder.toString()
+        } finally {
+            DataScopeHolder.Companion.poll()
+        }
+    }
 
-			return builder.toString();
+    fun parserSingle(sql: String?, scopes: List<JsqlDataScope>): String {
+        return parser(sql, scopes, false)
+    }
 
-		}
-		finally {
-			DataScopeHolder.poll();
-		}
-	}
+    fun parserMulti(sql: String?, scopes: List<JsqlDataScope>): String {
+        return parser(sql, scopes, true)
+    }
 
-	public String parserSingle(String sql, List<JsqlDataScope> scopes) {
-		return parser(sql, scopes, false);
-	}
+    protected fun parser(sql: String?, isMulti: Boolean): Statements? {
+        try {
+            if (isMulti) {
+                return CCJSqlParserUtil.parseStatements(sql)
+            } else {
+                val statement = CCJSqlParserUtil.parse(sql)
+                val statements = Statements()
+                statements.add(statement)
+                return statements
+            }
+        } catch (e: Exception) {
+            throw DataScopeException("sql parse exception!", e)
+        }
+    }
 
-	public String parserMulti(String sql, List<JsqlDataScope> scopes) {
-		return parser(sql, scopes, true);
-	}
+    /**
+     * 执行 SQL 解析
+     * @param statement JsqlParser Statement
+     * @return sql
+     */
+    protected fun parser(statement: Statement, index: Int, sql: String?): String {
+        var sql = sql
+        if (log.isDebugEnabled) {
+            log.debug("SQL to parse, SQL: {}", sql)
+        }
+        if (statement is Insert) {
+            this.insert(statement, index, sql)
+        } else if (statement is Select) {
+            this.select(statement, index, sql)
+        } else if (statement is Update) {
+            this.update(statement, index, sql)
+        } else if (statement is Delete) {
+            this.delete(statement, index, sql)
+        }
+        sql = statement.toString()
+        if (log.isDebugEnabled) {
+            log.debug("parse the finished SQL: {}", sql)
+        }
+        return sql
+    }
 
-	protected Statements parser(String sql, boolean isMulti) {
-		try {
-			if (isMulti) {
-				return CCJSqlParserUtil.parseStatements(sql);
-			}
-			else {
-				Statement statement = CCJSqlParserUtil.parse(sql);
-				Statements statements = new Statements();
-				statements.add(statement);
-				return statements;
-			}
-		}
-		catch (Exception e) {
-			throw new DataScopeException("sql parse exception!", e);
-		}
-	}
+    /**
+     * 新增
+     */
+    protected open fun insert(insert: Insert?, index: Int, sql: String?) {
+        throw UnsupportedOperationException()
+    }
 
-	/**
-	 * 执行 SQL 解析
-	 * @param statement JsqlParser Statement
-	 * @return sql
-	 */
-	protected String parser(Statement statement, int index, String sql) {
-		if (log.isDebugEnabled()) {
-			log.debug("SQL to parse, SQL: {}", sql);
-		}
-		if (statement instanceof Insert insert) {
-			this.insert(insert, index, sql);
-		}
-		else if (statement instanceof Select select) {
-			this.select(select, index, sql);
-		}
-		else if (statement instanceof Update update) {
-			this.update(update, index, sql);
-		}
-		else if (statement instanceof Delete delete) {
-			this.delete(delete, index, sql);
-		}
-		sql = statement.toString();
-		if (log.isDebugEnabled()) {
-			log.debug("parse the finished SQL: {}", sql);
-		}
-		return sql;
-	}
+    /**
+     * 删除
+     */
+    protected open fun delete(delete: Delete, index: Int, sql: String?) {
+        throw UnsupportedOperationException()
+    }
 
-	/**
-	 * 新增
-	 */
-	protected void insert(Insert insert, int index, String sql) {
-		throw new UnsupportedOperationException();
-	}
+    /**
+     * 更新
+     */
+    protected open fun update(update: Update, index: Int, sql: String?) {
+        throw UnsupportedOperationException()
+    }
 
-	/**
-	 * 删除
-	 */
-	protected void delete(Delete delete, int index, String sql) {
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * 更新
-	 */
-	protected void update(Update update, int index, String sql) {
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * 查询
-	 */
-	protected void select(Select select, int index, String sql) {
-		throw new UnsupportedOperationException();
-	}
-
+    /**
+     * 查询
+     */
+    protected open fun select(select: Select, index: Int, sql: String?) {
+        throw UnsupportedOperationException()
+    }
 }

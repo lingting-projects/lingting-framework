@@ -1,77 +1,55 @@
-package live.lingting.framework.aws;
+package live.lingting.framework.aws
 
-import com.fasterxml.jackson.databind.JsonNode;
-import live.lingting.framework.aws.s3.AwsS3Properties;
-import live.lingting.framework.aws.s3.interfaces.AwsS3BucketInterface;
-import live.lingting.framework.aws.s3.request.AwsS3SimpleRequest;
-import live.lingting.framework.aws.s3.response.AwsS3MultipartItem;
-import live.lingting.framework.http.HttpResponse;
-import live.lingting.framework.jackson.JacksonUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-
-import static live.lingting.framework.http.HttpMethod.GET;
+import com.fasterxml.jackson.databind.JsonNode
+import live.lingting.framework.aws.s3.AwsS3Properties
+import live.lingting.framework.aws.s3.interfaces.AwsS3BucketInterface
+import live.lingting.framework.aws.s3.request.AwsS3SimpleRequest
+import live.lingting.framework.aws.s3.response.AwsS3MultipartItem
+import live.lingting.framework.http.HttpMethod
+import live.lingting.framework.jackson.JacksonUtils
+import java.util.function.Consumer
 
 /**
  * @author lingting 2024-09-19 15:09
  */
-public class AwsS3Bucket extends AwsS3Client implements AwsS3BucketInterface {
+class AwsS3Bucket(properties: AwsS3Properties) : AwsS3Client(properties), AwsS3BucketInterface {
+    override fun use(key: String?): AwsS3Object {
+        return AwsS3Object(properties, key)
+    }
 
-	public AwsS3Bucket(AwsS3Properties properties) {
-		super(properties);
-	}
+    /**
+     * 列举所有未完成的分片上传
+     * @return k: uploadId, v: k
+     */
+    override fun multipartList(): List<AwsS3MultipartItem?>? {
+        return multipartList(null)
+    }
 
-	@Override
-	public AwsS3Object use(String key) {
-		return new AwsS3Object(properties, key);
-	}
-
-	/**
-	 * 列举所有未完成的分片上传
-	 * @return k: uploadId, v: k
-	 */
-	@Override
-	public List<AwsS3MultipartItem> multipartList() {
-		return multipartList(null);
-	}
-
-	@Override
-	public List<AwsS3MultipartItem> multipartList(Consumer<AwsS3SimpleRequest> consumer) {
-		AwsS3SimpleRequest request = new AwsS3SimpleRequest(GET);
-		if (consumer != null) {
-			consumer.accept(request);
-		}
-		request.getParams().add("uploads");
-		HttpResponse response = call(request);
-		return response.convert(xml -> {
-			List<AwsS3MultipartItem> list = new ArrayList<>();
-			try {
-				JsonNode node = JacksonUtils.xmlToNode(xml);
-				JsonNode tree = node.get("Upload");
-				if (tree == null) {
-					return list;
-				}
-				if (tree.isArray() && !tree.isEmpty()) {
-					tree.forEach(it -> {
-						String key = it.get("Key").asText();
-						String uploadId = it.get("UploadId").asText();
-						list.add(new AwsS3MultipartItem(key, uploadId));
-					});
-				}
-				else if (tree.isObject()) {
-					String key = tree.get("Key").asText();
-					String uploadId = tree.get("UploadId").asText();
-					list.add(new AwsS3MultipartItem(key, uploadId));
-				}
-			}
-			catch (Exception e) {
-				log.warn("AliOssBucket multipartList error!", e);
-			}
-
-			return list;
-		});
-	}
-
+    override fun multipartList(consumer: Consumer<AwsS3SimpleRequest?>?): List<AwsS3MultipartItem?>? {
+        val request = AwsS3SimpleRequest(HttpMethod.GET)
+        consumer?.accept(request)
+        request.params.add("uploads")
+        val response = call(request)
+        return response.convert<List<AwsS3MultipartItem?>> { xml: String? ->
+            val list: MutableList<AwsS3MultipartItem?> = ArrayList()
+            try {
+                val node = JacksonUtils.xmlToNode(xml)
+                val tree = node["Upload"] ?: return@convert list
+                if (tree.isArray && !tree.isEmpty) {
+                    tree.forEach(Consumer { it: JsonNode ->
+                        val key = it["Key"].asText()
+                        val uploadId = it["UploadId"].asText()
+                        list.add(AwsS3MultipartItem(key, uploadId))
+                    })
+                } else if (tree.isObject) {
+                    val key = tree["Key"].asText()
+                    val uploadId = tree["UploadId"].asText()
+                    list.add(AwsS3MultipartItem(key, uploadId))
+                }
+            } catch (e: Exception) {
+                log.warn("AliOssBucket multipartList error!", e)
+            }
+            list
+        }
+    }
 }

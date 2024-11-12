@@ -1,54 +1,44 @@
-package live.lingting.framework.util;
+package live.lingting.framework.util
 
-import live.lingting.framework.util.ResourceUtils.Resource;
-import org.junit.jupiter.api.Test;
-
-import java.io.File;
-import java.io.InputStream;
-import java.util.Collection;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import java.io.InputStream
+import java.util.function.Consumer
 
 /**
  * @author lingting 2024-09-12 10:54
  */
-class ResourceUtilsTest {
+internal class ResourceUtilsTest {
+    @Test
+    fun scan() {
+        val s1 = ResourceUtils.scan(".") { r -> !r!!.isDirectory() && r.name.startsWith("s") }
+        Assertions.assertEquals(3, s1.size)
+        s1.forEach(Consumer { r: ResourceUtils.Resource -> Assertions.assertTrue(r.name.startsWith("s")) })
 
-	@Test
-	void scan() {
-		Collection<Resource> s1 = ResourceUtils.scan(".", r -> !r.isDirectory() && r.getName().startsWith("s"));
-		assertEquals(3, s1.size());
-		s1.forEach(r -> assertTrue(r.getName().startsWith("s")));
+        val s2 = ResourceUtils.scan(".") { r -> !r!!.isDirectory() && r.name.endsWith(".sh") }
+        Assertions.assertEquals(2, s2.size)
+        s2.forEach(Consumer { r: ResourceUtils.Resource -> Assertions.assertTrue(r.name.endsWith(".sh")) })
+        for (r in s2) {
+            Assertions.assertDoesNotThrow<InputStream> { r.stream() }.use { stream ->
+                val content = Assertions.assertDoesNotThrow<String> { StreamUtils.toString(stream) }
+                val trim = content.trim { it <= ' ' }
+                Assertions.assertEquals(r.name, trim)
+            }
+        }
 
-		Collection<Resource> s2 = ResourceUtils.scan(".", r -> !r.isDirectory() && r.getName().endsWith(".sh"));
-		assertEquals(2, s2.size());
-		s2.forEach(r -> assertTrue(r.getName().endsWith(".sh")));
-		for (Resource r : s2) {
-			try (InputStream stream = assertDoesNotThrow(r::stream)) {
-				String content = assertDoesNotThrow(() -> StreamUtils.toString(stream));
-				String trim = content.trim();
-				assertEquals(r.getName(), trim);
-			}
-		}
+        val s3 = ResourceUtils.scan(".", ResourceUtils.Resource::isDirectory)
+        for (r in s3) {
+            if (r.isFile) {
+                val file = r.file()
+                Assertions.assertTrue(file.isDirectory)
+                Assertions.assertTrue(file.exists())
+            }
+        }
 
-		Collection<Resource> s3 = ResourceUtils.scan(".", Resource::isDirectory);
-		for (Resource r : s3) {
-			if (r.isFile()) {
-				File file = r.file();
-				assertTrue(file.isDirectory());
-				assertTrue(file.exists());
-			}
-		}
-
-		Resource s4 = ResourceUtils.get("scripts/ss1.sh");
-		assertNotNull(s4);
-		assertEquals("ss1.sh", StreamUtils.toString(s4.stream()).trim());
-		Resource s5 = ResourceUtils.get("scripts/ss9.sh");
-		assertNull(s5);
-	}
-
+        val s4 = ResourceUtils.get("scripts/ss1.sh")
+        Assertions.assertNotNull(s4)
+        Assertions.assertEquals("ss1.sh", StreamUtils.toString(s4!!.stream()).trim { it <= ' ' })
+        val s5 = ResourceUtils.get("scripts/ss9.sh")
+        Assertions.assertNull(s5)
+    }
 }

@@ -1,88 +1,56 @@
-package live.lingting.framework.util;
+package live.lingting.framework.util
 
-import org.junit.jupiter.api.Test;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.reflect.AnnotatedElement;
-import java.util.Objects;
-
-import static live.lingting.framework.util.AnnotationUtils.findAnnotation;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import java.lang.reflect.AnnotatedElement
+import java.util.*
 
 /**
  * @author lingting 2024-02-05 14:51
  */
-class AnnotationUtilsTest {
+internal class AnnotationUtilsTest {
+    @Test
+    fun test() {
+        assertEquals(A1::class.java, Objects.requireNonNull<T>(findAnnotation(A3::class.java, A1::class.java)).annotationType())
+        Assertions.assertNull(findAnnotation(A3::class.java, A2::class.java))
+        Assertions.assertNull(findAnnotation(P1::class.java, A2::class.java))
+        assertEquals(A2::class.java, Objects.requireNonNull<T>(findAnnotation(I2::class.java, A2::class.java)).annotationType())
+        assertEquals(A1::class.java, Objects.requireNonNull<T>(findAnnotation(E1::class.java, A1::class.java)).annotationType())
+        assertEquals(A2::class.java, Objects.requireNonNull<T>(findAnnotation(E2::class.java, A2::class.java)).annotationType())
+        assertEquals(A3::class.java, Objects.requireNonNull<T>(findAnnotation(E3::class.java, A3::class.java)).annotationType())
+        assertEquals(A1::class.java, Objects.requireNonNull<T>(findAnnotation(E4::class.java, A1::class.java)).annotationType())
+        Assertions.assertNull(findAnnotation(E4::class.java as AnnotatedElement, A1::class.java))
+    }
 
-	@Test
-	void test() {
-		assertEquals(A1.class, Objects.requireNonNull(findAnnotation(A3.class, A1.class)).annotationType());
-		assertNull(findAnnotation(A3.class, A2.class));
-		assertNull(findAnnotation(P1.class, A2.class));
-		assertEquals(A2.class, Objects.requireNonNull(findAnnotation(I2.class, A2.class)).annotationType());
-		assertEquals(A1.class, Objects.requireNonNull(findAnnotation(E1.class, A1.class)).annotationType());
-		assertEquals(A2.class, Objects.requireNonNull(findAnnotation(E2.class, A2.class)).annotationType());
-		assertEquals(A3.class, Objects.requireNonNull(findAnnotation(E3.class, A3.class)).annotationType());
-		assertEquals(A1.class, Objects.requireNonNull(findAnnotation(E4.class, A1.class)).annotationType());
-		assertNull(findAnnotation((AnnotatedElement) E4.class, A1.class));
-	}
+    @Retention(AnnotationRetention.RUNTIME)
+    internal annotation class A1
 
-	@Retention(RetentionPolicy.RUNTIME)
-	@interface A1 {
+    @Retention(AnnotationRetention.RUNTIME)
+    internal annotation class A2
 
-	}
+    @A1
+    @Retention(AnnotationRetention.RUNTIME)
+    internal annotation class A3
 
-	@Retention(RetentionPolicy.RUNTIME)
-	@interface A2 {
+    @A1
+    internal interface I1
 
-	}
+    @A2
+    internal interface I2
 
-	@A1
-	@Retention(RetentionPolicy.RUNTIME)
-	@interface A3 {
+    internal interface I3 : I1
 
-	}
+    internal open class P1
 
-	@A1
-	interface I1 {
+    @A2
+    internal open class P2
 
-	}
+    internal class E1 : P1(), I1
 
-	@A2
-	interface I2 {
+    internal class E2 : P2()
 
-	}
+    @A3
+    internal class E3 : P2()
 
-	interface I3 extends I1 {
-
-	}
-
-	static class P1 {
-
-	}
-
-	@A2
-	static class P2 {
-
-	}
-
-	static class E1 extends P1 implements I1 {
-
-	}
-
-	static class E2 extends P2 {
-
-	}
-
-	@A3
-	static class E3 extends P2 {
-
-	}
-
-	static class E4 extends P1 implements I3 {
-
-	}
-
+    internal class E4 : P1(), I3
 }

@@ -1,33 +1,27 @@
-package live.lingting.framework.http;
+package live.lingting.framework.http
 
-import javax.net.ssl.X509TrustManager;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import java.security.cert.X509Certificate
+import javax.net.ssl.X509TrustManager
 
 /**
  * @author lingting 2024-01-29 16:27
  */
-@SuppressWarnings({ "java:S4830", "java:S6548" })
-public class X509TrustAllManager implements X509TrustManager {
+class X509TrustAllManager private constructor() : X509TrustManager {
 
-	public static final X509TrustAllManager INSTANCE = new X509TrustAllManager();
+    override fun checkClientTrusted(x509Certificates: Array<X509Certificate>, authType: String) {
+        //
+    }
 
-	private X509TrustAllManager() {
-	}
 
-	@Override
-	public void checkClientTrusted(X509Certificate[] x509Certificates, String authType) throws CertificateException {
-		//
-	}
+    override fun checkServerTrusted(x509Certificates: Array<X509Certificate>, authType: String) {
+        //
+    }
 
-	@Override
-	public void checkServerTrusted(X509Certificate[] x509Certificates, String authType) throws CertificateException {
-		//
-	}
+    override fun getAcceptedIssuers(): Array<X509Certificate> {
+        return arrayOfNulls(0)
+    }
 
-	@Override
-	public X509Certificate[] getAcceptedIssuers() {
-		return new X509Certificate[0];
-	}
-
+    companion object {
+        val INSTANCE: X509TrustAllManager = X509TrustAllManager()
+    }
 }

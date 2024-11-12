@@ -1,14 +1,16 @@
-package live.lingting.framework.grpc.interceptor;
+package live.lingting.framework.grpc.interceptor
 
-import io.grpc.ServerInterceptor;
-import live.lingting.framework.grpc.GrpcServer;
+import io.grpc.ServerInterceptor
+import live.lingting.framework.grpc.GrpcServer
 
 /**
  * @author lingting 2024-01-31 10:12
  */
-public abstract class AbstractServerInterceptor implements ServerInterceptor {
+abstract class AbstractServerInterceptor : ServerInterceptor {
+    @JvmField
+    protected var server: GrpcServer? = null
 
-	protected GrpcServer server;
-
-	public void setServer(GrpcServer server) {this.server = server;}
+    fun setServer(server: GrpcServer?) {
+        this.server = server
+    }
 }

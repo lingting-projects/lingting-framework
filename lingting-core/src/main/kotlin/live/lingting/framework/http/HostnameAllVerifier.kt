@@ -1,22 +1,17 @@
-package live.lingting.framework.http;
+package live.lingting.framework.http
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLSession;
+import javax.net.ssl.HostnameVerifier
+import javax.net.ssl.SSLSession
 
 /**
  * @author lingting 2024-01-29 16:29
  */
-@SuppressWarnings({ "java:S5527", "java:S6548" })
-public class HostnameAllVerifier implements HostnameVerifier {
+class HostnameAllVerifier private constructor() : HostnameVerifier {
+    override fun verify(hostname: String, sslSession: SSLSession): Boolean {
+        return true
+    }
 
-	public static final HostnameAllVerifier INSTANCE = new HostnameAllVerifier();
-
-	private HostnameAllVerifier() {
-	}
-
-	@Override
-	public boolean verify(String hostname, SSLSession sslSession) {
-		return true;
-	}
-
+    companion object {
+        val INSTANCE: HostnameAllVerifier = HostnameAllVerifier()
+    }
 }

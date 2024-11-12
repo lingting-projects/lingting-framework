@@ -1,32 +1,29 @@
-package live.lingting.framework.sensitive.serializer;
+package live.lingting.framework.sensitive.serializer
 
-import live.lingting.framework.sensitive.Sensitive;
-import live.lingting.framework.sensitive.SensitiveSerializer;
-import live.lingting.framework.sensitive.SensitiveUtils;
-
-import java.io.IOException;
+import live.lingting.framework.sensitive.Sensitive
+import live.lingting.framework.sensitive.SensitiveSerializer
+import live.lingting.framework.sensitive.SensitiveUtils
 
 /**
  * 默认脱敏
- * <p>
+ *
+ *
  * 这是一个要脱敏的文本
- * </p>
- * <p>
+ *
+ *
+ *
  * 这*****本
- * </p>
+ *
  *
  * @author lingting 2024-05-21 10:20
  */
-@SuppressWarnings("java:S6548")
-public class SensitiveDefaultSerializer implements SensitiveSerializer {
+class SensitiveDefaultSerializer private constructor() : SensitiveSerializer {
 
-	public static final SensitiveDefaultSerializer INSTANCE = new SensitiveDefaultSerializer();
+    override fun serialize(sensitive: Sensitive, raw: String): String {
+        return SensitiveUtils.serialize(raw, 1, 1, sensitive)
+    }
 
-	private SensitiveDefaultSerializer() {}
-
-	@Override
-	public String serialize(Sensitive sensitive, String raw) throws IOException {
-		return SensitiveUtils.serialize(raw, 1, 1, sensitive);
-	}
-
+    companion object {
+        val INSTANCE: SensitiveDefaultSerializer = SensitiveDefaultSerializer()
+    }
 }

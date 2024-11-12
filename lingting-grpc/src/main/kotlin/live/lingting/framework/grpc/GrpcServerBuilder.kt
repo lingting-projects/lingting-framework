@@ -1,87 +1,76 @@
-package live.lingting.framework.grpc;
+package live.lingting.framework.grpc
 
-import io.grpc.BindableService;
-import io.grpc.ServerBuilder;
-import io.grpc.ServerInterceptor;
-import live.lingting.framework.grpc.properties.GrpcServerProperties;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.function.IntFunction;
-import java.util.function.UnaryOperator;
+import io.grpc.BindableService
+import io.grpc.ServerBuilder
+import io.grpc.ServerInterceptor
+import live.lingting.framework.grpc.properties.GrpcServerProperties
+import java.util.concurrent.TimeUnit
+import java.util.function.IntFunction
+import java.util.function.UnaryOperator
 
 /**
  * @author lingting 2024-01-30 15:37
  */
-public class GrpcServerBuilder {
+class GrpcServerBuilder {
+    protected var services: MutableList<BindableService?> = ArrayList()
 
-	protected List<BindableService> services = new ArrayList<>();
+    protected var interceptors: MutableList<ServerInterceptor?> = ArrayList()
 
-	protected List<ServerInterceptor> interceptors = new ArrayList<>();
+    protected var port: Int? = null
 
-	protected Integer port;
+    protected var properties: GrpcServerProperties? = null
 
-	protected GrpcServerProperties properties;
+    fun port(port: Int): GrpcServerBuilder {
+        require(!(port == null || port < 0 || port > 65535)) { "Port [%d] is invalid!".formatted(port) }
+        this.port = port
+        return this
+    }
 
-	public GrpcServerBuilder port(Integer port) {
-		if (port == null || port < 0 || port > 65535) {
-			throw new IllegalArgumentException("Port [%d] is invalid!".formatted(port));
-		}
-		this.port = port;
-		return this;
-	}
+    fun service(interceptor: BindableService?): GrpcServerBuilder {
+        services.add(interceptor)
+        return this
+    }
 
-	public GrpcServerBuilder service(BindableService interceptor) {
-		services.add(interceptor);
-		return this;
-	}
+    fun service(collection: MutableCollection<BindableService?>): GrpcServerBuilder {
+        services.addAll(collection)
+        return this
+    }
 
-	public GrpcServerBuilder service(Collection<BindableService> collection) {
-		services.addAll(collection);
-		return this;
-	}
+    fun interceptor(interceptor: ServerInterceptor?): GrpcServerBuilder {
+        interceptors.add(interceptor)
+        return this
+    }
 
-	public GrpcServerBuilder interceptor(ServerInterceptor interceptor) {
-		interceptors.add(interceptor);
-		return this;
-	}
+    fun interceptor(collection: MutableCollection<ServerInterceptor?>): GrpcServerBuilder {
+        interceptors.addAll(collection)
+        return this
+    }
 
-	public GrpcServerBuilder interceptor(Collection<ServerInterceptor> collection) {
-		interceptors.addAll(collection);
-		return this;
-	}
+    fun properties(properties: GrpcServerProperties): GrpcServerBuilder {
+        this.properties = properties
+        if (properties.port != null) {
+            port(properties.port)
+        }
+        return this
+    }
 
-	public GrpcServerBuilder properties(GrpcServerProperties properties) {
-		this.properties = properties;
-		if (properties.getPort() != null) {
-			port(properties.getPort());
-		}
-		return this;
-	}
+    @JvmOverloads
+    fun build(operator: UnaryOperator<ServerBuilder<*>?> = UnaryOperator { builder: ServerBuilder<*>? -> builder }): GrpcServer? {
+        return build(IntFunction { forPort: Int ->
+            val builder = ServerBuilder.forPort(forPort)
+            operator.apply(builder)
+        })
+    }
 
-	public GrpcServer build() {
-		return build((UnaryOperator<ServerBuilder<?>>) builder -> builder);
-	}
-
-	public GrpcServer build(UnaryOperator<ServerBuilder<?>> operator) {
-		return build((IntFunction<ServerBuilder<?>>) forPort -> {
-			ServerBuilder<?> builder = ServerBuilder.forPort(forPort);
-			return operator.apply(builder);
-		});
-	}
-
-	public GrpcServer build(IntFunction<ServerBuilder<?>> function) {
-		port(port);
-		ServerBuilder<?> builder = function.apply(port);
-		if (properties != null) {
-			// 单个消息最大大小
-			builder.maxInboundMessageSize((int) properties.getMessageSize())
-				.keepAliveTime(properties.getKeepAliveTime().toMillis(), TimeUnit.MILLISECONDS)
-				.keepAliveTimeout(properties.getKeepAliveTimeout().toMillis(), TimeUnit.MILLISECONDS);
-		}
-		return new GrpcServer(builder, interceptors, services);
-	}
-
+    fun build(function: IntFunction<ServerBuilder<*>?>): GrpcServer {
+        port(port!!)
+        val builder = function.apply(port!!)
+        if (properties != null) {
+            // 单个消息最大大小
+            builder!!.maxInboundMessageSize(properties.getMessageSize().toInt())
+                .keepAliveTime(properties.getKeepAliveTime().toMillis(), TimeUnit.MILLISECONDS)
+                .keepAliveTimeout(properties.getKeepAliveTimeout().toMillis(), TimeUnit.MILLISECONDS)
+        }
+        return GrpcServer(builder!!, interceptors, services)
+    }
 }

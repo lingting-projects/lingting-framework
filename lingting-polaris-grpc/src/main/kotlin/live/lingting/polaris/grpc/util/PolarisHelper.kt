@@ -1,113 +1,95 @@
+package live.lingting.polaris.grpc.util
 
-package live.lingting.polaris.grpc.util;
-
-import com.tencent.polaris.api.pojo.RouteArgument;
-import com.tencent.polaris.ratelimit.api.rpc.Argument;
-import com.tencent.polaris.ratelimit.api.rpc.QuotaResponse;
-import io.grpc.ClientInterceptor;
-import io.grpc.ServerInterceptor;
-import io.grpc.Status;
-import live.lingting.polaris.grpc.client.MetadataClientInterceptor;
-import live.lingting.polaris.grpc.ratelimit.PolarisRateLimitServerInterceptor;
-import live.lingting.polaris.grpc.server.MetadataServerInterceptor;
-
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Predicate;
+import com.tencent.polaris.api.pojo.RouteArgument
+import com.tencent.polaris.ratelimit.api.rpc.Argument
+import com.tencent.polaris.ratelimit.api.rpc.QuotaResponse
+import io.grpc.ClientInterceptor
+import io.grpc.ServerInterceptor
+import io.grpc.Status
+import live.lingting.polaris.grpc.client.MetadataClientInterceptor
+import live.lingting.polaris.grpc.ratelimit.PolarisRateLimitServerInterceptor
+import live.lingting.polaris.grpc.server.MetadataServerInterceptor
+import java.util.*
+import java.util.function.BiFunction
+import java.util.function.Predicate
 
 /**
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
+ * @author [liaochuntao](mailto:liaochuntao@live.com)
  */
-public final class PolarisHelper {
+class PolarisHelper private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	/**
-	 * {@link PolarisLabelsInject} 用户自定义的 PolarisLabelsInject 实现，可以在处理每次流量时，通过
-	 * {@link PolarisLabelsInject#modifyRoute(Set)}} 或者
-	 * {@link PolarisLabelsInject#modifyRateLimit(Set)} 注入本次流量的标签信息
-	 */
-	private static PolarisLabelsInject inject;
+    class PolarisRateLimitInterceptorBuilder {
+        private var rateLimitCallback = BiFunction { quotaResponse: QuotaResponse?, method: String? -> Status.UNAVAILABLE.withDescription("rate-limit exceeded (server side)") }
 
-	static {
-		ServiceLoader<PolarisLabelsInject> serviceLoader = ServiceLoader.load(PolarisLabelsInject.class);
-		Iterator<PolarisLabelsInject> iterator = serviceLoader.iterator();
-		inject = Optional.ofNullable(iterator.hasNext() ? iterator.next() : null).orElse(new PolarisLabelsInject() {
-			@Override
-			public Set<RouteArgument> modifyRoute(Set<RouteArgument> arguments) {
-				return arguments;
-			}
+        /**
+         * 当限流触发时，用户自定义的限流结果返回器
+         *
+         * @param rateLimitCallback [,][<]
+         * @return [PolarisRateLimitInterceptorBuilder]
+         */
+        fun rateLimitCallback(
+            rateLimitCallback: BiFunction<QuotaResponse, String, Status>
+        ): PolarisRateLimitInterceptorBuilder {
+            this.rateLimitCallback = rateLimitCallback
+            return this
+        }
 
-			@Override
-			public Set<Argument> modifyRateLimit(Set<Argument> arguments) {
-				return arguments;
-			}
-		});
-	}
+        fun build(): PolarisRateLimitServerInterceptor {
+            val polarisRateLimitInterceptor = PolarisRateLimitServerInterceptor()
+            polarisRateLimitInterceptor.setRateLimitCallback(this.rateLimitCallback)
+            return polarisRateLimitInterceptor
+        }
+    }
 
-	private PolarisHelper() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+    companion object {
+        /**
+         * 调用此方法注入用户自定义的 PolarisLabelsInject
+         *
+         * @param inject [PolarisLabelsInject]
+         */
+        /**
+         * [PolarisLabelsInject] 用户自定义的 PolarisLabelsInject 实现，可以在处理每次流量时，通过
+         * [PolarisLabelsInject.modifyRoute]} 或者
+         * [PolarisLabelsInject.modifyRateLimit] 注入本次流量的标签信息
+         */
+        var labelsInject: PolarisLabelsInject
 
-	public static PolarisLabelsInject getLabelsInject() {
-		return inject;
-	}
+        init {
+            val serviceLoader = ServiceLoader.load(PolarisLabelsInject::class.java)
+            val iterator: Iterator<PolarisLabelsInject> = serviceLoader.iterator()
+            labelsInject = Optional.ofNullable(if (iterator.hasNext()) iterator.next() else null).orElse(object : PolarisLabelsInject {
+                override fun modifyRoute(arguments: Set<RouteArgument>): Set<RouteArgument> {
+                    return arguments
+                }
 
-	/**
-	 * 调用此方法注入用户自定义的 PolarisLabelsInject
-	 *
-	 * @param inject {@link PolarisLabelsInject}
-	 */
-	public static void setLabelsInject(PolarisLabelsInject inject) {
-		PolarisHelper.inject = inject;
-	}
+                override fun modifyRateLimit(arguments: Set<Argument>): Set<Argument> {
+                    return arguments
+                }
+            })
+        }
 
-	public static ClientInterceptor buildMetadataClientInterceptor() {
-		return new MetadataClientInterceptor(s -> true);
-	}
+        fun buildMetadataClientInterceptor(): ClientInterceptor {
+            return MetadataClientInterceptor { s: String? -> true }
+        }
 
-	public static ClientInterceptor buildMetadataClientInterceptor(Predicate<String> predicate) {
-		return new MetadataClientInterceptor(predicate);
-	}
+        fun buildMetadataClientInterceptor(predicate: Predicate<String?>): ClientInterceptor {
+            return MetadataClientInterceptor(predicate)
+        }
 
-	public static ServerInterceptor buildMetadataServerInterceptor() {
-		return new MetadataServerInterceptor();
-	}
+        fun buildMetadataServerInterceptor(): ServerInterceptor {
+            return MetadataServerInterceptor()
+        }
 
-	/**
-	 * 使用 builder 模式开启 gRPC 的限流能力
-	 *
-	 * @return {@link PolarisRateLimitInterceptorBuilder}
-	 */
-	public static PolarisRateLimitInterceptorBuilder buildRateLimitInterceptor() {
-		return new PolarisRateLimitInterceptorBuilder();
-	}
-
-	public static class PolarisRateLimitInterceptorBuilder {
-
-		private BiFunction<QuotaResponse, String, Status> rateLimitCallback = (quotaResponse,
-																			   method) -> Status.UNAVAILABLE.withDescription("rate-limit exceeded (server side)");
-
-		private PolarisRateLimitInterceptorBuilder() {
-		}
-
-		/**
-		 * 当限流触发时，用户自定义的限流结果返回器
-		 *
-		 * @param rateLimitCallback {@link BiFunction<QuotaResponse, String, Status>}
-		 * @return {@link PolarisRateLimitInterceptorBuilder}
-		 */
-		public PolarisRateLimitInterceptorBuilder rateLimitCallback(
-			BiFunction<QuotaResponse, String, Status> rateLimitCallback) {
-			this.rateLimitCallback = rateLimitCallback;
-			return this;
-		}
-
-		public PolarisRateLimitServerInterceptor build() {
-			PolarisRateLimitServerInterceptor polarisRateLimitInterceptor = new PolarisRateLimitServerInterceptor();
-			polarisRateLimitInterceptor.setRateLimitCallback(this.rateLimitCallback);
-			return polarisRateLimitInterceptor;
-		}
-
-	}
-
+        /**
+         * 使用 builder 模式开启 gRPC 的限流能力
+         *
+         * @return [PolarisRateLimitInterceptorBuilder]
+         */
+        fun buildRateLimitInterceptor(): PolarisRateLimitInterceptorBuilder {
+            return PolarisRateLimitInterceptorBuilder()
+        }
+    }
 }

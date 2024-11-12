@@ -1,85 +1,81 @@
-package live.lingting.framework.convert;
+package live.lingting.framework.convert
 
-import com.google.protobuf.ByteString;
-import live.lingting.framework.jackson.JacksonUtils;
-import live.lingting.framework.protobuf.SecurityGrpcAuthorization;
-import live.lingting.framework.security.convert.SecurityConvert;
-import live.lingting.framework.security.domain.AuthorizationVO;
-import live.lingting.framework.security.domain.SecurityScopeAttributes;
-import live.lingting.framework.util.CollectionUtils;
-import live.lingting.framework.util.StringUtils;
-
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
+import com.google.protobuf.ByteString
+import live.lingting.framework.jackson.JacksonUtils
+import live.lingting.framework.protobuf.SecurityGrpcAuthorization
+import live.lingting.framework.security.convert.SecurityConvert
+import live.lingting.framework.security.domain.AuthorizationVO
+import live.lingting.framework.security.domain.SecurityScopeAttributes
+import live.lingting.framework.util.CollectionUtils
+import live.lingting.framework.util.StringUtils
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 
 /**
  * @author lingting 2023-12-18 16:04
  */
-public class SecurityGrpcConvert implements SecurityConvert {
+open class SecurityGrpcConvert : SecurityConvert {
+    fun toProtobuf(vo: AuthorizationVO): SecurityGrpcAuthorization.AuthorizationVO {
+        val builder = SecurityGrpcAuthorization.AuthorizationVO
+            .newBuilder()
+            .setToken(vo.token)
+            .setTenantId(vo.tenantId)
+            .setUserId(vo.userId)
+            .setUsername(vo.username)
+            .setAvatar(vo.avatar)
+            .setNickname(vo.nickname)
+            .setIsEnabled(java.lang.Boolean.TRUE == vo.enabled)
 
-	public SecurityGrpcAuthorization.AuthorizationVO toProtobuf(AuthorizationVO vo) {
-		SecurityGrpcAuthorization.AuthorizationVO.Builder builder = SecurityGrpcAuthorization.AuthorizationVO
-			.newBuilder()
-			.setToken(vo.getToken())
-			.setTenantId(vo.getTenantId())
-			.setUserId(vo.getUserId())
-			.setUsername(vo.getUsername())
-			.setAvatar(vo.getAvatar())
-			.setNickname(vo.getNickname())
-			.setIsEnabled(Boolean.TRUE.equals(vo.getEnabled()));
+        if (!CollectionUtils.isEmpty(vo.roles)) {
+            builder.addAllRoles(vo.roles)
+        }
+        if (!CollectionUtils.isEmpty(vo.permissions)) {
+            builder.addAllPermissions(vo.permissions)
+        }
 
-		if (!CollectionUtils.isEmpty(vo.getRoles())) {
-			builder.addAllRoles(vo.getRoles());
-		}
-		if (!CollectionUtils.isEmpty(vo.getPermissions())) {
-			builder.addAllPermissions(vo.getPermissions());
-		}
+        builder.setAttributes(toBytes(vo.attributes))
+        return builder.buildPartial()
+    }
 
-		builder.setAttributes(toBytes(vo.getAttributes()));
-		return builder.buildPartial();
-	}
+    fun toJava(authorizationVO: SecurityGrpcAuthorization.AuthorizationVO): AuthorizationVO {
+        val vo = AuthorizationVO()
+        vo.token = authorizationVO.token
+        vo.tenantId = authorizationVO.tenantId
+        vo.userId = authorizationVO.userId
+        vo.username = authorizationVO.username
+        vo.avatar = authorizationVO.avatar
+        vo.nickname = authorizationVO.nickname
+        vo.enabled = authorizationVO.isEnabled
+        vo.setRoles(HashSet<E>(authorizationVO.rolesList))
+        vo.setPermissions(HashSet<E>(authorizationVO.permissionsList))
+        vo.attributes = ofBytes(authorizationVO.attributes)
+        return vo
+    }
 
-	public AuthorizationVO toJava(SecurityGrpcAuthorization.AuthorizationVO authorizationVO) {
-		AuthorizationVO vo = new AuthorizationVO();
-		vo.setToken(authorizationVO.getToken());
-		vo.setTenantId(authorizationVO.getTenantId());
-		vo.setUserId(authorizationVO.getUserId());
-		vo.setUsername(authorizationVO.getUsername());
-		vo.setAvatar(authorizationVO.getAvatar());
-		vo.setNickname(authorizationVO.getNickname());
-		vo.setEnabled(authorizationVO.getIsEnabled());
-		vo.setRoles(new HashSet<>(authorizationVO.getRolesList()));
-		vo.setPermissions(new HashSet<>(authorizationVO.getPermissionsList()));
-		vo.setAttributes(ofBytes(authorizationVO.getAttributes()));
-		return vo;
-	}
+    fun charset(): Charset {
+        return StandardCharsets.UTF_8
+    }
 
-	public Charset charset() {
-		return StandardCharsets.UTF_8;
-	}
+    fun toBytes(attributes: SecurityScopeAttributes?): ByteString {
+        if (CollectionUtils.isEmpty(attributes)) {
+            return ByteString.EMPTY
+        }
+        val json = JacksonUtils.toJson(attributes)
+        val charset = charset()
+        return ByteString.copyFrom(json, charset)
+    }
 
-	public ByteString toBytes(SecurityScopeAttributes attributes) {
-		if (CollectionUtils.isEmpty(attributes)) {
-			return ByteString.EMPTY;
-		}
-		String json = JacksonUtils.toJson(attributes);
-		Charset charset = charset();
-		return ByteString.copyFrom(json, charset);
-	}
+    fun ofBytes(bytes: ByteString): SecurityScopeAttributes {
+        if (bytes.isEmpty) {
+            return SecurityScopeAttributes()
+        }
+        val charset = charset()
+        val json = bytes.toString(charset)
 
-	public SecurityScopeAttributes ofBytes(ByteString bytes) {
-		if (bytes.isEmpty()) {
-			return new SecurityScopeAttributes();
-		}
-		Charset charset = charset();
-		String json = bytes.toString(charset);
+        if (!StringUtils.hasText(json)) {
+            return SecurityScopeAttributes()
+        }
 
-		if (!StringUtils.hasText(json)) {
-			return new SecurityScopeAttributes();
-		}
-
-		return JacksonUtils.toObj(json, SecurityScopeAttributes.class);
-	}
-
+        return JacksonUtils.toObj(json, SecurityScopeAttributes::class.java)
+    }
 }

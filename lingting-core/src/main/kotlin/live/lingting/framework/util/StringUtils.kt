@@ -1,248 +1,256 @@
-package live.lingting.framework.util;
+package live.lingting.framework.util
 
-import java.io.CharArrayWriter;
-import java.util.Base64;
-import java.util.Iterator;
+import java.io.CharArrayWriter
+import java.util.*
 
 /**
  * @author lingting
  */
-public final class StringUtils {
+class StringUtils private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	public static final String BOM_UTF8 = "\uFEFF";
+    companion object {
+        const val BOM_UTF8: String = "\uFEFF"
 
-	public static final String BOM_UTF16B = "\uFEFF";
+        const val BOM_UTF16B: String = "\uFEFF"
 
-	public static final String BOM_UTF16S = "\uFFFE";
+        const val BOM_UTF16S: String = "\uFFFE"
 
-	public static final String BOM_UTF32B = "\u0000FEFF";
+        const val BOM_UTF32B: String = "\u0000FEFF"
 
-	public static final String BOM_UTF32S = "\uFFFFE0000";
+        const val BOM_UTF32S: String = "\uFFFFE0000"
 
-	private StringUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+        /**
+         * 指定字符串是否存在可见字符
+         *
+         * @param str 字符串
+         * @return boolean
+         */
 
-	/**
-	 * 指定字符串是否存在可见字符
-	 *
-	 * @param str 字符串
-	 * @return boolean
-	 */
-	public static boolean hasText(CharSequence str) {
-		if (str == null || str.isEmpty()) {
-			return false;
-		}
+        fun hasText(str: CharSequence?): Boolean {
+            if (str == null || str.isEmpty()) {
+                return false
+            }
 
-		for (int i = 0; i < str.length(); i++) {
-			// 如果是非空白字符
-			if (!Character.isWhitespace(str.charAt(i))) {
-				return true;
-			}
-		}
+            for (i in 0 until str.length) {
+                // 如果是非空白字符
+                if (!Character.isWhitespace(str[i])) {
+                    return true
+                }
+            }
 
-		return false;
-	}
+            return false
+        }
 
-	public static String join(Iterable<?> iterable, String delimiter) {
-		if (iterable == null) {
-			return null;
-		}
+        fun join(iterable: Iterable<*>?, delimiter: String?): String? {
+            if (iterable == null) {
+                return null
+            }
 
-		return join(iterable.iterator(), delimiter);
-	}
+            return join(iterable.iterator(), delimiter)
+        }
 
-	public static String join(Iterator<?> iterator, String delimiter) {
-		if (iterator == null) {
-			return null;
-		}
+        fun join(iterator: Iterator<*>?, delimiter: String?): String? {
+            if (iterator == null) {
+                return null
+            }
 
-		StringBuilder builder = new StringBuilder();
-		while (iterator.hasNext()) {
-			final Object next = iterator.next();
-			if (next == null) {
-				continue;
-			}
-			builder.append(next);
+            val builder = StringBuilder()
+            while (iterator.hasNext()) {
+                val next = iterator.next() ?: continue
+                builder.append(next)
 
-			if (iterator.hasNext()) {
-				builder.append(delimiter);
-			}
-		}
+                if (iterator.hasNext()) {
+                    builder.append(delimiter)
+                }
+            }
 
-		return builder.toString();
+            return builder.toString()
+        }
 
-	}
 
-	public static String firstLower(String str) {
-		if (!hasText(str)) {
-			return str;
-		}
+        fun firstLower(str: String): String? {
+            if (!hasText(str)) {
+                return str
+            }
 
-		final char c = str.charAt(0);
-		if (CharUtils.isUpperLetter(c)) {
-			return Character.toLowerCase(c) + str.substring(1);
-		}
-		return str;
-	}
+            val c = str[0]
+            if (CharUtils.isUpperLetter(c)) {
+                return c.lowercaseChar().toString() + str.substring(1)
+            }
+            return str
+        }
 
-	public static String firstUpper(String str) {
-		if (!hasText(str)) {
-			return str;
-		}
+        fun firstUpper(str: String): String? {
+            if (!hasText(str)) {
+                return str
+            }
 
-		final char c = str.charAt(0);
-		if (CharUtils.isLowerLetter(c)) {
-			return Character.toUpperCase(c) + str.substring(1);
-		}
-		return str;
-	}
+            val c = str[0]
+            if (CharUtils.isLowerLetter(c)) {
+                return c.uppercaseChar().toString() + str.substring(1)
+            }
+            return str
+        }
 
-	/**
-	 * 驼峰字符串转下划线字符串
-	 * <p>
-	 * eg: HumpToUnderscore -> hump_to_underscore
-	 * </p>
-	 */
-	public static String humpToUnderscore(String str) {
-		CharArrayWriter writer = new CharArrayWriter();
-		for (int i = 0; i < str.length(); i++) {
-			char c = str.charAt(i);
-			// 大写字母处理
-			if (CharUtils.isUpperLetter(c)) {
-				// 如果不是第一个大写字母, 插入下划线 _
-				if (writer.size() > 0) {
-					writer.append('_');
-				}
-				// 转小写
-				writer.append(Character.toLowerCase(c));
-			}
-			// 不是则直接写入
-			else {
-				writer.append(c);
-			}
-		}
+        /**
+         * 驼峰字符串转下划线字符串
+         *
+         *
+         * eg: HumpToUnderscore -> hump_to_underscore
+         *
+         */
 
-		return writer.toString();
-	}
+        fun humpToUnderscore(str: String): String {
+            val writer = CharArrayWriter()
+            for (i in 0 until str.length) {
+                val c = str[i]
+                // 大写字母处理
+                if (CharUtils.isUpperLetter(c)) {
+                    // 如果不是第一个大写字母, 插入下划线 _
+                    if (writer.size() > 0) {
+                        writer.append('_')
+                    }
+                    // 转小写
+                    writer.append(c.lowercaseChar())
+                } else {
+                    writer.append(c)
+                }
+            }
 
-	/**
-	 * 下划线字符串转驼峰字符串
-	 * <p>
-	 * eg: HumpToUnderscore -> hump_to_underscore
-	 * </p>
-	 */
-	public static String underscoreToHump(String str) {
-		CharArrayWriter writer = new CharArrayWriter();
-		boolean upper = false;
-		for (int i = 0; i < str.length(); i++) {
-			char c = str.charAt(i);
-			// 如果是下划线, 下一个要转大写
-			if (c == '_') {
-				upper = true;
-				continue;
-			}
-			// 要转大写
-			if (upper) {
-				writer.append(Character.toUpperCase(c));
-				upper = false;
-			}
-			// 保持原样
-			else {
-				writer.append(c);
-			}
-		}
+            return writer.toString()
+        }
 
-		return writer.toString();
-	}
+        /**
+         * 下划线字符串转驼峰字符串
+         *
+         *
+         * eg: HumpToUnderscore -> hump_to_underscore
+         *
+         */
 
-	public static String hex(byte[] bytes) {
-		StringBuilder builder = new StringBuilder();
+        fun underscoreToHump(str: String): String {
+            val writer = CharArrayWriter()
+            var upper = false
+            for (i in 0 until str.length) {
+                val c = str[i]
+                // 如果是下划线, 下一个要转大写
+                if (c == '_') {
+                    upper = true
+                    continue
+                }
+                // 要转大写
+                if (upper) {
+                    writer.append(c.uppercaseChar())
+                    upper = false
+                } else {
+                    writer.append(c)
+                }
+            }
 
-		for (byte b : bytes) {
-			String hex = Integer.toHexString((b & 0xFF) | 0x100);
-			builder.append(hex, 1, 3);
-		}
+            return writer.toString()
+        }
 
-		return builder.toString();
-	}
 
-	public static byte[] hex(String hex) {
-		int length = hex.length();
-		if (length % 2 != 0) {
-			throw new IllegalArgumentException("Invalid hexadecimal string");
-		}
+        fun hex(bytes: ByteArray): String {
+            val builder = StringBuilder()
 
-		byte[] byteArray = new byte[length / 2];
-		for (int i = 0; i < length; i += 2) {
-			// 16进制单字符
-			String h = hex.substring(i, i + 2);
-			// 转byte
-			byte b = (byte) Integer.parseInt(h, 16);
-			byteArray[i / 2] = b;
-		}
+            for (b in bytes) {
+                val hex = Integer.toHexString((b.toInt() and 0xFF) or 0x100)
+                builder.append(hex, 1, 3)
+            }
 
-		return byteArray;
-	}
+            return builder.toString()
+        }
 
-	/**
-	 * 字节码转base64字符串
-	 */
-	public static String base64(byte[] bytes) {
-		return Base64.getEncoder().encodeToString(bytes);
-	}
 
-	/**
-	 * base64字符串转字节码
-	 */
-	public static byte[] base64(String base64) {
-		return Base64.getDecoder().decode(base64);
-	}
+        fun hex(hex: String): ByteArray {
+            val length = hex.length
+            require(length % 2 == 0) { "Invalid hexadecimal string" }
 
-	/**
-	 * 往前缀追加 指定数量的指定字符
-	 *
-	 * @param prefix 前缀
-	 * @param count  数量
-	 * @param str    指定字符
-	 * @return 追加完成后的字符串
-	 */
-	public static String append(String prefix, int count, String str) {
-		return prefix + str.repeat(Math.max(0, count));
-	}
+            val byteArray = ByteArray(length / 2)
+            var i = 0
+            while (i < length) {
+                // 16进制单字符
+                val h: String = hex.substring(i, i + 2)
+                // 转byte
+                val b = h.toInt(16) as Byte
+                byteArray[i / 2] = b
+                i += 2
+            }
 
-	public static String cleanBom(String string) {
-		return string.replace(BOM_UTF32S, "")
-			.replace(BOM_UTF32B, "")
-			.replace(BOM_UTF16S, "")
-			.replace(BOM_UTF16B, "")
-			.replace(BOM_UTF8, "");
-	}
+            return byteArray
+        }
 
-	public static String substringBefore(String str, String separator) {
-		int pos = str.indexOf(separator);
-		return pos == -1 ? str : str.substring(0, pos);
-	}
+        /**
+         * 字节码转base64字符串
+         */
 
-	public static String substringBeforeLast(String str, String separator) {
-		int pos = str.lastIndexOf(separator);
-		return pos == -1 ? str : str.substring(0, pos);
-	}
+        fun base64(bytes: ByteArray?): String {
+            return Base64.getEncoder().encodeToString(bytes)
+        }
 
-	public static String substringAfter(String str, String separator) {
-		int pos = str.indexOf(separator);
-		return pos == -1 ? "" : str.substring(pos + separator.length());
-	}
+        /**
+         * base64字符串转字节码
+         */
 
-	public static String substringAfterLast(String str, String separator) {
-		int pos = str.lastIndexOf(separator);
-		return pos == -1 ? str : str.substring(pos + separator.length());
-	}
+        fun base64(base64: String?): ByteArray {
+            return Base64.getDecoder().decode(base64)
+        }
 
-	public static StringBuilder deleteLast(StringBuilder builder) {
-		if (builder == null || builder.isEmpty()) {
-			return builder;
-		}
-		int index = builder.length() - 1;
-		return builder.deleteCharAt(index);
-	}
+        /**
+         * 往前缀追加 指定数量的指定字符
+         *
+         * @param prefix 前缀
+         * @param count  数量
+         * @param str    指定字符
+         * @return 追加完成后的字符串
+         */
+        fun append(prefix: String, count: Int, str: String): String {
+            return prefix + str.repeat(max(0, count))
+        }
 
+        fun cleanBom(string: String): String {
+            return string.replace(BOM_UTF32S, "")
+                .replace(BOM_UTF32B, "")
+                .replace(BOM_UTF16S, "")
+                .replace(BOM_UTF16B, "")
+                .replace(BOM_UTF8, "")
+        }
+
+
+        fun substringBefore(str: String, separator: String): String {
+            val pos: Int = str.indexOf(separator)
+            return if (pos == -1) str else str.substring(0, pos)
+        }
+
+
+        fun substringBeforeLast(str: String, separator: String): String {
+            val pos: Int = str.lastIndexOf(separator)
+            return if (pos == -1) str else str.substring(0, pos)
+        }
+
+
+        fun substringAfter(str: String, separator: String): String {
+            val pos: Int = str.indexOf(separator)
+            return if (pos == -1) "" else str.substring(pos + separator.length)
+        }
+
+
+        fun substringAfterLast(str: String, separator: String): String {
+            val pos: Int = str.lastIndexOf(separator)
+            return if (pos == -1) str else str.substring(pos + separator.length)
+        }
+
+
+        fun deleteLast(builder: StringBuilder?): StringBuilder? {
+            if (builder == null || builder.isEmpty()) {
+                return builder
+            }
+            val index = builder.length - 1
+            return builder.deleteCharAt(index)
+        }
+    }
 }

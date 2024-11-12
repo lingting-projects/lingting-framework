@@ -1,90 +1,57 @@
-package live.lingting.framework.aws;
+package live.lingting.framework.aws
 
-import live.lingting.framework.aws.policy.Acl;
-import live.lingting.framework.aws.s3.AwsS3Properties;
-import live.lingting.framework.aws.s3.AwsS3Request;
-import live.lingting.framework.aws.s3.impl.AwsS3DefaultListener;
-import live.lingting.framework.aws.s3.interfaces.AwsS3Listener;
-import live.lingting.framework.http.HttpResponse;
-import live.lingting.framework.http.api.ApiClient;
-import live.lingting.framework.http.body.BodySource;
-import live.lingting.framework.http.header.HttpHeaders;
-import live.lingting.framework.util.StringUtils;
-import live.lingting.framework.value.multi.StringMultiValue;
-
-import java.time.LocalDateTime;
-
-import static live.lingting.framework.aws.s3.AwsS3Utils.HEADER_ACL;
-import static live.lingting.framework.aws.s3.AwsS3Utils.HEADER_CONTENT_SHA256;
-import static live.lingting.framework.aws.s3.AwsS3Utils.HEADER_TOKEN;
-import static live.lingting.framework.aws.s3.AwsS3Utils.PAYLOAD_UNSIGNED;
+import live.lingting.framework.aws.policy.Acl
+import live.lingting.framework.aws.s3.AwsS3Properties
+import live.lingting.framework.aws.s3.AwsS3Request
+import live.lingting.framework.aws.s3.AwsS3Utils
+import live.lingting.framework.aws.s3.impl.AwsS3DefaultListener
+import live.lingting.framework.aws.s3.interfaces.AwsS3Listener
+import live.lingting.framework.http.HttpResponse
+import live.lingting.framework.http.api.ApiClient
+import live.lingting.framework.http.body.BodySource
+import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.util.StringUtils
+import live.lingting.framework.value.multi.StringMultiValue
+import java.time.LocalDateTime
 
 /**
  * @author lingting 2024-09-19 15:02
  */
-public abstract class AwsS3Client extends ApiClient<AwsS3Request> {
+abstract class AwsS3Client protected constructor(val properties: AwsS3Properties) : ApiClient<AwsS3Request?>(properties.host()) {
+    @JvmField
+    val ak: String? = properties.ak
 
-	protected final AwsS3Properties properties;
+    @JvmField
+    val sk: String? = properties.sk
 
-	protected final String ak;
+    val token: String? = properties.token
 
-	protected final String sk;
+    val acl: Acl? = properties.acl
 
-	protected final String token;
+    @JvmField
+    val bucket: String? = properties.bucket
 
-	protected final Acl acl;
+    @JvmField
+    var listener: AwsS3Listener = AwsS3DefaultListener(this)
 
-	protected final String bucket;
+    override fun customize(request: AwsS3Request, headers: HttpHeaders, source: BodySource?, params: StringMultiValue?) {
+        if (request.acl != null) {
+            headers.put(AwsS3Utils.Companion.HEADER_ACL, request.acl.value)
+        }
 
-	protected AwsS3Listener listener;
+        val now = LocalDateTime.now()
+        headers.put(AwsS3Utils.Companion.HEADER_CONTENT_SHA256, AwsS3Utils.Companion.PAYLOAD_UNSIGNED)
 
-	protected AwsS3Client(AwsS3Properties properties) {
-		super(properties.host());
-		this.properties = properties;
-		this.ak = properties.getAk();
-		this.sk = properties.getSk();
-		this.token = properties.getToken();
-		this.acl = properties.getAcl();
-		this.bucket = properties.getBucket();
-		this.listener = new AwsS3DefaultListener(this);
-	}
+        if (StringUtils.hasText(token)) {
+            headers.put(AwsS3Utils.Companion.HEADER_TOKEN, token)
+        }
+        listener.onAuthorization(request, headers, params, now)
+    }
 
-	@Override
-	protected void customize(AwsS3Request request, HttpHeaders headers, BodySource source, StringMultiValue params) {
-		if (request.getAcl() != null) {
-			headers.put(HEADER_ACL, request.getAcl().getValue());
-		}
-
-		LocalDateTime now = LocalDateTime.now();
-		headers.put(HEADER_CONTENT_SHA256, PAYLOAD_UNSIGNED);
-
-		if (StringUtils.hasText(token)) {
-			headers.put(HEADER_TOKEN, token);
-		}
-		listener.onAuthorization(request, headers, params, now);
-	}
-
-	@Override
-	protected HttpResponse checkout(AwsS3Request request, HttpResponse response) {
-		if (!response.is2xx()) {
-			listener.onFailed(request, response);
-		}
-		return response;
-	}
-
-	public AwsS3Properties getProperties() {return this.properties;}
-
-	public String getAk() {return this.ak;}
-
-	public String getSk() {return this.sk;}
-
-	public String getToken() {return this.token;}
-
-	public Acl getAcl() {return this.acl;}
-
-	public String getBucket() {return this.bucket;}
-
-	public AwsS3Listener getListener() {return this.listener;}
-
-	public void setListener(AwsS3Listener listener) {this.listener = listener;}
+    override fun checkout(request: AwsS3Request, response: HttpResponse): HttpResponse {
+        if (!response.is2xx()) {
+            listener.onFailed(request, response)
+        }
+        return response
+    }
 }

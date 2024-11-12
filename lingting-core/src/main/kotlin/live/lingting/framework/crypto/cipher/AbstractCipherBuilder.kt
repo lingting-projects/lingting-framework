@@ -1,56 +1,53 @@
-package live.lingting.framework.crypto.cipher;
+package live.lingting.framework.crypto.cipher
 
-import live.lingting.framework.crypto.AbstractCryptoBuilder;
-import live.lingting.framework.util.StringUtils;
+import live.lingting.framework.crypto.AbstractCryptoBuilder
+import live.lingting.framework.util.StringUtils
 
 /**
  * @author lingting 2024-09-04 11:31
  */
-public class AbstractCipherBuilder<B extends AbstractCipherBuilder<B>> extends AbstractCryptoBuilder<B, Cipher> {
+open class AbstractCipherBuilder<B : AbstractCipherBuilder<B>> : AbstractCryptoBuilder<B, Cipher>() {
+    /**
+     * 加密模式
+     */
+    protected var mode: String? = null
 
-	/**
-	 * 加密模式
-	 */
-	protected String mode;
+    /**
+     * 填充模式
+     */
+    protected var padding: String? = null
 
-	/**
-	 * 填充模式
-	 */
-	protected String padding;
+    fun symbol(): String {
+        val builder = StringBuilder(algorithm)
+        if (StringUtils.hasText(mode)) {
+            builder.append("/").append(mode)
+        }
+        if (StringUtils.hasText(padding)) {
+            builder.append("/").append(padding)
+        }
+        return builder.toString()
+    }
 
-	public String symbol() {
-		StringBuilder builder = new StringBuilder(algorithm);
-		if (StringUtils.hasText(mode)) {
-			builder.append("/").append(mode);
-		}
-		if (StringUtils.hasText(padding)) {
-			builder.append("/").append(padding);
-		}
-		return builder.toString();
-	}
+    fun mode(): String? {
+        return mode
+    }
 
-	public String mode() {
-		return mode;
-	}
+    fun padding(): String? {
+        return padding
+    }
 
-	public String padding() {
-		return padding;
-	}
+    fun mode(mode: String): B {
+        this.mode = mode
+        return this as B
+    }
 
-	public B mode(String mode) {
-		this.mode = mode;
-		return (B) this;
-	}
+    fun padding(padding: String): B {
+        this.padding = padding
+        return this as B
+    }
 
-	public B padding(String padding) {
-		this.padding = padding;
-		return (B) this;
-	}
-
-	@Override
-	protected Cipher doBuild() {
-		String symbol = symbol();
-		return new Cipher(algorithm, mode, padding, symbol, charset, secret, iv);
-	}
-
+    override fun doBuild(): Cipher {
+        val symbol = symbol()
+        return Cipher(algorithm, mode, padding, symbol, charset, secret, iv)
+    }
 }

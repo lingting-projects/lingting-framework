@@ -1,76 +1,55 @@
-package live.lingting.framework.multipart;
+package live.lingting.framework.multipart
 
+import live.lingting.framework.retry.Retry.value
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.InputStream
+import java.time.Duration
+import java.util.concurrent.ConcurrentHashMap
 
-import org.junit.jupiter.api.Test;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author lingting 2024-09-05 16:35
  */
-class MultipartTaskTest {
+internal class MultipartTaskTest {
+    @Test
+    @Throws(IOException::class)
+    fun test() {
+        val source = "hello multipart test"
+        val bytes = source.toByteArray()
+        val input: InputStream = ByteArrayInputStream(bytes)
 
-	@Test
-	void test() throws IOException {
-		String source = "hello multipart test";
-		byte[] bytes = source.getBytes();
-		InputStream input = new ByteArrayInputStream(bytes);
+        val size = bytes.size.toLong()
+        val partSize: Long = 3
+        val number = Multipart.calculate(size, partSize)
+        val multipart = Multipart.builder().source(input).partSize(partSize).build()
 
-		long size = bytes.length;
-		long partSize = 3;
-		long number = Multipart.calculate(size, partSize);
-		Multipart multipart = Multipart.builder().source(input).partSize(partSize).build();
-
-		assertEquals(number, multipart.getParts().size());
-		assertEquals(size, multipart.getParts().stream().mapToLong(Part::getSize).sum());
-		for (Part part : multipart.getParts()) {
-			assertEquals(part.size, part.end - part.start + 1);
-		}
-		TestMultipartTask task = new TestMultipartTask(multipart);
-		assertFalse(task.isStarted());
-		task.start().await(Duration.ofSeconds(5));
-		assertTrue(task.isCompleted());
-		ByteArrayOutputStream output = new ByteArrayOutputStream((int) size);
-		task.cache.keySet().stream().sorted().forEach(new Consumer<Long>() {
-			@Override
-
-			public void accept(Long i) {
-				output.write(task.cache.get(i));
-			}
-		});
-		byte[] merged = output.toByteArray();
-		assertArrayEquals(bytes, merged);
-		assertEquals(source, new String(merged));
-	}
-
+        Assertions.assertEquals(number, multipart.parts.size.toLong())
+        Assertions.assertEquals(size, multipart.parts.stream().mapToLong(Part::size).sum())
+        for (part in multipart.parts) {
+            Assertions.assertEquals(part.size, part.end - part.start + 1)
+        }
+        val task = TestMultipartTask(multipart)
+        Assertions.assertFalse(task.isStarted)
+        task.start()!!.await(Duration.ofSeconds(5))
+        Assertions.assertTrue(task.isCompleted)
+        val output = ByteArrayOutputStream(size.toInt())
+        task.cache.keys.stream().sorted().forEach { i -> output.write(task.cache[i]) }
+        val merged = output.toByteArray()
+        Assertions.assertArrayEquals(bytes, merged)
+        Assertions.assertEquals(source, String(merged))
+    }
 }
 
-class TestMultipartTask extends MultipartTask<TestMultipartTask> {
+internal class TestMultipartTask(multipart: Multipart) : MultipartTask<TestMultipartTask?>(multipart) {
+    val cache: MutableMap<Long, ByteArray> = ConcurrentHashMap()
 
-	final Map<Long, byte[]> cache = new ConcurrentHashMap<>();
-
-	public TestMultipartTask(Multipart multipart) {
-		super(multipart);
-	}
-
-
-	@Override
-	protected void onPart(Part part) {
-		try (InputStream stream = multipart.stream(part)) {
-			cache.put(part.index, stream.readAllBytes());
-		}
-	}
-
+    override fun onPart(part: Part) {
+        multipart.stream(part).use { stream ->
+            cache.put(part.index, stream.readAllBytes())
+        }
+    }
 }

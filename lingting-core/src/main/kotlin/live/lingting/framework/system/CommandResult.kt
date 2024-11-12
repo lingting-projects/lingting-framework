@@ -1,79 +1,61 @@
-package live.lingting.framework.system;
+package live.lingting.framework.system
 
-import live.lingting.framework.util.StreamUtils;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.time.Duration;
+import live.lingting.framework.util.StreamUtils
+import java.io.Closeable
+import java.io.InputStream
+import java.nio.file.Files
+import java.time.Duration
 
 /**
  * @author lingting 2022/6/25 12:01
  */
-public class CommandResult implements Closeable {
+class CommandResult(val command: Command, val exitCode: Int) : Closeable {
+    val end: Long = System.currentTimeMillis()
 
-	protected final Command command;
+    val duration: Duration = Duration.ofMillis(end - command.startTime)
 
-	protected final int exitCode;
+    protected var stdOut: String? = null
 
-	protected final long end;
-
-	protected final Duration duration;
-
-	protected String stdOut;
-
-	protected String stdErr;
-
-	public CommandResult(Command command, int exitCode) {
-		this.command = command;
-		this.exitCode = exitCode;
-		this.end = System.currentTimeMillis();
-		this.duration = Duration.ofMillis(end - command.startTime);
-	}
+    protected var stdErr: String? = null
 
 
-	public synchronized String getStdOut() {
-		if (stdOut == null) {
-			InputStream stream = stdOut();
-			stdOut = new String(StreamUtils.read(stream), command.charset);
-		}
-		return stdOut;
-	}
+    @kotlin.jvm.Synchronized
+    fun getStdOut(): String {
+        if (stdOut == null) {
+            val stream = stdOut()
+            stdOut = String(StreamUtils.read(stream), command.charset)
+        }
+        return stdOut!!
+    }
 
 
-	public synchronized String getStdErr() {
-		if (stdErr == null) {
-			InputStream stream = stdErr();
-			stdErr = new String(StreamUtils.read(stream), command.charset);
-		}
-		return stdErr;
-	}
+    @kotlin.jvm.Synchronized
+    fun getStdErr(): String {
+        if (stdErr == null) {
+            val stream = stdErr()
+            stdErr = String(StreamUtils.read(stream), command.charset)
+        }
+        return stdErr!!
+    }
 
-	public InputStream stdOut() throws IOException {
-		return Files.newInputStream(command.stdOut.toPath());
-	}
 
-	public InputStream stdErr() throws IOException {
-		return Files.newInputStream(command.stdErr.toPath());
-	}
+    fun stdOut(): InputStream {
+        return Files.newInputStream(command.stdOut.toPath())
+    }
 
-	public void clean() {
-		command.clean();
-	}
 
-	@Override
-	public void close() throws IOException {
-		getStdOut();
-		getStdErr();
-		clean();
-	}
+    fun stdErr(): InputStream {
+        return Files.newInputStream(command.stdErr.toPath())
+    }
 
-	public Command getCommand() {return this.command;}
+    fun clean() {
+        command.clean()
+    }
 
-	public int getExitCode() {return this.exitCode;}
 
-	public long getEnd() {return this.end;}
-
-	public Duration getDuration() {return this.duration;}
+    override fun close() {
+        getStdOut()
+        getStdErr()
+        clean()
+    }
 }

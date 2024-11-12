@@ -1,98 +1,67 @@
-package live.lingting.framework.aws.s3;
+package live.lingting.framework.aws.s3
 
-import live.lingting.framework.aws.policy.Acl;
-import live.lingting.framework.aws.policy.Credential;
+import live.lingting.framework.aws.policy.Acl
+import live.lingting.framework.aws.policy.Credential
 
 /**
  * @author lingting 2024-09-12 21:20
  */
-public class AwsS3Properties {
+open class AwsS3Properties {
+    @JvmField
+    var scheme: String = "https"
 
-	protected String scheme = "https";
+    @JvmField
+    var prefix: String = "s3"
 
-	protected String prefix = "s3";
+    @JvmField
+    var connector: String = "."
 
-	protected String connector = ".";
+    @JvmField
+    var region: String? = null
 
-	protected String region;
+    @JvmField
+    var endpoint: String = "amazonaws.com"
 
-	protected String endpoint = "amazonaws.com";
+    @JvmField
+    var bucket: String? = null
 
-	protected String bucket;
+    @JvmField
+    var acl: Acl = Acl.PRIVATE
 
-	protected Acl acl = Acl.PRIVATE;
+    @JvmField
+    var ak: String? = null
 
-	protected String ak;
+    @JvmField
+    var sk: String? = null
 
-	protected String sk;
+    @JvmField
+    var token: String? = null
 
-	protected String token;
+    fun <T : AwsS3Properties?> fill(properties: T): T {
+        properties!!.scheme = scheme
+        properties.region = region
+        properties.endpoint = endpoint
+        properties.bucket = bucket
+        properties.acl = acl
+        properties.ak = ak
+        properties.sk = sk
+        properties.token = token
+        return properties
+    }
 
-	public <T extends AwsS3Properties> T fill(T properties) {
-		properties.setScheme(getScheme());
-		properties.setRegion(getRegion());
-		properties.setEndpoint(getEndpoint());
-		properties.setBucket(getBucket());
-		properties.setAcl(getAcl());
-		properties.setAk(getAk());
-		properties.setSk(getSk());
-		properties.setToken(getToken());
-		return properties;
-	}
+    open fun copy(): AwsS3Properties? {
+        val properties = AwsS3Properties()
+        fill(properties)
+        return properties
+    }
 
-	public AwsS3Properties copy() {
-		AwsS3Properties properties = new AwsS3Properties();
-		fill(properties);
-		return properties;
-	}
+    fun useCredential(credential: Credential) {
+        ak = credential.ak
+        sk = credential.sk
+        token = credential.token
+    }
 
-	public void useCredential(Credential credential) {
-		setAk(credential.getAk());
-		setSk(credential.getSk());
-		setToken(credential.getToken());
-	}
-
-	public String host() {
-		return "%s://%s.%s%s%s.%s".formatted(scheme, bucket, prefix, connector, region, endpoint);
-	}
-
-	public String getScheme() {return this.scheme;}
-
-	public String getPrefix() {return this.prefix;}
-
-	public String getConnector() {return this.connector;}
-
-	public String getRegion() {return this.region;}
-
-	public String getEndpoint() {return this.endpoint;}
-
-	public String getBucket() {return this.bucket;}
-
-	public Acl getAcl() {return this.acl;}
-
-	public String getAk() {return this.ak;}
-
-	public String getSk() {return this.sk;}
-
-	public String getToken() {return this.token;}
-
-	public void setScheme(String scheme) {this.scheme = scheme;}
-
-	public void setPrefix(String prefix) {this.prefix = prefix;}
-
-	public void setConnector(String connector) {this.connector = connector;}
-
-	public void setRegion(String region) {this.region = region;}
-
-	public void setEndpoint(String endpoint) {this.endpoint = endpoint;}
-
-	public void setBucket(String bucket) {this.bucket = bucket;}
-
-	public void setAcl(Acl acl) {this.acl = acl;}
-
-	public void setAk(String ak) {this.ak = ak;}
-
-	public void setSk(String sk) {this.sk = sk;}
-
-	public void setToken(String token) {this.token = token;}
+    fun host(): String {
+        return "%s://%s.%s%s%s.%s".formatted(scheme, bucket, prefix, connector, region, endpoint)
+    }
 }

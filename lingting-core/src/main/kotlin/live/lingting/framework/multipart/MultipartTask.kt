@@ -1,209 +1,171 @@
-package live.lingting.framework.multipart;
+package live.lingting.framework.multipart
 
-import live.lingting.framework.lock.JavaReentrantLock;
-import live.lingting.framework.thread.Async;
-import live.lingting.framework.util.ValueUtils;
-import org.slf4j.Logger;
-
-import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static live.lingting.framework.multipart.MultipartTaskStatus.COMPLETED;
-import static live.lingting.framework.multipart.MultipartTaskStatus.RUNNING;
-import static live.lingting.framework.multipart.MultipartTaskStatus.WAIT;
+import live.lingting.framework.lock.JavaReentrantLock
+import live.lingting.framework.thread.Async
+import live.lingting.framework.util.ValueUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.time.Duration
+import java.util.*
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Supplier
 
 /**
  * @author lingting 2024-09-05 14:48
  */
-@SuppressWarnings({"unchecked", "java:S1172", "java:S1181", "java:S112"})
-public abstract class MultipartTask<I extends MultipartTask<I>> {
+abstract class MultipartTask<I : MultipartTask<I>> protected constructor(val multipart: Multipart, protected val async: Async = Async()) {
 
-	protected final Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
+    protected val log: Logger = LoggerFactory.getLogger(javaClass)
 
-	protected final JavaReentrantLock lock = new JavaReentrantLock();
+    protected val lock: JavaReentrantLock = JavaReentrantLock()
 
-	protected final AtomicReference<MultipartTaskStatus> reference = new AtomicReference<>(WAIT);
+    protected val reference: AtomicReference<MultipartTaskStatus> = AtomicReference(MultipartTaskStatus.WAIT)
 
-	protected final Async async;
+    val partCount: Int = multipart.parts.size
 
-	protected final Multipart multipart;
+    protected val tasks: MutableList<PartTask> = CopyOnWriteArrayList()
 
-	protected final int partCount;
+    var completedNumber: Int = 0
+        protected set
 
-	protected final List<PartTask> tasks;
+    var successfulNumber: Int = 0
+        protected set
 
-	protected int completedNumber = 0;
+    var failedNumber: Int = 0
+        protected set
 
-	protected int successfulNumber = 0;
 
-	protected int failedNumber = 0;
+    var maxRetryCount: Long = 0L
 
-	protected long maxRetryCount = 0L;
+    fun status(): MultipartTaskStatus {
+        return reference.get()
+    }
 
-	protected MultipartTask(Multipart multipart) {
-		this(multipart, new Async());
-	}
+    val isStarted: Boolean
+        get() = MultipartTaskStatus.WAIT != status()
 
-	protected MultipartTask(Multipart multipart, Async async) {
-		this.async = async;
-		this.multipart = multipart;
-		this.partCount = multipart.parts.size();
-		this.tasks = new CopyOnWriteArrayList<>();
-	}
+    open val isCompleted: Boolean
+        get() = MultipartTaskStatus.COMPLETED == status()
 
-	public MultipartTaskStatus status() {
-		return reference.get();
-	}
+    fun hasFailed(): Boolean {
+        return failedNumber > 0
+    }
 
-	public boolean isStarted() {
-		return WAIT != status();
-	}
+    fun tasks(): List<PartTask> {
+        return Collections.unmodifiableList(tasks)
+    }
 
-	public boolean isCompleted() {
-		return COMPLETED == status();
-	}
+    fun tasksFailed(): List<PartTask> {
+        return tasks.stream().filter { obj: PartTask -> obj.isFailed }.toList()
+    }
 
-	public boolean hasFailed() {
-		return failedNumber > 0;
-	}
 
-	public List<PartTask> tasks() {
-		return Collections.unmodifiableList(tasks);
-	}
+    fun await(duration: Duration? = null): I {
+        if (isStarted) {
+            ValueUtils.awaitTrue(duration, Supplier<Boolean> { this.isCompleted })
+        }
+        return this as I
+    }
 
-	public List<PartTask> tasksFailed() {
-		return tasks.stream().filter(PartTask::isFailed).toList();
-	}
+    /**
+     * 计算以及更新数据
+     */
+    protected fun calculate() {
+        lock.runByInterruptibly {
+            val cn = AtomicInteger()
+            val sn = AtomicInteger()
+            val fn = AtomicInteger()
+            tasks.stream().filter { obj: PartTask -> obj.isCompleted }.forEach { t: PartTask ->
+                cn.addAndGet(1)
+                if (t.isSuccessful) {
+                    sn.addAndGet(1)
+                } else {
+                    fn.addAndGet(1)
+                }
+            }
+            completedNumber = cn.get()
+            successfulNumber = sn.get()
+            failedNumber = fn.get()
 
-	public I await() {
-		return await(null);
-	}
+            val isCompleted = completedNumber == partCount
+            val currentCompleted = this.isCompleted
+            if (isCompleted && !currentCompleted) {
+                val isSet = reference.compareAndSet(MultipartTaskStatus.RUNNING, MultipartTaskStatus.COMPLETED)
+                if (isSet) {
+                    log.debug("[{}] onCompleted", multipart.id)
+                    onCompleted()
+                }
+            }
+        }
+    }
 
-	public I await(Duration duration) {
-		if (isStarted()) {
-			ValueUtils.awaitTrue(duration, this::isCompleted);
-		}
-		return (I) this;
-	}
+    fun start(): I {
+        if (isStarted || !reference.compareAndSet(MultipartTaskStatus.WAIT, MultipartTaskStatus.RUNNING)) {
+            return this as I
+        }
 
-	/**
-	 * 计算以及更新数据
-	 */
+        val id = multipart.id
+        val name = "Multipart-$id"
+        async.submit(name) {
+            log.debug("[{}] onStarted", id)
+            onStarted()
+            for (part in multipart.parts) {
+                async.submit(name + "-" + part.index) { doPart(part!!) }
+            }
+        }
+        return this as I
+    }
 
-	protected void calculate() {
-		lock.runByInterruptibly(() -> {
-			AtomicInteger cn = new AtomicInteger();
-			AtomicInteger sn = new AtomicInteger();
-			AtomicInteger fn = new AtomicInteger();
-			tasks.stream().filter(PartTask::isCompleted).forEach(t -> {
-				cn.addAndGet(1);
-				if (t.isSuccessful()) {
-					sn.addAndGet(1);
-				}
-				else {
-					fn.addAndGet(1);
-				}
-			});
-			completedNumber = cn.get();
-			successfulNumber = sn.get();
-			failedNumber = fn.get();
+    protected fun doPart(part: Part) {
+        val id = id
+        val index = part.index
 
-			boolean isCompleted = completedNumber == partCount;
-			boolean currentCompleted = isCompleted();
-			if (isCompleted && !currentCompleted) {
-				boolean isSet = reference.compareAndSet(RUNNING, COMPLETED);
-				if (isSet) {
-					log.debug("[{}] onCompleted", multipart.id);
-					onCompleted();
-				}
-			}
-		});
-	}
+        val task = PartTask(part)
+        tasks.add(task)
 
-	public I start() {
-		if (isStarted() || !reference.compareAndSet(WAIT, RUNNING)) {
-			return (I) this;
-		}
+        while (true) {
+            task.status = PartTaskStatus.RUNNING
+            var t: Throwable? = null
+            try {
+                log.debug("[{}] onPart {}", id, index)
+                onPart(part)
+                log.debug("[{}] onPart completed {}", id, index)
+                task.status = PartTaskStatus.SUCCESSFUL
+            } catch (throwable: Throwable) {
+                t = throwable
+                task.status = PartTaskStatus.FAILED
+            }
 
-		String id = multipart.id;
-		String name = "Multipart-" + id;
-		async.submit(name, () -> {
-			log.debug("[{}] onStarted", id);
-			onStarted();
-			for (Part part : multipart.parts) {
-				async.submit(name + "-" + part.getIndex(), () -> doPart(part));
-			}
-		});
-		return (I) this;
-	}
+            task.t = t
+            if (task.isSuccessful || !allowRetry(task, t)) {
+                calculate()
+                break
+            }
+            task.retryCount += 1
+        }
+    }
 
-	protected void doPart(Part part) {
-		String id = getId();
-		Long index = part.getIndex();
+    protected open fun allowRetry(task: PartTask, t: Throwable?): Boolean {
+        return !isInterrupt(t) && task.retryCount < maxRetryCount
+    }
 
-		PartTask task = new PartTask(part);
-		tasks.add(task);
+    fun isInterrupt(throwable: Throwable?): Boolean {
+        return throwable is InterruptedException
+    }
 
-		while (true) {
-			task.status = PartTaskStatus.RUNNING;
-			Throwable t = null;
-			try {
-				log.debug("[{}] onPart {}", id, index);
-				onPart(part);
-				log.debug("[{}] onPart completed {}", id, index);
-				task.status = PartTaskStatus.SUCCESSFUL;
-			}
-			catch (Throwable throwable) {
-				t = throwable;
-				task.status = PartTaskStatus.FAILED;
-			}
+    protected open fun onStarted() {
+        //
+    }
 
-			task.t = t;
-			if (task.isSuccessful() || !allowRetry(task, t)) {
-				calculate();
-				break;
-			}
-			task.retryCount += 1;
-		}
-	}
 
-	protected boolean allowRetry(PartTask task, Throwable t) {
-		return !isInterrupt(t) && task.getRetryCount() < maxRetryCount;
-	}
+    protected abstract fun onPart(part: Part)
 
-	public boolean isInterrupt(Throwable throwable) {
-		return throwable instanceof InterruptedException;
-	}
+    protected open fun onCompleted() {
+        //
+    }
 
-	protected void onStarted() {
-		//
-	}
-
-	protected abstract void onPart(Part part) throws Throwable;
-
-	protected void onCompleted() {
-		//
-	}
-
-	public String getId() {
-		return getMultipart().getId();
-	}
-
-	public Multipart getMultipart() {return this.multipart;}
-
-	public int getPartCount() {return this.partCount;}
-
-	public int getCompletedNumber() {return this.completedNumber;}
-
-	public int getSuccessfulNumber() {return this.successfulNumber;}
-
-	public int getFailedNumber() {return this.failedNumber;}
-
-	public long getMaxRetryCount() {return this.maxRetryCount;}
-
-	public void setMaxRetryCount(long maxRetryCount) {this.maxRetryCount = maxRetryCount;}
+    val id: String
+        get() = multipart.id
 }

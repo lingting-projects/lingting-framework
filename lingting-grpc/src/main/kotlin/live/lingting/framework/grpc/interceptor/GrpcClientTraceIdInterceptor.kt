@@ -1,57 +1,44 @@
-package live.lingting.framework.grpc.interceptor;
+package live.lingting.framework.grpc.interceptor
 
-import io.grpc.CallOptions;
-import io.grpc.Channel;
-import io.grpc.ClientCall;
-import io.grpc.ClientInterceptor;
-import io.grpc.Metadata;
-import io.grpc.MethodDescriptor;
-import live.lingting.framework.Sequence;
-import live.lingting.framework.grpc.properties.GrpcClientProperties;
-import live.lingting.framework.grpc.simple.ForwardingClientOnCall;
-import live.lingting.framework.util.MdcUtils;
-import live.lingting.framework.util.StringUtils;
+import io.grpc.CallOptions
+import io.grpc.Channel
+import io.grpc.ClientCall
+import io.grpc.ClientInterceptor
+import io.grpc.Metadata
+import io.grpc.MethodDescriptor
+import live.lingting.framework.Sequence
+import live.lingting.framework.grpc.properties.GrpcClientProperties
+import live.lingting.framework.grpc.simple.ForwardingClientOnCall
+import live.lingting.framework.util.MdcUtils
+import live.lingting.framework.util.StringUtils
 
 /**
  * @author lingting 2023-04-13 13:23
  */
-@SuppressWarnings("java:S110")
-public class GrpcClientTraceIdInterceptor implements ClientInterceptor, Sequence {
+class GrpcClientTraceIdInterceptor(properties: GrpcClientProperties) : ClientInterceptor, Sequence {
+    private val properties: GrpcClientProperties? = properties
 
-	private final GrpcClientProperties properties;
+    private val traceIdKey: Metadata.Key<String?> = Metadata.Key.of(properties.traceIdKey, Metadata.ASCII_STRING_MARSHALLER)
 
-	private final Metadata.Key<String> traceIdKey;
+    /**
+     * 获取当前上下文的traceId
+     */
+    protected fun traceId(): String? {
+        return MdcUtils.getTraceId()
+    }
 
-	public GrpcClientTraceIdInterceptor(GrpcClientProperties properties) {
-		this.properties = properties;
-		this.traceIdKey = Metadata.Key.of(properties.getTraceIdKey(), Metadata.ASCII_STRING_MARSHALLER);
-	}
+    override fun <S, R> interceptCall(method: MethodDescriptor<S?, R?>?, callOptions: CallOptions?, next: Channel?): ClientCall<S?, R?> {
+        val traceId = traceId()
 
-	/**
-	 * 获取当前上下文的traceId
-	 */
-	protected String traceId() {
-		return MdcUtils.getTraceId();
-	}
+        return object : ForwardingClientOnCall<S?, R?>(method, callOptions, next!!) {
+            override fun onStartBefore(responseListener: Listener<R?>?, headers: Metadata?) {
+                if (StringUtils.hasText(traceId)) {
+                    headers!!.put(traceIdKey, traceId)
+                }
+            }
+        }
+    }
 
-	@Override
-	public <S, R> ClientCall<S, R> interceptCall(MethodDescriptor<S, R> method, CallOptions callOptions, Channel next) {
-		String traceId = traceId();
-
-		return new ForwardingClientOnCall<>(method, callOptions, next) {
-			@Override
-			public void onStartBefore(Listener<R> responseListener, Metadata headers) {
-				if (StringUtils.hasText(traceId)) {
-					headers.put(traceIdKey, traceId);
-				}
-			}
-		};
-
-	}
-
-	@Override
-	public int getSequence() {
-		return properties.getTraceOrder();
-	}
-
+    override val sequence: Int
+        get() = properties.getTraceOrder()
 }

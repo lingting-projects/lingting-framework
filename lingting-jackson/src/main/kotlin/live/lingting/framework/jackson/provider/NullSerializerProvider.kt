@@ -1,125 +1,107 @@
-package live.lingting.framework.jackson.provider;
+package live.lingting.framework.jackson.provider
 
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.cfg.CacheProvider;
-import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
-import com.fasterxml.jackson.databind.ser.SerializerFactory;
-import live.lingting.framework.jackson.serializer.NullArrayJsonSerializer;
-import live.lingting.framework.jackson.serializer.NullMapJsonSerializer;
-import live.lingting.framework.jackson.serializer.NullStringJsonSerializer;
-
-import java.io.Serial;
-import java.util.Collection;
-import java.util.Map;
+import com.fasterxml.jackson.databind.BeanProperty
+import com.fasterxml.jackson.databind.JavaType
+import com.fasterxml.jackson.databind.JsonMappingException
+import com.fasterxml.jackson.databind.JsonSerializer
+import com.fasterxml.jackson.databind.SerializationConfig
+import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.cfg.CacheProvider
+import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider
+import com.fasterxml.jackson.databind.ser.SerializerFactory
+import live.lingting.framework.jackson.serializer.NullArrayJsonSerializer
+import live.lingting.framework.jackson.serializer.NullMapJsonSerializer
+import live.lingting.framework.jackson.serializer.NullStringJsonSerializer
+import java.io.Serial
 
 /**
  * @author lingting
  */
-public class NullSerializerProvider extends DefaultSerializerProvider {
+class NullSerializerProvider : DefaultSerializerProvider {
+    constructor() : super()
 
-	@Serial
-	private static final long serialVersionUID = 1L;
+    constructor(src: NullSerializerProvider) : super(src)
 
-	/**
-	 * null array 或 list，set 则转 '[]'
-	 */
-	private static final JsonSerializer<Object> nullArrayJsonSerializer = new NullArrayJsonSerializer();
+    protected constructor(src: SerializerProvider, config: SerializationConfig, f: SerializerFactory?) : super(src, config, f)
 
-	/**
-	 * null Map 转 '{}'
-	 */
-	private static final JsonSerializer<Object> nullMapJsonSerializer = new NullMapJsonSerializer();
+    protected constructor(provider: NullSerializerProvider, cacheProvider: CacheProvider) : super(provider, cacheProvider)
 
-	/**
-	 * null 字符串转 ''
-	 */
-	private static final JsonSerializer<Object> nullStringJsonSerializer = new NullStringJsonSerializer();
+    override fun copy(): DefaultSerializerProvider {
+        if (javaClass != NullSerializerProvider::class.java) {
+            return super.copy()
+        }
+        return NullSerializerProvider(this)
+    }
 
-	public NullSerializerProvider() {
-		super();
-	}
+    override fun withCaches(cacheProvider: CacheProvider): DefaultSerializerProvider {
+        return NullSerializerProvider(this, cacheProvider)
+    }
 
-	public NullSerializerProvider(NullSerializerProvider src) {
-		super(src);
-	}
+    override fun createInstance(config: SerializationConfig, jsf: SerializerFactory): NullSerializerProvider {
+        return NullSerializerProvider(this, config, jsf)
+    }
 
-	protected NullSerializerProvider(SerializerProvider src, SerializationConfig config, SerializerFactory f) {
-		super(src, config, f);
-	}
+    @Throws(JsonMappingException::class)
+    override fun findNullValueSerializer(property: BeanProperty): JsonSerializer<Any> {
+        val propertyType = property.type
+        return if (isStringType(propertyType)) {
+            nullStringJsonSerializer
+        } else if (isArrayOrCollectionTrype(propertyType)) {
+            nullArrayJsonSerializer
+        } else if (isMapType(propertyType)) {
+            nullMapJsonSerializer
+        } else {
+            super.findNullValueSerializer(property)
+        }
+    }
 
-	protected NullSerializerProvider(NullSerializerProvider provider, CacheProvider cacheProvider) {
-		super(provider, cacheProvider);
-	}
+    /**
+     * 是否是 String 类型
+     * @param type JavaType
+     * @return boolean
+     */
+    private fun isStringType(type: JavaType): Boolean {
+        val clazz = type.rawClass
+        return String::class.java.isAssignableFrom(clazz)
+    }
 
-	@Override
-	public DefaultSerializerProvider copy() {
-		if (getClass() != NullSerializerProvider.class) {
-			return super.copy();
-		}
-		return new NullSerializerProvider(this);
-	}
+    /**
+     * 是否是Map类型
+     * @param type JavaType
+     * @return boolean
+     */
+    private fun isMapType(type: JavaType): Boolean {
+        val clazz = type.rawClass
+        return MutableMap::class.java.isAssignableFrom(clazz)
+    }
 
-	@Override
-	public DefaultSerializerProvider withCaches(CacheProvider cacheProvider) {
-		return new NullSerializerProvider(this, cacheProvider);
-	}
+    /**
+     * 是否是集合类型或者数组
+     * @param type JavaType
+     * @return boolean
+     */
+    private fun isArrayOrCollectionTrype(type: JavaType): Boolean {
+        val clazz = type.rawClass
+        return clazz.isArray || MutableCollection::class.java.isAssignableFrom(clazz)
+    }
 
-	@Override
-	public NullSerializerProvider createInstance(SerializationConfig config, SerializerFactory jsf) {
-		return new NullSerializerProvider(this, config, jsf);
-	}
+    companion object {
+        @Serial
+        private const val serialVersionUID = 1L
 
-	@Override
-	public JsonSerializer<Object> findNullValueSerializer(BeanProperty property) throws JsonMappingException {
-		JavaType propertyType = property.getType();
-		if (isStringType(propertyType)) {
-			return nullStringJsonSerializer;
-		}
-		else if (isArrayOrCollectionTrype(propertyType)) {
-			return nullArrayJsonSerializer;
-		}
-		else if (isMapType(propertyType)) {
-			return nullMapJsonSerializer;
-		}
-		else {
-			return super.findNullValueSerializer(property);
-		}
-	}
+        /**
+         * null array 或 list，set 则转 '[]'
+         */
+        private val nullArrayJsonSerializer: JsonSerializer<Any> = NullArrayJsonSerializer()
 
-	/**
-	 * 是否是 String 类型
-	 * @param type JavaType
-	 * @return boolean
-	 */
-	private boolean isStringType(JavaType type) {
-		Class<?> clazz = type.getRawClass();
-		return String.class.isAssignableFrom(clazz);
-	}
+        /**
+         * null Map 转 '{}'
+         */
+        private val nullMapJsonSerializer: JsonSerializer<Any> = NullMapJsonSerializer()
 
-	/**
-	 * 是否是Map类型
-	 * @param type JavaType
-	 * @return boolean
-	 */
-	private boolean isMapType(JavaType type) {
-		Class<?> clazz = type.getRawClass();
-		return Map.class.isAssignableFrom(clazz);
-	}
-
-	/**
-	 * 是否是集合类型或者数组
-	 * @param type JavaType
-	 * @return boolean
-	 */
-	private boolean isArrayOrCollectionTrype(JavaType type) {
-		Class<?> clazz = type.getRawClass();
-		return clazz.isArray() || Collection.class.isAssignableFrom(clazz);
-
-	}
-
+        /**
+         * null 字符串转 ''
+         */
+        private val nullStringJsonSerializer: JsonSerializer<Any> = NullStringJsonSerializer()
+    }
 }

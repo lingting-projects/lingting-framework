@@ -1,165 +1,150 @@
-package live.lingting.framework.elasticsearch.builder;
+package live.lingting.framework.elasticsearch.builder
 
-import co.elastic.clients.elasticsearch._types.Script;
-import co.elastic.clients.json.JsonData;
-import live.lingting.framework.elasticsearch.ElasticsearchFunction;
-import live.lingting.framework.util.StringUtils;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static live.lingting.framework.elasticsearch.ElasticsearchUtils.fieldName;
+import co.elastic.clients.elasticsearch._types.Script
+import co.elastic.clients.json.JsonData
+import live.lingting.framework.elasticsearch.ElasticsearchFunction
+import live.lingting.framework.elasticsearch.ElasticsearchUtils
+import live.lingting.framework.util.StringUtils
 
 /**
  * @author lingting 2024-03-06 19:27
  */
-public class ScriptBuilder<T> {
+class ScriptBuilder<T> {
+    private val sourceBuilder = StringBuilder()
 
-	public static final String PREFIX_SOURCE = "ctx._source";
+    private val params: MutableMap<String, JsonData> = HashMap()
 
-	public static final String PREFIX_PARAMS = "params";
+    private var lang = "painless"
 
-	private final StringBuilder sourceBuilder = new StringBuilder();
+    // region params
+    fun <R> put(func: ElasticsearchFunction<T, R>, value: R): ScriptBuilder<T> {
+        val field: String = ElasticsearchUtils.Companion.fieldName(func)
+        return put(field, value)
+    }
 
-	private final Map<String, JsonData> params = new HashMap<>();
+    fun <R> put(name: String, value: R): ScriptBuilder<T> {
+        val data = JsonData.of(value)
+        params[name] = data
+        return this
+    }
 
-	private String lang = "painless";
+    fun append(script: String): ScriptBuilder<T> {
+        if (!StringUtils.hasText(script)) {
+            return this
+        }
 
-	// region params
-	public <R> ScriptBuilder<T> put(ElasticsearchFunction<T, R> func, R value) {
-		String field = fieldName(func);
-		return put(field, value);
-	}
+        if (!sourceBuilder.isEmpty()) {
+            sourceBuilder.append("\n")
+        }
+        sourceBuilder.append(fillEnd(script))
+        return this
+    }
 
-	public <R> ScriptBuilder<T> put(String name, R value) {
-		JsonData data = JsonData.of(value);
-		params.put(name, data);
-		return this;
-	}
+    fun append(script: String, field: String, value: Any?): ScriptBuilder<T> {
+        if (value != null) {
+            params[field] = JsonData.of(value)
+        }
+        return append(script)
+    }
 
-	// endregion
+    fun <R> set(func: ElasticsearchFunction<T, R>, value: R): ScriptBuilder<T> {
+        val field: String = ElasticsearchUtils.Companion.fieldName(func)
+        return set(field, value)
+    }
 
-	// region script basic
-	public static <T> ScriptBuilder<T> builder() {
-		return new ScriptBuilder<>();
-	}
+    fun set(field: String, value: Any?): ScriptBuilder<T> {
+        val script = if (value == null) genSetNull(field) else genSetParams(field)
+        return append(script, field, value)
+    }
 
-	public static String fillEnd(String source) {
-		if (!source.endsWith(";")) {
-			return "%s;".formatted(source);
-		}
-		return source;
-	}
+    fun setIfAbsent(field: String, value: Any?): ScriptBuilder<T> {
+        if (value != null) {
+            val script = genSetIfAbsent(field)
+            return append(script, field, value)
+        }
+        return this
+    }
 
-	public static String genSourceField(String field) {
-		return "%s.%s".formatted(PREFIX_SOURCE, field);
-	}
+    fun lang(lang: String): ScriptBuilder<T> {
+        this.lang = lang
+        return this
+    }
 
-	public static String genParamsField(String field) {
-		return "%s.%s".formatted(PREFIX_PARAMS, field);
-	}
+    fun painless(): ScriptBuilder<T> {
+        return lang("painless")
+    }
 
-	public static String genSymbol(String field, String symbol) {
-		return genSymbol(field, symbol, genParamsField(field));
-	}
+    // endregion
+    // region script number
+    @JvmOverloads
+    fun increasing(field: String, value: Number? = 1): ScriptBuilder<T> {
+        return append(genSymbol(field, "+="), field, value)
+    }
 
-	public static String genSymbol(String field, String symbol, String value) {
-		return "%s %s %s".formatted(genSourceField(field), symbol, value);
-	}
+    @JvmOverloads
+    fun decrease(field: String, value: Number? = 1): ScriptBuilder<T> {
+        return append(genSymbol(field, "-="), field, value)
+    }
 
-	public static String genIf(String condition, String script) {
-		return "if(%s){%s}".formatted(condition, fillEnd(script));
-	}
+    // endregion
+    // region build
+    fun build(): Script {
+        val source = sourceBuilder.toString()
+        return Script.of { s: Script.Builder -> s.lang(lang).source(source).params(HashMap(params)) }
+    } // endregion
 
-	public static String genSetNull(String field) {
-		return genSymbol(field, "=", "null");
-	}
+    companion object {
+        const val PREFIX_SOURCE: String = "ctx._source"
 
-	public static String genSetParams(String field) {
-		return genSymbol(field, "=", genParamsField(field));
-	}
+        const val PREFIX_PARAMS: String = "params"
 
-	public static String genSetIfAbsent(String field) {
-		String sourceField = genSourceField(field);
-		String condition = "%s==null || %s==''".formatted(sourceField, sourceField);
-		String script = genSetParams(field);
-		return genIf(condition, script);
-	}
+        // endregion
+        // region script basic
+        @JvmStatic
+        fun <T> builder(): ScriptBuilder<T> {
+            return ScriptBuilder()
+        }
 
-	public ScriptBuilder<T> append(String script) {
-		if (!StringUtils.hasText(script)) {
-			return this;
-		}
+        fun fillEnd(source: String): String {
+            if (!source.endsWith(";")) {
+                return "%s;".formatted(source)
+            }
+            return source
+        }
 
-		if (!sourceBuilder.isEmpty()) {
-			sourceBuilder.append("\n");
-		}
-		sourceBuilder.append(fillEnd(script));
-		return this;
-	}
+        fun genSourceField(field: String?): String {
+            return "%s.%s".formatted(PREFIX_SOURCE, field)
+        }
 
-	public ScriptBuilder<T> append(String script, String field, Object value) {
-		if (value != null) {
-			params.put(field, JsonData.of(value));
-		}
-		return append(script);
-	}
+        fun genParamsField(field: String?): String {
+            return "%s.%s".formatted(PREFIX_PARAMS, field)
+        }
 
-	public <R> ScriptBuilder<T> set(ElasticsearchFunction<T, R> func, R value) {
-		String field = fieldName(func);
-		return set(field, value);
-	}
+        @JvmOverloads
+        fun genSymbol(field: String?, symbol: String?, value: String? = genParamsField(field)): String {
+            return "%s %s %s".formatted(genSourceField(field), symbol, value)
+        }
 
-	public ScriptBuilder<T> set(String field, Object value) {
-		String script = value == null ? genSetNull(field) : genSetParams(field);
-		return append(script, field, value);
-	}
+        fun genIf(condition: String?, script: String): String {
+            return "if(%s){%s}".formatted(condition, fillEnd(script))
+        }
 
-	public ScriptBuilder<T> setIfAbsent(String field, Object value) {
-		if (value != null) {
-			String script = genSetIfAbsent(field);
-			return append(script, field, value);
-		}
-		return this;
-	}
+        @JvmStatic
+        fun genSetNull(field: String?): String {
+            return genSymbol(field, "=", "null")
+        }
 
-	public ScriptBuilder<T> lang(String lang) {
-		this.lang = lang;
-		return this;
-	}
+        @JvmStatic
+        fun genSetParams(field: String?): String {
+            return genSymbol(field, "=", genParamsField(field))
+        }
 
-	public ScriptBuilder<T> painless() {
-		return lang("painless");
-	}
-
-	// endregion
-
-	// region script number
-
-	public ScriptBuilder<T> increasing(String field) {
-		return increasing(field, 1);
-	}
-
-	public ScriptBuilder<T> increasing(String field, Number value) {
-		return append(genSymbol(field, "+="), field, value);
-	}
-
-	public ScriptBuilder<T> decrease(String field) {
-		return decrease(field, 1);
-	}
-
-	public ScriptBuilder<T> decrease(String field, Number value) {
-		return append(genSymbol(field, "-="), field, value);
-	}
-
-	// endregion
-
-	// region build
-
-	public Script build() {
-		String source = sourceBuilder.toString();
-		return Script.of(s -> s.lang(lang).source(source).params(new HashMap<>(params)));
-	}
-	// endregion
-
+        @JvmStatic
+        fun genSetIfAbsent(field: String?): String {
+            val sourceField = genSourceField(field)
+            val condition = "%s==null || %s==''".formatted(sourceField, sourceField)
+            val script = genSetParams(field)
+            return genIf(condition, script)
+        }
+    }
 }

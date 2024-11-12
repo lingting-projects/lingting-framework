@@ -1,42 +1,44 @@
-package live.lingting.framework.util;
+package live.lingting.framework.util
 
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest
 
 /**
  * @author lingting 2022/10/28 17:54
  */
-public final class HttpUtils {
+class HttpUtils private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	public static final String HEADER_HOST = "Host";
+    companion object {
+        const val HEADER_HOST: String = "Host"
 
-	public static final String HEADER_ORIGIN = "Origin";
+        const val HEADER_ORIGIN: String = "Origin"
 
-	public static final String HEADER_USER_AGENT = "User-Agent";
+        const val HEADER_USER_AGENT: String = "User-Agent"
 
-	public static final String HEADER_AUTHORIZATION = "Authorization";
+        const val HEADER_AUTHORIZATION: String = "Authorization"
 
-	public static final String HEADER_ACCEPT_LANGUAGE = "Accept-Language";
+        const val HEADER_ACCEPT_LANGUAGE: String = "Accept-Language"
 
-	private HttpUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+        fun host(request: HttpServletRequest): String {
+            return request.getHeader(HEADER_HOST)
+        }
 
-	public static String host(HttpServletRequest request) {
-		return request.getHeader(HEADER_HOST);
-	}
+        fun origin(request: HttpServletRequest): String {
+            return request.getHeader(HEADER_ORIGIN)
+        }
 
-	public static String origin(HttpServletRequest request) {
-		return request.getHeader(HEADER_ORIGIN);
-	}
+        fun language(request: HttpServletRequest): String {
+            return request.getHeader(HEADER_ACCEPT_LANGUAGE)
+        }
 
-	public static String language(HttpServletRequest request) {
-		return request.getHeader(HEADER_ACCEPT_LANGUAGE);
-	}
+        fun authorization(request: HttpServletRequest): String {
+            return request.getHeader(HEADER_AUTHORIZATION)
+        }
 
-	public static String authorization(HttpServletRequest request) {
-		return request.getHeader(HEADER_AUTHORIZATION);
-	}
-
-	public static String userAgent(HttpServletRequest request) {
-		return request.getHeader(HEADER_USER_AGENT);
-	}
-
+        fun userAgent(request: HttpServletRequest): String {
+            return request.getHeader(HEADER_USER_AGENT)
+        }
+    }
 }

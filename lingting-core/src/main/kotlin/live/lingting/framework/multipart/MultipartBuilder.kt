@@ -1,101 +1,92 @@
-package live.lingting.framework.multipart;
+package live.lingting.framework.multipart
 
-import live.lingting.framework.stream.FileCloneInputStream;
-import live.lingting.framework.util.ValueUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
+import live.lingting.framework.stream.FileCloneInputStream
+import live.lingting.framework.util.ValueUtils
+import java.io.File
+import java.io.InputStream
 
 /**
  * @author lingting 2024-09-14 10:39
  */
-public class MultipartBuilder {
+class MultipartBuilder {
+    var partSize: Long = 0
+        private set
 
-	private long partSize;
+    var id: String = ValueUtils.simpleUuid()
+        private set
 
-	private String id = ValueUtils.simpleUuid();
+    var source: FileCloneInputStream? = null
+        private set
 
-	private FileCloneInputStream source;
+    var size: Long = 0
+        private set
 
-	private long size;
+    var maxPartSize: Long = 0
+        private set
 
-	private long maxPartSize;
+    var minPartSize: Long = 0
+        private set
 
-	private long minPartSize;
+    var maxPartCount: Long = 0
+        private set
 
-	private long maxPartCount;
+    fun partSize(partSize: Long): MultipartBuilder {
+        this.partSize = partSize
+        return this
+    }
 
-	public MultipartBuilder partSize(long partSize) {
-		this.partSize = partSize;
-		return this;
-	}
+    fun id(id: String): MultipartBuilder {
+        this.id = id
+        return this
+    }
 
-	public MultipartBuilder id(String id) {
-		this.id = id;
-		return this;
-	}
 
-	public MultipartBuilder source(InputStream source) throws IOException {
-		this.source = source instanceof FileCloneInputStream in ? in : new FileCloneInputStream(source);
-		return size(this.source.size());
-	}
+    fun source(source: InputStream): MultipartBuilder {
+        this.source = if (source is FileCloneInputStream) source else FileCloneInputStream(source)
+        return size(this.source!!.size())
+    }
 
-	public MultipartBuilder source(File file) throws IOException {
-		return source(new FileCloneInputStream(file));
-	}
 
-	public MultipartBuilder size(long size) {
-		this.size = size;
-		return this;
-	}
+    fun source(file: File): MultipartBuilder {
+        return source(FileCloneInputStream(file))
+    }
 
-	public MultipartBuilder maxPartSize(long maxPartSize) {
-		this.maxPartSize = maxPartSize;
-		return this;
-	}
+    fun size(size: Long): MultipartBuilder {
+        this.size = size
+        return this
+    }
 
-	public MultipartBuilder minPartSize(long minPartSize) {
-		this.minPartSize = minPartSize;
-		return this;
-	}
+    fun maxPartSize(maxPartSize: Long): MultipartBuilder {
+        this.maxPartSize = maxPartSize
+        return this
+    }
 
-	public MultipartBuilder maxPartCount(long maxPartCount) {
-		this.maxPartCount = maxPartCount;
-		return this;
-	}
+    fun minPartSize(minPartSize: Long): MultipartBuilder {
+        this.minPartSize = minPartSize
+        return this
+    }
 
-	public Collection<Part> parts() {
-		if (minPartSize > 0 && partSize < minPartSize) {
-			partSize(minPartSize);
-		}
-		long number = Multipart.calculate(size, partSize);
-		// 限制了最大分片数量. 超过之后重新分配每片大小
-		if (maxPartCount > 0 && number > maxPartCount) {
-			partSize(partSize + (partSize / 2));
-			return parts();
-		}
-		return Multipart.split(size, partSize);
-	}
+    fun maxPartCount(maxPartCount: Long): MultipartBuilder {
+        this.maxPartCount = maxPartCount
+        return this
+    }
 
-	public Multipart build() {
-		Collection<Part> parts = parts();
-		File file = source == null ? null : source.source();
-		return new Multipart(id, file, size, partSize, parts);
-	}
+    fun parts(): Collection<Part> {
+        if (minPartSize > 0 && partSize < minPartSize) {
+            partSize(minPartSize)
+        }
+        val number: Long = Multipart.calculate(size, partSize)
+        // 限制了最大分片数量. 超过之后重新分配每片大小
+        if (maxPartCount > 0 && number > maxPartCount) {
+            partSize(partSize + (partSize / 2))
+            return parts()
+        }
+        return Multipart.split(size, partSize)
+    }
 
-	public long getPartSize() {return this.partSize;}
-
-	public String getId() {return this.id;}
-
-	public FileCloneInputStream getSource() {return this.source;}
-
-	public long getSize() {return this.size;}
-
-	public long getMaxPartSize() {return this.maxPartSize;}
-
-	public long getMinPartSize() {return this.minPartSize;}
-
-	public long getMaxPartCount() {return this.maxPartCount;}
+    fun build(): Multipart {
+        val parts = parts()
+        val file = if (source == null) null else source!!.source()
+        return Multipart(id, file, size, partSize, parts)
+    }
 }

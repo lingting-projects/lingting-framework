@@ -1,51 +1,48 @@
-package live.lingting.framework.security.grpc;
+package live.lingting.framework.security.grpc
 
-import live.lingting.framework.convert.SecurityGrpcConvert;
-import live.lingting.framework.security.domain.AuthorizationVO;
-import live.lingting.framework.security.domain.SecurityScope;
-import live.lingting.framework.security.domain.SecurityScopeAttributes;
-import live.lingting.framework.util.BooleanUtils;
-import live.lingting.framework.util.CollectionUtils;
-import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
+import live.lingting.framework.convert.SecurityGrpcConvert
+import live.lingting.framework.security.domain.AuthorizationVO
+import live.lingting.framework.security.domain.SecurityScope
+import live.lingting.framework.security.domain.SecurityScopeAttributes
+import live.lingting.framework.security.grpc.SecurityGrpcExpandConvert.ExpandMapstruct
+import live.lingting.framework.util.BooleanUtils
+import live.lingting.framework.util.CollectionUtils
+import org.mapstruct.Mapper
+import org.mapstruct.factory.Mappers
 
 /**
  * @author lingting 2024-01-30 20:19
  */
-public class SecurityGrpcExpandConvert extends SecurityGrpcConvert {
+class SecurityGrpcExpandConvert : SecurityGrpcConvert() {
+    override fun scopeExpand(scope: SecurityScope): ExpandSecurityScope {
+        val expand = ExpandMapstruct.INSTANCE.of(scope)
+        val attributes = scope.attributes
+        expand.isExpand = isExpand(attributes!!)
+        return expand
+    }
 
-	@Override
-	public ExpandSecurityScope scopeExpand(SecurityScope scope) {
-		ExpandSecurityScope expand = ExpandMapstruct.INSTANCE.of(scope);
-		SecurityScopeAttributes attributes = scope.getAttributes();
-		expand.setExpand(isExpand(attributes));
-		return expand;
-	}
+    override fun voExpand(vo: AuthorizationVO): ExpandAuthorizationVO {
+        val expand = ExpandMapstruct.INSTANCE.of(vo)
+        val attributes = vo.attributes
+        expand.isExpand = isExpand(attributes!!)
+        return expand
+    }
 
-	@Override
-	public ExpandAuthorizationVO voExpand(AuthorizationVO vo) {
-		ExpandAuthorizationVO expand = ExpandMapstruct.INSTANCE.of(vo);
-		SecurityScopeAttributes attributes = vo.getAttributes();
-		expand.setExpand(isExpand(attributes));
-		return expand;
-	}
+    fun isExpand(attributes: SecurityScopeAttributes): Boolean {
+        if (!CollectionUtils.isEmpty(attributes) && attributes.containsKey("expand")) {
+            return BooleanUtils.isTrue(attributes["expand"]!!)
+        }
+        return false
+    }
 
-	boolean isExpand(SecurityScopeAttributes attributes) {
-		if (!CollectionUtils.isEmpty(attributes) && attributes.containsKey("expand")) {
-			return BooleanUtils.isTrue(attributes.get("expand"));
-		}
-		return false;
-	}
+    @Mapper
+    interface ExpandMapstruct {
+        fun of(vo: AuthorizationVO?): ExpandAuthorizationVO
 
-	@Mapper
-	public interface ExpandMapstruct {
+        fun of(scope: SecurityScope?): ExpandSecurityScope
 
-		ExpandMapstruct INSTANCE = Mappers.getMapper(ExpandMapstruct.class);
-
-		ExpandAuthorizationVO of(AuthorizationVO vo);
-
-		ExpandSecurityScope of(SecurityScope scope);
-
-	}
-
+        companion object {
+            val INSTANCE: ExpandMapstruct = Mappers.getMapper(ExpandMapstruct::class.java)
+        }
+    }
 }

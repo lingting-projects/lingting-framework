@@ -1,272 +1,261 @@
-package live.lingting.framework.http;
+package live.lingting.framework.http
 
-import live.lingting.framework.util.CollectionUtils;
-import live.lingting.framework.util.StringUtils;
-import live.lingting.framework.value.MultiValue;
-import live.lingting.framework.value.multi.StringMultiValue;
-
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import static live.lingting.framework.util.StringUtils.deleteLast;
+import live.lingting.framework.util.CollectionUtils
+import live.lingting.framework.util.StringUtils
+import live.lingting.framework.value.MultiValue
+import live.lingting.framework.value.multi.StringMultiValue
+import java.net.URI
+import java.net.URISyntaxException
+import java.net.URL
+import java.util.*
+import java.util.function.BiConsumer
 
 /**
  * @author lingting 2024-01-29 16:13
  */
-@SuppressWarnings("unchecked")
-public class HttpUrlBuilder {
+class HttpUrlBuilder {
+    protected val params: StringMultiValue = StringMultiValue()
 
-	protected final StringMultiValue params = new StringMultiValue();
+    protected var scheme: String = "https"
 
-	protected String scheme = "https";
+    protected var host: String? = null
 
-	protected String host;
+    protected var port: Int? = null
 
-	protected Integer port;
+    protected var uri: StringBuilder = StringBuilder("/")
 
-	protected StringBuilder uri = new StringBuilder("/");
+    fun params(): StringMultiValue {
+        return params.unmodifiable()
+    }
 
-	public static HttpUrlBuilder builder() {
-		return new HttpUrlBuilder();
-	}
+    fun scheme(): String {
+        return scheme
+    }
 
-	public static HttpUrlBuilder from(String url) {
-		URI u = URI.create(url);
-		return from(u);
-	}
+    fun host(): String? {
+        return host
+    }
 
-	public static HttpUrlBuilder from(URI u) {
-		HttpUrlBuilder builder = builder().scheme(u.getScheme()).host(u.getHost()).port(u.getPort()).uri(u.getPath());
-		String query = u.getQuery();
-		if (StringUtils.hasText(query)) {
-			Arrays.stream(query.split("&")).forEach(s -> {
-				String[] split = s.split("=", 2);
-				String name = split[0];
-				builder.addParam(name, split.length == 1 ? null : split[1]);
-			});
-		}
-		return builder;
-	}
+    fun port(): Int? {
+        return port
+    }
 
-	public static String buildQuery(MultiValue<String, String, ?> value) {
-		return buildQuery((Map<String, Collection<String>>) value.map());
-	}
+    fun uri(): String {
+        return uri.toString()
+    }
 
-	public static String buildQuery(Map<String, Collection<String>> map) {
-		if (CollectionUtils.isEmpty(map)) {
-			return "";
-		}
-		List<String> keys = map.keySet().stream().sorted().toList();
+    fun scheme(scheme: String): HttpUrlBuilder {
+        this.scheme = scheme
+        return this
+    }
 
-		StringBuilder builder = new StringBuilder();
-		for (String key : keys) {
-			Collection<String> list = map.get(key);
-			if (CollectionUtils.isEmpty(list)) {
-				builder.append(key).append("&");
-			}
-			else {
-				for (String v : list) {
-					builder.append(key).append("=").append(v).append("&");
-				}
-			}
-		}
+    fun http(): HttpUrlBuilder {
+        return scheme("http")
+    }
 
-		return deleteLast(builder).toString();
-	}
+    fun https(): HttpUrlBuilder {
+        return scheme("https")
+    }
 
-	public StringMultiValue params() {
-		return params.unmodifiable();
-	}
+    fun host(host: String): HttpUrlBuilder {
+        if (host.contains("://")) {
+            val split: Array<String> = host.split("://".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            scheme(split[0])
+            this.host = split[1]
+        } else {
+            this.host = host
+        }
+        return this
+    }
 
-	public String scheme() {
-		return scheme;
-	}
+    fun port(port: Int): HttpUrlBuilder {
+        this.port = port
+        return this
+    }
 
-	public String host() {
-		return host;
-	}
+    fun uri(string: String): HttpUrlBuilder {
+        if (!StringUtils.hasText(string)) {
+            this.uri = StringBuilder("/")
+            return this
+        }
+        val newUri: String
+        val query: String
+        if (string.contains("?")) {
+            val split: Array<String> = string.split("\\?".toRegex(), limit = 2).toTypedArray()
+            newUri = split[0]
+            query = split[1]
+        } else {
+            newUri = string
+            query = ""
+        }
+        this.uri = StringBuilder(newUri)
+        if (StringUtils.hasText(query)) {
+            val split: Array<String> = query.split("&".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            for (kv in split) {
+                val array: Array<String> = kv.split("=".toRegex(), limit = 2).toTypedArray()
+                val name = array[0]
+                val value = if (array.size > 1) array[1] else null
+                addParam(name, value)
+            }
+        }
+        return this
+    }
 
-	public Integer port() {
-		return port;
-	}
+    fun uri(uri: StringBuilder): HttpUrlBuilder {
+        return uri(uri.toString())
+    }
 
-	public String uri() {
-		return uri.toString();
-	}
+    fun uriSegment(vararg segments: String): HttpUrlBuilder {
+        if (!uri.isEmpty() && uri.substring(uri.length - 1) != "/") {
+            uri.append("/")
+        }
 
-	public HttpUrlBuilder scheme(String scheme) {
-		this.scheme = scheme;
-		return this;
-	}
+        for (segment in segments) {
+            uri.append(segment).append("/")
+        }
 
-	public HttpUrlBuilder http() {
-		return scheme("http");
-	}
+        return this
+    }
 
-	public HttpUrlBuilder https() {
-		return scheme("https");
-	}
+    fun addParam(name: String, value: Any?): HttpUrlBuilder {
+        params.ifAbsent(name)
+        if (value is Map<*, *>) {
+            value.forEach { (k: Any?, v: Any?) -> addParam(k.toString(), v) }
+        } else if (CollectionUtils.isMulti(value)) {
+            val list: List<Any> = CollectionUtils.multiToList(value)
+            list.forEach { o: Any -> addParam(name, o) }
+        } else if (value != null) {
+            params.add(name, value.toString())
+        }
+        return this
+    }
 
-	public HttpUrlBuilder host(String host) {
-		if (host.contains("://")) {
-			String[] split = host.split("://");
-			scheme(split[0]);
-			this.host = split[1];
-		}
-		else {
-			this.host = host;
-		}
-		return this;
-	}
+    fun addParams(params: Map<String, *>): HttpUrlBuilder {
+        params.forEach { (name: String, value: Any?) -> this.addParam(name, value) }
+        return this
+    }
 
-	public HttpUrlBuilder port(Integer port) {
-		this.port = port;
-		return this;
-	}
+    fun addParams(params: MultiValue<String, *, *>): HttpUrlBuilder {
+        params.forEach { name: Any?, value: Any? -> }
+        params.forEach(object : BiConsumer<Any?, Any?> {
+            override fun accept(t: Any?, u: Any?) {
+                addParam(t.toString(), u)
+            }
+        })
+        return this
+    }
 
-	public HttpUrlBuilder uri(String string) {
-		if (!StringUtils.hasText(string)) {
-			this.uri = new StringBuilder("/");
-			return this;
-		}
-		String newUri;
-		String query;
-		if (string.contains("?")) {
-			String[] split = string.split("\\?", 2);
-			newUri = split[0];
-			query = split[1];
-		}
-		else {
-			newUri = string;
-			query = "";
-		}
-		this.uri = new StringBuilder(newUri);
-		if (StringUtils.hasText(query)) {
-			String[] split = query.split("&");
-			for (String kv : split) {
-				String[] array = kv.split("=", 2);
-				String name = array[0];
-				String value = array.length > 1 ? array[1] : null;
-				addParam(name, value);
-			}
-		}
-		return this;
-	}
+    fun build(): String {
+        require(StringUtils.hasText(host)) { "Host [%s] is invalid!".formatted(host) }
+        require(!(port != null && (port!! < 0 || port!! > 65535))) { "Port [%d] is invalid!".formatted(port) }
 
-	public HttpUrlBuilder uri(StringBuilder uri) {
-		return uri(uri.toString());
-	}
+        val builder = StringBuilder()
+        builder.append(scheme).append("://")
+        builder.append(host)
+        if (host.endsWith("/")) {
+            builder.deleteCharAt(builder.length - 1)
+        }
+        if (port != null) {
+            builder.append(":").append(port)
+        }
+        builder.append(buildPath())
+        val query = buildQuery()
+        if (StringUtils.hasText(query)) {
+            if (builder[builder.length - 1] != '') {
+                builder.append("")
+            }
+            builder.append(query)
+        }
+        return builder.toString()
+    }
 
-	public HttpUrlBuilder uriSegment(String... segments) {
-		if (!uri.isEmpty() && !uri.substring(uri.length() - 1).equals("/")) {
-			uri.append("/");
-		}
+    fun buildPath(): String {
+        if (!StringUtils.hasText(uri)) {
+            return ""
+        }
+        val builder = StringBuilder()
+        val string = uri.toString()
+        if (!string.startsWith("/")) {
+            builder.append("/")
+        }
+        builder.append(string)
+        if (string.endsWith("/")) {
+            builder.deleteCharAt(builder.length - 1)
+        }
+        return builder.toString()
+    }
 
-		for (String segment : segments) {
-			uri.append(segment).append("/");
-		}
+    fun buildUri(): URI {
+        try {
+            val path = buildPath()
+            val query = buildQuery()
+            val p = if (port == null) -1 else port!!
+            val q = if (StringUtils.hasText(query)) query else null
+            return URI(scheme, null, host, p, path, q, null)
+        } catch (e: URISyntaxException) {
+            throw IllegalStateException("Could not create URI object: " + e.message, e)
+        }
+    }
 
-		return this;
-	}
 
-	public HttpUrlBuilder addParam(String name, Object value) {
-		params.ifAbsent(name);
-		if (value instanceof Map<?, ?> map) {
-			map.forEach((k, v) -> addParam(k.toString(), v));
-		}
-		else if (CollectionUtils.isMulti(value)) {
-			List<Object> list = CollectionUtils.multiToList(value);
-			list.forEach(o -> addParam(name, o));
-		}
-		else if (value != null) {
-			params.add(name, value.toString());
-		}
-		return this;
-	}
+    fun buildUrl(): URL {
+        return buildUri().toURL()
+    }
 
-	public HttpUrlBuilder addParams(Map<String, ?> params) {
-		params.forEach(this::addParam);
-		return this;
-	}
+    fun copy(): HttpUrlBuilder {
+        return builder().scheme(scheme).host(host!!).port(port).uri(uri).addParams(params)
+    }
 
-	public HttpUrlBuilder addParams(MultiValue<String, ?, ?> params) {
-		params.forEach(this::addParam);
-		return this;
-	}
+    companion object {
 
-	public String build() {
-		if (!StringUtils.hasText(host)) {
-			throw new IllegalArgumentException("Host [%s] is invalid!".formatted(host));
-		}
-		if (port != null && (port < 0 || port > 65535)) {
-			throw new IllegalArgumentException("Port [%d] is invalid!".formatted(port));
-		}
+        fun builder(): HttpUrlBuilder {
+            return HttpUrlBuilder()
+        }
 
-		StringBuilder builder = new StringBuilder();
-		builder.append(scheme).append("://");
-		builder.append(host);
-		if (host.endsWith("/")) {
-			builder.deleteCharAt(builder.length() - 1);
-		}
-		if (port != null) {
-			builder.append(":").append(port);
-		}
-		builder.append(buildPath());
-		String query = buildQuery();
-		if (StringUtils.hasText(query)) {
-			if (builder.charAt(builder.length() - 1) != '?') {
-				builder.append("?");
-			}
-			builder.append(query);
-		}
-		return builder.toString();
-	}
 
-	public String buildPath() {
-		if (!StringUtils.hasText(uri)) {
-			return "";
-		}
-		StringBuilder builder = new StringBuilder();
-		String string = uri.toString();
-		if (!string.startsWith("/")) {
-			builder.append("/");
-		}
-		builder.append(string);
-		if (string.endsWith("/")) {
-			builder.deleteCharAt(builder.length() - 1);
-		}
-		return builder.toString();
-	}
+        fun from(url: String): HttpUrlBuilder {
+            val u = URI.create(url)
+            return from(u)
+        }
 
-	public String buildQuery() {
-		return buildQuery(params);
-	}
 
-	public URI buildUri() {
-		try {
-			String path = buildPath();
-			String query = buildQuery();
-			int p = port == null ? -1 : port;
-			String q = StringUtils.hasText(query) ? query : null;
-			return new URI(scheme, null, host, p, path, q, null);
-		}
-		catch (URISyntaxException e) {
-			throw new IllegalStateException("Could not create URI object: " + e.getMessage(), e);
-		}
-	}
+        fun from(u: URI): HttpUrlBuilder {
+            val builder = builder().scheme(u.scheme).host(u.host).port(u.port).uri(u.path)
+            val query = u.query
+            if (StringUtils.hasText(query)) {
+                Arrays.stream<String>(query.split("&".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()).forEach { s: String ->
+                    val split: Array<String> = s.split("=".toRegex(), limit = 2).toTypedArray()
+                    val name = split[0]
+                    builder.addParam(name, if (split.size == 1) null else split[1])
+                }
+            }
+            return builder
+        }
 
-	public URL buildUrl() throws MalformedURLException {
-		return buildUri().toURL();
-	}
 
-	public HttpUrlBuilder copy() {
-		return builder().scheme(scheme).host(host).port(port).uri(uri).addParams(params);
-	}
+        fun buildQuery(value: MultiValue<String, String, *> = params): String {
+            return buildQuery(value.map() as Map<String, Collection<String>>)
+        }
 
+        fun buildQuery(map: Map<String, Collection<String>>): String {
+            if (CollectionUtils.isEmpty(map)) {
+                return ""
+            }
+            val keys = map!!.keys.stream().sorted().toList()
+
+            val builder = StringBuilder()
+            for (key in keys) {
+                val list = map[key]
+                if (CollectionUtils.isEmpty(list)) {
+                    builder.append(key).append("&")
+                } else {
+                    for (v in list!!) {
+                        builder.append(key).append("=").append(v).append("&")
+                    }
+                }
+            }
+
+            return StringUtils.deleteLast(builder).toString()
+        }
+    }
 }

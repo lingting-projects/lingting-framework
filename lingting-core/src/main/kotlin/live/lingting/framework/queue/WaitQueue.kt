@@ -1,55 +1,38 @@
-package live.lingting.framework.queue;
+package live.lingting.framework.queue
 
-import java.util.Collection;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
 
 /**
  * 等待队列
  *
  * @author lingting 2023/1/29 10:52
  */
-public class WaitQueue<V> {
+class WaitQueue<V> constructor(private val queue: LinkedBlockingQueue<V> = LinkedBlockingQueue()) {
+    fun get(): V {
+        return queue.poll()
+    }
 
-	private final LinkedBlockingQueue<V> queue;
 
-	public WaitQueue() {
-		this(new LinkedBlockingQueue<>());
-	}
+    fun poll(timeout: Long = 10, unit: TimeUnit? = TimeUnit.HOURS): V {
+        var v: V?
+        do {
+            v = queue.poll(timeout, unit)
+        } while (v == null)
+        return v
+    }
 
-	public WaitQueue(LinkedBlockingQueue<V> queue) {
-		this.queue = queue;
-	}
+    fun clear() {
+        queue.clear()
+    }
 
-	public V get() {
-		return queue.poll();
-	}
+    fun add(seat: V) {
+        queue.add(seat)
+    }
 
-	public V poll() throws InterruptedException {
-		return poll(10, TimeUnit.HOURS);
-	}
-
-	public V poll(long timeout, TimeUnit unit) throws InterruptedException {
-		V v;
-		do {
-			v = queue.poll(timeout, unit);
-		}
-		while (v == null);
-		return v;
-	}
-
-	public void clear() {
-		queue.clear();
-	}
-
-	public void add(V seat) {
-		queue.add(seat);
-	}
-
-	public void addAll(Collection<V> accounts) {
-		for (V account : accounts) {
-			add(account);
-		}
-	}
-
+    fun addAll(accounts: Collection<V>) {
+        for (account in accounts) {
+            add(account)
+        }
+    }
 }

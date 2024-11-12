@@ -1,46 +1,40 @@
-package live.lingting.framework.dingtalk.message;
+package live.lingting.framework.dingtalk.message
 
-import live.lingting.framework.MarkdownBuilder;
-import live.lingting.framework.dingtalk.DingTalkParams;
-import live.lingting.framework.dingtalk.enums.MessageTypeEnum;
+import live.lingting.framework.MarkdownBuilder
+import live.lingting.framework.dingtalk.DingTalkParams
+import live.lingting.framework.dingtalk.DingTalkParams.Markdown
+import live.lingting.framework.dingtalk.enums.MessageTypeEnum
 
 /**
  * @author lingting 2020/6/10 22:13
  */
+class DingTalkMarkDownMessage : AbstractDingTalkMessage() {
+    /**
+     * 标题
+     */
+    var title: String? = null
+        private set
 
-public class DingTalkMarkDownMessage extends AbstractDingTalkMessage {
+    /**
+     * 内容
+     */
+    var text: MarkdownBuilder? = null
+        private set
 
-	/**
-	 * 标题
-	 */
-	private String title;
+    override val type: MessageTypeEnum
+        get() = MessageTypeEnum.MARKDOWN
 
-	/**
-	 * 内容
-	 */
-	private MarkdownBuilder text;
+    override fun put(params: DingTalkParams): DingTalkParams {
+        return params.setMarkdown(Markdown().setTitle(title).setText(text!!.build()))
+    }
 
-	@Override
-	public MessageTypeEnum getType() {
-		return MessageTypeEnum.MARKDOWN;
-	}
+    fun setTitle(title: String?): DingTalkMarkDownMessage {
+        this.title = title
+        return this
+    }
 
-	@Override
-	public DingTalkParams put(DingTalkParams params) {
-		return params.setMarkdown(new DingTalkParams.Markdown().setTitle(title).setText(text.build()));
-	}
-
-	public String getTitle() {return this.title;}
-
-	public MarkdownBuilder getText() {return this.text;}
-
-	public DingTalkMarkDownMessage setTitle(String title) {
-		this.title = title;
-		return this;
-	}
-
-	public DingTalkMarkDownMessage setText(MarkdownBuilder text) {
-		this.text = text;
-		return this;
-	}
+    fun setText(text: MarkdownBuilder?): DingTalkMarkDownMessage {
+        this.text = text
+        return this
+    }
 }

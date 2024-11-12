@@ -1,4 +1,4 @@
-package live.lingting.framework.mybatis.alias;
+package live.lingting.framework.mybatis.alias
 
 /**
  * TableAlias 注解没有找到时抛出的异常
@@ -6,21 +6,12 @@ package live.lingting.framework.mybatis.alias;
  * @author hccake
  * @see TableAlias
  */
-public class TableAliasNotFoundException extends RuntimeException {
+class TableAliasNotFoundException : RuntimeException {
+    constructor()
 
-	public TableAliasNotFoundException() {
-	}
+    constructor(message: String?) : super(message)
 
-	public TableAliasNotFoundException(String message) {
-		super(message);
-	}
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
 
-	public TableAliasNotFoundException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public TableAliasNotFoundException(Throwable cause) {
-		super(cause);
-	}
-
+    constructor(cause: Throwable?) : super(cause)
 }

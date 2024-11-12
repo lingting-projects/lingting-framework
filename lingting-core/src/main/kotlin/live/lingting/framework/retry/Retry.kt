@@ -1,81 +1,69 @@
-package live.lingting.framework.retry;
+package live.lingting.framework.retry
 
-import live.lingting.framework.function.ThrowingSupplier;
-import org.slf4j.Logger;
-
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
+import live.lingting.framework.function.ThrowingSupplier
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.time.Duration
 
 /**
  * @author lingting 2023-10-23 19:14
  */
-public class Retry<T> {
+open class Retry<T>(protected val supplier: ThrowingSupplier<T>, protected val function: RetryFunction) {
+    protected val logs: MutableList<RetryLog<T?>> = ArrayList()
 
-	private static final Logger log = org.slf4j.LoggerFactory.getLogger(Retry.class);
-	protected final ThrowingSupplier<T> supplier;
-
-	protected final RetryFunction function;
-
-	protected final List<RetryLog<T>> logs = new ArrayList<>();
-
-	/**
-	 * 当前重试次数
-	 */
-	protected int count = 0;
-
-	public Retry(ThrowingSupplier<T> supplier, RetryFunction function) {
-		this.supplier = supplier;
-		this.function = function;
-	}
-
-	public static <T> Retry<T> simple(ThrowingSupplier<T> supplier) {
-		return simple(3, Duration.ofMillis(10), supplier);
-	}
-
-	public static <T> Retry<T> simple(int maxRetryCount, Duration delay, ThrowingSupplier<T> supplier) {
-		return new SimpleRetry<>(maxRetryCount, delay, supplier);
-	}
-
-	public T get() throws Exception {
-		return value().get();
-	}
+    /**
+     * 当前重试次数
+     */
+    protected var count: Int = 0
 
 
-	public RetryValue<T> value() {
-		Exception ex = null;
-		while (true) {
-			try {
-				if (ex != null) {
-					logs.add(new RetryLog<>(null, ex));
-					boolean allowed = function.allowRetry(count, ex);
+    fun get(): T? {
+        return value().get()
+    }
 
-					// 不允许重试
-					if (!allowed) {
-						return new RetryValue<>(null, false, logs);
-					}
 
-					// 重试休眠时间获取
-					Duration delay = function.getDelay(count, ex);
-					// 重试计数
-					count++;
-					// 休眠
-					Thread.sleep(delay.toMillis());
-				}
+    fun value(): RetryValue<T?> {
+        var ex: Exception? = null
+        while (true) {
+            try {
+                if (ex != null) {
+                    logs.add(RetryLog(null, ex))
+                    val allowed = function.allowRetry(count, ex)
 
-				T t = supplier.get();
-				logs.add(new RetryLog<>(t, null));
-				// 获取到结果
-				return new RetryValue<>(t, true, logs);
-			}
-			catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-				ex = e;
-			}
-			catch (Exception e) {
-				ex = e;
-			}
-		}
-	}
+                    // 不允许重试
+                    if (!allowed) {
+                        return RetryValue(null, false, logs)
+                    }
 
+                    // 重试休眠时间获取
+                    val delay = function.getDelay(count, ex)
+                    // 重试计数
+                    count++
+                    // 休眠
+                    Thread.sleep(delay!!.toMillis())
+                }
+
+                val t = supplier.get()
+                logs.add(RetryLog(t, null))
+                // 获取到结果
+                return RetryValue(t, true, logs)
+            } catch (e: InterruptedException) {
+                Thread.currentThread().interrupt()
+                ex = e
+            } catch (e: Exception) {
+                ex = e
+            }
+        }
+    }
+
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(Retry::class.java)
+        fun <T> simple(supplier: ThrowingSupplier<T>): Retry<T> {
+            return simple(3, Duration.ofMillis(10), supplier)
+        }
+
+        fun <T> simple(maxRetryCount: Int, delay: Duration?, supplier: ThrowingSupplier<T>): Retry<T> {
+            return SimpleRetry(maxRetryCount, delay, supplier)
+        }
+    }
 }

@@ -1,124 +1,127 @@
-package live.lingting.framework.util;
-
-import java.util.List;
+package live.lingting.framework.util
 
 /**
  * @author lingting 2023-12-22 11:28
  */
-public final class ByteUtils {
+class ByteUtils private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	private ByteUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+    companion object {
+        fun toArray(list: List<Byte>): ByteArray {
+            val bytes = ByteArray(list.size)
+            for (i in list.indices) {
+                bytes[i] = list[i]
+            }
+            return bytes
+        }
 
-	public static byte[] toArray(List<Byte> list) {
-		byte[] bytes = new byte[list.size()];
-		for (int i = 0; i < list.size(); i++) {
-			bytes[i] = list.get(i);
-		}
-		return bytes;
-	}
+        /**
+         * 两个字节是否表示行尾
+         *
+         *
+         * 字节1在字节2前面
+         *
+         *
+         * @param byte1 字节1
+         * @param byte2 字节2
+         * @return true 行尾
+         */
 
-	/**
-	 * 两个字节是否表示行尾
-	 * <p>
-	 * 字节1在字节2前面
-	 * </p>
-	 *
-	 * @param byte1 字节1
-	 * @param byte2 字节2
-	 * @return true 行尾
-	 */
-	public static boolean isEndLine(byte byte1, byte byte2) {
-		return byte1 == '\r' && byte2 == '\n';
-	}
+        fun isEndLine(byte1: Byte, byte2: Byte): Boolean {
+            return byte1 == '\r'.code.toByte() && byte2 == '\n'.code.toByte()
+        }
 
-	/**
-	 * 字节是否表示行尾
-	 *
-	 * @param byte1 字节1
-	 * @return true 行尾
-	 */
-	public static boolean isEndLine(byte byte1) {
-		return byte1 == '\n';
-	}
+        /**
+         * 字节是否表示行尾
+         *
+         * @param byte1 字节1
+         * @return true 行尾
+         */
 
-	/**
-	 * 此数据是否为完整的一行数据(以换行符结尾)
-	 *
-	 * @param bytes 字节
-	 * @return true 一整行
-	 */
-	public static boolean isLine(List<Byte> bytes) {
-		int size = bytes.size();
-		if (size < 1) {
-			return false;
-		}
+        fun isEndLine(byte1: Byte): Boolean {
+            return byte1 == '\n'.code.toByte()
+        }
 
-		byte last = bytes.get(size - 1);
-		if (isEndLine(last)) {
-			return true;
-		}
-		if (size > 1) {
-			byte penultimate = bytes.get(size - 2);
-			return isEndLine(penultimate, last);
-		}
-		return false;
-	}
+        /**
+         * 此数据是否为完整的一行数据(以换行符结尾)
+         *
+         * @param bytes 字节
+         * @return true 一整行
+         */
+        fun isLine(bytes: List<Byte>): Boolean {
+            val size = bytes.size
+            if (size < 1) {
+                return false
+            }
 
-	/**
-	 * 此数据是否为完整的一行数据(以换行符结尾)
-	 *
-	 * @param bytes 字节
-	 * @return true 一整行
-	 */
-	public static boolean isLine(byte[] bytes) {
-		int size = bytes.length;
-		if (size < 1) {
-			return false;
-		}
+            val last = bytes[size - 1]
+            if (isEndLine(last)) {
+                return true
+            }
+            if (size > 1) {
+                val penultimate = bytes[size - 2]
+                return isEndLine(penultimate, last)
+            }
+            return false
+        }
 
-		byte last = bytes[size - 1];
-		if (isEndLine(last)) {
-			return true;
-		}
-		if (size > 1) {
-			byte penultimate = bytes[size - 2];
-			return isEndLine(penultimate, last);
-		}
-		return false;
-	}
+        /**
+         * 此数据是否为完整的一行数据(以换行符结尾)
+         *
+         * @param bytes 字节
+         * @return true 一整行
+         */
+        fun isLine(bytes: ByteArray): Boolean {
+            val size = bytes.size
+            if (size < 1) {
+                return false
+            }
 
-	/**
-	 * 移除行数据中的行尾符合
-	 *
-	 * @param list 数据
-	 * @return 移除后的数据, 如果没有则是原数据
-	 */
-	public static byte[] trimEndLine(List<Byte> list) {
-		if (CollectionUtils.isEmpty(list)) {
-			return new byte[0];
-		}
+            val last = bytes[size - 1]
+            if (isEndLine(last)) {
+                return true
+            }
+            if (size > 1) {
+                val penultimate = bytes[size - 2]
+                return isEndLine(penultimate, last)
+            }
+            return false
+        }
 
-		int lastIndex = list.size() - 1;
-		byte last = list.get(lastIndex);
+        /**
+         * 移除行数据中的行尾符合
+         *
+         * @param list 数据
+         * @return 移除后的数据, 如果没有则是原数据
+         */
+        fun trimEndLine(list: List<Byte>): ByteArray {
+            if (CollectionUtils.isEmpty(list)) {
+                return ByteArray(0)
+            }
 
-		// 大于2字节
-		if (list.size() > 1) {
-			int penultimateIndex = list.size() - 2;
-			byte penultimate = list.get(penultimateIndex);
+            val lastIndex = list.size - 1
+            val last = list[lastIndex]
 
-			// 如果是 2字节表示行尾
-			if (isEndLine(penultimate, last)) {
-				return toArray(list.subList(0, penultimateIndex));
-			}
-		}
+            // 大于2字节
+            if (list.size > 1) {
+                val penultimateIndex = list.size - 2
+                val penultimate = list[penultimateIndex]
 
-		// 1字节表示行尾
-		if (isEndLine(last)) {
-			return toArray(list.subList(0, lastIndex));
-		}
+                // 如果是 2字节表示行尾
+                if (isEndLine(penultimate, last)) {
+                    return toArray(list.subList(0, penultimateIndex))
+                }
+            }
 
-		// 如果没有行尾符
-		return toArray(list);
-	}
+            // 1字节表示行尾
+            if (isEndLine(last)) {
+                return toArray(list.subList(0, lastIndex))
+            }
 
+            // 如果没有行尾符
+            return toArray(list)
+        }
+    }
 }

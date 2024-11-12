@@ -1,29 +1,19 @@
-package live.lingting.framework.security.exception;
+package live.lingting.framework.security.exception
 
 /**
  * @author lingting 2023-03-29 20:57
  */
-public abstract class SecurityException extends RuntimeException {
+abstract class SecurityException : RuntimeException {
+    protected constructor() : super("")
 
-	protected SecurityException() {
-		super("");
-	}
+    protected constructor(message: String?) : super(message)
 
-	protected SecurityException(String message) {
-		super(message);
-	}
+    protected constructor(message: String?, cause: Throwable?) : super(message, cause)
 
-	protected SecurityException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    protected constructor(cause: Throwable?) : super("", cause)
 
-	protected SecurityException(Throwable cause) {
-		super("", cause);
-	}
-
-	protected SecurityException(String message, Throwable cause, boolean enableSuppression,
-			boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
-
+    protected constructor(
+        message: String?, cause: Throwable?, enableSuppression: Boolean,
+        writableStackTrace: Boolean
+    ) : super(message, cause, enableSuppression, writableStackTrace)
 }

@@ -1,42 +1,34 @@
-package live.lingting.framework.value.cycle;
+package live.lingting.framework.value.cycle
 
-import live.lingting.framework.value.step.IteratorStepValue;
-
-import java.util.Iterator;
+import live.lingting.framework.value.step.IteratorStepValue
 
 /**
  * @author lingting 2024-01-23 15:24
  */
-public class IteratorCycleValue<T> extends AbstractCycleValue<T> {
+class IteratorCycleValue<T>(step: IteratorStepValue<T>) : AbstractCycleValue<T?>() {
+    private val step: IteratorStepValue<T?>
 
-	private final IteratorStepValue<T> step;
+    constructor(iterator: Iterator<T>) : this(IteratorStepValue<T>(iterator))
 
-	public IteratorCycleValue(Iterator<T> iterator) {
-		this(new IteratorStepValue<>(iterator));
-	}
+    init {
+        this.step = step
+    }
 
-	public IteratorCycleValue(IteratorStepValue<T> step) {
-		this.step = step;
-	}
+    override fun reset() {
+        step.reset()
+    }
 
-	@Override
-	public void reset() {
-		step.reset();
-	}
+    override fun doNext(): T? {
+        if (!step.hasNext()) {
+            step.reset()
+        }
+        return step.next()
+    }
 
-	@Override
-	public T doNext() {
-		if (!step.hasNext()) {
-			step.reset();
-		}
-		return step.next();
-	}
-
-	/**
-	 * 移除上一个next返回的元素
-	 */
-	public void remove() {
-		step.remove();
-	}
-
+    /**
+     * 移除上一个next返回的元素
+     */
+    fun remove() {
+        step.remove()
+    }
 }

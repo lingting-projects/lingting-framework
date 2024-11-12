@@ -1,13 +1,6 @@
-
-package live.lingting.polaris.grpc.exception;
+package live.lingting.polaris.grpc.exception
 
 /**
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
+ * @author [liaochuntao](mailto:liaochuntao@live.com)
  */
-public class PolarisGrpcException extends RuntimeException {
-
-	public PolarisGrpcException(String message) {
-		super(message);
-	}
-
-}
+class PolarisGrpcException(message: String?) : RuntimeException(message)

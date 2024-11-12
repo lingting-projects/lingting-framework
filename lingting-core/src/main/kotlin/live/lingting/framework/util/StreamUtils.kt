@@ -1,296 +1,290 @@
-package live.lingting.framework.util;
+package live.lingting.framework.util
 
-import live.lingting.framework.function.ThrowingBiConsumerE;
-import live.lingting.framework.function.ThrowingBiFunctionE;
-import live.lingting.framework.function.ThrowingConsumerE;
-import live.lingting.framework.stream.CloneInputStream;
-import live.lingting.framework.stream.FileCloneInputStream;
-
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BiConsumer;
-
-import static live.lingting.framework.util.ByteUtils.isLine;
-import static live.lingting.framework.util.ByteUtils.trimEndLine;
+import live.lingting.framework.function.ThrowingBiConsumerE
+import live.lingting.framework.function.ThrowingBiFunctionE
+import live.lingting.framework.function.ThrowingConsumerE
+import live.lingting.framework.stream.CloneInputStream
+import live.lingting.framework.stream.FileCloneInputStream
+import java.io.ByteArrayOutputStream
+import java.io.Closeable
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
+import java.util.function.BiConsumer
 
 /**
  * @author lingting
  */
-public final class StreamUtils {
+class StreamUtils private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	static int readSize = 1024 * 1024 * 10;
+    companion object {
+        var readSize: Int = 1024 * 1024 * 10
 
-	private StreamUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+        /**
+         * 读取流, 如果 function 返回 false 则结束读取
+         *
+         * @param function 消费读取到的数据, byte[] 数据, 读取长度. 返回false 则结束读取
+         */
 
-	/**
-	 * 读取流, 如果 function 返回 false 则结束读取
-	 *
-	 * @param function 消费读取到的数据, byte[] 数据, 读取长度. 返回false 则结束读取
-	 */
-	public static void readByFlag(InputStream in, int size,
-								  ThrowingBiFunctionE<byte[], Integer, Boolean, IOException> function) throws IOException {
-		byte[] bytes = new byte[size];
-		int len;
+        fun readByFlag(
+            `in`: InputStream, size: Int,
+            function: ThrowingBiFunctionE<ByteArray?, Int?, Boolean, IOException?>
+        ) {
+            val bytes = ByteArray(size)
+            var len: Int
 
-		try (in) {
-			while (true) {
-				len = in.read(bytes);
-				// 已读取长度小于1 或者 消费数据, 返回标志位为false
-				boolean isBreak = len < 1 || Boolean.FALSE.equals(function.apply(bytes, len));
-				if (isBreak) {
-					break;
-				}
-			}
-		}
+            `in`.use {
+                while (true) {
+                    len = `in`.read(bytes)
+                    // 已读取长度小于1 或者 消费数据, 返回标志位为false
+                    val isBreak = len < 1 || java.lang.Boolean.FALSE == function.apply(bytes, len)
+                    if (isBreak) {
+                        break
+                    }
+                }
+            }
+        }
 
-	}
 
-	public static byte[] read(InputStream in) throws IOException {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		write(in, out);
-		try {
-			return out.toByteArray();
-		}
-		finally {
-			close(out);
-		}
-	}
+        fun read(`in`: InputStream): ByteArray {
+            val out = ByteArrayOutputStream()
+            write(`in`, out)
+            try {
+                return out.toByteArray()
+            } finally {
+                close(out)
+            }
+        }
 
-	public static void read(InputStream in, ThrowingBiConsumerE<byte[], Integer, IOException> consumer)
-		throws IOException {
-		read(in, readSize, consumer);
-	}
 
-	/**
-	 * 读取流
-	 *
-	 * @param in       流
-	 * @param size     缓冲区大小
-	 * @param consumer 消费读取到的数据, byte[] 数据, 读取长度
-	 * @throws IOException 读取异常
-	 */
-	public static void read(InputStream in, int size, ThrowingBiConsumerE<byte[], Integer, IOException> consumer)
-		throws IOException {
-		readByFlag(in, size, (bytes, length) -> {
-			consumer.accept(bytes, length);
-			return true;
-		});
-	}
+        fun read(`in`: InputStream, consumer: ThrowingBiConsumerE<ByteArray?, Int?, IOException?>) {
+            read(`in`, readSize, consumer)
+        }
 
-	public static void readCopy(InputStream in, ThrowingConsumerE<byte[], IOException> consumer) throws IOException {
-		readCopy(in, readSize, consumer);
-	}
+        /**
+         * 读取流
+         *
+         * @param in       流
+         * @param size     缓冲区大小
+         * @param consumer 消费读取到的数据, byte[] 数据, 读取长度
+         * @throws IOException 读取异常
+         */
 
-	public static void readCopy(InputStream in, int size, ThrowingConsumerE<byte[], IOException> consumer)
-		throws IOException {
-		read(in, size, (bytes, length) -> {
-			byte[] copy = Arrays.copyOf(bytes, length);
-			consumer.accept(copy);
-		});
-	}
+        fun read(`in`: InputStream, size: Int, consumer: ThrowingBiConsumerE<ByteArray?, Int?, IOException?>) {
+            readByFlag(`in`, size) { bytes: ByteArray?, length: Int? ->
+                consumer.accept(bytes, length)
+                true
+            }
+        }
 
-	public static void write(InputStream in, File file) throws IOException {
-		try (OutputStream out = Files.newOutputStream(file.toPath())) {
-			write(in, out);
-		}
-	}
 
-	public static void write(InputStream in, OutputStream out) throws IOException {
-		write(in, out, readSize);
-	}
+        fun readCopy(`in`: InputStream, consumer: ThrowingConsumerE<ByteArray?, IOException?>) {
+            readCopy(`in`, readSize, consumer)
+        }
 
-	public static void write(InputStream in, OutputStream out, int size) throws IOException {
-		read(in, size, (bytes, len) -> out.write(bytes, 0, len));
-	}
 
-	public static void write(InputStream in, OutputStream out, long length) throws IOException {
-		write(in, out, readSize, length);
-	}
+        fun readCopy(`in`: InputStream, size: Int, consumer: ThrowingConsumerE<ByteArray?, IOException?>) {
+            read(`in`, size) { bytes: ByteArray?, length: Int? ->
+                val copy: ByteArray = bytes.copyOf(length)
+                consumer.accept(copy)
+            }
+        }
 
-	public static void write(InputStream in, OutputStream out, int size, long length) throws IOException {
-		AtomicLong atomic = new AtomicLong(0);
-		readByFlag(in, size, (bytes, len) -> {
-			// 计算剩余字节长度
-			long remainLength = length - atomic.get();
-			// 计算本次写入的字节长度, 不能大于剩余字节长度
-			int writeLength = len > remainLength ? (int) remainLength : len;
-			// 写入
-			out.write(bytes, 0, writeLength);
-			long existLength = atomic.addAndGet(len);
-			return existLength < length;
-		});
-	}
 
-	public static String toString(InputStream in) throws IOException {
-		return toString(in, StandardCharsets.UTF_8);
-	}
+        fun write(`in`: InputStream, file: File) {
+            Files.newOutputStream(file.toPath()).use { out ->
+                write(`in`, out)
+            }
+        }
 
-	public static String toString(InputStream in, Charset charset) throws IOException {
-		return toString(in, readSize, charset);
-	}
 
-	public static String toString(InputStream in, int size, Charset charset) throws IOException {
-		try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-			write(in, out, size);
-			return out.toString(charset);
-		}
-	}
+        fun write(`in`: InputStream, out: OutputStream, size: Int = readSize) {
+            read(`in`, size) { bytes: ByteArray?, len: Int? -> out.write(bytes, 0, len!!) }
+        }
 
-	/**
-	 * 从流中读取 int
-	 *
-	 * @author lingting 2021-07-22 14:54
-	 */
-	public static int readInt(InputStream is, int noOfBytes, boolean bigEndian) throws IOException {
-		int ret = 0;
-		int sv = bigEndian ? ((noOfBytes - 1) * 8) : 0;
-		int cnt = bigEndian ? -8 : 8;
-		for (int i = 0; i < noOfBytes; i++) {
-			ret |= is.read() << sv;
-			sv += cnt;
-		}
-		return ret;
-	}
 
-	public static void close(AutoCloseable closeable) {
-		try {
-			if (closeable != null) {
-				closeable.close();
-			}
-		}
-		catch (Exception e) {
-			//
-		}
-	}
+        fun write(`in`: InputStream, out: OutputStream, length: Long) {
+            write(`in`, out, readSize, length)
+        }
 
-	public static void close(Closeable closeable) {
-		try {
-			if (closeable != null) {
-				closeable.close();
-			}
-		}
-		catch (Exception e) {
-			//
-		}
-	}
 
-	/**
-	 * 克隆文件流
-	 * <p color="red">
-	 * 注意: 在使用后及时关闭复制流
-	 * </p>
-	 *
-	 * @param stream 源流
-	 * @return 返回指定数量的从源流复制出来的只读流
-	 * @author lingting 2021-04-16 16:18
-	 */
-	public static FileCloneInputStream clone(InputStream stream) throws IOException {
-		return clone(stream, readSize);
-	}
+        fun write(`in`: InputStream, out: OutputStream, size: Int, length: Long) {
+            val atomic = AtomicLong(0)
+            readByFlag(`in`, size) { bytes: ByteArray?, len: Int? ->
+                // 计算剩余字节长度
+                val remainLength = length - atomic.get()
+                // 计算本次写入的字节长度, 不能大于剩余字节长度
+                val writeLength = if (len!! > remainLength) remainLength.toInt() else len
+                // 写入
+                out.write(bytes, 0, writeLength)
+                val existLength = atomic.addAndGet(len.toLong())
+                existLength < length
+            }
+        }
 
-	public static FileCloneInputStream clone(InputStream input, int size) throws IOException {
-		File file = FileUtils.createTemp(".clone", CloneInputStream.TEMP_DIR);
-		try (FileOutputStream output = new FileOutputStream(file)) {
-			write(input, output, size);
-		}
-		return new FileCloneInputStream(file);
-	}
 
-	/**
-	 * 读取流, 当读取完一行数据时, 消费该数据
-	 *
-	 * @param in       流
-	 * @param charset  字符集
-	 * @param consumer 行数据消费, int: 行索引
-	 * @throws IOException 异常
-	 */
-	public static void readLine(InputStream in, Charset charset, BiConsumer<Integer, String> consumer)
-		throws IOException {
-		readLine(in, charset, readSize, consumer);
-	}
+        fun toString(`in`: InputStream, charset: Charset? = StandardCharsets.UTF_8): String {
+            return toString(`in`, readSize, charset)
+        }
 
-	/**
-	 * 读取流, 当读取完一行数据时, 消费该数据
-	 *
-	 * @param in       流
-	 * @param charset  字符集
-	 * @param consumer 行数据消费, int: 行索引
-	 * @throws IOException 异常
-	 */
-	public static void readLine(InputStream in, Charset charset, int size, BiConsumer<Integer, String> consumer)
-		throws IOException {
-		readLine(in, size, (index, bytes) -> {
-			String string = new String(bytes, charset);
-			String clean = StringUtils.cleanBom(string);
-			consumer.accept(index, clean);
-		});
-	}
 
-	/**
-	 * 读取流, 当读取完一行数据时, 消费该数据
-	 *
-	 * @param in       流
-	 * @param consumer 行数据消费, int: 行索引
-	 * @throws IOException 异常
-	 */
-	public static void readLine(InputStream in, BiConsumer<Integer, byte[]> consumer) throws IOException {
-		readLine(in, readSize, consumer);
-	}
+        fun toString(`in`: InputStream, size: Int, charset: Charset?): String {
+            ByteArrayOutputStream().use { out ->
+                write(`in`, out, size)
+                return out.toString(charset)
+            }
+        }
 
-	/**
-	 * 读取流, 当读取完一行数据时, 消费该数据
-	 *
-	 * @param in       流
-	 * @param size     一次读取数据大小
-	 * @param consumer 行数据消费, int: 行索引
-	 * @throws IOException 异常
-	 */
-	public static void readLine(InputStream in, int size, BiConsumer<Integer, byte[]> consumer) throws IOException {
-		BiConsumer<Integer, List<Byte>> doConsumer = (index, list) -> {
-			byte[] bytes = trimEndLine(list);
-			consumer.accept(index, bytes);
-		};
+        /**
+         * 从流中读取 int
+         *
+         * @author lingting 2021-07-22 14:54
+         */
 
-		List<Byte> list = new ArrayList<>();
-		AtomicInteger atomic = new AtomicInteger(0);
+        fun readInt(`is`: InputStream, noOfBytes: Int, bigEndian: Boolean): Int {
+            var ret = 0
+            var sv = if (bigEndian) ((noOfBytes - 1) * 8) else 0
+            val cnt = if (bigEndian) -8 else 8
+            for (i in 0 until noOfBytes) {
+                ret = ret or (`is`.read() shl sv)
+                sv += cnt
+            }
+            return ret
+        }
 
-		read(in, size, (bytes, length) -> {
-			for (int i = 0; i < length; i++) {
-				byte b = bytes[i];
-				list.add(b);
-				// 如果是一整行数据, 则消费
-				if (isLine(list)) {
-					// 获取行索引, 并自增
-					int index = atomic.getAndIncrement();
-					doConsumer.accept(index, list);
-					// 消费完毕, 结算
-					list.clear();
-				}
-			}
-		});
+        fun close(closeable: AutoCloseable?) {
+            try {
+                closeable?.close()
+            } catch (e: Exception) {
+                //
+            }
+        }
 
-		// 消费剩余的数据
-		if (!list.isEmpty()) {
-			int index = atomic.get();
-			doConsumer.accept(index, list);
-		}
 
-	}
+        fun close(closeable: Closeable?) {
+            try {
+                closeable?.close()
+            } catch (e: Exception) {
+                //
+            }
+        }
 
-	public static int getReadSize() {return StreamUtils.readSize;}
+        /**
+         * 克隆文件流
+         *
+         *
+         * 注意: 在使用后及时关闭复制流
+         *
+         *
+         * @param stream 源流
+         * @return 返回指定数量的从源流复制出来的只读流
+         * @author lingting 2021-04-16 16:18
+         */
 
-	public static void setReadSize(int readSize) {StreamUtils.readSize = readSize;}
+
+        fun clone(stream: InputStream): FileCloneInputStream {
+            return clone(stream, readSize)
+        }
+
+
+        fun clone(input: InputStream, size: Int): FileCloneInputStream {
+            val file: File = FileUtils.createTemp(".clone", CloneInputStream.TEMP_DIR)
+            FileOutputStream(file).use { output ->
+                write(input, output, size)
+            }
+            return FileCloneInputStream(file)
+        }
+
+        /**
+         * 读取流, 当读取完一行数据时, 消费该数据
+         *
+         * @param in       流
+         * @param charset  字符集
+         * @param consumer 行数据消费, int: 行索引
+         * @throws IOException 异常
+         */
+
+        fun readLine(`in`: InputStream, charset: Charset, consumer: BiConsumer<Int?, String?>) {
+            readLine(`in`, charset, readSize, consumer)
+        }
+
+        /**
+         * 读取流, 当读取完一行数据时, 消费该数据
+         *
+         * @param in       流
+         * @param charset  字符集
+         * @param consumer 行数据消费, int: 行索引
+         * @throws IOException 异常
+         */
+
+        fun readLine(`in`: InputStream, charset: Charset, size: Int, consumer: BiConsumer<Int?, String?>) {
+            readLine(`in`, size) { index: Int?, bytes: ByteArray? ->
+                val string = String(bytes, charset)
+                val clean: String = StringUtils.cleanBom(string)
+                consumer.accept(index, clean)
+            }
+        }
+
+        /**
+         * 读取流, 当读取完一行数据时, 消费该数据
+         *
+         * @param in       流
+         * @param consumer 行数据消费, int: 行索引
+         * @throws IOException 异常
+         */
+
+        fun readLine(`in`: InputStream, consumer: BiConsumer<Int?, ByteArray?>) {
+            readLine(`in`, readSize, consumer)
+        }
+
+        /**
+         * 读取流, 当读取完一行数据时, 消费该数据
+         *
+         * @param in       流
+         * @param size     一次读取数据大小
+         * @param consumer 行数据消费, int: 行索引
+         * @throws IOException 异常
+         */
+
+        fun readLine(`in`: InputStream, size: Int, consumer: BiConsumer<Int?, ByteArray?>) {
+            val doConsumer = BiConsumer<Int, List<Byte>> { index: Int?, list: List<Byte> ->
+                val bytes: ByteArray = ByteUtils.trimEndLine(list)
+                consumer.accept(index, bytes)
+            }
+
+            val list: MutableList<Byte> = ArrayList()
+            val atomic = AtomicInteger(0)
+
+            read(`in`, size) { bytes: ByteArray?, length: Int? ->
+                for (i in 0 until length) {
+                    val b = bytes!![i]
+                    list.add(b)
+                    // 如果是一整行数据, 则消费
+                    if (ByteUtils.isLine(list)) {
+                        // 获取行索引, 并自增
+                        val index = atomic.getAndIncrement()
+                        doConsumer.accept(index, list)
+                        // 消费完毕, 结算
+                        list.clear()
+                    }
+                }
+            }
+
+            // 消费剩余的数据
+            if (!list.isEmpty()) {
+                val index = atomic.get()
+                doConsumer.accept(index, list)
+            }
+        }
+    }
 }

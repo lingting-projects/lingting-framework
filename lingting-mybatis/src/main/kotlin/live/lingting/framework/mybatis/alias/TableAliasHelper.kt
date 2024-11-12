@@ -1,11 +1,8 @@
-package live.lingting.framework.mybatis.alias;
+package live.lingting.framework.mybatis.alias
 
-import com.baomidou.mybatisplus.core.metadata.TableInfo;
-import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
-import live.lingting.framework.util.AnnotationUtils;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import com.baomidou.mybatisplus.core.metadata.TableInfoHelper
+import live.lingting.framework.util.AnnotationUtils
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * 表别名辅助类
@@ -13,68 +10,68 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Hccake 2021/1/14
  * @version 1.0
  */
-public final class TableAliasHelper {
+class TableAliasHelper private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	private static final String COMMA = ",";
+    companion object {
+        private const val COMMA = ","
 
-	private static final String DOT = ".";
+        private const val DOT = "."
 
-	/**
-	 * 存储类对应的表别名
-	 */
-	private static final Map<Class<?>, String> TABLE_ALIAS_CACHE = new ConcurrentHashMap<>();
+        /**
+         * 存储类对应的表别名
+         */
+        private val TABLE_ALIAS_CACHE: MutableMap<Class<*>, String> = ConcurrentHashMap()
 
-	/**
-	 * 储存类对应的带别名的查询字段
-	 */
-	private static final Map<Class<?>, String> TABLE_ALIAS_SELECT_COLUMNS_CACHE = new ConcurrentHashMap<>();
+        /**
+         * 储存类对应的带别名的查询字段
+         */
+        private val TABLE_ALIAS_SELECT_COLUMNS_CACHE: MutableMap<Class<*>, String> = ConcurrentHashMap()
 
-	private TableAliasHelper() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+        /**
+         * 带别名的查询字段sql
+         *
+         * @param clazz 实体类class
+         * @return sql片段
+         */
+        fun tableAliasSelectSql(clazz: Class<*>): String {
+            var tableAliasSelectSql = TABLE_ALIAS_SELECT_COLUMNS_CACHE[clazz]
+            if (tableAliasSelectSql == null) {
+                val tableAlias = tableAlias(clazz)
 
-	/**
-	 * 带别名的查询字段sql
-	 *
-	 * @param clazz 实体类class
-	 * @return sql片段
-	 */
-	public static String tableAliasSelectSql(Class<?> clazz) {
-		String tableAliasSelectSql = TABLE_ALIAS_SELECT_COLUMNS_CACHE.get(clazz);
-		if (tableAliasSelectSql == null) {
-			String tableAlias = tableAlias(clazz);
+                val tableInfo = TableInfoHelper.getTableInfo(clazz)
+                val allSqlSelect = tableInfo.allSqlSelect
+                val split = allSqlSelect.split(COMMA.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                val stringBuilder = StringBuilder()
+                for (column in split) {
+                    stringBuilder.append(tableAlias).append(DOT).append(column).append(COMMA)
+                }
+                stringBuilder.deleteCharAt(stringBuilder.length - 1)
+                tableAliasSelectSql = stringBuilder.toString()
 
-			TableInfo tableInfo = TableInfoHelper.getTableInfo(clazz);
-			String allSqlSelect = tableInfo.getAllSqlSelect();
-			String[] split = allSqlSelect.split(COMMA);
-			StringBuilder stringBuilder = new StringBuilder();
-			for (String column : split) {
-				stringBuilder.append(tableAlias).append(DOT).append(column).append(COMMA);
-			}
-			stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-			tableAliasSelectSql = stringBuilder.toString();
+                TABLE_ALIAS_SELECT_COLUMNS_CACHE[clazz] = tableAliasSelectSql
+            }
+            return tableAliasSelectSql
+        }
 
-			TABLE_ALIAS_SELECT_COLUMNS_CACHE.put(clazz, tableAliasSelectSql);
-		}
-		return tableAliasSelectSql;
-	}
-
-	/**
-	 * 获取实体类对应别名
-	 *
-	 * @param clazz 实体类
-	 * @return 表别名
-	 */
-	public static String tableAlias(Class<?> clazz) {
-		String tableAlias = TABLE_ALIAS_CACHE.get(clazz);
-		if (tableAlias == null) {
-			TableAlias annotation = AnnotationUtils.findAnnotation(clazz, TableAlias.class);
-			if (annotation == null) {
-				throw new TableAliasNotFoundException(
-					"[tableAliasSelectSql] No TableAlias annotations found in class: " + clazz);
-			}
-			tableAlias = annotation.value();
-			TABLE_ALIAS_CACHE.put(clazz, tableAlias);
-		}
-		return tableAlias;
-	}
-
+        /**
+         * 获取实体类对应别名
+         *
+         * @param clazz 实体类
+         * @return 表别名
+         */
+        fun tableAlias(clazz: Class<*>): String {
+            var tableAlias = TABLE_ALIAS_CACHE[clazz]
+            if (tableAlias == null) {
+                val annotation = AnnotationUtils.findAnnotation(clazz, TableAlias::class.java) ?: throw TableAliasNotFoundException(
+                    "[tableAliasSelectSql] No TableAlias annotations found in class: $clazz"
+                )
+                tableAlias = annotation.value
+                TABLE_ALIAS_CACHE[clazz] = tableAlias
+            }
+            return tableAlias
+        }
+    }
 }

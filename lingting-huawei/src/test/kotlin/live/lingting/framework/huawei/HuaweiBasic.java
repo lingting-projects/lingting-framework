@@ -18,10 +18,10 @@ class HuaweiBasic {
 		String name = System.getenv("HUAWEI_IAM_DOMAIN_NAME");
 		assertNotNull(name);
 		properties.setDomain(Map.of("name", name));
-		properties.setUsername(System.getenv("HUAWEI_IAM_USERNAME"));
-		properties.setPassword(System.getenv("HUAWEI_IAM_PASSWORD"));
-		assertNotNull(properties.getUsername());
-		assertNotNull(properties.getPassword());
+		properties.username = System.getenv("HUAWEI_IAM_USERNAME");
+		properties.password = System.getenv("HUAWEI_IAM_PASSWORD");
+		assertNotNull(properties.username);
+		assertNotNull(properties.password);
 		HuaweiIam iam = new HuaweiIam(properties);
 		iam.refreshToken();
 		return iam;
@@ -29,11 +29,11 @@ class HuaweiBasic {
 
 	static HuaweiObsProperties obsProperties() {
 		HuaweiObsProperties properties = new HuaweiObsProperties();
-		properties.setRegion(System.getenv("HUAWEI_OBS_REGION"));
-		properties.setBucket(System.getenv("HUAWEI_OBS_BUCKET"));
-		properties.setAcl(Acl.PUBLIC_READ);
-		assertNotNull(properties.getRegion());
-		assertNotNull(properties.getBucket());
+		properties.region = System.getenv("HUAWEI_OBS_REGION");
+		properties.bucket = System.getenv("HUAWEI_OBS_BUCKET");
+		properties.acl = Acl.PUBLIC_READ;
+		assertNotNull(properties.region);
+		assertNotNull(properties.bucket);
 		return properties;
 	}
 

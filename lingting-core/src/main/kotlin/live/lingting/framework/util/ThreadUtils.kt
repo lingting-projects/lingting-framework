@@ -1,52 +1,59 @@
-package live.lingting.framework.util;
+package live.lingting.framework.util
 
-import live.lingting.framework.function.ThrowableRunnable;
-import live.lingting.framework.thread.KeepRunnable;
-import live.lingting.framework.thread.ThreadService;
-import live.lingting.framework.thread.VirtualThread;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.function.Supplier;
+import live.lingting.framework.function.ThrowableRunnable
+import live.lingting.framework.thread.KeepRunnable
+import live.lingting.framework.thread.ThreadService
+import live.lingting.framework.thread.VirtualThread
+import java.util.concurrent.Callable
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Future
+import java.util.function.Supplier
 
 /**
  * @author lingting 2023-11-15 16:44
  */
-public final class ThreadUtils {
+class ThreadUtils private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	static ThreadService instance = VirtualThread.instance();
+    companion object {
+        var instance: ThreadService = VirtualThread.instance()
 
-	private ThreadUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+        fun instance(): ThreadService {
+            return instance
+        }
 
-	public static ThreadService instance() {
-		return instance;
-	}
 
-	public static ExecutorService executor() {
-		return instance().executor();
-	}
+        fun executor(): ExecutorService {
+            return instance().executor()
+        }
 
-	public static void execute(ThrowableRunnable runnable) {
-		execute(null, runnable);
-	}
 
-	public static void execute(String name, ThrowableRunnable runnable) {
-		instance().execute(name, runnable);
-	}
+        fun execute(runnable: ThrowableRunnable) {
+            execute(null, runnable)
+        }
 
-	public static void execute(KeepRunnable runnable) {
-		instance().execute(runnable);
-	}
 
-	public static <T> CompletableFuture<T> async(Supplier<T> supplier) {
-		return instance().async(supplier);
-	}
+        fun execute(name: String?, runnable: ThrowableRunnable) {
+            instance().execute(name, runnable)
+        }
 
-	public static <T> Future<T> submit(Callable<T> callable) {
-		return instance().submit(callable);
-	}
+        fun execute(runnable: KeepRunnable) {
+            instance().execute(runnable)
+        }
 
-	public static void setInstance(ThreadService instance) {ThreadUtils.instance = instance;}
+        fun <T> async(supplier: Supplier<T>): CompletableFuture<T> {
+            return instance().async(supplier)
+        }
+
+        fun <T> submit(callable: Callable<T>): Future<T> {
+            return instance().submit(callable)
+        }
+
+        fun setInstance(instance: ThreadService) {
+            Companion.instance = instance
+        }
+    }
 }

@@ -1,56 +1,16 @@
-package live.lingting.framework.multipart;
+package live.lingting.framework.multipart
 
 /**
  * 分片详情
- * <p>
- * 字节范围为全包. 从第 {@link Part#start} 位到第 {@link Part#end} 个字节
- * </p>
+ *
+ *
+ * 字节范围为全包. 从第 [start] 位到第 [end] 个字节
+ *
  *
  * @author lingting 2024-09-05 14:47
  */
-public class Part {
+data class Part(val index: Long, val start: Long, val end: Long) {
 
-	protected final Long index;
+    val size: Long = end - start + 1
 
-	protected final Long start;
-
-	protected final Long end;
-
-	protected final Long size;
-
-	public Part(Long index, Long start, Long end) {
-		this.index = index;
-		this.start = start;
-		this.end = end;
-		this.size = end - start + 1;
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
-
-		Part part = (Part) o;
-		return index.equals(part.index) && start.equals(part.start) && end.equals(part.end);
-	}
-
-	@Override
-	public int hashCode() {
-		int result = index.hashCode();
-		result = 31 * result + start.hashCode();
-		result = 31 * result + end.hashCode();
-		return result;
-	}
-
-	public Long getIndex() {return this.index;}
-
-	public Long getStart() {return this.start;}
-
-	public Long getEnd() {return this.end;}
-
-	public Long getSize() {return this.size;}
 }

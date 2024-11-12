@@ -1,21 +1,17 @@
-package live.lingting.framework.ali;
+package live.lingting.framework.ali
 
-import live.lingting.framework.http.HttpMethod;
-import live.lingting.framework.http.api.ApiRequest;
+import live.lingting.framework.http.HttpMethod
+import live.lingting.framework.http.api.ApiRequest
 
 /**
  * @author lingting 2024-09-14 13:49
  */
-public abstract class AliRequest extends ApiRequest {
+abstract class AliRequest : ApiRequest() {
+    override fun method(): HttpMethod {
+        return HttpMethod.POST
+    }
 
-	@Override
-	public HttpMethod method() {
-		return HttpMethod.POST;
-	}
-
-	@Override
-	public void onCall() {
-		headers.contentType("application/json;charset=utf8");
-	}
-
+    override fun onCall() {
+        headers.contentType("application/json;charset=utf8")
+    }
 }

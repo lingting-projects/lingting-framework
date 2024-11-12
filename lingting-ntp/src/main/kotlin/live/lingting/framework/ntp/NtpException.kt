@@ -1,16 +1,10 @@
-package live.lingting.framework.ntp;
+package live.lingting.framework.ntp
 
 /**
  * @author lingting 2022/11/24 10:13
  */
-public class NtpException extends RuntimeException {
+class NtpException : RuntimeException {
+    constructor(message: String?) : super(message)
 
-	public NtpException(String message) {
-		super(message);
-	}
-
-	public NtpException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
 }

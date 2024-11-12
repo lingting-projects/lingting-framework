@@ -1,30 +1,24 @@
-package live.lingting.framework.security.grpc.authorization;
+package live.lingting.framework.security.grpc.authorization
 
-import live.lingting.framework.security.password.SecurityPassword;
+import live.lingting.framework.security.password.SecurityPassword
 
 /**
  * @author lingting 2024-01-30 20:35
  */
-public class Password implements SecurityPassword {
+class Password : SecurityPassword {
+    override fun encodeFront(plaintext: String?): String? {
+        return plaintext
+    }
 
-	@Override
-	public String encodeFront(String plaintext) {
-		return plaintext;
-	}
+    override fun decodeFront(ciphertext: String?): String? {
+        return ciphertext
+    }
 
-	@Override
-	public String decodeFront(String ciphertext) {
-		return ciphertext;
-	}
+    override fun encode(plaintext: String?): String? {
+        return plaintext
+    }
 
-	@Override
-	public String encode(String plaintext) {
-		return plaintext;
-	}
-
-	@Override
-	public boolean match(String plaintext, String ciphertext) {
-		return true;
-	}
-
+    override fun match(plaintext: String?, ciphertext: String?): Boolean {
+        return true
+    }
 }

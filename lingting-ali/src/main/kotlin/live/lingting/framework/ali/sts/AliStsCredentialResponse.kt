@@ -1,69 +1,42 @@
-package live.lingting.framework.ali.sts;
+package live.lingting.framework.ali.sts
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
  * @author lingting 2024-09-14 13:50
  */
-public class AliStsCredentialResponse extends AliStsResponse {
+class AliStsCredentialResponse : AliStsResponse() {
+    @set:JsonProperty("Credentials")
+    @JsonProperty("Credentials")
+    var credentials: Credentials? = null
 
-	@JsonProperty("Credentials")
-	private Credentials credentials;
+    val accessKeyId: String?
+        get() = credentials!!.accessKeyId
 
-	public String getAccessKeyId() {
-		return getCredentials().getAccessKeyId();
-	}
+    val accessKeySecret: String?
+        get() = credentials!!.accessKeySecret
 
-	public String getAccessKeySecret() {
-		return getCredentials().getAccessKeySecret();
-	}
+    val securityToken: String?
+        get() = credentials!!.securityToken
 
-	public String getSecurityToken() {
-		return getCredentials().getSecurityToken();
-	}
+    val expire: String?
+        get() = credentials!!.expiration
 
-	public String getExpire() {
-		return getCredentials().getExpiration();
-	}
+    class Credentials {
+        @set:JsonProperty("AccessKeyId")
+        @JsonProperty("AccessKeyId")
+        var accessKeyId: String? = null
 
-	public Credentials getCredentials() {return this.credentials;}
+        @set:JsonProperty("AccessKeySecret")
+        @JsonProperty("AccessKeySecret")
+        var accessKeySecret: String? = null
 
-	@JsonProperty("Credentials")
-	public void setCredentials(Credentials credentials) {this.credentials = credentials;}
+        @set:JsonProperty("SecurityToken")
+        @JsonProperty("SecurityToken")
+        var securityToken: String? = null
 
-	public static class Credentials {
-
-		@JsonProperty("AccessKeyId")
-		private String accessKeyId;
-
-		@JsonProperty("AccessKeySecret")
-		private String accessKeySecret;
-
-		@JsonProperty("SecurityToken")
-		private String securityToken;
-
-		@JsonProperty("Expiration")
-		private String expiration;
-
-		public String getAccessKeyId() {return this.accessKeyId;}
-
-		public String getAccessKeySecret() {return this.accessKeySecret;}
-
-		public String getSecurityToken() {return this.securityToken;}
-
-		public String getExpiration() {return this.expiration;}
-
-		@JsonProperty("AccessKeyId")
-		public void setAccessKeyId(String accessKeyId) {this.accessKeyId = accessKeyId;}
-
-		@JsonProperty("AccessKeySecret")
-		public void setAccessKeySecret(String accessKeySecret) {this.accessKeySecret = accessKeySecret;}
-
-		@JsonProperty("SecurityToken")
-		public void setSecurityToken(String securityToken) {this.securityToken = securityToken;}
-
-		@JsonProperty("Expiration")
-		public void setExpiration(String expiration) {this.expiration = expiration;}
-	}
-
+        @set:JsonProperty("Expiration")
+        @JsonProperty("Expiration")
+        var expiration: String? = null
+    }
 }

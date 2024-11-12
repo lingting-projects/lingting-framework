@@ -1,20 +1,20 @@
-package live.lingting.framework.security.convert;
+package live.lingting.framework.security.convert
 
-import live.lingting.framework.security.domain.AuthorizationVO;
-import live.lingting.framework.security.domain.SecurityScope;
-import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
+import live.lingting.framework.security.domain.AuthorizationVO
+import live.lingting.framework.security.domain.SecurityScope
+import org.mapstruct.Mapper
+import org.mapstruct.factory.Mappers
 
 /**
  * @author lingting 2023-03-30 13:55
  */
 @Mapper
-public interface SecurityMapstruct {
+interface SecurityMapstruct {
+    fun toVo(scope: SecurityScope?): AuthorizationVO
 
-	SecurityMapstruct INSTANCE = Mappers.getMapper(SecurityMapstruct.class);
+    fun ofVo(vo: AuthorizationVO?): SecurityScope
 
-	AuthorizationVO toVo(SecurityScope scope);
-
-	SecurityScope ofVo(AuthorizationVO vo);
-
+    companion object {
+        val INSTANCE: SecurityMapstruct = Mappers.getMapper(SecurityMapstruct::class.java)
+    }
 }

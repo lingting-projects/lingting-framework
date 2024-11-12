@@ -1,167 +1,146 @@
-package live.lingting.framework.mybatis.extend;
+package live.lingting.framework.mybatis.extend
 
-import com.baomidou.mybatisplus.core.enums.SqlMethod;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.baomidou.mybatisplus.core.toolkit.Constants;
-import com.baomidou.mybatisplus.core.toolkit.ReflectionKit;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
-import jakarta.annotation.Resource;
-import live.lingting.framework.api.PaginationParams;
-import live.lingting.framework.function.ThrowingSupplier;
-import org.apache.ibatis.binding.MapperMethod;
-import org.apache.ibatis.logging.Log;
-import org.apache.ibatis.logging.LogFactory;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
+import com.baomidou.mybatisplus.core.enums.SqlMethod
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils
+import com.baomidou.mybatisplus.core.toolkit.Constants
+import com.baomidou.mybatisplus.core.toolkit.ReflectionKit
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page
+import com.baomidou.mybatisplus.extension.toolkit.SqlHelper
+import jakarta.annotation.Resource
+import live.lingting.framework.api.PaginationParams
+import live.lingting.framework.function.ThrowingSupplier
+import org.apache.ibatis.binding.MapperMethod.ParamMap
+import org.apache.ibatis.logging.Log
+import org.apache.ibatis.logging.LogFactory
+import org.apache.ibatis.session.SqlSession
+import org.apache.ibatis.session.SqlSessionFactory
+import java.io.Serializable
+import java.util.function.BiConsumer
+import java.util.function.Predicate
 
 /**
  * 以前继承 com.baomidou.mybatisplus.extension.service.impl.ServiceImpl 的实现类，现在继承本类
  *
  * @author lingting 2020/7/21 10:00
  */
-@SuppressWarnings("unchecked")
-public abstract class ExtendServiceImpl<M extends ExtendMapper<T>, T> implements ExtendService<T> {
+abstract class ExtendServiceImpl<M : ExtendMapper<T>?, T> : ExtendService<T> {
+    protected val log: Log = LogFactory.getLog(javaClass)
 
-	protected final Log log = LogFactory.getLog(getClass());
+    protected var mapper: M? = null
 
-	protected M mapper;
+    @Resource
+    var sessionFactory: SqlSessionFactory? = null
 
-	@Resource
-	protected SqlSessionFactory sessionFactory;
+    override var entityClass: Class<T> = currentModelClass()
+        protected set
 
-	protected Class<T> entityClass = currentModelClass();
+    var mapperClass: Class<M> = currentMapperClass()
+        protected set
 
-	protected Class<M> mapperClass = currentMapperClass();
+    protected fun currentMapperClass(): Class<M> {
+        return ReflectionKit.getSuperClassGenericType(this.javaClass, ExtendServiceImpl::class.java, 0) as Class<M>
+    }
 
-	protected Class<M> currentMapperClass() {
-		return (Class<M>) ReflectionKit.getSuperClassGenericType(this.getClass(), ExtendServiceImpl.class, 0);
-	}
+    protected fun currentModelClass(): Class<T> {
+        return ReflectionKit.getSuperClassGenericType(this.javaClass, ExtendServiceImpl::class.java, 1) as Class<T>
+    }
 
-	protected Class<T> currentModelClass() {
-		return (Class<T>) ReflectionKit.getSuperClassGenericType(this.getClass(), ExtendServiceImpl.class, 1);
-	}
+    /**
+     * 获取mapperStatementId
+     *
+     * @param sqlMethod 方法名
+     * @return 命名id
+     * @since 3.4.0
+     */
+    protected fun getSqlStatement(sqlMethod: SqlMethod): String {
+        return SqlHelper.getSqlStatement(mapperClass, sqlMethod)
+    }
 
-	/**
-	 * 获取mapperStatementId
-	 *
-	 * @param sqlMethod 方法名
-	 * @return 命名id
-	 * @since 3.4.0
-	 */
-	protected String getSqlStatement(SqlMethod sqlMethod) {
-		return SqlHelper.getSqlStatement(getMapperClass(), sqlMethod);
-	}
+    override fun toIpage(params: PaginationParams): Page<T> {
+        return getMapper()!!.toIpage(params)
+    }
 
-	@Override
-	public Page<T> toIpage(PaginationParams params) {
-		return getMapper().toIpage(params);
-	}
+    override fun save(entity: T): Boolean {
+        return SqlHelper.retBool(getMapper()!!.insert(entity))
+    }
 
-	@Override
-	public boolean save(T entity) {
-		return SqlHelper.retBool(getMapper().insert(entity));
-	}
+    override fun saveBatch(entityList: Collection<T>?, batchSize: Int): Boolean {
+        val sqlStatement = getSqlStatement(SqlMethod.INSERT_ONE)
+        return executeBatch(entityList, batchSize) { sqlSession: SqlSession, entity: T -> sqlSession.insert(sqlStatement, entity) }
+    }
 
-	@Override
-	public boolean saveBatch(Collection<T> entityList, int batchSize) {
-		String sqlStatement = getSqlStatement(SqlMethod.INSERT_ONE);
-		return executeBatch(entityList, batchSize, (sqlSession, entity) -> sqlSession.insert(sqlStatement, entity));
-	}
+    override fun removeById(id: Serializable?): Boolean {
+        return SqlHelper.retBool(getMapper()!!.deleteById(id))
+    }
 
-	@Override
-	public boolean removeById(Serializable id) {
-		return SqlHelper.retBool(getMapper().deleteById(id));
-	}
+    override fun removeByIds(idList: Collection<Serializable?>?): Boolean {
+        if (CollectionUtils.isEmpty(idList)) {
+            return false
+        }
+        return SqlHelper.retBool(getMapper()!!.deleteBatchIds(idList))
+    }
 
-	@Override
-	public boolean removeByIds(Collection<? extends Serializable> idList) {
-		if (CollectionUtils.isEmpty(idList)) {
-			return false;
-		}
-		return SqlHelper.retBool(getMapper().deleteBatchIds(idList));
-	}
+    override fun updateById(entity: T): Boolean {
+        return SqlHelper.retBool(getMapper()!!.updateById(entity))
+    }
 
-	@Override
-	public boolean updateById(T entity) {
-		return SqlHelper.retBool(getMapper().updateById(entity));
-	}
+    override fun updateBatchById(entityList: Collection<T>?, batchSize: Int): Boolean {
+        val sqlStatement = getSqlStatement(SqlMethod.UPDATE_BY_ID)
+        return executeBatch(entityList, batchSize) { sqlSession: SqlSession, entity: T ->
+            val param = ParamMap<T>()
+            param[Constants.ENTITY] = entity
+            sqlSession.update(sqlStatement, param)
+        }
+    }
 
-	@Override
-	public boolean updateBatchById(Collection<T> entityList, int batchSize) {
-		String sqlStatement = getSqlStatement(SqlMethod.UPDATE_BY_ID);
-		return executeBatch(entityList, batchSize, (sqlSession, entity) -> {
-			MapperMethod.ParamMap<T> param = new MapperMethod.ParamMap<>();
-			param.put(Constants.ENTITY, entity);
-			sqlSession.update(sqlStatement, param);
-		});
-	}
+    override fun getById(id: Serializable?): T {
+        return getMapper()!!.selectById(id)
+    }
 
-	@Override
-	public T getById(Serializable id) {
-		return getMapper().selectById(id);
-	}
+    override fun listByIds(idList: Collection<Serializable?>?): List<T> {
+        return getMapper()!!.selectBatchIds(idList)
+    }
 
-	@Override
-	public List<T> listByIds(Collection<? extends Serializable> idList) {
-		return getMapper().selectBatchIds(idList);
-	}
+    override fun list(): List<T> {
+        return getMapper()!!.selectList(null)
+    }
 
-	@Override
-	public List<T> list() {
-		return getMapper().selectList(null);
-	}
+    /**
+     * 执行批量操作
+     *
+     * @param list      数据集合
+     * @param batchSize 批量大小
+     * @param consumer  执行方法
+     * @param <E>       泛型
+     * @return 操作结果
+     * @since 3.3.1
+    </E> */
+    protected fun <E> executeBatch(list: Collection<E>?, batchSize: Int, consumer: BiConsumer<SqlSession, E>?): Boolean {
+        return useTransactional<Boolean>(ThrowingSupplier<Boolean> { SqlHelper.executeBatch(sessionFactory, this.log, list, batchSize, consumer) })
+    }
 
-	/**
-	 * 执行批量操作
-	 *
-	 * @param list      数据集合
-	 * @param batchSize 批量大小
-	 * @param consumer  执行方法
-	 * @param <E>       泛型
-	 * @return 操作结果
-	 * @since 3.3.1
-	 */
-	protected <E> boolean executeBatch(Collection<E> list, int batchSize, BiConsumer<SqlSession, E> consumer) {
-		return useTransactional(() -> SqlHelper.executeBatch(sessionFactory, this.log, list, batchSize, consumer));
-	}
+    override fun <R> useTransactional(supplier: ThrowingSupplier<R>, predicate: Predicate<Throwable?>): R {
+        val session = sessionFactory!!.openSession(false)
+        try {
+            val r = supplier.get()
+            session.commit()
+            return r
+        } catch (e: Exception) {
+            // 回滚
+            if (predicate.test(e)) {
+                session.rollback()
+            }
+            throw e
+        } finally {
+            session.close()
+        }
+    }
 
-	@Override
+    fun getMapper(): M {
+        return this.mapper
+    }
 
-	public <R> R useTransactional(ThrowingSupplier<R> supplier, Predicate<Throwable> predicate) {
-		SqlSession session = getSessionFactory().openSession(false);
-		try {
-			R r = supplier.get();
-			session.commit();
-			return r;
-		}
-		catch (Exception e) {
-			// 回滚
-			if (predicate.test(e)) {
-				session.rollback();
-			}
-			throw e;
-		}
-		finally {
-			session.close();
-		}
-	}
-
-	public M getMapper() {return this.mapper;}
-
-	public SqlSessionFactory getSessionFactory() {return this.sessionFactory;}
-
-	public Class<T> getEntityClass() {return this.entityClass;}
-
-	public Class<M> getMapperClass() {return this.mapperClass;}
-
-	public void setMapper(M mapper) {this.mapper = mapper;}
-
-	public void setSessionFactory(SqlSessionFactory sessionFactory) {this.sessionFactory = sessionFactory;}
+    fun setMapper(mapper: M) {
+        this.mapper = mapper
+    }
 }

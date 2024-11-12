@@ -1,119 +1,104 @@
-package live.lingting.framework;
+package live.lingting.framework
 
-import live.lingting.framework.util.ClassUtils;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
-
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
+import live.lingting.framework.util.ClassUtils
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
+import java.util.*
 
 /**
  * 排序用
  *
  * @author lingting 2024-01-30 11:15
  */
-public interface Sequence {
+interface Sequence {
+    val sequence: Int
 
-	SequenceComparator INSTANCE_ASC = new SequenceComparator(true, 0);
+    class SequenceComparator(private val isAsc: Boolean, private val defaultSequence: Int) : Comparator<Any?> {
+        override fun compare(o1: Any?, o2: Any?): Int {
+            val i1 = find(o1)
+            val i2 = find(o2)
 
-	SequenceComparator INSTANCE_DESC = new SequenceComparator(false, 0);
+            if (i1 == i2) {
+                return 0
+            }
 
-	static <T> void asc(List<T> list) {
-		list.sort(INSTANCE_ASC);
-	}
+            val isLeft = if (isAsc) i1 < i2 else i1 > i2
+            // 是否o1排o2前面
+            return if (isLeft) -1 else 1
+        }
 
-	static <T> List<T> asc(Collection<T> collection) {
-		return collection.stream().sorted(INSTANCE_ASC).toList();
-	}
+        /**
+         * 获取当前排序规则内, 最低优先级的值
+         */
+        protected fun lowerSequence(): Int {
+            return if (isAsc) Int.MAX_VALUE else Int.MIN_VALUE
+        }
 
-	static <T> void desc(List<T> list) {
-		list.sort(INSTANCE_DESC);
-	}
+        /**
+         * 返回排序在前面的优先级
+         */
+        protected fun high(o1: Int?, o2: Int?): Int {
+            if (o1 == null && o2 == null) {
+                return defaultSequence
+            }
 
-	static <T> List<T> desc(Collection<T> collection) {
-		return collection.stream().sorted(INSTANCE_DESC).toList();
-	}
+            if (o1 == null) {
+                return o2!!
+            }
 
-	int getSequence();
+            if (o2 == null) {
+                return o1
+            }
 
-	class SequenceComparator implements Comparator<Object> {
+            return if (isAsc) min(o1, o2) else max(o1, o2)
+        }
 
-		private final boolean isAsc;
+        protected fun find(obj: Any?): Int {
+            if (obj == null) {
+                return defaultSequence
+            }
 
-		private final int defaultSequence;
+            val orderSequence = if (obj is Sequence) obj.sequence else null
+            val orderSpring = findBySpring(obj)
+            return high(orderSequence, orderSpring)
+        }
 
-		public SequenceComparator(boolean isAsc, int defaultSequence) {
-			this.isAsc = isAsc;
-			this.defaultSequence = defaultSequence;
-		}
+        protected fun findBySpring(obj: Any): Int? {
+            if (!ClassUtils.isPresent("org.springframework.core.annotation.Order", javaClass.getClassLoader())) {
+                return null
+            }
+            val annotation: Order = obj.javaClass.getAnnotation<Order>(Order::class.java)
+            // 注解上的排序值
+            val oa = if (annotation != null) annotation.value else null
+            // 类方法上的排序值
+            val om = if (obj is Ordered) obj.order else null
+            // 均为null则返回null
+            if (oa == null && om == null) {
+                return null
+            }
+            return high(oa, om)
+        }
+    }
 
-		@Override
-		public int compare(Object o1, Object o2) {
-			int i1 = find(o1);
-			int i2 = find(o2);
+    companion object {
+        fun <T> asc(list: List<T>) {
+            list.sort(INSTANCE_ASC)
+        }
 
-			if (i1 == i2) {
-				return 0;
-			}
+        fun <T> asc(collection: Collection<T>): List<T> {
+            return collection.stream().sorted(INSTANCE_ASC).toList()
+        }
 
-			boolean isLeft = isAsc ? i1 < i2 : i1 > i2;
-			// 是否o1排o2前面
-			return isLeft ? -1 : 1;
-		}
+        fun <T> desc(list: List<T>) {
+            list.sort(INSTANCE_DESC)
+        }
 
-		/**
-		 * 获取当前排序规则内, 最低优先级的值
-		 */
-		protected int lowerSequence() {
-			return isAsc ? Integer.MAX_VALUE : Integer.MIN_VALUE;
-		}
+        fun <T> desc(collection: Collection<T>): List<T> {
+            return collection.stream().sorted(INSTANCE_DESC).toList()
+        }
 
-		/**
-		 * 返回排序在前面的优先级
-		 */
-		protected int high(Integer o1, Integer o2) {
-			if (o1 == null && o2 == null) {
-				return defaultSequence;
-			}
+        val INSTANCE_ASC: SequenceComparator = SequenceComparator(true, 0)
 
-			if (o1 == null) {
-				return o2;
-			}
-
-			if (o2 == null) {
-				return o1;
-			}
-
-			return isAsc ? Math.min(o1, o2) : Math.max(o1, o2);
-		}
-
-		protected int find(Object obj) {
-			if (obj == null) {
-				return defaultSequence;
-			}
-
-			Integer orderSequence = obj instanceof Sequence sequence ? sequence.getSequence() : null;
-			Integer orderSpring = findBySpring(obj);
-			return high(orderSequence, orderSpring);
-		}
-
-		protected Integer findBySpring(Object obj) {
-			if (!ClassUtils.isPresent("org.springframework.core.annotation.Order", getClass().getClassLoader())) {
-				return null;
-			}
-			Order annotation = obj.getClass().getAnnotation(Order.class);
-			// 注解上的排序值
-			Integer oa = annotation != null ? annotation.value() : null;
-			// 类方法上的排序值
-			Integer om = obj instanceof Ordered ordered ? ordered.getOrder() : null;
-			// 均为null则返回null
-			if (oa == null && om == null) {
-				return null;
-			}
-			return high(oa, om);
-		}
-
-	}
-
+        val INSTANCE_DESC: SequenceComparator = SequenceComparator(false, 0)
+    }
 }

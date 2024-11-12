@@ -1,49 +1,51 @@
-package live.lingting.framework.elasticsearch.composer;
+package live.lingting.framework.elasticsearch.composer
 
-import co.elastic.clients.elasticsearch._types.SortOptions;
-import co.elastic.clients.elasticsearch._types.SortOrder;
-import live.lingting.framework.elasticsearch.ElasticsearchFunction;
-
-import static live.lingting.framework.elasticsearch.ElasticsearchUtils.fieldName;
+import co.elastic.clients.elasticsearch._types.FieldSort
+import co.elastic.clients.elasticsearch._types.SortOptions
+import co.elastic.clients.elasticsearch._types.SortOrder
+import live.lingting.framework.elasticsearch.ElasticsearchFunction
+import live.lingting.framework.elasticsearch.ElasticsearchUtils
 
 /**
  * @author lingting 2024-03-06 17:44
  */
-public final class SortComposer {
+class SortComposer private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	private SortComposer() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+    companion object {
+        fun sort(field: String?, desc: Boolean): SortOptions {
+            return sort(field, if (java.lang.Boolean.TRUE == desc) SortOrder.Desc else SortOrder.Asc)
+        }
 
-	public static SortOptions sort(String field, Boolean desc) {
-		return sort(field, Boolean.TRUE.equals(desc) ? SortOrder.Desc : SortOrder.Asc);
-	}
+        fun sort(field: String?, order: SortOrder?): SortOptions {
+            return SortOptions.of { so: SortOptions.Builder -> so.field { fs: FieldSort.Builder -> fs.field(field).order(order) } }
+        }
 
-	public static SortOptions sort(String field, SortOrder order) {
-		return SortOptions.of(so -> so.field(fs -> fs.field(field).order(order)));
-	}
+        fun desc(field: String?): SortOptions {
+            return sort(field, SortOrder.Desc)
+        }
 
-	public static SortOptions desc(String field) {
-		return sort(field, SortOrder.Desc);
-	}
+        fun asc(field: String?): SortOptions {
+            return sort(field, SortOrder.Asc)
+        }
 
-	public static SortOptions asc(String field) {
-		return sort(field, SortOrder.Asc);
-	}
+        fun <E, T> sort(func: ElasticsearchFunction<E, T>, desc: Boolean): SortOptions {
+            return sort(func, if (java.lang.Boolean.TRUE == desc) SortOrder.Desc else SortOrder.Asc)
+        }
 
-	public static <E, T> SortOptions sort(ElasticsearchFunction<E, T> func, Boolean desc) {
-		return sort(func, Boolean.TRUE.equals(desc) ? SortOrder.Desc : SortOrder.Asc);
-	}
+        fun <E, T> sort(func: ElasticsearchFunction<E, T>, order: SortOrder?): SortOptions {
+            val field: String = ElasticsearchUtils.Companion.fieldName(func)
+            return SortOptions.of { so: SortOptions.Builder -> so.field { fs: FieldSort.Builder -> fs.field(field).order(order) } }
+        }
 
-	public static <E, T> SortOptions sort(ElasticsearchFunction<E, T> func, SortOrder order) {
-		String field = fieldName(func);
-		return SortOptions.of(so -> so.field(fs -> fs.field(field).order(order)));
-	}
+        fun <E, T> desc(func: ElasticsearchFunction<E, T>): SortOptions {
+            return sort(func, SortOrder.Desc)
+        }
 
-	public static <E, T> SortOptions desc(ElasticsearchFunction<E, T> func) {
-		return sort(func, SortOrder.Desc);
-	}
-
-	public static <E, T> SortOptions asc(ElasticsearchFunction<E, T> func) {
-		return sort(func, SortOrder.Asc);
-	}
-
+        fun <E, T> asc(func: ElasticsearchFunction<E, T>): SortOptions {
+            return sort(func, SortOrder.Asc)
+        }
+    }
 }

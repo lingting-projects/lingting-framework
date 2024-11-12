@@ -1,106 +1,90 @@
-package live.lingting.framework.aws.s3.interfaces;
+package live.lingting.framework.aws.s3.interfaces
 
-import live.lingting.framework.aws.AwsS3Object;
-import live.lingting.framework.aws.policy.Acl;
-import live.lingting.framework.aws.s3.AwsS3MultipartTask;
-import live.lingting.framework.http.header.HttpHeaders;
-import live.lingting.framework.multipart.Part;
-import live.lingting.framework.stream.CloneInputStream;
-import live.lingting.framework.thread.Async;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
+import live.lingting.framework.aws.AwsS3Object
+import live.lingting.framework.aws.policy.Acl
+import live.lingting.framework.aws.s3.AwsS3MultipartTask
+import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.multipart.Part
+import live.lingting.framework.stream.CloneInputStream
+import live.lingting.framework.thread.Async
+import java.io.File
+import java.io.IOException
+import java.io.InputStream
 
 /**
  * @author lingting 2024-09-19 21:59
  */
-public interface AwsS3ObjectDelegation extends AwsS3ObjectInterface, AwsS3Delegation<AwsS3Object> {
+interface AwsS3ObjectDelegation : AwsS3ObjectInterface, AwsS3Delegation<AwsS3Object?> {
+    override val key: String?
+        get() = delegation().getKey()
 
-	@Override
-	default String getKey() {
-		return delegation().getKey();
-	}
+    override fun publicUrl(): String? {
+        return delegation()!!.publicUrl()
+    }
 
-	@Override
-	default String publicUrl() {
-		return delegation().publicUrl();
-	}
+    override fun head(): HttpHeaders {
+        return delegation()!!.head()
+    }
 
-	@Override
-	default HttpHeaders head() {
-		return delegation().head();
-	}
+    @Throws(IOException::class)
+    override fun put(file: File?) {
+        delegation()!!.put(file)
+    }
 
-	@Override
-	default void put(File file) throws IOException {
-		delegation().put(file);
-	}
+    @Throws(IOException::class)
+    override fun put(file: File?, acl: Acl?) {
+        delegation()!!.put(file, acl)
+    }
 
-	@Override
-	default void put(File file, Acl acl) throws IOException {
-		delegation().put(file, acl);
-	}
+    @Throws(IOException::class)
+    override fun put(`in`: InputStream) {
+        delegation()!!.put(`in`)
+    }
 
-	@Override
-	default void put(InputStream in) throws IOException {
-		delegation().put(in);
-	}
+    @Throws(IOException::class)
+    override fun put(`in`: InputStream, acl: Acl?) {
+        delegation()!!.put(`in`, acl)
+    }
 
-	@Override
-	default void put(InputStream in, Acl acl) throws IOException {
-		delegation().put(in, acl);
-	}
+    override fun put(`in`: CloneInputStream) {
+        delegation()!!.put(`in`)
+    }
 
-	@Override
-	default void put(CloneInputStream in) {
-		delegation().put(in);
-	}
+    override fun put(`in`: CloneInputStream, acl: Acl?) {
+        delegation()!!.put(`in`, acl)
+    }
 
-	@Override
-	default void put(CloneInputStream in, Acl acl) {
-		delegation().put(in, acl);
-	}
+    override fun delete() {
+        delegation()!!.delete()
+    }
 
-	@Override
-	default void delete() {
-		delegation().delete();
-	}
+    override fun multipartInit(): String? {
+        return delegation()!!.multipartInit()
+    }
 
-	@Override
-	default String multipartInit() {
-		return delegation().multipartInit();
-	}
+    override fun multipartInit(acl: Acl?): String? {
+        return delegation()!!.multipartInit(acl)
+    }
 
-	@Override
-	default String multipartInit(Acl acl) {
-		return delegation().multipartInit(acl);
-	}
+    @Throws(IOException::class)
+    override fun multipart(source: InputStream?): AwsS3MultipartTask? {
+        return delegation()!!.multipart(source)
+    }
 
-	@Override
-	default AwsS3MultipartTask multipart(InputStream source) throws IOException {
-		return delegation().multipart(source);
-	}
+    @Throws(IOException::class)
+    override fun multipart(source: InputStream?, parSize: Long, async: Async): AwsS3MultipartTask {
+        return delegation()!!.multipart(source, parSize, async)
+    }
 
-	@Override
-	default AwsS3MultipartTask multipart(InputStream source, long parSize, Async async) throws IOException {
-		return delegation().multipart(source, parSize, async);
-	}
+    override fun multipartUpload(uploadId: String?, part: Part?, `in`: InputStream?): String? {
+        return delegation()!!.multipartUpload(uploadId, part, `in`)
+    }
 
-	@Override
-	default String multipartUpload(String uploadId, Part part, InputStream in) {
-		return delegation().multipartUpload(uploadId, part, in);
-	}
+    override fun multipartMerge(uploadId: String?, map: Map<Part, String?>?) {
+        delegation()!!.multipartMerge(uploadId, map)
+    }
 
-	@Override
-	default void multipartMerge(String uploadId, Map<Part, String> map) {
-		delegation().multipartMerge(uploadId, map);
-	}
-
-	@Override
-	default void multipartCancel(String uploadId) {
-		delegation().multipartCancel(uploadId);
-	}
-
+    override fun multipartCancel(uploadId: String) {
+        delegation()!!.multipartCancel(uploadId)
+    }
 }

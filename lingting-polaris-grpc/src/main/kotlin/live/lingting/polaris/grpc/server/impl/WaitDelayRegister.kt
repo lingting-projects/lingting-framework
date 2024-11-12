@@ -1,31 +1,19 @@
+package live.lingting.polaris.grpc.server.impl
 
-package live.lingting.polaris.grpc.server.impl;
-
-import live.lingting.polaris.grpc.server.DelayRegister;
-
-import java.time.Duration;
-import java.util.concurrent.TimeUnit;
+import live.lingting.polaris.grpc.server.DelayRegister
+import java.time.Duration
+import java.util.concurrent.TimeUnit
 
 /**
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
+ * @author [liaochuntao](mailto:liaochuntao@live.com)
  */
-public final class WaitDelayRegister implements DelayRegister {
-
-	private final Duration waitTime;
-
-	public WaitDelayRegister(Duration waitTime) {
-		this.waitTime = waitTime;
-	}
-
-	@Override
-	public boolean allowRegis() {
-		try {
-			TimeUnit.SECONDS.sleep(waitTime.getSeconds());
-		}
-		catch (InterruptedException ignore) {
-			Thread.currentThread().interrupt();
-		}
-		return true;
-	}
-
+class WaitDelayRegister(private val waitTime: Duration) : DelayRegister {
+    override fun allowRegis(): Boolean {
+        try {
+            TimeUnit.SECONDS.sleep(waitTime.seconds)
+        } catch (ignore: InterruptedException) {
+            Thread.currentThread().interrupt()
+        }
+        return true
+    }
 }

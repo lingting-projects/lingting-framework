@@ -1,35 +1,31 @@
-package live.lingting.framework.download;
+package live.lingting.framework.download
 
-import live.lingting.framework.exception.DownloadException;
-import live.lingting.framework.util.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
+import live.lingting.framework.util.FileUtils
+import java.io.File
 
 /**
  * @author lingting 2024-01-17 10:09
  */
-public interface Download {
+interface Download {
+    fun start(): Download
 
-	Download start();
+    fun await(): Download
 
-	Download await();
+    val isStart: Boolean
 
-	boolean isStart();
+    val isFinished: Boolean
 
-	boolean isFinished();
+    val isSuccess: Boolean
 
-	boolean isSuccess();
+    val file: File
 
-	File getFile() throws DownloadException;
+    /**
+     * 使用下载文件覆盖指定文件
+     */
 
-	/**
-	 * 使用下载文件覆盖指定文件
-	 */
-	default File transferTo(File file) throws DownloadException, IOException {
-		File source = getFile();
-		FileUtils.copy(source, file, true);
-		return file;
-	}
-
+    fun transferTo(file: File): File {
+        val source = this.file
+        FileUtils.copy(source, file, true)
+        return file
+    }
 }

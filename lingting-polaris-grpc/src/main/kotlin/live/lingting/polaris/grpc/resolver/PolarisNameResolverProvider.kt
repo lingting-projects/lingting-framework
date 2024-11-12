@@ -1,69 +1,56 @@
+package live.lingting.polaris.grpc.resolver
 
-package live.lingting.polaris.grpc.resolver;
-
-import com.tencent.polaris.api.core.ConsumerAPI;
-import com.tencent.polaris.client.api.SDKContext;
-import com.tencent.polaris.factory.api.DiscoveryAPIFactory;
-import io.grpc.NameResolver;
-import io.grpc.NameResolverProvider;
-
-import java.net.URI;
+import com.tencent.polaris.api.core.ConsumerAPI
+import com.tencent.polaris.client.api.SDKContext
+import com.tencent.polaris.factory.api.DiscoveryAPIFactory
+import io.grpc.NameResolver
+import io.grpc.NameResolverProvider
+import java.net.URI
 
 /**
  * Service provider class
  *
  * @author lixiaoshuang
  */
-public class PolarisNameResolverProvider extends NameResolverProvider {
+class PolarisNameResolverProvider(private val context: SDKContext) : NameResolverProvider() {
+    private val consumerAPI: ConsumerAPI = DiscoveryAPIFactory.createConsumerAPIByContext(context)
 
-	private static final int DEFAULT_PRIORITY = 5;
+    /**
+     * Creates a NameResolver for the given target URI.
+     * @param targetUri the target URI to be resolved, whose scheme must not be null
+     * @param args other information that may be useful
+     * @return NameResolver
+     */
+    override fun newNameResolver(targetUri: URI, args: NameResolver.Args): NameResolver? {
+        if (DEFAULT_SCHEME != targetUri.scheme) {
+            return null
+        }
+        return PolarisNameResolver(targetUri, context, consumerAPI)
+    }
 
-	private static final String DEFAULT_SCHEME = "polaris";
+    /**
+     * service is available.
+     * @return isAvailable
+     */
+    override fun isAvailable(): Boolean {
+        return true
+    }
 
-	private final SDKContext context;
+    /**
+     * Default priority 5.
+     * @return priority
+     */
+    override fun priority(): Int {
+        return DEFAULT_PRIORITY
+    }
 
-	private final ConsumerAPI consumerAPI;
+    override fun getDefaultScheme(): String {
+        return DEFAULT_SCHEME
+    }
 
-	public PolarisNameResolverProvider(final SDKContext context) {
-		this.context = context;
-		this.consumerAPI = DiscoveryAPIFactory.createConsumerAPIByContext(context);
-	}
+    companion object {
+        private const val DEFAULT_PRIORITY = 5
 
-	/**
-	 * Creates a NameResolver for the given target URI.
-	 * @param targetUri the target URI to be resolved, whose scheme must not be null
-	 * @param args other information that may be useful
-	 * @return NameResolver
-	 */
-	@Override
-	public NameResolver newNameResolver(URI targetUri, NameResolver.Args args) {
-		if (!DEFAULT_SCHEME.equals(targetUri.getScheme())) {
-			return null;
-		}
-		return new PolarisNameResolver(targetUri, context, consumerAPI);
-	}
-
-	/**
-	 * service is available.
-	 * @return isAvailable
-	 */
-	@Override
-	protected boolean isAvailable() {
-		return true;
-	}
-
-	/**
-	 * Default priority 5.
-	 * @return priority
-	 */
-	@Override
-	protected int priority() {
-		return DEFAULT_PRIORITY;
-	}
-
-	@Override
-	public String getDefaultScheme() {
-		return DEFAULT_SCHEME;
-	}
-
+        private const val DEFAULT_SCHEME = "polaris"
+    }
 }

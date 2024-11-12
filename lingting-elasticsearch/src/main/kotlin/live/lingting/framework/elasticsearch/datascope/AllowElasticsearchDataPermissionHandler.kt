@@ -1,25 +1,18 @@
-package live.lingting.framework.elasticsearch.datascope;
-
-import java.util.List;
+package live.lingting.framework.elasticsearch.datascope
 
 /**
  * @author lingting 2024-07-01 17:29
  */
-public class AllowElasticsearchDataPermissionHandler implements ElasticsearchDataPermissionHandler {
+class AllowElasticsearchDataPermissionHandler : ElasticsearchDataPermissionHandler {
+    override fun dataScopes(): List<ElasticsearchDataScope?> {
+        return listOf<ElasticsearchDataScope>()
+    }
 
-	@Override
-	public List<ElasticsearchDataScope> dataScopes() {
-		return List.of();
-	}
+    override fun filterDataScopes(index: String?): List<ElasticsearchDataScope?> {
+        return listOf<ElasticsearchDataScope>()
+    }
 
-	@Override
-	public List<ElasticsearchDataScope> filterDataScopes(String index) {
-		return List.of();
-	}
-
-	@Override
-	public boolean ignorePermissionControl(String index) {
-		return true;
-	}
-
+    override fun ignorePermissionControl(index: String?): Boolean {
+        return true
+    }
 }

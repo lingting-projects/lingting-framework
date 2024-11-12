@@ -1,137 +1,117 @@
-package live.lingting.framework.download;
+package live.lingting.framework.download
 
-import live.lingting.framework.util.ThreadUtils;
-
-import java.time.Duration;
-import java.util.concurrent.ExecutorService;
+import live.lingting.framework.util.ThreadUtils
+import java.time.Duration
+import java.util.concurrent.ExecutorService
 
 /**
  * @author lingting 2024-01-16 19:33
  */
-@SuppressWarnings("unchecked")
-public abstract class DownloadBuilder<B extends DownloadBuilder<B>> {
+abstract class DownloadBuilder<B : DownloadBuilder<B>> protected constructor(
+    /**
+     * 文件下载地址
+     */
+    val url: String
+) {
+    var isMulti: Boolean = false
 
-	protected static final int DEFAULT_THREAD_LIMIT = 20;
+    var executor: ExecutorService = ThreadUtils.executor()
 
-	/**
-	 * 默认10M
-	 */
-	protected static final long DEFAULT_PART_SIZE = 10485760;
+    /**
+     * 文件大小, 用于多线程下载时进行分片. 单位: bytes
+     *
+     *
+     * 设置为null或者小于1时调用size方法解析
+     *
+     */
+    var size: Long? = null
 
-	protected static final long DEFAULT_MAX_RETRY_COUNT = 3;
+    /**
+     * 最大启动线程数
+     */
+    var threadLimit: Int = DEFAULT_THREAD_LIMIT
 
-	protected static final Duration DEFAULT_TIMEOUT = null;
+    /**
+     * 每个分片的最大大小, 单位: bytes
+     */
+    var partSize: Long = DEFAULT_PART_SIZE
 
-	/**
-	 * 文件下载地址
-	 */
-	protected final String url;
+    var maxRetryCount: Long = DEFAULT_MAX_RETRY_COUNT
 
-	protected boolean multi = false;
+    var timeout: Duration? = null
 
-	protected ExecutorService executor = ThreadUtils.executor();
+    fun executor(executor: ExecutorService): B {
+        this.executor = executor
+        return this as B
+    }
 
-	/**
-	 * 文件大小, 用于多线程下载时进行分片. 单位: bytes
-	 * <p>
-	 * 设置为null或者小于1时调用size方法解析
-	 * </p>
-	 */
-	protected Long size;
+    fun single(): B {
+        this.isMulti = false
+        return this as B
+    }
 
-	/**
-	 * 最大启动线程数
-	 */
-	protected int threadLimit = DEFAULT_THREAD_LIMIT;
+    fun multi(): B {
+        this.isMulti = true
+        return this as B
+    }
 
-	/**
-	 * 每个分片的最大大小, 单位: bytes
-	 */
-	protected long partSize = DEFAULT_PART_SIZE;
+    fun size(size: Long): B {
+        this.size = size
+        return this as B
+    }
 
-	protected long maxRetryCount = DEFAULT_MAX_RETRY_COUNT;
+    fun threadLimit(maxThreadCount: Int): B {
+        this.threadLimit = safeDefault(maxThreadCount, DEFAULT_THREAD_LIMIT)
+        return this as B
+    }
 
-	protected Duration timeout = null;
+    fun partSize(partSize: Long): B {
+        this.partSize = safeDefault(partSize, DEFAULT_PART_SIZE)
+        return this as B
+    }
 
-	protected DownloadBuilder(String url) {
-		this.url = url;
-	}
+    fun maxRetryCount(maxRetryCount: Long): B {
+        this.maxRetryCount = safeDefault(maxRetryCount, DEFAULT_MAX_RETRY_COUNT)
+        return this as B
+    }
 
-	public B executor(ExecutorService executor) {
-		this.executor = executor;
-		return (B) this;
-	}
+    fun timeout(timeout: Duration): B {
+        this.timeout = safeDefault(timeout, DEFAULT_TIMEOUT)
+        return this as B
+    }
 
-	public B single() {
-		this.multi = false;
-		return (B) this;
-	}
+    abstract fun build(): Download
 
-	public B multi() {
-		this.multi = true;
-		return (B) this;
-	}
+    /**
+     * 将原值进行安全判断, 如果不满足则设置为默认值
+     *
+     * @param t 原值
+     * @param d 默认值
+     * @return 结果
+     */
+    protected fun <T> safeDefault(t: T, d: T): T {
+        if (t == null) {
+            return d
+        }
+        if (t is Number && t.toLong() < 1) {
+            return d
+        }
+        if (t is Duration && t.isNegative) {
+            return d
+        }
+        return t
+    }
 
-	public B size(Long size) {
-		this.size = size;
-		return (B) this;
-	}
+    companion object {
+        protected const val DEFAULT_THREAD_LIMIT: Int = 20
 
-	public B threadLimit(int maxThreadCount) {
-		this.threadLimit = safeDefault(maxThreadCount, DEFAULT_THREAD_LIMIT);
-		return (B) this;
-	}
+        /**
+         * 默认10M
+         */
+        protected const val DEFAULT_PART_SIZE: Long = 10485760
 
-	public B partSize(long partSize) {
-		this.partSize = safeDefault(partSize, DEFAULT_PART_SIZE);
-		return (B) this;
-	}
+        protected const val DEFAULT_MAX_RETRY_COUNT: Long = 3
 
-	public B maxRetryCount(long maxRetryCount) {
-		this.maxRetryCount = safeDefault(maxRetryCount, DEFAULT_MAX_RETRY_COUNT);
-		return (B) this;
-	}
-
-	public B timeout(Duration timeout) {
-		this.timeout = safeDefault(timeout, DEFAULT_TIMEOUT);
-		return (B) this;
-	}
-
-	public abstract Download build();
-
-	/**
-	 * 将原值进行安全判断, 如果不满足则设置为默认值
-	 *
-	 * @param t 原值
-	 * @param d 默认值
-	 * @return 结果
-	 */
-	protected <T> T safeDefault(T t, T d) {
-		if (t == null) {
-			return d;
-		}
-		if (t instanceof Number number && number.longValue() < 1) {
-			return d;
-		}
-		if (t instanceof Duration duration && duration.isNegative()) {
-			return d;
-		}
-		return t;
-	}
-
-	public String getUrl() {return this.url;}
-
-	public boolean isMulti() {return this.multi;}
-
-	public ExecutorService getExecutor() {return this.executor;}
-
-	public Long getSize() {return this.size;}
-
-	public int getThreadLimit() {return this.threadLimit;}
-
-	public long getPartSize() {return this.partSize;}
-
-	public long getMaxRetryCount() {return this.maxRetryCount;}
-
-	public Duration getTimeout() {return this.timeout;}
+        protected val DEFAULT_TIMEOUT: Duration? = null
+    }
 }

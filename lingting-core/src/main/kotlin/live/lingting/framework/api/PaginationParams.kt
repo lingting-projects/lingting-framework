@@ -1,104 +1,40 @@
-package live.lingting.framework.api;
-
-import java.util.ArrayList;
-import java.util.List;
+package live.lingting.framework.api
 
 /**
  * @author lingting 2024-02-02 17:53
  */
-
-public class PaginationParams {
-
-	private long page = 1;
-
-	private long size = 10;
-
-	private List<Sort> sorts;
-
-	public PaginationParams(long page, long size, List<Sort> sorts) {
-		this.page = page;
-		this.size = size;
-		this.sorts = sorts;
-	}
-
-	public PaginationParams() {}
-
-	/**
-	 * 数据起始索引
-	 */
-	public long start() {
-		return (getPage() - 1) * getSize();
-	}
-
-	public long getPage() {
-		if (page < 1) {
-			page = 1;
-		}
-		return page;
-	}
-
-	public long getSize() {
-		if (size < 1) {
-			size = 10;
-		}
-		return size;
-	}
-
-	public List<Sort> getSorts() {
-		if (sorts == null) {
-			sorts = new ArrayList<>();
-		}
-		return sorts;
-	}
-
-	public PaginationParams setPage(long page) {
-		this.page = page;
-		return this;
-	}
-
-	public PaginationParams setSize(long size) {
-		this.size = size;
-		return this;
-	}
-
-	public PaginationParams setSorts(List<Sort> sorts) {
-		this.sorts = sorts;
-		return this;
-	}
+class PaginationParams(
+    var page: Long,
+    var size: Long,
+    var sorts: List<Sort>,
+) {
 
 
-	public static class Sort {
+    constructor() : this(1, 10, emptyList())
 
-		/**
-		 * 排序字段
-		 */
-		private String field;
+    constructor(page: Long, size: Long) : this(page, size, emptyList())
 
-		/**
-		 * 是否倒序
-		 */
-		private Boolean desc;
+    /**
+     * 数据起始索引
+     */
+    fun start(): Long {
+        return (page - 1) * size
+    }
 
-		public Sort(String field, Boolean desc) {
-			this.field = field;
-			this.desc = desc;
-		}
+    data class Sort(
 
-		public Sort() {}
+        /**
+         * 排序字段
+         */
+        var field: String,
 
-		public String getField() {return this.field;}
+        /**
+         * 是否倒序
+         */
+        var desc: Boolean,
+    ) {
 
-		public Boolean getDesc() {return this.desc;}
+        constructor() : this("", false)
 
-		public Sort setField(String field) {
-			this.field = field;
-			return this;
-		}
-
-		public Sort setDesc(Boolean desc) {
-			this.desc = desc;
-			return this;
-		}
-	}
-
+    }
 }

@@ -1,97 +1,84 @@
-package live.lingting.framework.stream;
+package live.lingting.framework.stream
 
-import live.lingting.framework.util.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import live.lingting.framework.util.FileUtils
+import java.io.File
+import java.io.InputStream
+import java.io.RandomAccessFile
+import java.nio.file.Files
+import java.nio.file.Path
 
 /**
  * @author lingting 2024-09-05 14:38
  */
-public class RandomAccessInputStream extends InputStream {
+class RandomAccessInputStream : InputStream {
+    protected val file: RandomAccessFile
 
-	public static final String MODE = "r";
+    val path: Path
 
-	public static final File TEMP_DIR = RandomAccessOutputStream.TEMP_DIR;
+    /**
+     * 文件大小: bytes
+     */
+    val size: Long
 
-	protected final RandomAccessFile file;
+    var isCloseAndDelete: Boolean = false
 
-	private final Path path;
+    constructor(`in`: InputStream) {
+        val temp: File
 
-	/**
-	 * 文件大小: bytes
-	 */
-	private final long size;
+        if (`in` is RandomAccessInputStream) {
+            this.isCloseAndDelete = false
+            temp = `in`.path.toFile()
+        } else {
+            this.isCloseAndDelete = true
+            temp = FileUtils.createTemp(`in`, ".input", TEMP_DIR)
+        }
 
-	protected boolean closeAndDelete = false;
+        this.file = RandomAccessFile(temp, MODE)
+        this.path = temp.toPath()
+        this.size = temp.length()
+    }
 
-	public RandomAccessInputStream(InputStream in) throws IOException {
-		File temp;
+    constructor(path: String) : this(File(path))
 
-		if (in instanceof RandomAccessInputStream stream) {
-			this.closeAndDelete = false;
-			temp = stream.path.toFile();
-		}
-		else {
-			this.closeAndDelete = true;
-			temp = FileUtils.createTemp(in, ".input", TEMP_DIR);
-		}
+    constructor(file: File) {
+        this.file = RandomAccessFile(file, MODE)
+        this.path = file.toPath()
+        this.size = file.length()
+    }
 
-		this.file = new RandomAccessFile(temp, MODE);
-		this.path = temp.toPath();
-		this.size = temp.length();
-	}
+    constructor(path: Path) : this(path.toFile())
 
-	public RandomAccessInputStream(String path) throws IOException {
-		this(new File(path));
-	}
 
-	public RandomAccessInputStream(File file) throws IOException {
-		this.file = new RandomAccessFile(file, MODE);
-		this.path = file.toPath();
-		this.size = file.length();
-	}
+    fun seek(pos: Long) {
+        file.seek(pos)
+    }
 
-	public RandomAccessInputStream(Path path) throws IOException {
-		this(path.toFile());
-	}
 
-	public void seek(long pos) throws IOException {
-		file.seek(pos);
-	}
+    override fun close() {
+        file.close()
+        if (isCloseAndDelete) {
+            Files.deleteIfExists(path)
+        }
+    }
 
-	@Override
-	public void close() throws IOException {
-		file.close();
-		if (closeAndDelete) {
-			Files.deleteIfExists(path);
-		}
-	}
 
-	@Override
-	public int read() throws IOException {
-		return file.read();
-	}
+    override fun read(): Int {
+        return file.read()
+    }
 
-	@Override
-	public int read(byte[] b, int off, int len) throws IOException {
-		return file.read(b, off, len);
-	}
 
-	@Override
-	public void reset() throws IOException {
-		file.seek(0);
-	}
+    override fun read(b: ByteArray, off: Int, len: Int): Int {
+        return file.read(b, off, len)
+    }
 
-	public Path getPath() {return this.path;}
 
-	public long getSize() {return this.size;}
+    override fun reset() {
+        file.seek(0)
+    }
 
-	public boolean isCloseAndDelete() {return this.closeAndDelete;}
+    companion object {
+        const val MODE: String = "r"
 
-	public void setCloseAndDelete(boolean closeAndDelete) {this.closeAndDelete = closeAndDelete;}
+        val TEMP_DIR: File = RandomAccessOutputStream.TEMP_DIR
+    }
 }

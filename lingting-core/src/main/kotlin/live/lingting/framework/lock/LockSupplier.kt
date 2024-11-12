@@ -1,10 +1,11 @@
-package live.lingting.framework.lock;
+package live.lingting.framework.lock
+
+import live.lingting.framework.api.R
 
 /**
  * @author lingting 2023-04-22 11:35
  */
-public interface LockSupplier<R> {
+interface LockSupplier<R> {
 
-	R get() throws InterruptedException;
-
+    fun get(): R
 }

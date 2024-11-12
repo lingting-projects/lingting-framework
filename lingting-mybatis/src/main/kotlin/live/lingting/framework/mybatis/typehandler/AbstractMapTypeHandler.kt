@@ -1,21 +1,14 @@
-package live.lingting.framework.mybatis.typehandler;
-
-import java.util.HashMap;
-import java.util.Map;
+package live.lingting.framework.mybatis.typehandler
 
 /**
  * @author lingting 2022/12/19 16:27
  */
-public abstract class AbstractMapTypeHandler<K, V> extends AbstractJacksonTypeHandler<Map<K, V>> {
+abstract class AbstractMapTypeHandler<K, V> : AbstractJacksonTypeHandler<Map<K, V>>() {
+    override fun defaultValue(): Map<K, V> {
+        return HashMap()
+    }
 
-	@Override
-	protected Map<K, V> defaultValue() {
-		return new HashMap<>();
-	}
-
-	@Override
-	protected String defaultJson() {
-		return "{}";
-	}
-
+    override fun defaultJson(): String {
+        return "{}"
+    }
 }

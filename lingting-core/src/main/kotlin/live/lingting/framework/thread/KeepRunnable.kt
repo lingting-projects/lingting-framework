@@ -1,70 +1,48 @@
-package live.lingting.framework.thread;
+package live.lingting.framework.thread
 
-import live.lingting.framework.util.MdcUtils;
-import live.lingting.framework.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-
-import java.util.Map;
+import live.lingting.framework.util.MdcUtils
+import live.lingting.framework.util.StringUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 
 /**
  * 保留状态的可运行代码
  *
  * @author lingting 2024-04-28 17:25
  */
-@SuppressWarnings("java:S112")
-public abstract class KeepRunnable implements Runnable {
+abstract class KeepRunnable protected constructor(protected val name: String? = "", protected val mdc: Map<String, String> = MdcUtils.copyContext()) : Runnable {
+    override fun run() {
+        val thread = Thread.currentThread()
+        val oldName = thread.name
+        if (StringUtils.hasText(name)) {
+            thread.name = name
+        }
 
-	private static final Logger log = org.slf4j.LoggerFactory.getLogger(KeepRunnable.class);
-	protected final String name;
+        val oldMdc: Map<String, String> = MdcUtils.copyContext()
+        MDC.setContextMap(mdc)
 
-	protected final Map<String, String> mdc;
+        try {
+            process()
+        } catch (e: InterruptedException) {
+            thread.interrupt()
+            log.warn("Thread interrupted inside thread pool")
+        } catch (throwable: Throwable) {
+            log.error("Thread exception inside thread pool!", throwable)
+        } finally {
+            onFinally()
+            MDC.setContextMap(oldMdc)
+            thread.name = oldName
+        }
+    }
 
-	protected KeepRunnable() {
-		this("");
-	}
 
-	protected KeepRunnable(String name) {
-		this(name, MdcUtils.copyContext());
-	}
+    protected abstract fun process()
 
-	protected KeepRunnable(String name, Map<String, String> mdc) {
-		this.name = name;
-		this.mdc = mdc;
-	}
+    protected open fun onFinally() {
+    }
 
-	@Override
-	public void run() {
-		Thread thread = Thread.currentThread();
-		String oldName = thread.getName();
-		if (StringUtils.hasText(name)) {
-			thread.setName(name);
-		}
-
-		Map<String, String> oldMdc = MdcUtils.copyContext();
-		MDC.setContextMap(mdc);
-
-		try {
-			process();
-		}
-		catch (InterruptedException e) {
-			thread.interrupt();
-			log.warn("Thread interrupted inside thread pool");
-		}
-		catch (Throwable throwable) {
-			log.error("Thread exception inside thread pool!", throwable);
-		}
-		finally {
-			onFinally();
-			MDC.setContextMap(oldMdc);
-			thread.setName(oldName);
-		}
-	}
-
-	protected abstract void process() throws Throwable;
-
-	protected void onFinally() {
-
-	}
-
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(KeepRunnable::class.java)
+    }
 }

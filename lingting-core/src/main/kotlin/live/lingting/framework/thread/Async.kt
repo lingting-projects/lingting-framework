@@ -1,226 +1,190 @@
-package live.lingting.framework.thread;
+package live.lingting.framework.thread
 
-import live.lingting.framework.function.ThrowableRunnable;
-import live.lingting.framework.lock.JavaReentrantLock;
-import live.lingting.framework.util.ThreadUtils;
-import live.lingting.framework.util.ValueUtils;
-import org.slf4j.Logger;
-
-import java.time.Duration;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executor;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.function.Supplier;
+import live.lingting.framework.function.ThrowableRunnable
+import live.lingting.framework.lock.JavaReentrantLock
+import live.lingting.framework.util.ThreadUtils
+import live.lingting.framework.util.ValueUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.time.Duration
+import java.util.concurrent.BlockingQueue
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.Executor
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.function.Supplier
 
 /**
  * @author lingting 2023-06-05 17:31
  */
-public class Async {
+class Async constructor(
+    /**
+     * 异步任务使用的线程池
+     */
+    protected val executor: Executor? = defaultExecutor,
+    /**
+     * 线程数量限制. -1 表示不限制
+     */
+    val limit: Long = UNLIMITED
+) {
+    protected val lock: JavaReentrantLock = JavaReentrantLock()
 
-	private static final Logger log = org.slf4j.LoggerFactory.getLogger(Async.class);
-	protected static Executor defaultExecutor = VirtualThread.executor();
+    /**
+     * 所有异步任务列表
+     */
+    protected val all: MutableList<StateKeepRunnable> = CopyOnWriteArrayList()
 
-	public static final long UNLIMITED = -1;
+    /**
+     * 执行中任务列表
+     */
+    protected val running: MutableList<StateKeepRunnable> = CopyOnWriteArrayList()
 
-	protected final JavaReentrantLock lock = new JavaReentrantLock();
+    /**
+     * 已完成异步任务列表
+     */
+    protected val completed: MutableList<StateKeepRunnable> = CopyOnWriteArrayList()
 
-	/**
-	 * 所有异步任务列表
-	 */
-	protected final List<StateKeepRunnable> all = new CopyOnWriteArrayList<>();
+    /**
+     * 待执行任务队列
+     */
+    protected val queue: BlockingQueue<StateKeepRunnable> = LinkedBlockingQueue()
 
-	/**
-	 * 执行中任务列表
-	 */
-	protected final List<StateKeepRunnable> running = new CopyOnWriteArrayList<>();
+    constructor(limit: Long) : this(defaultExecutor, limit)
 
-	/**
-	 * 已完成异步任务列表
-	 */
-	protected final List<StateKeepRunnable> completed = new CopyOnWriteArrayList<>();
+    val isUnlimited: Boolean
+        /**
+         * 是否可以无限制使用线程
+         */
+        get() = limit == UNLIMITED
 
-	/**
-	 * 待执行任务队列
-	 */
-	protected final BlockingQueue<StateKeepRunnable> queue = new LinkedBlockingQueue<>();
+    fun execute(runnable: Runnable) {
+        execute("", runnable)
+    }
 
-	/**
-	 * 异步任务使用的线程池
-	 */
-	protected final Executor executor;
+    fun execute(name: String?, runnable: Runnable) {
+        submit(name) { runnable.run() }
+    }
 
-	/**
-	 * 线程数量限制. -1 表示不限制
-	 */
-	protected final long limit;
+    fun submit(runnable: ThrowableRunnable) {
+        submit("", runnable)
+    }
 
-	public Async() {
-		this(defaultExecutor);
-	}
+    fun submit(name: String?, runnable: ThrowableRunnable) {
+        val keepRunnable: StateKeepRunnable = object : StateKeepRunnable(name) {
 
-	public Async(Executor executor) {
-		this(executor, UNLIMITED);
-	}
-
-	public Async(long limit) {
-		this(defaultExecutor, limit);
-	}
-
-	public Async(Executor executor, long limit) {
-		this.executor = executor;
-		this.limit = limit;
-	}
-
-	public static Async pool() {
-		return pool(UNLIMITED);
-	}
-
-	public static Async pool(long limit) {
-		Executor e = ThreadUtils.executor();
-		return new Async(e, limit);
-	}
-
-	public static Async virtual() {
-		return virtual(UNLIMITED);
-	}
-
-	public static Async virtual(long limit) {
-		Executor e = VirtualThread.executor();
-		return new Async(e, limit);
-	}
-
-	public static void setDefaultExecutor(Executor defaultExecutor) {Async.defaultExecutor = defaultExecutor;}
-
-	/**
-	 * 是否可以无限制使用线程
-	 */
-	public boolean isUnlimited() {
-		return limit == UNLIMITED;
-	}
-
-	public void execute(Runnable runnable) {
-		execute("", runnable);
-	}
-
-	public void execute(String name, Runnable runnable) {
-		submit(name, runnable::run);
-	}
-
-	public void submit(ThrowableRunnable runnable) {
-		submit("", runnable);
-	}
-
-	public void submit(String name, ThrowableRunnable runnable) {
-		StateKeepRunnable keepRunnable = new StateKeepRunnable(name) {
-
-			@Override
-			protected void doProcess() throws Throwable {
-				runnable.run();
-			}
+            override fun doProcess() {
+                runnable.run()
+            }
 
 
-			@Override
-			protected void onFinally() {
-				super.onFinally();
-				lock.runByInterruptibly(() -> {
-					completed.add(this);
-					running.remove(this);
-					walk();
-				});
-			}
-		};
+            override fun onFinally() {
+                super.onFinally()
+                lock.runByInterruptibly {
+                    completed.add(this)
+                    running.remove(this)
+                    walk()
+                }
+            }
+        }
 
-		all.add(keepRunnable);
-		queue.add(keepRunnable);
-		walk();
-	}
+        all.add(keepRunnable)
+        queue.add(keepRunnable)
+        walk()
+    }
 
-	/**
-	 * 唤醒所有任务. 尝试执行
-	 */
+    /**
+     * 唤醒所有任务. 尝试执行
+     */
+    fun walk() {
+        // 上锁确保不会多执行
+        lock.runByInterruptibly {
+            // 无限制 || 可以执行新任务
+            if (isUnlimited || running.size < limit) {
+                val runnable = queue.poll() ?: return@runByInterruptibly
+                executor!!.execute(runnable)
+                running.add(runnable)
+            }
+        }
+    }
 
-	public void walk() {
-		// 上锁确保不会多执行
-		lock.runByInterruptibly(() -> {
-			// 无限制 || 可以执行新任务
-			if (isUnlimited() || running.size() < limit) {
-				StateKeepRunnable runnable = queue.poll();
-				if (runnable == null) {
-					return;
-				}
-				executor.execute(runnable);
-				running.add(runnable);
-			}
-		});
-	}
+    /**
+     * 等待结束
+     *
+     * @param duration       超时时间
+     * @param forceInterrupt 是否强制中断已超时的任务
+     */
+    /**
+     * 等待结束, 执行时间超过超时时间的任务强行中断
+     *
+     * @param duration 超时时间
+     */
 
-	public void await() {
-		await(null);
-	}
+    fun await(duration: Duration? = null, forceInterrupt: Boolean = true) {
+        val supplier = Supplier {
+            val count = notCompletedCount()
+            if (count < 1) {
+                return@Supplier true
+            }
 
-	/**
-	 * 等待结束, 执行时间超过超时时间的任务强行中断
-	 *
-	 * @param duration 超时时间
-	 */
-	public void await(Duration duration) {
-		await(duration, true);
-	}
+            if (duration == null) {
+                return@Supplier false
+            }
+            val millis = duration.toMillis()
+            for (runnable in running) {
+                // 执行时间超时
+                if (runnable.time() >= millis && forceInterrupt) {
+                    runnable.interrupt()
+                }
+            }
+            false
+        }
+        ValueUtils.awaitTrue(supplier)
+    }
 
-	/**
-	 * 等待结束
-	 *
-	 * @param duration       超时时间
-	 * @param forceInterrupt 是否强制中断已超时的任务
-	 */
-	public void await(Duration duration, boolean forceInterrupt) {
-		Supplier<Boolean> supplier = () -> {
-			long count = notCompletedCount();
-			if (count < 1) {
-				return true;
-			}
+    /**
+     * 执行中和待执行的任务数量
+     */
+    fun notCompletedCount(): Long {
+        return ((queue.size + running.size).toLong())
+    }
 
-			if (duration == null) {
-				return false;
-			}
-			long millis = duration.toMillis();
-			for (StateKeepRunnable runnable : running) {
-				// 执行时间超时
-				if (runnable.time() >= millis && forceInterrupt) {
-					runnable.interrupt();
-				}
-			}
-			return false;
-		};
-		ValueUtils.awaitTrue(supplier);
-	}
+    fun runningCount(): Long {
+        return running.size.toLong()
+    }
 
-	/**
-	 * 执行中和待执行的任务数量
-	 */
-	public long notCompletedCount() {
-		return (queue.size() + running.size());
-	}
+    /**
+     * 已完成的数量
+     */
+    fun completedCount(): Long {
+        return completed.size.toLong()
+    }
 
-	public long runningCount() {
-		return running.size();
-	}
+    /**
+     * 所有异步任务数量
+     */
+    fun allCount(): Long {
+        return all.size.toLong()
+    }
 
-	/**
-	 * 已完成的数量
-	 */
-	public long completedCount() {
-		return completed.size();
-	}
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(Async::class.java)
+        protected var defaultExecutor: Executor = VirtualThread.executor()
 
-	/**
-	 * 所有异步任务数量
-	 */
-	public long allCount() {
-		return all.size();
-	}
+        const val UNLIMITED: Long = -1
 
-	public long getLimit() {return this.limit;}
+
+        fun pool(limit: Long = UNLIMITED): Async {
+            val e: Executor = ThreadUtils.executor()
+            return Async(e, limit)
+        }
+
+
+        fun virtual(limit: Long = UNLIMITED): Async {
+            val e: Executor = VirtualThread.executor()
+            return Async(e, limit)
+        }
+
+        fun setDefaultExecutor(defaultExecutor: Executor) {
+            Companion.defaultExecutor = defaultExecutor
+        }
+    }
 }

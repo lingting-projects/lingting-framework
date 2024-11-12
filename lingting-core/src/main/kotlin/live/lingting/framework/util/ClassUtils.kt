@@ -1,398 +1,386 @@
-package live.lingting.framework.util;
+package live.lingting.framework.util
 
-import live.lingting.framework.reflect.ClassField;
-
-import java.io.IOException;
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import live.lingting.framework.reflect.ClassField
+import java.lang.reflect.AccessibleObject
+import java.lang.reflect.Constructor
+import java.lang.reflect.Field
+import java.lang.reflect.Method
+import java.lang.reflect.ParameterizedType
+import java.lang.reflect.Type
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.function.BiConsumer
+import java.util.function.BiFunction
+import java.util.function.Function
+import java.util.function.Predicate
+import java.util.function.Supplier
+import java.util.stream.Collectors
 
 /**
  * @author lingting 2021/2/25 21:17
  */
-@SuppressWarnings({"java:S3011", "unchecked"})
-public final class ClassUtils {
+class ClassUtils private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
+    companion object {
+        val EMPTY_CLASS_ARRAY: Array<Class<*>> = arrayOfNulls(0)
 
-	static final Map<String, Map<ClassLoader, Boolean>> CACHE_CLASS_PRESENT = new ConcurrentHashMap<>(8);
 
-	static final Map<Class<?>, Field[]> CACHE_FIELDS = new ConcurrentHashMap<>(16);
+        val CACHE_CLASS_PRESENT: MutableMap<String, MutableMap<ClassLoader, Boolean>> = ConcurrentHashMap(8)
 
-	static final Map<Class<?>, Method[]> CACHE_METHODS = new ConcurrentHashMap<>(16);
+        val CACHE_FIELDS: MutableMap<Class<*>, Array<Field>> = ConcurrentHashMap(16)
 
-	static final Map<Class<?>, ClassField[]> CACHE_CLASS_FIELDS = new ConcurrentHashMap<>(16);
+        val CACHE_METHODS: MutableMap<Class<*>?, Array<Method?>> = ConcurrentHashMap(16)
 
-	static final Map<Class<?>, Type[]> CACHE_TYPE_ARGUMENTS = new ConcurrentHashMap<>();
+        val CACHE_CLASS_FIELDS: MutableMap<Class<*>, Array<ClassField>> = ConcurrentHashMap(16)
 
-	static final Map<Class<?>, Constructor<?>[]> CACHE_CONSTRUCTOR = new ConcurrentHashMap<>();
+        val CACHE_TYPE_ARGUMENTS: MutableMap<Class<*>, Array<Type?>> = ConcurrentHashMap()
 
-	private ClassUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+        val CACHE_CONSTRUCTOR: MutableMap<Class<*>, Array<Constructor<*>>> = ConcurrentHashMap()
 
-	/**
-	 * 获取指定类的泛型
-	 */
-	public static Type[] typeArguments(Class<?> cls) {
-		return CACHE_TYPE_ARGUMENTS.computeIfAbsent(cls, k -> {
-			Type superclass = cls.getGenericSuperclass();
+        /**
+         * 获取指定类的泛型
+         */
+        fun typeArguments(cls: Class<*>): Array<Type?> {
+            return CACHE_TYPE_ARGUMENTS.computeIfAbsent(cls) { k: Class<*>? ->
+                val superclass = cls.genericSuperclass as? ParameterizedType ?: return@computeIfAbsent arrayOfNulls<Type>(0)
+                superclass.actualTypeArguments
+            }
+        }
 
-			if (!(superclass instanceof ParameterizedType)) {
-				return new Type[0];
-			}
+        fun classArguments(cls: Class<*>): List<Class<*>> {
+            val types = typeArguments(cls)
+            val list: MutableList<Class<*>> = ArrayList()
 
-			return ((ParameterizedType) superclass).getActualTypeArguments();
-		});
-	}
+            for (type in types) {
+                if (type is Class<*>) {
+                    list.add(type)
+                }
+            }
 
-	public static List<Class<?>> classArguments(Class<?> cls) {
-		Type[] types = typeArguments(cls);
-		List<Class<?>> list = new ArrayList<>();
+            return list
+        }
 
-		for (Type type : types) {
-			if (type instanceof Class<?>) {
-				list.add((Class<?>) type);
-			}
-		}
+        /**
+         * 判断class是否可以被加载, 使用系统类加载器和当前工具类加载器
+         *
+         * @param className 类名
+         * @return true
+         */
 
-		return list;
-	}
+        fun isPresent(className: String): Boolean {
+            return isPresent(className, ClassUtils::class.java.getClassLoader(), ClassLoader.getSystemClassLoader())
+        }
 
-	/**
-	 * 判断class是否可以被加载, 使用系统类加载器和当前工具类加载器
-	 *
-	 * @param className 类名
-	 * @return true
-	 */
-	public static boolean isPresent(String className) {
-		return isPresent(className, ClassUtils.class.getClassLoader(), ClassLoader.getSystemClassLoader());
-	}
+        /**
+         * 确定class是否可以被加载
+         *
+         * @param className    完整类名
+         * @param classLoaders 类加载
+         */
 
-	/**
-	 * 确定class是否可以被加载
-	 *
-	 * @param className    完整类名
-	 * @param classLoaders 类加载
-	 */
-	public static boolean isPresent(String className, ClassLoader... classLoaders) {
-		Collection<ClassLoader> loaders = Arrays.stream(classLoaders)
-			.filter(Objects::nonNull)
-			.collect(Collectors.toCollection(LinkedHashSet::new));
-		if (CollectionUtils.isEmpty(loaders)) {
-			throw new IllegalArgumentException("ClassLoaders can not be empty!");
-		}
-		Map<ClassLoader, Boolean> absent = CACHE_CLASS_PRESENT.computeIfAbsent(className,
-			k -> new ConcurrentHashMap<>(loaders.size()));
+        fun isPresent(className: String, vararg classLoaders: ClassLoader): Boolean {
+            val loaders: Collection<ClassLoader> = Arrays.stream<ClassLoader>(classLoaders)
+                .filter { obj: ClassLoader? -> Objects.nonNull(obj) }
+                .collect(Collectors.toCollection<ClassLoader, LinkedHashSet<ClassLoader>>(Supplier<LinkedHashSet<ClassLoader>> { LinkedHashSet() }))
+            require(!CollectionUtils.isEmpty(loaders)) { "ClassLoaders can not be empty!" }
+            val absent = CACHE_CLASS_PRESENT.computeIfAbsent(
+                className
+            ) { k: String? -> ConcurrentHashMap(loaders.size) }
 
-		for (ClassLoader loader : loaders) {
-			Boolean flag = absent.computeIfAbsent(loader, k -> {
-				try {
-					Class.forName(className, true, loader);
-					return true;
-				}
-				catch (Exception ignored) {
-					//
-				}
-				return false;
-			});
-			if (Boolean.TRUE.equals(flag)) {
-				return true;
-			}
-		}
+            for (loader in loaders) {
+                val flag = absent.computeIfAbsent(loader) { k: ClassLoader? ->
+                    try {
+                        Class.forName(className, true, loader)
+                        return@computeIfAbsent true
+                    } catch (ignored: Exception) {
+                        //
+                    }
+                    false
+                }
+                if (java.lang.Boolean.TRUE == flag) {
+                    return true
+                }
+            }
 
-		return false;
-	}
+            return false
+        }
 
-	public static <T> Set<Class<T>> scan(String basePack) throws IOException {
-		return scan(basePack, null);
-	}
 
-	public static <T> Set<Class<T>> scan(String basePack, Class<?> cls) throws IOException {
-		return scan(basePack, tClass -> cls == null || cls.isAssignableFrom(tClass), (s, e) -> {
-		});
-	}
+        fun <T> scan(basePack: String): Set<Class<T>> {
+            return scan(basePack, null)
+        }
 
-	/**
-	 * 扫描指定包下, 所有继承指定类的class
-	 *
-	 * @param basePack 指定包 eg: live.lingting.framework.item
-	 * @param filter   过滤指定类
-	 * @param error    获取类时发生异常处理
-	 * @return java.util.Set<java.lang.Class < T>>
-	 */
-	@SuppressWarnings("java:S3776")
-	public static <T> Set<Class<T>> scan(String basePack, Predicate<Class<T>> filter,
-										 BiConsumer<String, Exception> error) throws IOException {
-		String scanName = basePack.replace(".", "/");
 
-		Collection<ResourceUtils.Resource> collection = ResourceUtils.scan(scanName,
-			resource -> !resource.isDirectory() && resource.getName().endsWith(".class"));
+        fun <T> scan(basePack: String, cls: Class<*>?): Set<Class<T>> {
+            return scan(basePack, { tClass: Class<T>? -> cls == null || cls.isAssignableFrom(tClass) }, { s: String?, e: Exception? -> })
+        }
 
-		Set<Class<T>> classes = new HashSet<>();
-		for (ResourceUtils.Resource resource : collection) {
-			String last = StringUtils.substringAfterLast(resource.getPath(), scanName);
-			String classPath = StringUtils.substringBeforeLast(scanName + last, ".");
-			String className = classPath.replace("/", ".");
+        /**
+         * 扫描指定包下, 所有继承指定类的class
+         *
+         * @param basePack 指定包 eg: live.lingting.framework.item
+         * @param filter   过滤指定类
+         * @param error    获取类时发生异常处理
+         * @return java.util.Set<java.lang.Class></java.lang.Class> < T>>
+         */
 
-			try {
-				Class<T> aClass = (Class<T>) Class.forName(className);
+        fun <T> scan(
+            basePack: String, filter: Predicate<Class<T>?>,
+            error: BiConsumer<String?, Exception?>
+        ): Set<Class<T>> {
+            val scanName: String = basePack.replace(".", "/")
 
-				if (filter.test(aClass)) {
-					classes.add(aClass);
-				}
-			}
-			catch (Exception e) {
-				error.accept(className, e);
-			}
-		}
-		return classes;
-	}
+            val collection: Collection<ResourceUtils.Resource> = ResourceUtils.scan(scanName,
+                Predicate<ResourceUtils.Resource?> { resource: ResourceUtils.Resource? -> !resource!!.isDirectory && resource.getName().endsWith(".class") })
 
-	/**
-	 * 把指定对象的所有字段和对应的值组成Map
-	 *
-	 * @param o 需要转化的对象
-	 * @return java.util.Map<java.lang.String, java.lang.Object>
-	 */
-	public static Map<String, Object> toMap(Object o) {
-		return toMap(o, field -> true, Field::getName, (field, v) -> v);
-	}
+            val classes: MutableSet<Class<T>> = HashSet()
+            for (resource in collection) {
+                val last: String = StringUtils.substringAfterLast(resource.getPath(), scanName)
+                val classPath: String = StringUtils.substringBeforeLast(scanName + last, ".")
+                val className: String = classPath.replace("/", ".")
 
-	/**
-	 * 把指定对象的所有字段和对应的值组成Map
-	 *
-	 * @param o      需要转化的对象
-	 * @param filter 过滤不存入Map的字段, 返回false表示不存入Map
-	 * @param toKey  设置存入Map的key
-	 * @param toVal  自定义指定字段值的存入Map的数据
-	 * @return java.util.Map<java.lang.String, java.lang.Object>
-	 */
-	public static <T> Map<String, T> toMap(Object o, Predicate<Field> filter, Function<Field, String> toKey,
-										   BiFunction<Field, Object, T> toVal) {
-		if (o == null) {
-			return Collections.emptyMap();
-		}
-		HashMap<String, T> map = new HashMap<>();
-		for (Field field : fields(o.getClass())) {
-			if (filter.test(field)) {
-				Object val = null;
+                try {
+                    val aClass = Class.forName(className) as Class<T>
 
-				try {
-					val = field.get(o);
-				}
-				catch (IllegalAccessException e) {
-					//
-				}
+                    if (filter.test(aClass)) {
+                        classes.add(aClass)
+                    }
+                } catch (e: Exception) {
+                    error.accept(className, e)
+                }
+            }
+            return classes
+        }
 
-				map.put(toKey.apply(field), toVal.apply(field, val));
-			}
-		}
-		return map;
-	}
+        /**
+         * 把指定对象的所有字段和对应的值组成Map
+         *
+         * @param o 需要转化的对象
+         * @return java.util.Map<java.lang.String></java.lang.String>, java.lang.Object>
+         */
+        fun toMap(o: Any?): Map<String, Any?> {
+            return toMap(o, { field: Field? -> true }, { obj: Field -> obj.name }, { field: Field?, v: Any? -> v })
+        }
 
-	/**
-	 * 获取所有字段, 不改变可读性
-	 *
-	 * @param cls 指定类
-	 * @return java.lang.reflect.Field[]
-	 */
-	public static Field[] fields(Class<?> cls) {
-		return CACHE_FIELDS.computeIfAbsent(cls, k -> {
-			List<Field> fields = new ArrayList<>();
-			while (k != null && !k.isAssignableFrom(Object.class)) {
-				fields.addAll(Arrays.asList(k.getDeclaredFields()));
-				k = k.getSuperclass();
-			}
-			return fields.toArray(new Field[0]);
-		});
-	}
+        /**
+         * 把指定对象的所有字段和对应的值组成Map
+         *
+         * @param o      需要转化的对象
+         * @param filter 过滤不存入Map的字段, 返回false表示不存入Map
+         * @param toKey  设置存入Map的key
+         * @param toVal  自定义指定字段值的存入Map的数据
+         * @return java.util.Map<java.lang.String></java.lang.String>, java.lang.Object>
+         */
+        fun <T> toMap(
+            o: Any?, filter: Predicate<Field?>, toKey: Function<Field, String>,
+            toVal: BiFunction<Field?, Any?, T>
+        ): Map<String, T> {
+            if (o == null) {
+                return emptyMap<String, T>()
+            }
+            val map = HashMap<String, T>()
+            for (field in fields(o.javaClass)) {
+                if (filter.test(field)) {
+                    var `val`: Any? = null
 
-	public static Method[] methods(Class<?> cls) {
-		return CACHE_METHODS.computeIfAbsent(cls, k -> {
-			List<Method> methods = new ArrayList<>();
-			while (k != null && !k.isAssignableFrom(Object.class)) {
-				methods.addAll(Arrays.asList(k.getDeclaredMethods()));
-				k = k.getSuperclass();
-			}
-			return methods.toArray(new Method[0]);
-		});
-	}
+                    try {
+                        `val` = field[o]
+                    } catch (e: IllegalAccessException) {
+                        //
+                    }
 
-	public static Method method(Class<?> cls, String name) {
-		return method(cls, name, EMPTY_CLASS_ARRAY);
-	}
+                    map.put(toKey.apply(field), toVal.apply(field, `val`))
+                }
+            }
+            return map
+        }
 
-	public static Method method(Class<?> cls, String name, Class<?>... types) {
-		return Arrays.stream(methods(cls)).filter(method -> {
-			if (!Objects.equals(method.getName(), name)) {
-				return false;
-			}
+        /**
+         * 获取所有字段, 不改变可读性
+         *
+         * @param cls 指定类
+         * @return java.lang.reflect.Field[]
+         */
+        fun fields(cls: Class<*>): Array<Field> {
+            return CACHE_FIELDS.computeIfAbsent(cls) { k: Class<*>? ->
+                var k = k
+                val fields: MutableList<Field> = ArrayList()
+                while (k != null && !k.isAssignableFrom(Any::class.java)) {
+                    fields.addAll(Arrays.asList(*k.declaredFields))
+                    k = k.superclass
+                }
+                fields.toTypedArray<Field>()
+            }
+        }
 
-			int len = types == null ? 0 : types.length;
+        fun methods(cls: Class<*>?): Array<Method?> {
+            return CACHE_METHODS.computeIfAbsent(cls) { k: Class<*>? ->
+                var k = k
+                val methods: MutableList<Method> = ArrayList()
+                while (k != null && !k.isAssignableFrom(Any::class.java)) {
+                    methods.addAll(Arrays.asList(*k.declaredMethods))
+                    k = k.superclass
+                }
+                methods.toTypedArray<Method>()
+            }
+        }
 
-			// 参数数量不一致
-			if (len != method.getParameterCount()) {
-				return false;
-			}
-			// 无参
-			if (len == 0) {
-				return true;
-			}
+        fun method(cls: Class<*>?, name: String): Method? {
+            return method(cls, name, *EMPTY_CLASS_ARRAY)
+        }
 
-			// 参数类型是否一致
-			return Arrays.equals(types, method.getParameterTypes());
-		}).findFirst().orElse(null);
-	}
+        fun method(cls: Class<*>?, name: String, vararg types: Class<*>?): Method? {
+            return Arrays.stream<Method?>(methods(cls)).filter { method: Method? ->
+                if (method!!.name != name) {
+                    return@filter false
+                }
+                val len = types?.size ?: 0
 
-	/**
-	 * 扫描所有字段以及对应字段的值
-	 * <p>
-	 * 优先取指定字段的 get 方法, 仅会获取其中的无参方法
-	 * </p>
-	 * <p>
-	 * 如果是 boolean 类型, 尝试取 is 方法
-	 * </p>
-	 * <p>
-	 * 否则直接取字段 - 不会尝试修改可读性, 如果可读性有问题, 请主动get 然后修改
-	 * </p>
-	 *
-	 * @return live.lingting.framework.domain.ClassField 可用于获取字段值的数组
-	 */
-	public static ClassField[] classFields(Class<?> cls) {
-		return CACHE_CLASS_FIELDS.computeIfAbsent(cls, k -> {
-			Method[] methods = methods(cls);
+                // 参数数量不一致
+                if (len != method.parameterCount) {
+                    return@filter false
+                }
+                // 无参
+                if (len == 0) {
+                    return@filter true
+                }
+                types.contentEquals(method.parameterTypes)
+            }.findFirst().orElse(null)
+        }
 
-			List<ClassField> fields = new ArrayList<>();
-			while (k != null && !k.isAssignableFrom(Object.class)) {
-				for (Field field : k.getDeclaredFields()) {
-					String fieldName = StringUtils.firstUpper(field.getName());
-					// 尝试获取get方法
-					String getMethodName = "get" + fieldName;
+        /**
+         * 扫描所有字段以及对应字段的值
+         *
+         *
+         * 优先取指定字段的 get 方法, 仅会获取其中的无参方法
+         *
+         *
+         *
+         * 如果是 boolean 类型, 尝试取 is 方法
+         *
+         *
+         *
+         * 否则直接取字段 - 不会尝试修改可读性, 如果可读性有问题, 请主动get 然后修改
+         *
+         *
+         * @return live.lingting.framework.domain.ClassField 可用于获取字段值的数组
+         */
+        fun classFields(cls: Class<*>): Array<ClassField> {
+            return CACHE_CLASS_FIELDS.computeIfAbsent(cls) { k: Class<*>? ->
+                var k = k
+                val methods = methods(cls)
 
-					Optional<Method> optionalGet = Arrays.stream(methods)
-						.filter(method -> method.getName().equals(getMethodName) && method.getParameterCount() == 0)
-						.findFirst();
+                val fields: MutableList<ClassField> = ArrayList()
+                while (k != null && !k.isAssignableFrom(Any::class.java)) {
+                    for (field in k.declaredFields) {
+                        val fieldName: String = StringUtils.firstUpper(field.name)
+                        // 尝试获取get方法
+                        val getMethodName = "get$fieldName"
 
-					// get 不存在则尝试获取 is 方法
-					if (optionalGet.isEmpty()) {
-						String isMethodName = "is" + fieldName;
-						optionalGet = Arrays.stream(methods)
-							.filter(method -> method.getName().equals(isMethodName) && method.getParameterCount() == 0)
-							.findFirst();
-					}
+                        var optionalGet = Arrays.stream(methods)
+                            .filter { method: Method? -> method!!.name == getMethodName && method.parameterCount == 0 }
+                            .findFirst()
 
-					// 尝试获取set方法
-					String setMethodName = "set" + fieldName;
-					Optional<Method> optionalSet = Arrays.stream(methods)
-						.filter(method -> method.getName().equalsIgnoreCase(setMethodName))
-						.findFirst();
+                        // get 不存在则尝试获取 is 方法
+                        if (optionalGet.isEmpty) {
+                            val isMethodName = "is$fieldName"
+                            optionalGet = Arrays.stream(methods)
+                                .filter { method: Method? -> method!!.name == isMethodName && method.parameterCount == 0 }
+                                .findFirst()
+                        }
 
-					fields.add(new ClassField(field, optionalGet.orElse(null), optionalSet.orElse(null)));
-				}
-				k = k.getSuperclass();
-			}
-			return fields.toArray(new ClassField[0]);
-		});
-	}
+                        // 尝试获取set方法
+                        val setMethodName = "set$fieldName"
+                        val optionalSet = Arrays.stream(methods)
+                            .filter { method: Method? -> method!!.name.equals(setMethodName, ignoreCase = true) }
+                            .findFirst()
 
-	/**
-	 * 获取指定类中的指定字段名的字段
-	 *
-	 * @param fieldName 字段名
-	 * @param cls       指定类
-	 * @return live.lingting.framework.domain.ClassField 字段
-	 */
-	public static ClassField classField(String fieldName, Class<?> cls) {
-		for (ClassField field : classFields(cls)) {
-			if (field.getFiledName().equals(fieldName)) {
-				return field;
-			}
-		}
-		return null;
-	}
+                        fields.add(ClassField(field, optionalGet.orElse(null), optionalSet.orElse(null)))
+                    }
+                    k = k.superclass
+                }
+                fields.toTypedArray<ClassField>()
+            }
+        }
 
-	public static Class<?> loadClass(String className) throws ClassNotFoundException {
-		return loadClass(className, ClassUtils.class.getClassLoader());
-	}
+        /**
+         * 获取指定类中的指定字段名的字段
+         *
+         * @param fieldName 字段名
+         * @param cls       指定类
+         * @return live.lingting.framework.domain.ClassField 字段
+         */
+        fun classField(fieldName: String, cls: Class<*>): ClassField? {
+            for (field in classFields(cls)) {
+                if (field.filedName == fieldName) {
+                    return field
+                }
+            }
+            return null
+        }
 
-	public static Class<?> loadClass(String className, ClassLoader classLoader) throws ClassNotFoundException {
-		return loadClass(className, classLoader, ClassLoader.getSystemClassLoader(), ClassUtils.class.getClassLoader(),
-			Thread.currentThread().getContextClassLoader());
-	}
 
-	public static Class<?> loadClass(String className, ClassLoader... classLoaders) throws ClassNotFoundException {
-		for (ClassLoader loader : classLoaders) {
-			if (loader != null) {
-				try {
-					return loader.loadClass(className);
-				}
-				catch (ClassNotFoundException e) {
-					//
-				}
-			}
-		}
-		throw new ClassNotFoundException(className + " not found");
-	}
+        fun loadClass(className: String, classLoader: ClassLoader = ClassUtils::class.java.getClassLoader()): Class<*> {
+            return loadClass(
+                className, classLoader, ClassLoader.getSystemClassLoader(), ClassUtils::class.java.getClassLoader(),
+                Thread.currentThread().contextClassLoader
+            )
+        }
 
-	/**
-	 * 设置可访问对象的可访问权限为 true
-	 *
-	 * @param object 可访问的对象
-	 * @param <T>    类型
-	 * @return 返回设置后的对象
-	 */
-	public static <T extends AccessibleObject> T setAccessible(T object) {
-		if (!object.trySetAccessible()) {
-			object.setAccessible(true);
-		}
-		return object;
-	}
 
-	/**
-	 * 方法名转字段名
-	 *
-	 * @param methodName 方法名
-	 * @return java.lang.String 字段名
-	 */
-	public static String toFiledName(String methodName) {
-		if (methodName.startsWith("is")) {
-			methodName = methodName.substring(2);
-		}
-		else if (methodName.startsWith("get") || methodName.startsWith("set")) {
-			methodName = methodName.substring(3);
-		}
+        fun loadClass(className: String, vararg classLoaders: ClassLoader?): Class<*> {
+            for (loader in classLoaders) {
+                if (loader != null) {
+                    try {
+                        return loader.loadClass(className)
+                    } catch (e: ClassNotFoundException) {
+                        //
+                    }
+                }
+            }
+            throw ClassNotFoundException("$className not found")
+        }
 
-		if (methodName.length() == 1 || (methodName.length() > 1 && !Character.isUpperCase(methodName.charAt(1)))) {
-			methodName = methodName.substring(0, 1).toLowerCase(Locale.ENGLISH) + methodName.substring(1);
-		}
+        /**
+         * 设置可访问对象的可访问权限为 true
+         *
+         * @param object 可访问的对象
+         * @param <T>    类型
+         * @return 返回设置后的对象
+        </T> */
+        fun <T : AccessibleObject?> setAccessible(`object`: T): T {
+            if (!`object`!!.trySetAccessible()) {
+                `object`.isAccessible = true
+            }
+            return `object`
+        }
 
-		return methodName;
-	}
+        /**
+         * 方法名转字段名
+         *
+         * @param methodName 方法名
+         * @return java.lang.String 字段名
+         */
+        fun toFiledName(methodName: String): String {
+            var methodName = methodName
+            if (methodName.startsWith("is")) {
+                methodName = methodName.substring(2)
+            } else if (methodName.startsWith("get") || methodName.startsWith("set")) {
+                methodName = methodName.substring(3)
+            }
 
-	@SuppressWarnings("unchecked")
-	public static <T> Constructor<T>[] constructors(Class<T> cls) {
-		return (Constructor<T>[]) CACHE_CONSTRUCTOR.computeIfAbsent(cls, Class::getConstructors);
-	}
+            if (methodName.length == 1 || (methodName.length > 1 && !Character.isUpperCase(methodName[1]))) {
+                methodName = methodName.substring(0, 1).lowercase() + methodName.substring(1)
+            }
 
+            return methodName
+        }
+
+        fun <T> constructors(cls: Class<T>): Array<Constructor<T>> {
+            return CACHE_CONSTRUCTOR.computeIfAbsent(cls) { obj: Class<*> -> obj.constructors } as Array<Constructor<T>>
+        }
+    }
 }

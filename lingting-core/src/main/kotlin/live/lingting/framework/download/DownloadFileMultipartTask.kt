@@ -1,64 +1,64 @@
-package live.lingting.framework.download;
+package live.lingting.framework.download
 
-import live.lingting.framework.function.ThrowableFunction;
-import live.lingting.framework.multipart.Multipart;
-import live.lingting.framework.multipart.Part;
-import live.lingting.framework.multipart.PartTask;
-import live.lingting.framework.multipart.file.FileMultipartTask;
-import live.lingting.framework.stream.RandomAccessOutputStream;
-import live.lingting.framework.thread.Async;
-import live.lingting.framework.util.StreamUtils;
-import org.slf4j.Logger;
-
-import java.io.File;
-import java.io.InputStream;
+import live.lingting.framework.download.DownloadFileMultipartTask
+import live.lingting.framework.function.ThrowableFunction
+import live.lingting.framework.multipart.Multipart
+import live.lingting.framework.multipart.Part
+import live.lingting.framework.multipart.PartTask
+import live.lingting.framework.multipart.file.FileMultipartTask
+import live.lingting.framework.stream.RandomAccessOutputStream
+import live.lingting.framework.thread.Async
+import live.lingting.framework.util.StreamUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.io.File
+import java.io.InputStream
 
 /**
  * @author lingting 2024-09-06 16:55
  */
-public class DownloadFileMultipartTask extends FileMultipartTask<DownloadFileMultipartTask> {
+class DownloadFileMultipartTask(
+    multipart: Multipart, maxRetryCount: Long, async: Async, target: File,
+    download: ThrowableFunction<Part, InputStream>
+) : FileMultipartTask<DownloadFileMultipartTask>(multipart, async) {
+    protected val target: File
 
-	private static final Logger log = org.slf4j.LoggerFactory.getLogger(DownloadFileMultipartTask.class);
-	protected final File target;
+    protected val download: ThrowableFunction<Part, InputStream>
 
-	protected final ThrowableFunction<Part, InputStream> download;
+    protected constructor(
+        multipart: Multipart, maxRetryCount: Long,
+        download: ThrowableFunction<Part, InputStream>, target: File
+    ) : this(multipart, maxRetryCount, Async(), target, download)
 
-	protected DownloadFileMultipartTask(Multipart multipart, long maxRetryCount,
-										ThrowableFunction<Part, InputStream> download, File target) {
-		this(multipart, maxRetryCount, new Async(), target, download);
-	}
+    init {
+        this.maxRetryCount = maxRetryCount
+        this.target = target
+        this.download = download
+    }
 
-	protected DownloadFileMultipartTask(Multipart multipart, long maxRetryCount, Async async, File target,
-										ThrowableFunction<Part, InputStream> download) {
-		super(multipart, async);
-		this.maxRetryCount = maxRetryCount;
-		this.target = target;
-		this.download = download;
-	}
+    override fun onMerge() {
+        //
+    }
 
-	@Override
-	protected void onMerge() {
-		//
-	}
+    override fun onCancel() {
+        //
+    }
 
-	@Override
-	protected void onCancel() {
-		//
-	}
 
-	@Override
-	protected void onPart(Part part) throws Throwable {
-		try (RandomAccessOutputStream output = new RandomAccessOutputStream(target)) {
-			output.seek(part.getStart());
-			try (InputStream input = download.apply(part)) {
-				StreamUtils.write(input, output);
-			}
-		}
-	}
+    override fun onPart(part: Part) {
+        RandomAccessOutputStream(target).use { output ->
+            output.seek(part.start)
+            download.apply(part).use { input ->
+                StreamUtils.write(input, output)
+            }
+        }
+    }
 
-	@Override
-	protected boolean allowRetry(PartTask task, Throwable t) {
-		return task.getRetryCount() < maxRetryCount;
-	}
+    override fun allowRetry(task: PartTask, t: Throwable?): Boolean {
+        return task.retryCount < maxRetryCount
+    }
 
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(DownloadFileMultipartTask::class.java)
+    }
 }

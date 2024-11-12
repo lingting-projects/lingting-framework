@@ -1,16 +1,13 @@
+package live.lingting.polaris.grpc.server
 
-package live.lingting.polaris.grpc.server;
-
-import com.tencent.polaris.api.rpc.InstanceRegisterRequest;
-import com.tencent.polaris.api.rpc.InstanceRegisterResponse;
+import com.tencent.polaris.api.rpc.InstanceRegisterRequest
+import com.tencent.polaris.api.rpc.InstanceRegisterResponse
 
 /**
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
+ * @author [liaochuntao](mailto:liaochuntao@live.com)
  */
-public interface RegisterHook {
+interface RegisterHook {
+    fun beforeRegister(instance: InstanceRegisterRequest?)
 
-	void beforeRegister(InstanceRegisterRequest instance);
-
-	void afterRegister(InstanceRegisterResponse instance);
-
+    fun afterRegister(instance: InstanceRegisterResponse?)
 }

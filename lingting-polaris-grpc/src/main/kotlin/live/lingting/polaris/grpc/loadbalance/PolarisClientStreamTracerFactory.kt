@@ -1,29 +1,17 @@
+package live.lingting.polaris.grpc.loadbalance
 
-package live.lingting.polaris.grpc.loadbalance;
-
-import io.grpc.ClientStreamTracer;
-import io.grpc.ClientStreamTracer.Factory;
-import io.grpc.ClientStreamTracer.StreamInfo;
-import io.grpc.Metadata;
-import live.lingting.polaris.grpc.util.ClientCallInfo;
+import io.grpc.ClientStreamTracer
+import io.grpc.ClientStreamTracer.StreamInfo
+import io.grpc.Metadata
+import live.lingting.polaris.grpc.util.ClientCallInfo
 
 /**
- * Factory class for {@link ClientStreamTracer}.
+ * Factory class for [ClientStreamTracer].
  *
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
+ * @author [liaochuntao](mailto:liaochuntao@live.com)
  */
-public class PolarisClientStreamTracerFactory extends Factory {
-
-	private final ClientCallInfo callInfo;
-
-	public PolarisClientStreamTracerFactory(final ClientCallInfo callInfo) {
-		super();
-		this.callInfo = callInfo;
-	}
-
-	@Override
-	public ClientStreamTracer newClientStreamTracer(StreamInfo info, Metadata headers) {
-		return new PolarisClientStreamTracer(callInfo);
-	}
-
+class PolarisClientStreamTracerFactory(private val callInfo: ClientCallInfo) : ClientStreamTracer.Factory() {
+    override fun newClientStreamTracer(info: StreamInfo, headers: Metadata): ClientStreamTracer {
+        return PolarisClientStreamTracer(callInfo)
+    }
 }

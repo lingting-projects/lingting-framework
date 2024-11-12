@@ -1,267 +1,226 @@
+package live.lingting.polaris.grpc.loadbalance
 
-package live.lingting.polaris.grpc.loadbalance;
-
-import com.google.common.base.Preconditions;
-import com.tencent.polaris.api.core.ConsumerAPI;
-import com.tencent.polaris.api.exception.PolarisException;
-import com.tencent.polaris.api.pojo.DefaultServiceInstances;
-import com.tencent.polaris.api.pojo.Instance;
-import com.tencent.polaris.api.pojo.RouteArgument;
-import com.tencent.polaris.api.pojo.ServiceEventKey.EventType;
-import com.tencent.polaris.api.pojo.ServiceInstances;
-import com.tencent.polaris.api.pojo.ServiceKey;
-import com.tencent.polaris.api.pojo.SourceService;
-import com.tencent.polaris.api.rpc.GetServiceRuleRequest;
-import com.tencent.polaris.api.rpc.ServiceRuleResponse;
-import com.tencent.polaris.api.utils.StringUtils;
-import com.tencent.polaris.client.api.SDKContext;
-import com.tencent.polaris.router.api.core.RouterAPI;
-import com.tencent.polaris.router.api.rpc.ProcessLoadBalanceRequest;
-import com.tencent.polaris.router.api.rpc.ProcessLoadBalanceResponse;
-import com.tencent.polaris.router.api.rpc.ProcessRoutersRequest;
-import com.tencent.polaris.router.api.rpc.ProcessRoutersResponse;
-import com.tencent.polaris.specification.api.v1.traffic.manage.RoutingProto.Route;
-import com.tencent.polaris.specification.api.v1.traffic.manage.RoutingProto.Routing;
-import com.tencent.polaris.specification.api.v1.traffic.manage.RoutingProto.Source;
-import io.grpc.Attributes;
-import io.grpc.LoadBalancer.PickResult;
-import io.grpc.LoadBalancer.PickSubchannelArgs;
-import io.grpc.LoadBalancer.Subchannel;
-import io.grpc.LoadBalancer.SubchannelPicker;
-import io.grpc.Metadata;
-import io.grpc.Metadata.Key;
-import io.grpc.Status;
-import live.lingting.polaris.grpc.util.ClientCallInfo;
-import live.lingting.polaris.grpc.util.Common;
-import live.lingting.polaris.grpc.util.PolarisHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
-import static com.tencent.polaris.api.utils.RuleUtils.MATCH_ALL;
+import com.google.common.base.Preconditions
+import com.tencent.polaris.api.core.ConsumerAPI
+import com.tencent.polaris.api.exception.PolarisException
+import com.tencent.polaris.api.pojo.DefaultServiceInstances
+import com.tencent.polaris.api.pojo.Instance
+import com.tencent.polaris.api.pojo.RouteArgument
+import com.tencent.polaris.api.pojo.ServiceEventKey
+import com.tencent.polaris.api.pojo.ServiceInstances
+import com.tencent.polaris.api.pojo.ServiceKey
+import com.tencent.polaris.api.pojo.SourceService
+import com.tencent.polaris.api.rpc.GetServiceRuleRequest
+import com.tencent.polaris.api.utils.RuleUtils
+import com.tencent.polaris.api.utils.StringUtils
+import com.tencent.polaris.client.api.SDKContext
+import com.tencent.polaris.router.api.core.RouterAPI
+import com.tencent.polaris.router.api.rpc.ProcessLoadBalanceRequest
+import com.tencent.polaris.router.api.rpc.ProcessRoutersRequest
+import com.tencent.polaris.specification.api.v1.traffic.manage.RoutingProto
+import com.tencent.polaris.specification.api.v1.traffic.manage.RoutingProto.Routing
+import io.grpc.Attributes
+import io.grpc.LoadBalancer
+import io.grpc.LoadBalancer.PickResult
+import io.grpc.LoadBalancer.PickSubchannelArgs
+import io.grpc.LoadBalancer.SubchannelPicker
+import io.grpc.Metadata
+import io.grpc.Status
+import live.lingting.polaris.grpc.util.ClientCallInfo
+import live.lingting.polaris.grpc.util.Common
+import live.lingting.polaris.grpc.util.PolarisHelper
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.util.*
+import java.util.function.Consumer
 
 /**
- * The main balancing logic. It <strong>must be thread-safe</strong>. Typically it should
+ * The main balancing logic. It **must be thread-safe**. Typically it should
  * only synchronize on its own state, and avoid synchronizing with the LoadBalancer's
  * state.
  *
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
+ * @author [liaochuntao](mailto:liaochuntao@live.com)
  */
-public class PolarisPicker extends SubchannelPicker {
+class PolarisPicker(
+    private val channels: Map<PolarisSubChannel?, PolarisSubChannel?>, private val context: SDKContext,
+    private val consumerAPI: ConsumerAPI, private val routerAPI: RouterAPI, private val sourceService: ServiceKey?,
+    private val attributes: Attributes?
+) : SubchannelPicker() {
+    override fun pickSubchannel(args: PickSubchannelArgs): PickResult {
+        if (channels.isEmpty()) {
+            return PickResult.withNoResult()
+        }
 
-	private static final Logger LOG = LoggerFactory.getLogger(PolarisPicker.class);
+        val targetNamespace = attributes!!.get<String>(Common.Companion.TARGET_NAMESPACE_KEY)
+        val targetService = attributes.get<String>(Common.Companion.TARGET_SERVICE_KEY)
+        val target = ServiceKey(targetNamespace, targetService)
 
-	private final Map<PolarisSubChannel, PolarisSubChannel> channels;
+        val instances: MutableList<Instance> = ArrayList()
+        channels.forEach { (key: PolarisSubChannel?, `val`: PolarisSubChannel?) -> instances.add(`val`!!) }
 
-	private final SDKContext context;
+        val serviceInstances: ServiceInstances = DefaultServiceInstances(target, instances)
 
-	private final ConsumerAPI consumerAPI;
+        try {
+            val instance = doLoadBalance(doRoute(serviceInstances, target, args))
+            val channel: LoadBalancer.Subchannel? = channels[PolarisSubChannel(instance)]
 
-	private final Attributes attributes;
+            if (Objects.isNull(channel)) {
+                return PickResult.withNoResult()
+            }
 
-	private final ServiceKey sourceService;
+            return PickResult.withSubchannel(
+                channel,
+                PolarisClientStreamTracerFactory(
+                    ClientCallInfo.Companion.builder()
+                        .consumerAPI(consumerAPI)
+                        .instance(instance)
+                        .targetNamespace(targetNamespace)
+                        .targetService(targetService)
+                        .method(args.methodDescriptor.bareMethodName)
+                        .build()
+                )
+            )
+        } catch (e: PolarisException) {
+            LOG.error("[grpc-polaris] pick subChannel fail", e)
+            return PickResult.withError(Status.UNKNOWN.withCause(e))
+        }
+    }
 
-	private final RouterAPI routerAPI;
+    fun doLoadBalance(serviceInstances: ServiceInstances): Instance {
+        if (serviceInstances.instances.size == 1) {
+            return serviceInstances.instances[0]
+        }
 
-	public PolarisPicker(final Map<PolarisSubChannel, PolarisSubChannel> channels, final SDKContext context,
-			final ConsumerAPI consumerAPI, final RouterAPI routerAPI, final ServiceKey sourceService,
-			final Attributes attributes) {
-		this.context = context;
-		this.channels = channels;
-		this.consumerAPI = consumerAPI;
-		this.routerAPI = routerAPI;
-		this.attributes = attributes;
-		this.sourceService = sourceService;
-	}
+        val request = ProcessLoadBalanceRequest()
+        request.dstInstances = serviceInstances
 
-	@Override
-	public PickResult pickSubchannel(PickSubchannelArgs args) {
-		if (channels.isEmpty()) {
-			return PickResult.withNoResult();
-		}
+        val response = routerAPI.processLoadBalance(request)
+        return response.targetInstance
+    }
 
-		final String targetNamespace = attributes.get(Common.TARGET_NAMESPACE_KEY);
-		final String targetService = attributes.get(Common.TARGET_SERVICE_KEY);
-		final ServiceKey target = new ServiceKey(targetNamespace, targetService);
+    fun doRoute(serviceInstances: ServiceInstances?, target: ServiceKey, args: PickSubchannelArgs): ServiceInstances {
+        val request = ProcessRoutersRequest()
+        request.dstInstances = serviceInstances
 
-		List<Instance> instances = new ArrayList<>();
-		channels.forEach((key, val) -> instances.add(val));
+        val serviceInfo = SourceService()
+        var source: ServiceKey? = null
+        if (Objects.nonNull(sourceService)) {
+            source = ServiceKey(sourceService!!.namespace, sourceService.service)
+            serviceInfo.namespace = sourceService.namespace
+            serviceInfo.service = sourceService.service
+        }
 
-		ServiceInstances serviceInstances = new DefaultServiceInstances(target, instances);
+        serviceInfo.arguments = collectRoutingLabels(loadRouteRule(target, source), args)
+        request.sourceService = serviceInfo
 
-		try {
-			Instance instance = doLoadBalance(doRoute(serviceInstances, target, args));
-			Subchannel channel = channels.get(new PolarisSubChannel(instance));
+        val response = routerAPI.processRouters(request)
 
-			if (Objects.isNull(channel)) {
-				return PickResult.withNoResult();
-			}
+        return response.serviceInstances
+    }
 
-			return PickResult.withSubchannel(channel,
-					new PolarisClientStreamTracerFactory(ClientCallInfo.builder()
-						.consumerAPI(consumerAPI)
-						.instance(instance)
-						.targetNamespace(targetNamespace)
-						.targetService(targetService)
-						.method(args.getMethodDescriptor().getBareMethodName())
-						.build()));
-		}
-		catch (PolarisException e) {
-			LOG.error("[grpc-polaris] pick subChannel fail", e);
-			return PickResult.withError(Status.UNKNOWN.withCause(e));
-		}
-	}
+    private fun collectRoutingLabels(routes: List<RoutingProto.Route>, args: PickSubchannelArgs): Set<RouteArgument> {
+        val labelKeys: MutableSet<String> = HashSet()
+        routes.forEach(Consumer { route: RoutingProto.Route ->
+            for (source in route.sourcesList) {
+                labelKeys.addAll(source.metadataMap.keys)
+            }
+        })
 
-	Instance doLoadBalance(ServiceInstances serviceInstances) {
-		if (serviceInstances.getInstances().size() == 1) {
-			return serviceInstances.getInstances().get(0);
-		}
+        val arguments: MutableSet<RouteArgument> = HashSet()
+        val headers = args.headers
 
-		ProcessLoadBalanceRequest request = new ProcessLoadBalanceRequest();
-		request.setDstInstances(serviceInstances);
+        labelKeys.forEach(Consumer<String> { labelKey: String ->
+            if (StringUtils.equals(labelKey, RouteArgument.LABEL_KEY_PATH)) {
+                arguments.add(RouteArgument.buildPath(args.methodDescriptor.fullMethodName))
+                return@forEach
+            }
+            if (labelKey.startsWith(RouteArgument.LABEL_KEY_HEADER)) {
+                val headerKey = labelKey.substring(RouteArgument.LABEL_KEY_HEADER.length + 1)
+                arguments.add(
+                    RouteArgument.buildHeader(
+                        headerKey,
+                        headers.get(Metadata.Key.of(headerKey, Metadata.ASCII_STRING_MARSHALLER))
+                    )
+                )
+                return@forEach
+            }
+            if (labelKey.startsWith(RouteArgument.LABEL_KEY_CALLER_IP)) {
+                arguments.add(RouteArgument.buildCallerIP(context.config.global.api.bindIP))
+            }
+        })
 
-		ProcessLoadBalanceResponse response = routerAPI.processLoadBalance(request);
-		return response.getTargetInstance();
-	}
+        return PolarisHelper.Companion.getLabelsInject().modifyRoute(HashSet<RouteArgument>(arguments))
+    }
 
-	ServiceInstances doRoute(ServiceInstances serviceInstances, ServiceKey target, PickSubchannelArgs args) {
-		ProcessRoutersRequest request = new ProcessRoutersRequest();
-		request.setDstInstances(serviceInstances);
+    private fun loadRouteRule(target: ServiceKey, source: ServiceKey?): List<RoutingProto.Route> {
+        val rules: MutableList<RoutingProto.Route> = ArrayList()
 
-		final SourceService serviceInfo = new SourceService();
-		ServiceKey source = null;
-		if (Objects.nonNull(sourceService)) {
-			source = new ServiceKey(sourceService.getNamespace(), sourceService.getService());
-			serviceInfo.setNamespace(sourceService.getNamespace());
-			serviceInfo.setService(sourceService.getService());
-		}
+        val inBoundReq = GetServiceRuleRequest()
+        inBoundReq.service = target.service
+        inBoundReq.namespace = target.namespace
+        inBoundReq.ruleType = ServiceEventKey.EventType.ROUTING
 
-		serviceInfo.setArguments(collectRoutingLabels(loadRouteRule(target, source), args));
-		request.setSourceService(serviceInfo);
+        val inBoundResp = consumerAPI.getServiceRule(inBoundReq)
+        val inBoundRule = inBoundResp.serviceRule.rule as Routing
+        if (Objects.nonNull(inBoundRule)) {
+            val tmpRules = RouteResp(inBoundRule.inboundsList, target).doFilter()
+            rules.addAll(tmpRules)
+        }
 
-		ProcessRoutersResponse response = routerAPI.processRouters(request);
+        if (Objects.isNull(source)) {
+            return rules
+        }
 
-		return response.getServiceInstances();
-	}
+        val outBoundReq = GetServiceRuleRequest()
+        outBoundReq.service = source!!.service
+        outBoundReq.namespace = source.namespace
+        outBoundReq.ruleType = ServiceEventKey.EventType.ROUTING
 
-	private Set<RouteArgument> collectRoutingLabels(List<Route> routes, PickSubchannelArgs args) {
-		Set<String> labelKeys = new HashSet<>();
-		routes.forEach(route -> {
-			for (Source source : route.getSourcesList()) {
-				labelKeys.addAll(source.getMetadataMap().keySet());
-			}
-		});
+        val outBoundResp = consumerAPI.getServiceRule(outBoundReq)
+        val outBoundRule = outBoundResp.serviceRule.rule as Routing
+        if (Objects.nonNull(outBoundRule)) {
+            val tmpRules = RouteResp(outBoundRule.outboundsList, source).doFilter()
+            rules.addAll(tmpRules)
+        }
+        return rules
+    }
 
-		final Set<RouteArgument> arguments = new HashSet<>();
-		final Metadata headers = args.getHeaders();
+    class EmptyPicker internal constructor(status: Status?) : SubchannelPicker() {
+        private val status: Status = Preconditions.checkNotNull(status, "status")
 
-		labelKeys.forEach(labelKey -> {
-			if (StringUtils.equals(labelKey, RouteArgument.LABEL_KEY_PATH)) {
-				arguments.add(RouteArgument.buildPath(args.getMethodDescriptor().getFullMethodName()));
-				return;
-			}
-			if (labelKey.startsWith(RouteArgument.LABEL_KEY_HEADER)) {
-				String headerKey = labelKey.substring(RouteArgument.LABEL_KEY_HEADER.length() + 1);
-				arguments.add(RouteArgument.buildHeader(headerKey,
-						headers.get(Key.of(headerKey, Metadata.ASCII_STRING_MARSHALLER))));
-				return;
-			}
-			if (labelKey.startsWith(RouteArgument.LABEL_KEY_CALLER_IP)) {
-				arguments.add(RouteArgument.buildCallerIP(context.getConfig().getGlobal().getAPI().getBindIP()));
-			}
-		});
+        override fun pickSubchannel(args: PickSubchannelArgs): PickResult {
+            return if (status.isOk) PickResult.withNoResult() else PickResult.withError(this.status)
+        }
+    }
 
-		return PolarisHelper.getLabelsInject().modifyRoute(new HashSet<>(arguments));
-	}
+    private class RouteResp(val rule: List<RoutingProto.Route>, val serviceKey: ServiceKey?) {
+        fun doFilter(): List<RoutingProto.Route> {
+            return rule.stream().filter { route: RoutingProto.Route ->
+                for (source in route.sourcesList) {
+                    if (source.namespace.value == RuleUtils.MATCH_ALL
+                        && source.service.value == RuleUtils.MATCH_ALL
+                    ) {
+                        return@filter true
+                    }
 
-	private List<Route> loadRouteRule(ServiceKey target, ServiceKey source) {
-		List<Route> rules = new ArrayList<>();
+                    if (source.namespace.value == RuleUtils.MATCH_ALL
+                        && source.service.value == serviceKey!!.service
+                    ) {
+                        return@filter true
+                    }
 
-		GetServiceRuleRequest inBoundReq = new GetServiceRuleRequest();
-		inBoundReq.setService(target.getService());
-		inBoundReq.setNamespace(target.getNamespace());
-		inBoundReq.setRuleType(EventType.ROUTING);
+                    if (source.namespace.value == serviceKey!!.namespace
+                        && source.service.value == serviceKey.service
+                    ) {
+                        return@filter true
+                    }
+                }
+                false
+            }.toList()
+        }
+    }
 
-		ServiceRuleResponse inBoundResp = consumerAPI.getServiceRule(inBoundReq);
-		Routing inBoundRule = (Routing) inBoundResp.getServiceRule().getRule();
-		if (Objects.nonNull(inBoundRule)) {
-			List<Route> tmpRules = new RouteResp(inBoundRule.getInboundsList(), target).doFilter();
-			rules.addAll(tmpRules);
-		}
-
-		if (Objects.isNull(source)) {
-			return rules;
-		}
-
-		GetServiceRuleRequest outBoundReq = new GetServiceRuleRequest();
-		outBoundReq.setService(source.getService());
-		outBoundReq.setNamespace(source.getNamespace());
-		outBoundReq.setRuleType(EventType.ROUTING);
-
-		ServiceRuleResponse outBoundResp = consumerAPI.getServiceRule(outBoundReq);
-		Routing outBoundRule = (Routing) outBoundResp.getServiceRule().getRule();
-		if (Objects.nonNull(outBoundRule)) {
-			List<Route> tmpRules = new RouteResp(outBoundRule.getOutboundsList(), source).doFilter();
-			rules.addAll(tmpRules);
-		}
-		return rules;
-	}
-
-	public static final class EmptyPicker extends SubchannelPicker {
-
-		private final Status status;
-
-		EmptyPicker(Status status) {
-			this.status = Preconditions.checkNotNull(status, "status");
-		}
-
-		public PickResult pickSubchannel(PickSubchannelArgs args) {
-			return this.status.isOk() ? PickResult.withNoResult() : PickResult.withError(this.status);
-		}
-
-	}
-
-	private static class RouteResp {
-
-		final List<Route> rule;
-
-		final ServiceKey serviceKey;
-
-		private RouteResp(List<Route> rule, ServiceKey serviceKey) {
-			this.rule = rule;
-			this.serviceKey = serviceKey;
-		}
-
-		List<Route> doFilter() {
-			return rule.stream().filter(route -> {
-				for (Source source : route.getSourcesList()) {
-
-					if (Objects.equals(source.getNamespace().getValue(), MATCH_ALL)
-							&& Objects.equals(source.getService().getValue(), MATCH_ALL)) {
-						return true;
-					}
-
-					if (Objects.equals(source.getNamespace().getValue(), MATCH_ALL)
-							&& Objects.equals(source.getService().getValue(), serviceKey.getService())) {
-						return true;
-					}
-
-					if (Objects.equals(source.getNamespace().getValue(), serviceKey.getNamespace())
-							&& Objects.equals(source.getService().getValue(), serviceKey.getService())) {
-						return true;
-					}
-				}
-
-				return false;
-			}).toList();
-		}
-
-	}
-
+    companion object {
+        private val LOG: Logger = LoggerFactory.getLogger(PolarisPicker::class.java)
+    }
 }

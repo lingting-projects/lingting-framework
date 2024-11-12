@@ -1,45 +1,40 @@
-package live.lingting.framework.map;
+package live.lingting.framework.map
 
-import live.lingting.framework.util.BooleanUtils;
-
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import live.lingting.framework.util.BooleanUtils
+import java.util.*
+import java.util.function.Function
+import java.util.function.Predicate
 
 /**
  * @author lingting 2024-04-20 16:17
  */
-public interface SimpleMap<K, V> extends Map<K, V> {
+interface SimpleMap<K, V> : MutableMap<K, V> {
+    fun find(key: K): V? {
+        return if (isEmpty()) null else get(key)
+    }
 
-	default V find(K key) {
-		return isEmpty() ? null : get(key);
-	}
+    fun <T> find(key: K, func: Function<Optional<V>?, T>): T {
+        val v = find(key)
+        val optional: Optional<V> = Optional.ofNullable(v)
+        return func.apply(optional)
+    }
 
-	default <T> T find(K key, Function<Optional<V>, T> func) {
-		V v = find(key);
-		Optional<V> optional = Optional.ofNullable(v);
-		return func.apply(optional);
-	}
+    fun <T> find(key: K, defaultValue: T, func: Function<V, T>): T {
+        return find(key, defaultValue, { obj: V -> Objects.isNull(obj) }, func)
+    }
 
-	default <T> T find(K key, T defaultValue, Function<V, T> func) {
-		return find(key, defaultValue, Objects::isNull, func);
-	}
+    /**
+     * @param usingDefault 如果返回true表示使用默认值
+     */
+    fun <T> find(key: K, defaultValue: T, usingDefault: Predicate<V>, func: Function<V, T>): T {
+        val v = find(key)
+        if (v == null || usingDefault.test(v)) {
+            return defaultValue
+        }
+        return func.apply(v)
+    }
 
-	/**
-	 * @param usingDefault 如果返回true表示使用默认值
-	 */
-	default <T> T find(K key, T defaultValue, Predicate<V> usingDefault, Function<V, T> func) {
-		V v = find(key);
-		if (v == null || usingDefault.test(v)) {
-			return defaultValue;
-		}
-		return func.apply(v);
-	}
-
-	default boolean toBoolean(K key) {
-		return find(key, false, BooleanUtils::isTrue);
-	}
-
+    fun toBoolean(key: K): Boolean {
+        return find<Boolean>(key, false, Function<V, Boolean> { obj: V -> BooleanUtils.isTrue(obj) })
+    }
 }

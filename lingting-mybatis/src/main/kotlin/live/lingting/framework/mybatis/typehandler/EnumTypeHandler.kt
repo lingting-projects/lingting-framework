@@ -1,67 +1,54 @@
-package live.lingting.framework.mybatis.typehandler;
+package live.lingting.framework.mybatis.typehandler
 
-import live.lingting.framework.util.EnumUtils;
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
-
-import java.sql.CallableStatement;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Objects;
+import live.lingting.framework.util.EnumUtils
+import org.apache.ibatis.type.BaseTypeHandler
+import org.apache.ibatis.type.JdbcType
+import java.sql.CallableStatement
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+import java.sql.SQLException
 
 /**
  * @author lingting 2022/12/14 16:06
  */
-public class EnumTypeHandler<E extends Enum<E>> extends BaseTypeHandler<E> implements AutoRegisterTypeHandler<E> {
+class EnumTypeHandler<E : Enum<E>?>(private val type: Class<E>) : BaseTypeHandler<E?>(), AutoRegisterTypeHandler<E> {
+    @Throws(SQLException::class)
+    override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: E?, jdbcType: JdbcType?) {
+        val value = EnumUtils.getValue(parameter)
+        if (jdbcType != null) {
+            ps.setObject(i, value, jdbcType.TYPE_CODE)
+        } else if (value is String) {
+            ps.setString(i, value.toString())
+        } else {
+            ps.setObject(i, value)
+        }
+    }
 
-	private final Class<E> type;
+    @Throws(SQLException::class)
+    override fun getNullableResult(rs: ResultSet, columnName: String): E? {
+        return of(rs.getString(columnName))
+    }
 
-	public EnumTypeHandler(Class<E> type) {
-		this.type = type;
-	}
+    @Throws(SQLException::class)
+    override fun getNullableResult(rs: ResultSet, columnIndex: Int): E? {
+        return of(rs.getString(columnIndex))
+    }
 
-	@Override
-	public void setNonNullParameter(PreparedStatement ps, int i, E parameter, JdbcType jdbcType) throws SQLException {
-		Object value = EnumUtils.getValue(parameter);
-		if (jdbcType != null) {
-			ps.setObject(i, value, jdbcType.TYPE_CODE);
-		}
-		else if (value instanceof String) {
-			ps.setString(i, value.toString());
-		}
-		else {
-			ps.setObject(i, value);
-		}
-	}
+    @Throws(SQLException::class)
+    override fun getNullableResult(cs: CallableStatement, columnIndex: Int): E? {
+        return of(cs.getString(columnIndex))
+    }
 
-	@Override
-	public E getNullableResult(ResultSet rs, String columnName) throws SQLException {
-		return of(rs.getString(columnName));
-	}
-
-	@Override
-	public E getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-		return of(rs.getString(columnIndex));
-	}
-
-	@Override
-	public E getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-		return of(cs.getString(columnIndex));
-	}
-
-	E of(String val) {
-		for (E e : type.getEnumConstants()) {
-			Object value = EnumUtils.getValue(e);
-			if (
-				// 值匹配
-				Objects.equals(val, value)
-					// 字符串值匹配
-					|| (value != null && value.toString().equals(val))) {
-				return e;
-			}
-		}
-		return null;
-	}
-
+    fun of(`val`: String): E? {
+        for (e in type.enumConstants) {
+            val value = EnumUtils.getValue(e)
+            if ( // 值匹配
+                `val` == value // 字符串值匹配
+                || (value != null && value.toString() == `val`)
+            ) {
+                return e
+            }
+        }
+        return null
+    }
 }

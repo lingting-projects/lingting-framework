@@ -1,82 +1,75 @@
-package live.lingting.framework.grpc.simple;
+package live.lingting.framework.grpc.simple
 
-import io.grpc.CallOptions;
-import io.grpc.Channel;
-import io.grpc.ClientCall;
-import io.grpc.ForwardingClientCall;
-import io.grpc.Metadata;
-import io.grpc.MethodDescriptor;
+import io.grpc.CallOptions
+import io.grpc.Channel
+import io.grpc.ClientCall
+import io.grpc.ForwardingClientCall
+import io.grpc.Metadata
+import io.grpc.MethodDescriptor
 
 /**
  * @author lingting 2023-12-18 19:13
  */
-public class ForwardingClientOnCall<S, R> extends ForwardingClientCall<S, R> {
+open class ForwardingClientOnCall<S, R>(method: MethodDescriptor<S?, R?>?, callOptions: CallOptions?, next: Channel) : ForwardingClientCall<S?, R?>() {
+    private var delegate: ClientCall<S?, R?>? = null
 
-	private final ClientCall<S, R> delegate;
+    init {
+        try {
+            this.delegate = next.newCall(method, callOptions)
+        } catch (e: Exception) {
+            onFinally()
+            throw e
+        }
+    }
 
-	public ForwardingClientOnCall(MethodDescriptor<S, R> method, CallOptions callOptions, Channel next) {
-		try {
-			this.delegate = next.newCall(method, callOptions);
-		}
-		catch (Exception e) {
-			onFinally();
-			throw e;
-		}
-	}
+    override fun delegate(): ClientCall<S?, R?>? {
+        return delegate
+    }
 
-	@Override
-	protected ClientCall<S, R> delegate() {
-		return delegate;
-	}
+    override fun start(responseListener: Listener<R?>?, headers: Metadata?) {
+        onStartBefore(responseListener, headers)
+        super.start(responseListener, headers)
+        onStartAfter(responseListener, headers)
+    }
 
-	@Override
-	public void start(Listener<R> responseListener, Metadata headers) {
-		onStartBefore(responseListener, headers);
-		super.start(responseListener, headers);
-		onStartAfter(responseListener, headers);
-	}
+    override fun sendMessage(message: S?) {
+        onSendMessageBefore(message)
+        super.sendMessage(message)
+        onSendMessageAfter(message)
+    }
 
-	@Override
-	public void sendMessage(S message) {
-		onSendMessageBefore(message);
-		super.sendMessage(message);
-		onSendMessageAfter(message);
-	}
+    override fun halfClose() {
+        onHalfCloseBefore()
+        super.halfClose()
+        onHalfCloseAfter()
+        onFinally()
+    }
 
-	@Override
-	public void halfClose() {
-		onHalfCloseBefore();
-		super.halfClose();
-		onHalfCloseAfter();
-		onFinally();
-	}
+    open fun onStartBefore(responseListener: Listener<R?>?, headers: Metadata?) {
+        //
+    }
 
-	public void onStartBefore(Listener<R> responseListener, Metadata headers) {
-		//
-	}
+    fun onStartAfter(responseListener: Listener<R?>?, headers: Metadata?) {
+        //
+    }
 
-	public void onStartAfter(Listener<R> responseListener, Metadata headers) {
-		//
-	}
+    fun onSendMessageBefore(message: S?) {
+        //
+    }
 
-	public void onSendMessageBefore(S message) {
-		//
-	}
+    fun onSendMessageAfter(message: S?) {
+        //
+    }
 
-	public void onSendMessageAfter(S message) {
-		//
-	}
+    fun onHalfCloseBefore() {
+        //
+    }
 
-	public void onHalfCloseBefore() {
-		//
-	}
+    fun onHalfCloseAfter() {
+        //
+    }
 
-	public void onHalfCloseAfter() {
-		//
-	}
-
-	public void onFinally() {
-		//
-	}
-
+    fun onFinally() {
+        //
+    }
 }

@@ -1,27 +1,22 @@
-package live.lingting.framework.value.cycle;
+package live.lingting.framework.value.cycle
 
-import live.lingting.framework.value.CycleValue;
-
-import java.math.BigInteger;
+import live.lingting.framework.value.CycleValue
+import java.math.BigInteger
 
 /**
  * @author lingting 2024-02-27 19:19
  */
-public abstract class AbstractCycleValue<T> implements CycleValue<T> {
+abstract class AbstractCycleValue<T> : CycleValue<T?> {
+    protected var count: BigInteger = BigInteger.ZERO
 
-	protected BigInteger count = BigInteger.ZERO;
+    override fun count(): BigInteger {
+        return count
+    }
 
-	@Override
-	public BigInteger count() {
-		return count;
-	}
+    override fun next(): T? {
+        count = count.add(BigInteger.ONE)
+        return doNext()
+    }
 
-	@Override
-	public T next() {
-		count = count.add(BigInteger.ONE);
-		return doNext();
-	}
-
-	public abstract T doNext();
-
+    abstract fun doNext(): T?
 }

@@ -1,71 +1,64 @@
+package live.lingting.polaris.grpc.metadata
 
-package live.lingting.polaris.grpc.metadata;
-
-import io.grpc.Context;
-import io.grpc.Context.Key;
-
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import io.grpc.Context
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * copy from
  * https://github.com/Tencent/spring-cloud-tencent/blob/main/spring-cloud-tencent-commons/src/main/java/com/tencent/cloud/common/metadata/MetadataContext.java
  *
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
+ * @author [liaochuntao](mailto:liaochuntao@live.com)
  */
-public final class MetadataContext {
+class MetadataContext {
+    private var fragmentContexts: MutableMap<String, MutableMap<String, String?>>
 
-	public static final Key<MetadataContext> METADATA_CONTEXT_KEY = Context.keyWithDefault("MetadataContext",
-			new MetadataContext());
+    init {
+        this.fragmentContexts = ConcurrentHashMap()
+    }
 
-	public static final String FRAGMENT_HEADER = "header";
+    val headerFragment: Map<String, String?>
+        get() = getFragment(FRAGMENT_HEADER)
 
-	public static final String FRAGMENT_GRPC_CONTEXT = "grpc_context";
+    val grpcContextFragment: Map<String, String?>
+        get() = getFragment(FRAGMENT_GRPC_CONTEXT)
 
-	private Map<String, Map<String, String>> fragmentContexts;
+    private fun getFragment(fragment: String): Map<String, String?> {
+        val fragmentContext = fragmentContexts[fragment] ?: return emptyMap<String, String>()
+        return Collections.unmodifiableMap(fragmentContext)
+    }
 
-	public MetadataContext() {
-		this.fragmentContexts = new ConcurrentHashMap<>();
-	}
+    fun putHeaderFragment(key: String, value: String?) {
+        putHeaderFragment(FRAGMENT_HEADER, key, value)
+    }
 
-	public Map<String, String> getHeaderFragment() {
-		return getFragment(FRAGMENT_HEADER);
-	}
+    fun putContextFragment(key: String, value: String?) {
+        putHeaderFragment(FRAGMENT_GRPC_CONTEXT, key, value)
+    }
 
-	public Map<String, String> getGrpcContextFragment() {
-		return getFragment(FRAGMENT_GRPC_CONTEXT);
-	}
+    private fun putHeaderFragment(fragment: String, key: String, value: String?) {
+        val fragmentContext = fragmentContexts.computeIfAbsent(
+            fragment
+        ) { k: String? -> ConcurrentHashMap() }
+        fragmentContext[key] = value
+    }
 
-	private Map<String, String> getFragment(final String fragment) {
-		Map<String, String> fragmentContext = fragmentContexts.get(fragment);
-		if (fragmentContext == null) {
-			return Collections.emptyMap();
-		}
-		return Collections.unmodifiableMap(fragmentContext);
-	}
+    fun reset() {
+        fragmentContexts = ConcurrentHashMap()
+    }
 
-	public void putHeaderFragment(final String key, final String value) {
-		putHeaderFragment(FRAGMENT_HEADER, key, value);
-	}
+    override fun toString(): String {
+        return "MetadataContext{fragmentContexts=$fragmentContexts}"
+    }
 
-	public void putContextFragment(final String key, final String value) {
-		putHeaderFragment(FRAGMENT_GRPC_CONTEXT, key, value);
-	}
+    companion object {
+        val METADATA_CONTEXT_KEY: Context.Key<MetadataContext> = Context.keyWithDefault(
+            "MetadataContext",
+            MetadataContext()
+        )
 
-	private void putHeaderFragment(final String fragment, final String key, final String value) {
-		Map<String, String> fragmentContext = fragmentContexts.computeIfAbsent(fragment,
-				k -> new ConcurrentHashMap<>());
-		fragmentContext.put(key, value);
-	}
+        const val FRAGMENT_HEADER: String = "header"
 
-	public void reset() {
-		fragmentContexts = new ConcurrentHashMap<>();
-	}
-
-	@Override
-	public String toString() {
-		return "MetadataContext{" + "fragmentContexts=" + fragmentContexts + '}';
-	}
-
+        const val FRAGMENT_GRPC_CONTEXT: String = "grpc_context"
+    }
 }

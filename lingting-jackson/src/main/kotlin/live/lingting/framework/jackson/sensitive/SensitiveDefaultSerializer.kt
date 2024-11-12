@@ -1,57 +1,41 @@
-package live.lingting.framework.jackson.sensitive;
+package live.lingting.framework.jackson.sensitive
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.fasterxml.jackson.databind.ser.ContextualSerializer;
-import live.lingting.framework.sensitive.Sensitive;
-import live.lingting.framework.sensitive.SensitiveSerializer;
-import live.lingting.framework.sensitive.SensitiveUtils;
-
-import java.io.IOException;
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.databind.BeanProperty
+import com.fasterxml.jackson.databind.JsonMappingException
+import com.fasterxml.jackson.databind.JsonSerializer
+import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.exc.InvalidFormatException
+import com.fasterxml.jackson.databind.ser.ContextualSerializer
+import live.lingting.framework.sensitive.Sensitive
+import live.lingting.framework.sensitive.SensitiveSerializer
+import live.lingting.framework.sensitive.SensitiveUtils
+import java.io.IOException
 
 /**
  * @author lingting 2023-04-27 15:30
  */
-public class SensitiveDefaultSerializer extends JsonSerializer<Object>
-	implements SensitiveSerializer, ContextualSerializer {
+class SensitiveDefaultSerializer(protected val sensitive: Sensitive) : JsonSerializer<Any?>(), SensitiveSerializer, ContextualSerializer {
+    @Throws(JsonMappingException::class)
+    override fun createContextual(prov: SerializerProvider, property: BeanProperty): JsonSerializer<*> {
+        val annotation = property.getAnnotation(Sensitive::class.java) ?: return prov.findValueSerializer(property.type, property)
 
-	protected final Sensitive sensitive;
+        return SensitiveDefaultSerializer(annotation)
+    }
 
-	public SensitiveDefaultSerializer(Sensitive sensitive) {
-		this.sensitive = sensitive;
-	}
+    @Throws(IOException::class)
+    override fun serialize(raw: Any?, gen: JsonGenerator, serializers: SerializerProvider) {
+        var raw = raw
+        if (raw == null) {
+            raw = ""
+        }
+        val `val` = serialize(sensitive, raw as String)
+        gen.writeString(`val`)
+    }
 
-	@Override
-	public JsonSerializer<?> createContextual(SerializerProvider prov, BeanProperty property)
-		throws JsonMappingException {
-		Sensitive annotation = property.getAnnotation(Sensitive.class);
-		if (annotation == null) {
-			return prov.findValueSerializer(property.getType(), property);
-		}
-
-		return new SensitiveDefaultSerializer(annotation);
-	}
-
-	@Override
-	public void serialize(Object raw, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-		if (raw == null) {
-			raw = "";
-		}
-		String val = serialize(sensitive, (String) raw);
-		gen.writeString(val);
-	}
-
-	@Override
-	public String serialize(Sensitive sensitive, String raw) throws IOException {
-		SensitiveSerializer serializer = SensitiveUtils.findSerializer(sensitive);
-		if (serializer == null) {
-			throw new InvalidFormatException(null, "", raw, String.class);
-		}
-		return serializer.serialize(sensitive, raw);
-	}
-
+    @Throws(IOException::class)
+    override fun serialize(sensitive: Sensitive, raw: String): String {
+        val serializer = SensitiveUtils.findSerializer(sensitive) ?: throw InvalidFormatException(null, "", raw, String::class.java)
+        return serializer.serialize(sensitive, raw)
+    }
 }

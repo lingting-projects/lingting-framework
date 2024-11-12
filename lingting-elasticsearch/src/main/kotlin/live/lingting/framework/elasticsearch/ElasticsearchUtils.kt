@@ -1,157 +1,144 @@
-package live.lingting.framework.elasticsearch;
+package live.lingting.framework.elasticsearch
 
-import co.elastic.clients.elasticsearch._types.FieldValue;
-import co.elastic.clients.json.JsonData;
-import live.lingting.framework.elasticsearch.annotation.Document;
-import live.lingting.framework.reflect.ClassField;
-import live.lingting.framework.util.AnnotationUtils;
-import live.lingting.framework.util.ClassUtils;
-import live.lingting.framework.util.StringUtils;
-import org.apache.http.StatusLine;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.client.ResponseException;
-import org.slf4j.Logger;
-
-import java.lang.invoke.SerializedLambda;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import co.elastic.clients.elasticsearch._types.FieldValue
+import co.elastic.clients.json.JsonData
+import live.lingting.framework.elasticsearch.annotation.Document
+import live.lingting.framework.util.AnnotationUtils
+import live.lingting.framework.util.ClassUtils
+import live.lingting.framework.util.StringUtils
+import org.elasticsearch.client.ResponseException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.lang.invoke.SerializedLambda
+import java.lang.reflect.Field
+import java.lang.reflect.InvocationTargetException
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * @author lingting 2023-06-16 11:25
  */
-@SuppressWarnings({"unchecked", "java:S3011"})
-public final class ElasticsearchUtils {
+class ElasticsearchUtils private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	private static final Map<Class<? extends ElasticsearchFunction>, SerializedLambda> EF_LAMBDA_CACHE = new ConcurrentHashMap<>();
+    companion object {
+        private val EF_LAMBDA_CACHE: MutableMap<Class<out ElasticsearchFunction<*, *>?>, SerializedLambda?> = ConcurrentHashMap()
 
-	private static final Map<Class<? extends ElasticsearchFunction>, Class<?>> CLS_LAMBDA_CACHE = new ConcurrentHashMap<>();
+        private val CLS_LAMBDA_CACHE: MutableMap<Class<out ElasticsearchFunction<*, *>?>, Class<*>?> = ConcurrentHashMap()
 
-	private static final Map<Class<? extends ElasticsearchFunction>, Field> FIELD_LAMBDA_CACHE = new ConcurrentHashMap<>();
-	private static final Logger log = org.slf4j.LoggerFactory.getLogger(ElasticsearchUtils.class);
+        private val FIELD_LAMBDA_CACHE: MutableMap<Class<out ElasticsearchFunction<*, *>?>, Field?> = ConcurrentHashMap()
+        private val log: Logger = LoggerFactory.getLogger(ElasticsearchUtils::class.java)
 
-	private ElasticsearchUtils() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+        fun <T> getEntityClass(cls: Class<*>?): Class<T> {
+            val list = ClassUtils.classArguments(cls!!)
+            return list[0] as Class<T>
+        }
 
-	public static <T> Class<T> getEntityClass(Class<?> cls) {
-		List<Class<?>> list = ClassUtils.classArguments(cls);
-		return (Class<T>) list.get(0);
-	}
+        fun index(cls: Class<*>): String {
+            val document = AnnotationUtils.findAnnotation(cls, Document::class.java)
+            // 使用注解指定的
+            if (document != null && StringUtils.hasText(document.index)) {
+                return document.index
+            }
+            // 没有指定, 使用下划线的
+            val name = cls.simpleName
+            return StringUtils.humpToUnderscore(name)
+        }
 
-	public static String index(Class<?> cls) {
-		Document document = AnnotationUtils.findAnnotation(cls, Document.class);
-		// 使用注解指定的
-		if (document != null && StringUtils.hasText(document.index())) {
-			return document.index();
-		}
-		// 没有指定, 使用下划线的
-		String name = cls.getSimpleName();
-		return StringUtils.humpToUnderscore(name);
-	}
+        @Throws(NoSuchMethodException::class, InvocationTargetException::class, IllegalAccessException::class)
+        fun <T, R> resolveByReflection(function: ElasticsearchFunction<T, R>): SerializedLambda {
+            val fClass: Class<out ElasticsearchFunction<*, *>?> = function.javaClass
+            val method = fClass.getDeclaredMethod("writeReplace")
+            method.isAccessible = true
+            return method.invoke(function) as SerializedLambda
+        }
 
-	static <T, R> SerializedLambda resolveByReflection(ElasticsearchFunction<T, R> function)
-		throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-		Class<? extends ElasticsearchFunction> fClass = function.getClass();
-		Method method = fClass.getDeclaredMethod("writeReplace");
-		method.setAccessible(true);
-		return (SerializedLambda) method.invoke(function);
+        fun <T, R> resolve(function: ElasticsearchFunction<T, R>): SerializedLambda? {
+            val fClass: Class<out ElasticsearchFunction<*, *>?> = function.javaClass
+            return EF_LAMBDA_CACHE.computeIfAbsent(fClass) { k: Class<out ElasticsearchFunction<*, *>?>? ->
+                try {
+                    return@computeIfAbsent resolveByReflection<T, R>(function)
+                } catch (e: Exception) {
+                    log.error("resolve lambda error!", e)
+                    return@computeIfAbsent null
+                }
+            }
+        }
 
-	}
+        fun <T, R> resolveClass(function: ElasticsearchFunction<T, R>): Class<T>? {
+            val fClass: Class<out ElasticsearchFunction<*, *>?> = function.javaClass
+            return CLS_LAMBDA_CACHE.computeIfAbsent(fClass) { k: Class<out ElasticsearchFunction<*, *>?>? ->
+                try {
+                    val lambda = resolve(function)
+                    val implClassName = lambda!!.implClass
+                    val className = implClassName.replace("/", ".")
+                    return@computeIfAbsent Class.forName(className)
+                } catch (e: Exception) {
+                    log.error("resolve class by lambda error!", e)
+                    return@computeIfAbsent null
+                }
+            } as Class<T>?
+        }
 
-	public static <T, R> SerializedLambda resolve(ElasticsearchFunction<T, R> function) {
-		Class<? extends ElasticsearchFunction> fClass = function.getClass();
-		return EF_LAMBDA_CACHE.computeIfAbsent(fClass, k -> {
-			try {
-				return resolveByReflection(function);
-			}
-			catch (Exception e) {
-				log.error("resolve lambda error!", e);
-				return null;
-			}
-		});
-	}
+        fun <T, R> resolveField(function: ElasticsearchFunction<T, R>): Field? {
+            val fClass: Class<out ElasticsearchFunction<*, *>?> = function.javaClass
+            return FIELD_LAMBDA_CACHE.computeIfAbsent(fClass) { k: Class<out ElasticsearchFunction<*, *>?>? ->
+                try {
+                    val lambda = resolve(function)
+                    val aClass = resolveClass(function)
 
-	public static <T, R> Class<T> resolveClass(ElasticsearchFunction<T, R> function) {
-		Class<? extends ElasticsearchFunction> fClass = function.getClass();
-		return (Class<T>) CLS_LAMBDA_CACHE.computeIfAbsent(fClass, k -> {
-			try {
-				SerializedLambda lambda = resolve(function);
-				String implClassName = lambda.getImplClass();
-				String className = implClassName.replace("/", ".");
-				return Class.forName(className);
-			}
-			catch (Exception e) {
-				log.error("resolve class by lambda error!", e);
-				return null;
-			}
+                    val implMethodName = lambda!!.implMethodName
 
-		});
-	}
+                    val implFieldName = if (implMethodName.startsWith("get")) {
+                        implMethodName.substring("get".length)
+                    } else if (implMethodName.startsWith("set")) {
+                        implMethodName.substring("set".length)
+                    } else {
+                        implMethodName.substring("is".length)
+                    }
+                    val fieldName = StringUtils.firstLower(implFieldName)
+                    val cf = ClassUtils.classField(fieldName!!, aClass!!)
+                    return@computeIfAbsent cf!!.field
+                } catch (e: Exception) {
+                    log.error("resolve method by lambda error!", e)
+                    return@computeIfAbsent null
+                }
+            }
+        }
 
-	public static <T, R> Field resolveField(ElasticsearchFunction<T, R> function) {
-		Class<? extends ElasticsearchFunction> fClass = function.getClass();
-		return FIELD_LAMBDA_CACHE.computeIfAbsent(fClass, k -> {
-			try {
-				SerializedLambda lambda = resolve(function);
-				Class<T> aClass = resolveClass(function);
+        fun isVersionConflictException(e: Exception?): Boolean {
+            if (e !is ResponseException) {
+                return false
+            }
 
-				String implMethodName = lambda.getImplMethodName();
-				String implFieldName;
+            val response = e.response
 
-				if (implMethodName.startsWith("get")) {
-					implFieldName = implMethodName.substring("get".length());
-				}
-				else if (implMethodName.startsWith("set")) {
-					implFieldName = implMethodName.substring("set".length());
-				}
-				else {
-					implFieldName = implMethodName.substring("is".length());
-				}
-				String fieldName = StringUtils.firstLower(implFieldName);
-				ClassField cf = ClassUtils.classField(fieldName, aClass);
-				return cf.field();
-			}
-			catch (Exception e) {
-				log.error("resolve method by lambda error!", e);
-				return null;
-			}
+            val line = response.statusLine
+            val statusCode = line.statusCode
 
-		});
-	}
+            if (statusCode != 409) {
+                return false
+            }
 
-	public static boolean isVersionConflictException(Exception e) {
-		if (!(e instanceof ResponseException)) {
-			return false;
-		}
+            val phrase = line.reasonPhrase
 
-		Response response = ((ResponseException) e).getResponse();
+            if (!StringUtils.hasText(phrase)) {
+                return false
+            }
 
-		StatusLine line = response.getStatusLine();
-		int statusCode = line.getStatusCode();
+            // type为版本冲突
+            return phrase.lowercase(Locale.getDefault()).contains("version_conflict_engine_exception")
+        }
 
-		if (statusCode != 409) {
-			return false;
-		}
+        fun fieldValue(`object`: Any): FieldValue {
+            return if (`object` is FieldValue) `object` else FieldValue.of(JsonData.of(`object`))
+        }
 
-		String phrase = line.getReasonPhrase();
-
-		if (!StringUtils.hasText(phrase)) {
-			return false;
-		}
-
-		// type为版本冲突
-		return phrase.toLowerCase().contains("version_conflict_engine_exception");
-	}
-
-	public static FieldValue fieldValue(Object object) {
-		return object instanceof FieldValue fv ? fv : FieldValue.of(JsonData.of(object));
-	}
-
-	public static String fieldName(ElasticsearchFunction<?, ?> func) {
-		Field field = resolveField(func);
-		return field.getName();
-	}
-
+        fun fieldName(func: ElasticsearchFunction<*, *>): String {
+            val field = resolveField(func)
+            return field!!.name
+        }
+    }
 }

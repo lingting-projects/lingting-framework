@@ -1,16 +1,12 @@
+package live.lingting.polaris.grpc.server.impl
 
-package live.lingting.polaris.grpc.server.impl;
-
-import live.lingting.polaris.grpc.server.DelayRegister;
+import live.lingting.polaris.grpc.server.DelayRegister
 
 /**
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
+ * @author [liaochuntao](mailto:liaochuntao@live.com)
  */
-public class NoopDelayRegister implements DelayRegister {
-
-	@Override
-	public boolean allowRegis() {
-		return true;
-	}
-
+class NoopDelayRegister : DelayRegister {
+    override fun allowRegis(): Boolean {
+        return true
+    }
 }

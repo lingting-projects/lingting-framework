@@ -1,38 +1,37 @@
-package live.lingting.framework.exception;
+package live.lingting.framework.exception
 
-import io.grpc.MethodDescriptor;
-import io.grpc.Status;
-import live.lingting.framework.grpc.exception.GrpcExceptionHandler;
-import live.lingting.framework.grpc.exception.GrpcExceptionInstance;
-import live.lingting.framework.security.exception.AuthorizationException;
-import live.lingting.framework.security.exception.PermissionsException;
-import org.slf4j.Logger;
+import io.grpc.MethodDescriptor
+import io.grpc.Status
+import live.lingting.framework.grpc.exception.GrpcExceptionHandler
+import live.lingting.framework.grpc.exception.GrpcExceptionInstance
+import live.lingting.framework.security.exception.AuthorizationException
+import live.lingting.framework.security.exception.PermissionsException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2023-12-15 17:15
  */
-public class SecurityGrpcExceptionInstance implements GrpcExceptionInstance {
+class SecurityGrpcExceptionInstance : GrpcExceptionInstance {
+    /**
+     * 鉴权异常
+     */
+    @GrpcExceptionHandler(AuthorizationException::class)
+    fun handlerAuthorizationException(descriptor: MethodDescriptor<*, *>, e: AuthorizationException): Status {
+        log.error("Authorization error! target: {}. {}", descriptor.fullMethodName, e.message)
+        return Status.UNAUTHENTICATED.withCause(e).withDescription(e.message)
+    }
 
-	private static final Logger log = org.slf4j.LoggerFactory.getLogger(SecurityGrpcExceptionInstance.class);
+    /**
+     * 权限异常
+     */
+    @GrpcExceptionHandler(PermissionsException::class)
+    fun handlerPermissionsException(descriptor: MethodDescriptor<*, *>, e: PermissionsException): Status {
+        log.error("Permissions error! target: {}. {}", descriptor.fullMethodName, e.message)
+        return Status.PERMISSION_DENIED.withCause(e).withDescription(e.message)
+    }
 
-	public SecurityGrpcExceptionInstance() {}
-
-	/**
-	 * 鉴权异常
-	 */
-	@GrpcExceptionHandler(AuthorizationException.class)
-	public Status handlerAuthorizationException(MethodDescriptor<?, ?> descriptor, AuthorizationException e) {
-		log.error("Authorization error! target: {}. {}", descriptor.getFullMethodName(), e.getMessage());
-		return Status.UNAUTHENTICATED.withCause(e).withDescription(e.getMessage());
-	}
-
-	/**
-	 * 权限异常
-	 */
-	@GrpcExceptionHandler(PermissionsException.class)
-	public Status handlerPermissionsException(MethodDescriptor<?, ?> descriptor, PermissionsException e) {
-		log.error("Permissions error! target: {}. {}", descriptor.getFullMethodName(), e.getMessage());
-		return Status.PERMISSION_DENIED.withCause(e).withDescription(e.getMessage());
-	}
-
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(SecurityGrpcExceptionInstance::class.java)
+    }
 }

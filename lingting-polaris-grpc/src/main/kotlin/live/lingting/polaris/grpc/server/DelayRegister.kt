@@ -1,15 +1,12 @@
-
-package live.lingting.polaris.grpc.server;
+package live.lingting.polaris.grpc.server
 
 /**
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
+ * @author [liaochuntao](mailto:liaochuntao@live.com)
  */
-public interface DelayRegister {
-
-	/**
-	 * 允许注册
-	 * @return 是否可以放通注册动作
-	 */
-	boolean allowRegis();
-
+interface DelayRegister {
+    /**
+     * 允许注册
+     * @return 是否可以放通注册动作
+     */
+    fun allowRegis(): Boolean
 }

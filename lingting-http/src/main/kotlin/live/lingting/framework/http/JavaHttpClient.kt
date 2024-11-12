@@ -1,147 +1,132 @@
-package live.lingting.framework.http;
+package live.lingting.framework.http
 
-import live.lingting.framework.http.body.BodySource;
-import live.lingting.framework.http.body.MemoryBody;
-import live.lingting.framework.http.header.HttpHeaders;
-
-import javax.net.ssl.SSLContext;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.Authenticator;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
-import java.net.URI;
-import java.net.http.HttpClient.Redirect;
-import java.net.http.HttpRequest.BodyPublishers;
-import java.net.http.HttpResponse.BodyHandlers;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
+import live.lingting.framework.http.body.MemoryBody
+import live.lingting.framework.http.header.HttpHeaders
+import okhttp3.Cookie.Builder.value
+import java.io.IOException
+import java.io.InputStream
+import java.net.Authenticator
+import java.net.CookieManager
+import java.net.CookiePolicy
+import java.net.ProxySelector
+import java.net.http.HttpRequest.BodyPublisher
+import java.net.http.HttpRequest.BodyPublishers
+import java.net.http.HttpResponse.BodyHandlers
+import java.time.Duration
+import java.util.concurrent.ExecutorService
+import java.util.function.Consumer
+import java.util.function.Supplier
 
 /**
  * @author lingting 2024-09-02 15:33
  */
-public class JavaHttpClient extends HttpClient {
-
-	protected final java.net.http.HttpClient client;
-
-	public JavaHttpClient(java.net.http.HttpClient client) {
-		this.client = client;
-	}
-
-	public static HttpResponse convert(HttpRequest request, java.net.http.HttpResponse<InputStream> r) {
-		int code = r.statusCode();
-		Map<String, List<String>> map = r.headers().map();
-		HttpHeaders headers = HttpHeaders.of(map);
-		InputStream body = r.body();
-		return new HttpResponse(request, code, headers, body);
-	}
-
-	public static java.net.http.HttpRequest convert(HttpRequest request) {
-		HttpMethod method = request.method();
-		URI uri = request.uri();
-		HttpHeaders headers = request.headers();
-		HttpRequest.Body body = request.body();
-
-		java.net.http.HttpRequest.Builder builder = java.net.http.HttpRequest.newBuilder().uri(uri);
-		java.net.http.HttpRequest.BodyPublisher publisher = convert(method, body);
-		builder.method(method.name(), publisher);
-		headers.each((k, v) -> {
-			if (HEADERS_DISABLED.contains(k)) {
-				return;
-			}
-			builder.header(k, v);
-		});
-		return builder.build();
-	}
-
-	public static java.net.http.HttpRequest.BodyPublisher convert(HttpMethod method, HttpRequest.Body body) {
-		if (body == null || !method.allowBody()) {
-			return BodyPublishers.noBody();
-		}
-		BodySource source = body.source();
-		if (source instanceof MemoryBody) {
-			return BodyPublishers.ofByteArray(source.bytes());
-		}
-		return BodyPublishers.ofInputStream(source::openInput);
-	}
-
-	@Override
-	public java.net.http.HttpClient client() {
-		return client;
-	}
+class JavaHttpClient(protected val client: java.net.http.HttpClient) : HttpClient() {
+    override fun client(): java.net.http.HttpClient {
+        return client
+    }
 
 
-	@Override
-	public HttpResponse request(HttpRequest request) throws IOException {
-		java.net.http.HttpRequest jr = convert(request);
-		java.net.http.HttpResponse<InputStream> r = client.send(jr, BodyHandlers.ofInputStream());
-		return convert(request, r);
-	}
+    @Throws(IOException::class)
+    override fun request(request: HttpRequest): HttpResponse {
+        val jr = convert(request)
+        val r = client.send(jr, BodyHandlers.ofInputStream())
+        return convert(request, r)
+    }
 
-	@Override
-	public void request(HttpRequest request, ResponseCallback callback) {
-		java.net.http.HttpRequest jr = convert(request);
-		client.sendAsync(jr, BodyHandlers.ofInputStream()).whenComplete((r, throwable) -> {
-			try {
-				HttpResponse response = convert(request, r);
+    override fun request(request: HttpRequest, callback: ResponseCallback) {
+        val jr = convert(request)
+        client.sendAsync(jr, BodyHandlers.ofInputStream()).whenComplete { r: java.net.http.HttpResponse<InputStream>, throwable: Throwable? ->
+            try {
+                val response = convert(request, r)
 
-				if (throwable != null) {
-					callback.onError(request, throwable);
-				}
-				else {
-					callback.onResponse(response);
-				}
-			}
-			catch (Throwable e) {
-				callback.onError(request, e);
-			}
-		});
-	}
+                if (throwable != null) {
+                    callback.onError(request, throwable)
+                } else {
+                    callback.onResponse(response)
+                }
+            } catch (e: Throwable) {
+                callback.onError(request, e)
+            }
+        }
+    }
 
-	public static class Builder extends HttpClient.Builder<JavaHttpClient, JavaHttpClient.Builder> {
+    class Builder : HttpClient.Builder<JavaHttpClient, Builder?>() {
+        protected var authenticator: Authenticator? = null
 
-		protected Authenticator authenticator;
+        fun authenticator(authenticator: Authenticator?): Builder {
+            this.authenticator = authenticator
+            return this
+        }
 
-		public Builder authenticator(Authenticator authenticator) {
-			this.authenticator = authenticator;
-			return this;
-		}
-
-		@Override
-		public Builder infiniteTimeout() {
-			return timeout(null, null, null, null);
-		}
+        override fun infiniteTimeout(): Builder? {
+            return timeout(null, null, null, null)
+        }
 
 
-		public JavaHttpClient build(Supplier<java.net.http.HttpClient.Builder> supplier) {
-			java.net.http.HttpClient.Builder builder = supplier.get();
+        fun build(supplier: Supplier<java.net.http.HttpClient.Builder>): JavaHttpClient {
+            val builder = supplier.get()
 
-			if (trustManager != null) {
-				SSLContext context = Https.sslContext(trustManager);
-				builder.sslContext(context);
-			}
+            if (trustManager != null) {
+                val context = Https.sslContext(trustManager!!)
+                builder.sslContext(context)
+            }
 
-			nonNull(connectTimeout, builder::connectTimeout);
-			nonNull(proxySelector, builder::proxy);
-			nonNull(executor, builder::executor);
-			nonNull(authenticator, builder::authenticator);
+            nonNull(connectTimeout, Consumer { duration: Duration? -> builder.connectTimeout(duration) })
+            nonNull(proxySelector, Consumer { proxySelector: ProxySelector? -> builder.proxy(proxySelector) })
+            nonNull(executor, Consumer { executor: ExecutorService? -> builder.executor(executor) })
+            nonNull(authenticator, Consumer { authenticator: Authenticator? -> builder.authenticator(authenticator) })
 
-			builder.followRedirects(redirects ? Redirect.ALWAYS : Redirect.NEVER);
+            builder.followRedirects(if (redirects) java.net.http.HttpClient.Redirect.ALWAYS else java.net.http.HttpClient.Redirect.NEVER)
 
-			if (cookie != null) {
-				builder.cookieHandler(new CookieManager(cookie, CookiePolicy.ACCEPT_ALL));
-			}
+            if (cookie != null) {
+                builder.cookieHandler(CookieManager(cookie, CookiePolicy.ACCEPT_ALL))
+            }
 
-			java.net.http.HttpClient delegate = builder.build();
-			return new JavaHttpClient(delegate);
-		}
+            val delegate = builder.build()
+            return JavaHttpClient(delegate)
+        }
 
-		@Override
-		protected JavaHttpClient doBuild() {
-			return build(java.net.http.HttpClient::newBuilder);
-		}
+        override fun doBuild(): JavaHttpClient {
+            return build { java.net.http.HttpClient.newBuilder() }
+        }
+    }
 
-	}
+    companion object {
+        fun convert(request: HttpRequest, r: java.net.http.HttpResponse<InputStream>): HttpResponse {
+            val code = r.statusCode()
+            val map = r.headers().map()
+            val headers: HttpHeaders = HttpHeaders.Companion.of(map)
+            val body = r.body()
+            return HttpResponse(request, code, headers, body)
+        }
 
+        fun convert(request: HttpRequest): java.net.http.HttpRequest {
+            val method = request.method()
+            val uri = request.uri()
+            val headers = request.headers()
+            val body = request.body()
+
+            val builder = java.net.http.HttpRequest.newBuilder().uri(uri)
+            val publisher = convert(method!!, body)
+            builder.method(method.name, publisher)
+            headers!!.each { k: String, v: String? ->
+                if (HttpClient.Companion.HEADERS_DISABLED.contains(k)) {
+                    return@each
+                }
+                builder.header(k, v)
+            }
+            return builder.build()
+        }
+
+        fun convert(method: HttpMethod, body: HttpRequest.Body?): BodyPublisher {
+            if (body == null || !method.allowBody()) {
+                return BodyPublishers.noBody()
+            }
+            val source = body.source()
+            if (source is MemoryBody) {
+                return BodyPublishers.ofByteArray(source.bytes())
+            }
+            return BodyPublishers.ofInputStream { source!!.openInput() }
+        }
+    }
 }

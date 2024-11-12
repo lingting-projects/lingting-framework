@@ -1,39 +1,22 @@
-package live.lingting.framework.multipart;
+package live.lingting.framework.multipart
 
 /**
  * @author lingting 2024-09-05 14:48
  */
-public class PartTask {
+class PartTask(val part: Part) {
 
-	final Part part;
+    var t: Throwable? = null
 
-	Throwable t;
+    var status: PartTaskStatus = PartTaskStatus.WAIT
 
-	PartTaskStatus status = PartTaskStatus.WAIT;
+    var retryCount: Long = 0L
 
-	long retryCount = 0L;
+    val isCompleted: Boolean
+        get() = isSuccessful || isFailed
 
-	public PartTask(Part part) {
-		this.part = part;
-	}
+    val isSuccessful: Boolean
+        get() = status == PartTaskStatus.SUCCESSFUL
 
-	public boolean isCompleted() {
-		return isSuccessful() || isFailed();
-	}
-
-	public boolean isSuccessful() {
-		return status == PartTaskStatus.SUCCESSFUL;
-	}
-
-	public boolean isFailed() {
-		return status == PartTaskStatus.FAILED;
-	}
-
-	public Part getPart() {return this.part;}
-
-	public Throwable getT() {return this.t;}
-
-	public PartTaskStatus getStatus() {return this.status;}
-
-	public long getRetryCount() {return this.retryCount;}
+    val isFailed: Boolean
+        get() = status == PartTaskStatus.FAILED
 }

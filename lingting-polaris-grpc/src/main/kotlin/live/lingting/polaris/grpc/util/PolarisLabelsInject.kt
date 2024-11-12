@@ -1,30 +1,25 @@
+package live.lingting.polaris.grpc.util
 
-package live.lingting.polaris.grpc.util;
-
-import com.tencent.polaris.api.pojo.RouteArgument;
-import com.tencent.polaris.ratelimit.api.rpc.Argument;
-
-import java.util.Set;
+import com.tencent.polaris.api.pojo.RouteArgument
+import com.tencent.polaris.ratelimit.api.rpc.Argument
 
 /**
  * PolarisLabelsInject 针对每次流量的用户自定义标签注入
  *
- * @author <a href="mailto:liaochuntao@live.com">liaochuntao</a>
+ * @author [liaochuntao](mailto:liaochuntao@live.com)
  */
-public interface PolarisLabelsInject {
+interface PolarisLabelsInject {
+    /**
+     * 注入本次流量的路由标签信息
+     * @param arguments [<]
+     * @return [<]
+     */
+    fun modifyRoute(arguments: Set<RouteArgument>): Set<RouteArgument>
 
-	/**
-	 * 注入本次流量的路由标签信息
-	 * @param arguments {@link Set<RouteArgument>}
-	 * @return {@link Set<RouteArgument>}
-	 */
-	Set<RouteArgument> modifyRoute(Set<RouteArgument> arguments);
-
-	/**
-	 * 注入本次流量的限流标签信息
-	 * @param arguments {@link Set<Argument>}
-	 * @return {@link Set<Argument>}
-	 */
-	Set<Argument> modifyRateLimit(Set<Argument> arguments);
-
+    /**
+     * 注入本次流量的限流标签信息
+     * @param arguments [<]
+     * @return [<]
+     */
+    fun modifyRateLimit(arguments: Set<Argument>): Set<Argument>
 }

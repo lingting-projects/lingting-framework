@@ -1,35 +1,23 @@
-package live.lingting.framework.elasticsearch.datascope;
+package live.lingting.framework.elasticsearch.datascope
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*
 
 /**
  * @author lingting 2023-06-27 11:06
  */
-public class DefaultElasticsearchDataPermissionHandler implements ElasticsearchDataPermissionHandler {
+open class DefaultElasticsearchDataPermissionHandler(protected val scopes: List<ElasticsearchDataScope>?) : ElasticsearchDataPermissionHandler {
+    override fun dataScopes(): List<ElasticsearchDataScope?> {
+        return if (scopes == null) emptyList<ElasticsearchDataScope>() else Collections.unmodifiableList(scopes)
+    }
 
-	protected final List<ElasticsearchDataScope> scopes;
+    override fun filterDataScopes(index: String?): List<ElasticsearchDataScope?> {
+        if (scopes == null) {
+            return emptyList<ElasticsearchDataScope>()
+        }
+        return dataScopes().stream().filter { scope: ElasticsearchDataScope? -> scope!!.includes(index) }.toList()
+    }
 
-	public DefaultElasticsearchDataPermissionHandler(List<ElasticsearchDataScope> scopes) {
-		this.scopes = scopes;
-	}
-
-	@Override
-	public List<ElasticsearchDataScope> dataScopes() {
-		return scopes == null ? Collections.emptyList() : Collections.unmodifiableList(scopes);
-	}
-
-	@Override
-	public List<ElasticsearchDataScope> filterDataScopes(String index) {
-		if (scopes == null) {
-			return Collections.emptyList();
-		}
-		return dataScopes().stream().filter(scope -> scope.includes(index)).toList();
-	}
-
-	@Override
-	public boolean ignorePermissionControl(String index) {
-		return false;
-	}
-
+    override fun ignorePermissionControl(index: String?): Boolean {
+        return false
+    }
 }

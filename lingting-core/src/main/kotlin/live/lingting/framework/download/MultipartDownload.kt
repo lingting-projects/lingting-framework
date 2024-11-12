@@ -1,170 +1,127 @@
-package live.lingting.framework.download;
+package live.lingting.framework.download
 
-import live.lingting.framework.exception.DownloadException;
-import live.lingting.framework.multipart.Multipart;
-import live.lingting.framework.multipart.Part;
-import live.lingting.framework.multipart.PartTask;
-import live.lingting.framework.thread.Async;
-import live.lingting.framework.util.FileUtils;
-import live.lingting.framework.util.ValueUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.time.Duration;
-import java.util.concurrent.ExecutorService;
-
-import static live.lingting.framework.download.DownloadStatus.COMPLETED;
-import static live.lingting.framework.download.DownloadStatus.RUNNING;
-import static live.lingting.framework.download.DownloadStatus.WAIT;
-import static live.lingting.framework.thread.Async.UNLIMITED;
-import static live.lingting.framework.util.ValueUtils.simpleUuid;
+import live.lingting.framework.exception.DownloadException
+import live.lingting.framework.multipart.Multipart
+import live.lingting.framework.multipart.Part
+import live.lingting.framework.thread.Async
+import live.lingting.framework.util.FileUtils
+import live.lingting.framework.util.ValueUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.io.File
+import java.io.InputStream
+import java.time.Duration
+import java.util.concurrent.ExecutorService
+import java.util.function.Supplier
 
 /**
  * @author lingting 2024-09-06 16:39
  */
-@SuppressWarnings({"unchecked", "java:S1181", "java:S112"})
-public abstract class MultipartDownload<D extends MultipartDownload<D>> implements Download {
+abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor(builder: DownloadBuilder<*>) : Download {
+    protected val log: Logger = LoggerFactory.getLogger(javaClass)
 
-	public static final File TEMP_DIR = FileUtils.createTempDir("download");
 
-	protected final Logger log = LoggerFactory.getLogger(getClass());
+    val url: String = builder.url
 
-	protected final String url;
+    /**
+     * 文件大小. 不知道就写null. 为null或小于1时会调用 [MultipartDownload.size] 方法获取
+     */
+    val size: Long? = builder.size
 
-	/**
-	 * 文件大小. 不知道就写null. 为null或小于1时会调用 {@link MultipartDownload#size()} 方法获取
-	 */
-	protected final Long size;
+    /**
+     * 是否存在多个分片.
+     */
+    val isMulti: Boolean = builder.isMulti
 
-	/**
-	 * 是否存在多个分片.
-	 */
-	protected final boolean multi;
+    val threadLimit: Long = builder.threadLimit.toLong()
 
-	protected final long threadLimit;
+    val partSize: Long = builder.partSize
 
-	protected final long partSize;
+    val maxRetryCount: Long = builder.maxRetryCount
 
-	protected final long maxRetryCount;
+    val timeout: Duration? = builder.timeout
 
-	protected final Duration timeout;
+    protected val executor: ExecutorService = builder.executor
 
-	protected final ExecutorService executor;
+    protected val id: String = ValueUtils.simpleUuid()
 
-	protected final String id;
+    var downloadStatus: DownloadStatus = DownloadStatus.WAIT
+        protected set
 
-	protected DownloadStatus downloadStatus = WAIT;
+    var ex: DownloadException? = null
+        protected set
 
-	protected DownloadException ex = null;
 
-	protected File file;
+    override val file = FileUtils.createTemp(id, TEMP_DIR)
 
-	protected MultipartDownload(DownloadBuilder<?> builder) throws IOException {
-		this.url = builder.url;
-		this.size = builder.size;
-		this.multi = builder.multi;
-		this.threadLimit = builder.threadLimit;
-		this.partSize = builder.partSize;
-		this.maxRetryCount = builder.maxRetryCount;
-		this.timeout = builder.timeout;
-		this.executor = builder.executor;
-		this.id = simpleUuid();
-		this.file = FileUtils.createTemp(id, TEMP_DIR);
-	}
+    @kotlin.jvm.Synchronized
+    override fun start(): Download {
+        if (!isStart && !isFinished) {
+            downloadStatus = DownloadStatus.RUNNING
+            doStart()
+        }
+        return this as D
+    }
 
-	@Override
-	public synchronized D start() {
-		if (!isStart() && !isFinished()) {
-			downloadStatus = RUNNING;
-			doStart();
-		}
-		return (D) this;
-	}
+    protected fun doStart() {
+        val async = if (threadLimit == Async.UNLIMITED) Async() else Async(threadLimit + 1)
+        async.submit("download-$id") {
+            try {
+                val fileSize = if (size == null || size < 1) size() else size
+                val multipart: Multipart = Multipart.builder()
+                    .id(id)
+                    .size(fileSize) // 不使用多分配下载时, 只设置一个分片
+                    .partSize(if (isMulti) partSize else fileSize)
+                    .build()
+                val task = DownloadFileMultipartTask(
+                    multipart, maxRetryCount, async, file
+                ) { part -> download(part) }
+                task.start().await(timeout)
+                if (task.hasFailed()) {
+                    val t = task.tasksFailed()[0]
+                    throw t.t!!
+                }
+            } catch (e: Throwable) {
+                ex = DownloadException("download start error!", e)
+            } finally {
+                downloadStatus = DownloadStatus.COMPLETED
+            }
+        }
+    }
 
-	protected void doStart() {
-		Async async = threadLimit == UNLIMITED ? new Async() : new Async(threadLimit + 1);
-		async.submit("download-" + id, () -> {
-			try {
-				long fileSize = size == null || size < 1 ? size() : size;
-				Multipart multipart = Multipart.builder()
-					.id(id)
-					.size(fileSize)
-					// 不使用多分配下载时, 只设置一个分片
-					.partSize(multi ? partSize : fileSize)
-					.build();
-				DownloadFileMultipartTask task = new DownloadFileMultipartTask(multipart, maxRetryCount, async, file,
-					this::download);
-				task.start().await(timeout);
-				if (task.hasFailed()) {
-					PartTask t = task.tasksFailed().get(0);
-					throw t.getT();
-				}
-			}
-			catch (Throwable e) {
-				ex = new DownloadException("download start error!", e);
-			}
-			finally {
-				downloadStatus = COMPLETED;
-			}
-		});
-	}
+    override fun await(): Download {
+        check(isStart) { "download not start!" }
 
-	@Override
-	public D await() {
-		if (!isStart()) {
-			throw new IllegalStateException("download not start!");
-		}
+        ValueUtils.awaitTrue(Supplier<Boolean> { this.isFinished })
+        return this as D
+    }
 
-		ValueUtils.awaitTrue(this::isFinished);
-		return (D) this;
-	}
+    override val isStart: Boolean
+        get() = downloadStatus != DownloadStatus.WAIT
 
-	@Override
-	public boolean isStart() {
-		return downloadStatus != WAIT;
-	}
+    override val isFinished: Boolean
+        get() = downloadStatus == DownloadStatus.COMPLETED
 
-	@Override
-	public boolean isFinished() {
-		return downloadStatus == COMPLETED;
-	}
+    override val isSuccess: Boolean
+        get() = isFinished && ex == null
 
-	@Override
-	public boolean isSuccess() {
-		return isFinished() && ex == null;
-	}
 
-	@Override
-	public File getFile() throws DownloadException {
-		await();
-		if (ex != null) {
-			throw ex;
-		}
-		return file;
-	}
+    fun getFile(): File {
+        await()
+        val te = ex
+        if (te != null) {
+            throw te
+        }
+        return file
+    }
 
-	public abstract long size() throws IOException;
 
-	public abstract InputStream download(Part part) throws Throwable;
+    abstract fun size(): Long
 
-	public String getUrl() {return this.url;}
 
-	public Long getSize() {return this.size;}
+    abstract fun download(part: Part): InputStream
 
-	public boolean isMulti() {return this.multi;}
-
-	public long getThreadLimit() {return this.threadLimit;}
-
-	public long getPartSize() {return this.partSize;}
-
-	public long getMaxRetryCount() {return this.maxRetryCount;}
-
-	public Duration getTimeout() {return this.timeout;}
-
-	public DownloadStatus getDownloadStatus() {return this.downloadStatus;}
-
-	public DownloadException getEx() {return this.ex;}
+    companion object {
+        val TEMP_DIR: File = FileUtils.createTempDir("download")
+    }
 }

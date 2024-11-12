@@ -1,273 +1,270 @@
-package live.lingting.framework;
+package live.lingting.framework
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
+import java.util.regex.Pattern
+import kotlin.math.max
 
 /**
  * 生成 markdown 文本
  *
  * @author lingting 2020/6/10 22:43
  */
-public class MarkdownBuilder {
+class MarkdownBuilder {
+    /**
+     * 存放内容
+     */
+    protected val content: MutableList<String> = ArrayList()
 
-	public static final String TITLE_PREFIX = "#";
+    /**
+     * 当前操作行文本
+     */
+    protected var lineTextBuilder: StringBuilder
 
-	public static final String QUOTE_PREFIX = "> ";
+    init {
+        this.lineTextBuilder = StringBuilder()
+    }
 
-	public static final String CODE_PREFIX = "``` ";
+    /**
+     * 添加自定义内容
+     * @param content 自定义内容
+     */
+    fun append(content: Any?): MarkdownBuilder {
+        lineTextBuilder.append(toString(content))
+        return this
+    }
 
-	public static final String CODE_SUFFIX = "```";
+    /**
+     * 有序列表 自动生成 索引
+     * @param content 文本
+     */
+    fun orderList(content: Any?): MarkdownBuilder {
+        // 获取最后一个字符串
+        var tmp = ""
+        if (!this.content.isEmpty()) {
+            tmp = this.content[this.content.size - 1]
+        }
+        // 索引
+        var index = 1
 
-	public static final String BOLD_PREFIX = "**";
+        // 校验 是否 为有序列表行的正则
+        val isOrderListPattern = "^\\d\\. .*"
+        if (Pattern.matches(isOrderListPattern, tmp)) {
+            // 如果是数字开头
+            val substring: String = tmp.substring(0, tmp.indexOf(ORDER_LIST_PREFIX) - 1)
+            index = substring.toInt()
+        }
+        return orderList(index, content)
+    }
 
-	public static final String ITALIC_PREFIX = "*";
+    /**
+     * 有序列表
+     * @param index 索引
+     * @param content 文本
+     */
+    fun orderList(index: Int, content: Any?): MarkdownBuilder {
+        lineBreak()
+        lineTextBuilder.append(index).append(ORDER_LIST_PREFIX).append(toString(content))
+        return this
+    }
 
-	public static final String UNORDERED_LIST_PREFIX = "- ";
+    /**
+     * 无序列表 - item1 - item2
+     */
+    fun unorderedList(content: Any?): MarkdownBuilder {
+        // 换行
+        lineBreak()
+        lineTextBuilder.append(UNORDERED_LIST_PREFIX).append(toString(content))
+        return this
+    }
 
-	public static final String ORDER_LIST_PREFIX = ". ";
+    /**
+     * 图片
+     * @param url 图片链接
+     */
+    fun pic(url: String?): MarkdownBuilder {
+        return pic("", url)
+    }
 
-	public static final String CODE_SIMPLE_PREFIX = "`";
+    /**
+     * 图片
+     * @param title 图片标题
+     * @param url 图片路径
+     */
+    fun pic(title: Any?, url: String?): MarkdownBuilder {
+        lineTextBuilder.append("![").append(title).append("](").append(url).append(")")
+        return this
+    }
 
-	/**
-	 * 存放内容
-	 */
-	protected final List<String> content = new ArrayList<>();
+    /**
+     * 链接
+     * @param title 标题
+     * @param url http 路径
+     */
+    fun link(title: Any?, url: String?): MarkdownBuilder {
+        lineTextBuilder.append("[").append(title).append("](").append(url).append(")")
+        return this
+    }
 
-	/**
-	 * 当前操作行文本
-	 */
-	protected StringBuilder lineTextBuilder;
+    /**
+     * 斜体
+     */
+    fun italic(content: Any?): MarkdownBuilder {
+        lineTextBuilder.append(ITALIC_PREFIX).append(toString(content)).append(ITALIC_PREFIX)
+        return this
+    }
 
-	public MarkdownBuilder() {
-		this.lineTextBuilder = new StringBuilder();
-	}
+    /**
+     * 加粗
+     */
+    fun bold(content: Any?): MarkdownBuilder {
+        lineTextBuilder.append(BOLD_PREFIX).append(toString(content)).append(BOLD_PREFIX)
+        return this
+    }
 
-	/**
-	 * 添加自定义内容
-	 * @param content 自定义内容
-	 */
-	public MarkdownBuilder append(Object content) {
-		lineTextBuilder.append(toString(content));
-		return this;
-	}
+    /**
+     * 引用 > 文本
+     * @param content 文本
+     */
+    fun quote(vararg content: Any?): MarkdownBuilder {
+        lineBreak()
+        lineTextBuilder.append(QUOTE_PREFIX)
+        for (o in content) {
+            lineTextBuilder.append(toString(o))
+        }
+        return this
+    }
 
-	/**
-	 * 有序列表 自动生成 索引
-	 * @param content 文本
-	 */
-	public MarkdownBuilder orderList(Object content) {
-		// 获取最后一个字符串
-		String tmp = "";
-		if (!this.content.isEmpty()) {
-			tmp = this.content.get(this.content.size() - 1);
-		}
-		// 索引
-		int index = 1;
+    /**
+     * 添加引用后, 换行, 写入下一行引用
+     */
+    fun quoteBreak(vararg content: Any?): MarkdownBuilder {
+        // 当前行引用内容
+        quote(*content)
+        // 空引用行
+        return quote()
+    }
 
-		// 校验 是否 为有序列表行的正则
-		String isOrderListPattern = "^\\d\\. .*";
-		if (Pattern.matches(isOrderListPattern, tmp)) {
-			// 如果是数字开头
-			String substring = tmp.substring(0, tmp.indexOf(ORDER_LIST_PREFIX) - 1);
-			index = Integer.parseInt(substring);
-		}
-		return orderList(index, content);
-	}
+    /**
+     * 代码
+     */
+    fun code(type: String?, vararg code: Any?): MarkdownBuilder {
+        lineBreak()
+        lineTextBuilder.append(CODE_PREFIX).append(type)
+        lineBreak()
+        for (o in code) {
+            lineTextBuilder.append(toString(o))
+        }
+        lineBreak()
+        lineTextBuilder.append(CODE_SUFFIX)
+        return lineBreak()
+    }
 
-	/**
-	 * 有序列表
-	 * @param index 索引
-	 * @param content 文本
-	 */
-	public MarkdownBuilder orderList(int index, Object content) {
-		lineBreak();
-		lineTextBuilder.append(index).append(ORDER_LIST_PREFIX).append(toString(content));
-		return this;
-	}
+    /**
+     * 代码
+     */
+    fun json(json: String): MarkdownBuilder {
+        return code("json", json)
+    }
 
-	/**
-	 * 无序列表 - item1 - item2
-	 */
-	public MarkdownBuilder unorderedList(Object content) {
-		// 换行
-		lineBreak();
-		lineTextBuilder.append(UNORDERED_LIST_PREFIX).append(toString(content));
-		return this;
-	}
+    fun simpleCode(content: Any?): MarkdownBuilder {
+        return append(CODE_SIMPLE_PREFIX).append(content).append(CODE_SIMPLE_PREFIX)
+    }
 
-	/**
-	 * 图片
-	 * @param url 图片链接
-	 */
-	public MarkdownBuilder pic(String url) {
-		return pic("", url);
-	}
+    /**
+     * 强制换行
+     */
+    fun forceLineBreak(): MarkdownBuilder {
+        content.add(lineTextBuilder.toString())
+        lineTextBuilder = StringBuilder()
+        return this
+    }
 
-	/**
-	 * 图片
-	 * @param title 图片标题
-	 * @param url 图片路径
-	 */
-	public MarkdownBuilder pic(Object title, String url) {
-		lineTextBuilder.append("![").append(title).append("](").append(url).append(")");
-		return this;
-	}
+    /**
+     * 换行 当已编辑文本长度不为0时换行
+     */
+    fun lineBreak(): MarkdownBuilder {
+        if (!lineTextBuilder.isEmpty()) {
+            return forceLineBreak()
+        }
+        return this
+    }
 
-	/**
-	 * 链接
-	 * @param title 标题
-	 * @param url http 路径
-	 */
-	public MarkdownBuilder link(Object title, String url) {
-		lineTextBuilder.append("[").append(title).append("](").append(url).append(")");
-		return this;
-	}
+    /**
+     * 生成 i 级标题
+     *
+     * @author lingting 2020-06-10 22:55:39
+     */
+    protected fun title(i: Int, content: Any?): MarkdownBuilder {
+        // 如果当前操作行已有字符，需要换行
+        lineBreak()
+        lineTextBuilder.append(TITLE_PREFIX.repeat(max(0, i)))
+        this.content.add(lineTextBuilder.append(" ").append(toString(content)).toString())
+        lineTextBuilder = StringBuilder()
+        return this
+    }
 
-	/**
-	 * 斜体
-	 */
-	public MarkdownBuilder italic(Object content) {
-		lineTextBuilder.append(ITALIC_PREFIX).append(toString(content)).append(ITALIC_PREFIX);
-		return this;
-	}
+    fun title1(text: Any?): MarkdownBuilder {
+        return title(1, text)
+    }
 
-	/**
-	 * 加粗
-	 */
-	public MarkdownBuilder bold(Object content) {
-		lineTextBuilder.append(BOLD_PREFIX).append(toString(content)).append(BOLD_PREFIX);
-		return this;
-	}
+    fun title2(text: Any?): MarkdownBuilder {
+        return title(2, text)
+    }
 
-	/**
-	 * 引用 > 文本
-	 * @param content 文本
-	 */
-	public MarkdownBuilder quote(Object... content) {
-		lineBreak();
-		lineTextBuilder.append(QUOTE_PREFIX);
-		for (Object o : content) {
-			lineTextBuilder.append(toString(o));
-		}
-		return this;
-	}
+    fun title3(text: Any?): MarkdownBuilder {
+        return title(3, text)
+    }
 
-	/**
-	 * 添加引用后, 换行, 写入下一行引用
-	 */
-	public MarkdownBuilder quoteBreak(Object... content) {
-		// 当前行引用内容
-		quote(content);
-		// 空引用行
-		return quote();
-	}
+    fun title4(text: Any?): MarkdownBuilder {
+        return title(4, text)
+    }
 
-	/**
-	 * 代码
-	 */
-	public MarkdownBuilder code(String type, Object... code) {
-		lineBreak();
-		lineTextBuilder.append(CODE_PREFIX).append(type);
-		lineBreak();
-		for (Object o : code) {
-			lineTextBuilder.append(toString(o));
-		}
-		lineBreak();
-		lineTextBuilder.append(CODE_SUFFIX);
-		return lineBreak();
-	}
+    fun title5(text: Any?): MarkdownBuilder {
+        return title(5, text)
+    }
 
-	/**
-	 * 代码
-	 */
-	public MarkdownBuilder json(String json) {
-		return code("json", json);
-	}
+    fun toString(o: Any?): String {
+        if (o == null) {
+            return ""
+        }
+        return o.toString()
+    }
 
-	public MarkdownBuilder simpleCode(Object content) {
-		return append(CODE_SIMPLE_PREFIX).append(content).append(CODE_SIMPLE_PREFIX);
-	}
+    override fun toString(): String {
+        return build()
+    }
 
-	/**
-	 * 强制换行
-	 */
-	public MarkdownBuilder forceLineBreak() {
-		content.add(lineTextBuilder.toString());
-		lineTextBuilder = new StringBuilder();
-		return this;
-	}
+    fun lines(): Int {
+        val size = content.size
+        return if (lineTextBuilder.isEmpty()) size else size + 1
+    }
 
-	/**
-	 * 换行 当已编辑文本长度不为0时换行
-	 */
-	public MarkdownBuilder lineBreak() {
-		if (!lineTextBuilder.isEmpty()) {
-			return forceLineBreak();
-		}
-		return this;
-	}
+    /**
+     * 构筑 Markdown 文本
+     */
+    fun build(): String {
+        lineBreak()
+        val res = StringBuilder()
+        content.forEach { line: String? -> res.append(line).append(" \n") }
+        return res.toString()
+    }
 
-	/**
-	 * 生成 i 级标题
-	 *
-	 * @author lingting 2020-06-10 22:55:39
-	 */
-	protected MarkdownBuilder title(int i, Object content) {
-		// 如果当前操作行已有字符，需要换行
-		lineBreak();
-		lineTextBuilder.append(TITLE_PREFIX.repeat(Math.max(0, i)));
-		this.content.add(lineTextBuilder.append(" ").append(toString(content)).toString());
-		lineTextBuilder = new StringBuilder();
-		return this;
-	}
+    companion object {
+        const val TITLE_PREFIX: String = "#"
 
-	public MarkdownBuilder title1(Object text) {
-		return title(1, text);
-	}
+        const val QUOTE_PREFIX: String = "> "
 
-	public MarkdownBuilder title2(Object text) {
-		return title(2, text);
-	}
+        const val CODE_PREFIX: String = "``` "
 
-	public MarkdownBuilder title3(Object text) {
-		return title(3, text);
-	}
+        const val CODE_SUFFIX: String = "```"
 
-	public MarkdownBuilder title4(Object text) {
-		return title(4, text);
-	}
+        const val BOLD_PREFIX: String = "**"
 
-	public MarkdownBuilder title5(Object text) {
-		return title(5, text);
-	}
+        const val ITALIC_PREFIX: String = "*"
 
-	String toString(Object o) {
-		if (o == null) {
-			return "";
+        const val UNORDERED_LIST_PREFIX: String = "- "
 
-		}
-		return o.toString();
-	}
+        const val ORDER_LIST_PREFIX: String = ". "
 
-	@Override
-	public String toString() {
-		return build();
-	}
-
-	public int lines() {
-		int size = content.size();
-		return lineTextBuilder.isEmpty() ? size : size + 1;
-	}
-
-	/**
-	 * 构筑 Markdown 文本
-	 */
-	public String build() {
-		lineBreak();
-		StringBuilder res = new StringBuilder();
-		content.forEach(line -> res.append(line).append(" \n"));
-		return res.toString();
-	}
-
+        const val CODE_SIMPLE_PREFIX: String = "`"
+    }
 }

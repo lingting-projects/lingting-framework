@@ -1,34 +1,22 @@
-package live.lingting.framework.security.resolver;
+package live.lingting.framework.security.resolver
 
-import live.lingting.framework.Sequence;
-import live.lingting.framework.security.domain.SecurityScope;
-import live.lingting.framework.security.domain.SecurityToken;
-import live.lingting.framework.security.store.SecurityStore;
+import live.lingting.framework.Sequence
+import live.lingting.framework.security.domain.SecurityScope
+import live.lingting.framework.security.domain.SecurityToken
+import live.lingting.framework.security.store.SecurityStore
 
 /**
  * @author lingting 2024-05-27 16:36
  */
-public class SecurityTokenDefaultResolver implements SecurityTokenResolver, Sequence {
+class SecurityTokenDefaultResolver(private val store: SecurityStore) : SecurityTokenResolver, Sequence {
+    override fun isSupport(token: SecurityToken?): Boolean {
+        return true
+    }
 
-	private final SecurityStore store;
+    override fun resolver(token: SecurityToken): SecurityScope? {
+        return store[token.token]
+    }
 
-	public SecurityTokenDefaultResolver(SecurityStore store) {
-		this.store = store;
-	}
-
-	@Override
-	public boolean isSupport(SecurityToken token) {
-		return true;
-	}
-
-	@Override
-	public SecurityScope resolver(SecurityToken token) {
-		return store.get(token.getToken());
-	}
-
-	@Override
-	public int getSequence() {
-		return Integer.MAX_VALUE;
-	}
-
+    override val sequence: Int
+        get() = Int.MAX_VALUE
 }

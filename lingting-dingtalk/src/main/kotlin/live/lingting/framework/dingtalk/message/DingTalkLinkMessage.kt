@@ -1,70 +1,62 @@
-package live.lingting.framework.dingtalk.message;
+package live.lingting.framework.dingtalk.message
 
-import live.lingting.framework.dingtalk.DingTalkParams;
-import live.lingting.framework.dingtalk.enums.MessageTypeEnum;
+import live.lingting.framework.dingtalk.DingTalkParams
+import live.lingting.framework.dingtalk.enums.MessageTypeEnum
 
 /**
  * @author lingting 2020/6/10 22:13
  */
+class DingTalkLinkMessage : AbstractDingTalkMessage() {
+    /**
+     * 文本
+     */
+    var text: String? = null
+        private set
 
-public class DingTalkLinkMessage extends AbstractDingTalkMessage {
+    /**
+     * 标题
+     */
+    var title: String? = null
+        private set
 
-	/**
-	 * 文本
-	 */
-	private String text;
+    /**
+     * 图片url
+     */
+    var picUrl: String? = null
+        private set
 
-	/**
-	 * 标题
-	 */
-	private String title;
+    /**
+     * 消息链接
+     */
+    var messageUrl: String? = null
+        private set
 
-	/**
-	 * 图片url
-	 */
-	private String picUrl;
+    override val type: MessageTypeEnum
+        get() = MessageTypeEnum.LINK
 
-	/**
-	 * 消息链接
-	 */
-	private String messageUrl;
+    override fun put(params: DingTalkParams): DingTalkParams {
+        return params.setLink(
+            DingTalkParams.Link().setText(text).setTitle(title).setPicUrl(picUrl).setMessageUrl(messageUrl)
+        )
+    }
 
-	@Override
-	public MessageTypeEnum getType() {
-		return MessageTypeEnum.LINK;
-	}
+    fun setText(text: String?): DingTalkLinkMessage {
+        this.text = text
+        return this
+    }
 
-	@Override
-	public DingTalkParams put(DingTalkParams params) {
-		return params.setLink(
-			new DingTalkParams.Link().setText(text).setTitle(title).setPicUrl(picUrl).setMessageUrl(messageUrl));
-	}
+    fun setTitle(title: String?): DingTalkLinkMessage {
+        this.title = title
+        return this
+    }
 
-	public String getText() {return this.text;}
+    fun setPicUrl(picUrl: String?): DingTalkLinkMessage {
+        this.picUrl = picUrl
+        return this
+    }
 
-	public String getTitle() {return this.title;}
-
-	public String getPicUrl() {return this.picUrl;}
-
-	public String getMessageUrl() {return this.messageUrl;}
-
-	public DingTalkLinkMessage setText(String text) {
-		this.text = text;
-		return this;
-	}
-
-	public DingTalkLinkMessage setTitle(String title) {
-		this.title = title;
-		return this;
-	}
-
-	public DingTalkLinkMessage setPicUrl(String picUrl) {
-		this.picUrl = picUrl;
-		return this;
-	}
-
-	public DingTalkLinkMessage setMessageUrl(String messageUrl) {
-		this.messageUrl = messageUrl;
-		return this;
-	}
+    fun setMessageUrl(messageUrl: String?): DingTalkLinkMessage {
+        this.messageUrl = messageUrl
+        return this
+    }
 }

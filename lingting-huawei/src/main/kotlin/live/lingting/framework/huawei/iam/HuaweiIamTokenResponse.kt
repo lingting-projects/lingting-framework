@@ -1,43 +1,26 @@
-package live.lingting.framework.huawei.iam;
+package live.lingting.framework.huawei.iam
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
  * @author lingting 2024-09-13 11:52
  */
-public class HuaweiIamTokenResponse {
+class HuaweiIamTokenResponse {
+    var token: Token? = null
 
-	private Token token;
+    val expire: String?
+        get() = token!!.expire
 
-	public String getExpire() {
-		return getToken().getExpire();
-	}
+    val issued: String?
+        get() = token!!.issued
 
-	public String getIssued() {
-		return getToken().getIssued();
-	}
+    class Token {
+        @set:JsonProperty("expires_at")
+        @JsonProperty("expires_at")
+        var expire: String? = null
 
-	public Token getToken() {return this.token;}
-
-	public void setToken(Token token) {this.token = token;}
-
-	public static class Token {
-
-		@JsonProperty("expires_at")
-		private String expire;
-
-		@JsonProperty("issued_at")
-		private String issued;
-
-		public String getExpire() {return this.expire;}
-
-		public String getIssued() {return this.issued;}
-
-		@JsonProperty("expires_at")
-		public void setExpire(String expire) {this.expire = expire;}
-
-		@JsonProperty("issued_at")
-		public void setIssued(String issued) {this.issued = issued;}
-	}
-
+        @set:JsonProperty("issued_at")
+        @JsonProperty("issued_at")
+        var issued: String? = null
+    }
 }

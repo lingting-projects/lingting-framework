@@ -1,48 +1,38 @@
-package live.lingting.framework.huawei;
+package live.lingting.framework.huawei
 
-import live.lingting.framework.aws.policy.Statement;
-import live.lingting.framework.util.CollectionUtils;
-
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
+import live.lingting.framework.aws.policy.Statement
+import live.lingting.framework.util.CollectionUtils
+import live.lingting.framework.value.MultiValue.put
 
 /**
  * @author lingting 2024-09-13 13:47
  */
-public class HuaweiStatement extends Statement {
+class HuaweiStatement(allow: Boolean) : Statement(allow) {
+    val conditions: LinkedHashMap<String?, LinkedHashMap<String, LinkedHashSet<String>>?> = LinkedHashMap()
 
-	protected final LinkedHashMap<String, LinkedHashMap<String, LinkedHashSet<String>>> conditions = new LinkedHashMap<>();
+    fun putCondition(operator: String?, value: Map<String, Collection<String>?>) {
+        val map = LinkedHashMap<String, LinkedHashSet<String>>()
+        for ((key, value1) in value) {
+            map[key] = LinkedHashSet(value1)
+        }
+        conditions[operator] = map
+    }
 
-	public HuaweiStatement(boolean allow) {
-		super(allow);
-	}
+    override fun map(): Map<String, Any>? {
+        val map = super.map()
+        if (!CollectionUtils.isEmpty(conditions)) {
+            map.put("Condition", conditions)
+        }
+        return map
+    }
 
-	public static HuaweiStatement allow() {
-		return new HuaweiStatement(true);
-	}
+    companion object {
+        fun allow(): HuaweiStatement {
+            return HuaweiStatement(true)
+        }
 
-	public static HuaweiStatement deny() {
-		return new HuaweiStatement(false);
-	}
-
-	public void putCondition(String operator, Map<String, Collection<String>> value) {
-		LinkedHashMap<String, LinkedHashSet<String>> map = new LinkedHashMap<>();
-		for (Map.Entry<String, Collection<String>> entry : value.entrySet()) {
-			map.put(entry.getKey(), new LinkedHashSet<>(entry.getValue()));
-		}
-		conditions.put(operator, map);
-	}
-
-	@Override
-	public Map<String, Object> map() {
-		Map<String, Object> map = super.map();
-		if (!CollectionUtils.isEmpty(conditions)) {
-			map.put("Condition", conditions);
-		}
-		return map;
-	}
-
-	public LinkedHashMap<String, LinkedHashMap<String, LinkedHashSet<String>>> getConditions() {return this.conditions;}
+        fun deny(): HuaweiStatement {
+            return HuaweiStatement(false)
+        }
+    }
 }

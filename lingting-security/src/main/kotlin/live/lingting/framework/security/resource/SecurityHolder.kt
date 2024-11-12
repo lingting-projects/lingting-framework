@@ -1,71 +1,72 @@
-package live.lingting.framework.security.resource;
+package live.lingting.framework.security.resource
 
-import live.lingting.framework.security.domain.SecurityScope;
-import live.lingting.framework.thread.StackThreadLocal;
-
-import java.util.Collections;
-import java.util.Optional;
-import java.util.Set;
+import live.lingting.framework.security.domain.SecurityScope
+import live.lingting.framework.thread.StackThreadLocal
+import java.util.*
 
 /**
  * @author lingting 2023-03-29 20:29
  */
-public final class SecurityHolder {
+class SecurityHolder private constructor() {
+    init {
+        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+    }
 
-	static final StackThreadLocal<SecurityScope> LOCAL = new StackThreadLocal<>();
+    companion object {
+        val LOCAL: StackThreadLocal<SecurityScope> = StackThreadLocal()
 
-	private SecurityHolder() {throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");}
+        fun put(scope: SecurityScope) {
+            LOCAL.put(scope)
+        }
 
-	public static void put(SecurityScope scope) {
-		LOCAL.put(scope);
-	}
+        fun pop() {
+            LOCAL.pop()
+        }
 
-	public static void pop() {
-		LOCAL.pop();
-	}
+        fun get(): SecurityScope? {
+            return scope()
+        }
 
-	public static SecurityScope get() {
-		return scope();
-	}
+        fun option(): Optional<SecurityScope> {
+            return scopeOption()
+        }
 
-	public static Optional<SecurityScope> option() {
-		return scopeOption();
-	}
+        @JvmStatic
+        fun scope(): SecurityScope? {
+            return LOCAL.get()
+        }
 
-	public static SecurityScope scope() {
-		return LOCAL.get();
-	}
+        fun scopeOption(): Optional<SecurityScope> {
+            return Optional.ofNullable(scope())
+        }
 
-	public static Optional<SecurityScope> scopeOption() {
-		return Optional.ofNullable(scope());
-	}
+        @JvmStatic
+        fun token(): String {
+            return scopeOption().map { obj: SecurityScope -> obj.token }.orElse("")
+        }
 
-	public static String token() {
-		return scopeOption().map(SecurityScope::getToken).orElse("");
-	}
+        fun userId(): String? {
+            return scopeOption().map { obj: SecurityScope -> obj.userId }.orElse(null)
+        }
 
-	public static String userId() {
-		return scopeOption().map(SecurityScope::getUserId).orElse(null);
-	}
+        fun tenantId(): String? {
+            return scopeOption().map { obj: SecurityScope -> obj.tenantId }.orElse(null)
+        }
 
-	public static String tenantId() {
-		return scopeOption().map(SecurityScope::getTenantId).orElse(null);
-	}
+        fun username(): String {
+            return scopeOption().map { obj: SecurityScope -> obj.username }.orElse("")
+        }
 
-	public static String username() {
-		return scopeOption().map(SecurityScope::getUsername).orElse("");
-	}
+        fun password(): String {
+            return scopeOption().map { obj: SecurityScope -> obj.password }.orElse("")
+        }
 
-	public static String password() {
-		return scopeOption().map(SecurityScope::getPassword).orElse("");
-	}
+        fun roles(): Set<String?> {
+            return scopeOption().map { obj: SecurityScope -> obj.roles }.orElse(emptySet<String>())
+        }
 
-	public static Set<String> roles() {
-		return scopeOption().map(SecurityScope::getRoles).orElse(Collections.emptySet());
-	}
-
-	public static Set<String> permissions() {
-		return scopeOption().map(SecurityScope::getPermissions).orElse(Collections.emptySet());
-	}
-
+        fun permissions(): Set<String?> {
+            return scopeOption().map { obj: SecurityScope -> obj.permissions }.orElse(emptySet<String>())
+        }
+    }
 }

@@ -1,63 +1,58 @@
-package live.lingting.framework.jackson.module;
+package live.lingting.framework.jackson.module
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import live.lingting.framework.api.R;
-import live.lingting.framework.jackson.JacksonUtils;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import com.fasterxml.jackson.core.type.TypeReference
+import live.lingting.framework.api.R
+import live.lingting.framework.jackson.JacksonUtils
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 /**
  * @author lingting 2023-09-27 11:33
  */
-class RModuleTest {
+internal class RModuleTest {
+    @Test
+    fun test() {
+        val entity = REntity().setP1("p1").setP2("p2")
+        val r = R.ok(entity)
+        val json = JacksonUtils.toJson(r)
+        println(json)
+        Assertions.assertEquals("{\"code\":200,\"data\":{\"p1\":\"p1\",\"p2\":\"p2\"},\"message\":\"Success\"}", json)
+        val reference: TypeReference<R<REntity>> = object : TypeReference<R<REntity?>?>() {
+        }
 
-	@Test
-	void test() {
-		REntity entity = new REntity().setP1("p1").setP2("p2");
-		R<REntity> r = R.ok(entity);
-		String json = JacksonUtils.toJson(r);
-		System.out.println(json);
-		Assertions.assertEquals("{\"code\":200,\"data\":{\"p1\":\"p1\",\"p2\":\"p2\"},\"message\":\"Success\"}", json);
-		TypeReference<R<REntity>> reference = new TypeReference<>() {
-		};
+        val o1 = JacksonUtils
+            .toObj("{\"code\":200,\"data\":{\"p1\":\"p1\",\"p2\":\"p2\"},\"message\":\"Success\"}", reference)
+        println(o1)
+        Assertions.assertEquals(200, o1.code)
+        Assertions.assertEquals("p1", o1.data!!.p1)
 
-		R<REntity> o1 = JacksonUtils
-			.toObj("{\"code\":200,\"data\":{\"p1\":\"p1\",\"p2\":\"p2\"},\"message\":\"Success\"}", reference);
-		System.out.println(o1);
-		Assertions.assertEquals(200, o1.code());
-		Assertions.assertEquals("p1", o1.data().getP1());
+        val o2 = JacksonUtils.toObj("{\"code\":200,\"data\": null,\"message\":\"Success\"}", reference)
+        println(o2)
+        Assertions.assertEquals(200, o2.code)
+        Assertions.assertNull(o2.data)
 
-		R<REntity> o2 = JacksonUtils.toObj("{\"code\":200,\"data\": null,\"message\":\"Success\"}", reference);
-		System.out.println(o2);
-		Assertions.assertEquals(200, o2.code());
-		Assertions.assertNull(o2.data());
-
-		R<REntity> o3 = JacksonUtils.toObj("{\"code\":200,\"message\":\"Success\"}", reference);
-		System.out.println(o3);
-		Assertions.assertEquals(200, o3.code());
-		Assertions.assertNull(o3.data());
-	}
+        val o3 = JacksonUtils.toObj("{\"code\":200,\"message\":\"Success\"}", reference)
+        println(o3)
+        Assertions.assertEquals(200, o3.code)
+        Assertions.assertNull(o3.data)
+    }
 
 
-	static class REntity {
+    internal class REntity {
+        var p1: String? = null
+            private set
 
-		private String p1;
+        var p2: String? = null
+            private set
 
-		private String p2;
+        fun setP1(p1: String?): REntity {
+            this.p1 = p1
+            return this
+        }
 
-		public String getP1() {return this.p1;}
-
-		public String getP2() {return this.p2;}
-
-		public REntity setP1(String p1) {
-			this.p1 = p1;
-			return this;
-		}
-
-		public REntity setP2(String p2) {
-			this.p2 = p2;
-			return this;
-		}
-	}
-
+        fun setP2(p2: String?): REntity {
+            this.p2 = p2
+            return this
+        }
+    }
 }

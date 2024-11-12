@@ -1,118 +1,87 @@
-package live.lingting.framework.elasticsearch;
+package live.lingting.framework.elasticsearch
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.json.JsonpMapper;
-import co.elastic.clients.transport.ElasticsearchTransport;
-import live.lingting.framework.elasticsearch.composer.QueryComposer;
-import live.lingting.framework.elasticsearch.datascope.DefaultElasticsearchDataPermissionHandler;
-import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataScope;
-import org.elasticsearch.client.RestClient;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import static live.lingting.framework.elasticsearch.ElasticsearchProvider.api;
-import static live.lingting.framework.elasticsearch.ElasticsearchProvider.client;
-import static live.lingting.framework.elasticsearch.ElasticsearchProvider.jacksonMapper;
-import static live.lingting.framework.elasticsearch.ElasticsearchProvider.restClient;
-import static live.lingting.framework.elasticsearch.ElasticsearchProvider.transport;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import co.elastic.clients.elasticsearch.ElasticsearchClient
+import co.elastic.clients.elasticsearch._types.query_dsl.Query
+import co.elastic.clients.json.JsonpMapper
+import co.elastic.clients.transport.ElasticsearchTransport
+import live.lingting.framework.elasticsearch.ElasticsearchProvider.Companion.client
+import live.lingting.framework.elasticsearch.ElasticsearchProvider.Companion.jacksonMapper
+import live.lingting.framework.elasticsearch.ElasticsearchProvider.Companion.restClient
+import live.lingting.framework.elasticsearch.ElasticsearchProvider.Companion.transport
+import live.lingting.framework.elasticsearch.composer.QueryComposer
+import live.lingting.framework.elasticsearch.datascope.DefaultElasticsearchDataPermissionHandler
+import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataScope
+import org.elasticsearch.client.RestClient
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * @author lingting 2024-03-08 10:17
  */
-class ElasticsearchApiTest {
+internal class ElasticsearchApiTest {
+    val host: String = "http://192.168.91.129:9200"
 
-	final String host = "http://192.168.91.129:9200";
+    var restClient: RestClient? = null
 
-	RestClient restClient;
+    var jsonpMapper: JsonpMapper? = null
 
-	JsonpMapper jsonpMapper;
+    var transport: ElasticsearchTransport? = null
 
-	ElasticsearchTransport transport;
+    var client: ElasticsearchClient? = null
 
-	ElasticsearchClient client;
+    var api: ElasticsearchApi<Entity>? = null
 
-	ElasticsearchApi<Entity> api;
+    var allowDefault: Boolean = false
 
-	boolean allowDefault = false;
+    @BeforeEach
+    fun before() {
+        restClient = restClient(host)
+        jsonpMapper = jacksonMapper()
+        transport = transport(restClient, jsonpMapper)
+        client = client(transport)
 
-	@BeforeEach
-	void before() {
-		restClient = restClient(host);
-		jsonpMapper = jacksonMapper();
-		transport = transport(restClient, jsonpMapper);
-		client = client(transport);
+        val scope: ElasticsearchDataScope = object : ElasticsearchDataScope {
+            override val resource: String
+                get() = "null"
 
-		ElasticsearchDataScope scope = new ElasticsearchDataScope() {
-			@Override
-			public String getResource() {
-				return "null";
-			}
+            override fun includes(index: String?): Boolean {
+                return true
+            }
 
-			@Override
-			public boolean includes(String index) {
-				return true;
-			}
+            override fun invoke(index: String?): Query? {
+                return QueryComposer.term("space.name", "default")
+            }
+        }
 
-			@Override
-			public Query invoke(String index) {
-				return QueryComposer.term("space.name", "default");
-			}
-		};
-
-		DefaultElasticsearchDataPermissionHandler handler = new DefaultElasticsearchDataPermissionHandler(
-			Collections.singletonList(scope)) {
-			@Override
-			public boolean ignorePermissionControl(String index) {
-				return !allowDefault;
-			}
-		};
-		api = api(".kibana_8.12.2_001", Entity.class, Entity::getId, new ElasticsearchProperties(), handler, client);
-	}
+        val handler: DefaultElasticsearchDataPermissionHandler = object : DefaultElasticsearchDataPermissionHandler(
+            listOf(scope)
+        ) {
+            override fun ignorePermissionControl(index: String?): Boolean {
+                return !allowDefault
+            }
+        }
+        api = api(".kibana_8.12.2_001", Entity::class.java, { obj: Entity -> obj.id }, ElasticsearchProperties(), handler, client)
+    }
 
 
-	@Test
-	void test() {
-		List<Entity> list = api.list();
-		assertFalse(list.isEmpty());
-		allowDefault = true;
-		Entity byQuery = api.getByQuery();
-		assertNotNull(byQuery);
-		assertEquals("Default", byQuery.space.get("name"));
-	}
+    @Test
+    fun test() {
+        val list = api!!.list()
+        Assertions.assertFalse(list.isEmpty())
+        allowDefault = true
+        val byQuery = api!!.getByQuery()
+        Assertions.assertNotNull(byQuery)
+        Assertions.assertEquals("Default", byQuery!!.space!!["name"])
+    }
 
-	static class Entity {
+    internal class Entity {
+        var id: String? = null
 
-		private String id;
+        var space: Map<String, Any>? = null
 
-		private Map<String, Object> space;
+        var config: Map<String, Any>? = null
 
-		private Map<String, Object> config;
-
-		private Object references;
-
-		public String getId() {return this.id;}
-
-		public Map<String, Object> getSpace() {return this.space;}
-
-		public Map<String, Object> getConfig() {return this.config;}
-
-		public Object getReferences() {return this.references;}
-
-		public void setId(String id) {this.id = id;}
-
-		public void setSpace(Map<String, Object> space) {this.space = space;}
-
-		public void setConfig(Map<String, Object> config) {this.config = config;}
-
-		public void setReferences(Object references) {this.references = references;}
-	}
-
+        var references: Any? = null
+    }
 }

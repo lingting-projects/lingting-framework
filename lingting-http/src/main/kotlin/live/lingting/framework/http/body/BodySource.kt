@@ -1,44 +1,48 @@
-package live.lingting.framework.http.body;
+package live.lingting.framework.http.body
 
-import live.lingting.framework.stream.BytesInputStream;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.channels.WritableByteChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import live.lingting.framework.stream.BytesInputStream
+import okhttp3.Cookie.Builder.value
+import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
+import java.nio.channels.WritableByteChannel
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 
 /**
  * @author lingting 2024-09-28 14:04
  */
-public abstract class BodySource {
+abstract class BodySource {
+    abstract fun length(): Long
 
-	public static MemoryBody empty() {
-		return new MemoryBody(new byte[0]);
-	}
+    abstract fun bytes(): ByteArray?
 
-	public static BodySource of(InputStream stream) throws IOException {
-		if (stream instanceof BytesInputStream in) {
-			return new MemoryBody(in.source());
-		}
-		return new FileBody(stream);
-	}
+    abstract fun openInput(): InputStream
 
-	public abstract long length();
+    fun string(): String {
+        return string(StandardCharsets.UTF_8)
+    }
 
-	public abstract byte[] bytes();
+    abstract fun string(charset: Charset): String
 
-	public abstract InputStream openInput();
+    @Throws(IOException::class)
+    abstract fun transferTo(output: OutputStream): Long
 
-	public String string() {
-		return string(StandardCharsets.UTF_8);
-	}
+    @Throws(IOException::class)
+    abstract fun transferTo(channel: WritableByteChannel): Long
 
-	public abstract String string(Charset charset);
+    companion object {
+        fun empty(): MemoryBody {
+            return MemoryBody(ByteArray(0))
+        }
 
-	public abstract long transferTo(OutputStream output) throws IOException;
-
-	public abstract long transferTo(WritableByteChannel channel) throws IOException;
-
+        @JvmStatic
+        @Throws(IOException::class)
+        fun of(stream: InputStream): BodySource {
+            if (stream is BytesInputStream) {
+                return MemoryBody(stream.source())
+            }
+            return FileBody(stream)
+        }
+    }
 }

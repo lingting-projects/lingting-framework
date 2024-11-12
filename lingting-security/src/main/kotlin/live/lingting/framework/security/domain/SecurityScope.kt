@@ -1,130 +1,94 @@
-package live.lingting.framework.security.domain;
+package live.lingting.framework.security.domain
 
-import live.lingting.framework.util.StringUtils;
-
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import live.lingting.framework.util.StringUtils
+import java.util.*
+import java.util.function.Function
+import java.util.function.Predicate
 
 /**
  * @author lingting 2023-03-29 20:25
  */
-public class SecurityScope {
+open class SecurityScope {
+    @JvmField
+    var token: String? = null
 
-	private String token;
+    @JvmField
+    var userId: String? = null
 
-	private String userId;
+    @JvmField
+    var tenantId: String? = null
 
-	private String tenantId;
+    @JvmField
+    var username: String? = null
 
-	private String username;
+    @JvmField
+    var password: String? = null
 
-	private String password;
+    @JvmField
+    var avatar: String? = null
 
-	private String avatar;
+    @JvmField
+    var nickname: String? = null
 
-	private String nickname;
+    /**
+     * 是否启用
+     */
+    @JvmField
+    var enabled: Boolean? = null
 
-	/**
-	 * 是否启用
-	 */
-	private Boolean enabled;
+    /**
+     * 过期时间的时间戳
+     */
+    @JvmField
+    var expireTime: Long? = null
 
-	/**
-	 * 过期时间的时间戳
-	 */
-	private Long expireTime;
+    @JvmField
+    var roles: Set<String>? = null
 
-	private Set<String> roles;
+    @JvmField
+    var permissions: Set<String>? = null
 
-	private Set<String> permissions;
+    @JvmField
+    var attributes: SecurityScopeAttributes? = null
 
-	private SecurityScopeAttributes attributes;
+    fun enabled(): Boolean {
+        return java.lang.Boolean.TRUE == enabled
+    }
 
-	public boolean enabled() {
-		return Boolean.TRUE.equals(getEnabled());
-	}
+    val isLogin: Boolean
+        /**
+         * 此scope是否为已登录用户
+         */
+        get() {
+            val tokenAvailable = StringUtils.hasText(token)
+            val userAvailable = StringUtils.hasText(userId)
+            val enableAvailable = enabled != null
+            return tokenAvailable && userAvailable && enableAvailable
+        }
 
-	/**
-	 * 此scope是否为已登录用户
-	 */
-	public boolean isLogin() {
-		boolean tokenAvailable = StringUtils.hasText(getToken());
-		boolean userAvailable = StringUtils.hasText(getUserId());
-		boolean enableAvailable = getEnabled() != null;
-		return tokenAvailable && userAvailable && enableAvailable;
-	}
+    fun attribute(key: String): Any? {
+        return if (attributes == null) null else attributes!!.find(key)
+    }
 
-	public Object attribute(String key) {
-		return attributes == null ? null : attributes.find(key);
-	}
+    fun <T> attribute(key: String, func: Function<Optional<Any?>?, T>): T {
+        return func.apply(Optional.ofNullable(attribute(key)))
+    }
 
-	public <T> T attribute(String key, Function<Optional<Object>, T> func) {
-		return func.apply(Optional.ofNullable(attribute(key)));
-	}
+    fun <T> attribute(key: String, defaultValue: T, func: Function<Any?, T>): T {
+        return attribute(key, defaultValue, { obj: Optional<Any?> -> obj.isEmpty }, func)
+    }
 
-	public <T> T attribute(String key, T defaultValue, Function<Object, T> func) {
-		return attribute(key, defaultValue, Optional::isEmpty, func);
-	}
-
-	/**
-	 * @param usingDefault 如果返回true表示使用默认值
-	 */
-	public <T> T attribute(String key, T defaultValue, Predicate<Optional<Object>> usingDefault,
-						   Function<Object, T> func) {
-		Optional<Object> optional = Optional.ofNullable(attribute(key));
-		if (usingDefault.test(optional)) {
-			return defaultValue;
-		}
-		return func.apply(optional);
-	}
-
-	public String getToken() {return this.token;}
-
-	public String getUserId() {return this.userId;}
-
-	public String getTenantId() {return this.tenantId;}
-
-	public String getUsername() {return this.username;}
-
-	public String getPassword() {return this.password;}
-
-	public String getAvatar() {return this.avatar;}
-
-	public String getNickname() {return this.nickname;}
-
-	public Boolean getEnabled() {return this.enabled;}
-
-	public Long getExpireTime() {return this.expireTime;}
-
-	public Set<String> getRoles() {return this.roles;}
-
-	public Set<String> getPermissions() {return this.permissions;}
-
-	public SecurityScopeAttributes getAttributes() {return this.attributes;}
-
-	public void setToken(String token) {this.token = token;}
-
-	public void setUserId(String userId) {this.userId = userId;}
-
-	public void setTenantId(String tenantId) {this.tenantId = tenantId;}
-
-	public void setUsername(String username) {this.username = username;}
-
-	public void setPassword(String password) {this.password = password;}
-
-	public void setAvatar(String avatar) {this.avatar = avatar;}
-
-	public void setNickname(String nickname) {this.nickname = nickname;}
-
-	public void setEnabled(Boolean enabled) {this.enabled = enabled;}
-
-	public void setExpireTime(Long expireTime) {this.expireTime = expireTime;}
-
-	public void setRoles(Set<String> roles) {this.roles = roles;}
-
-	public void setPermissions(Set<String> permissions) {this.permissions = permissions;}
-
-	public void setAttributes(SecurityScopeAttributes attributes) {this.attributes = attributes;}
+    /**
+     * @param usingDefault 如果返回true表示使用默认值
+     */
+    fun <T> attribute(
+        key: String, defaultValue: T, usingDefault: Predicate<Optional<Any?>>,
+        func: Function<Any?, T>
+    ): T {
+        val optional: Optional<Any?> = Optional.ofNullable(attribute(key))
+        if (usingDefault.test(optional)) {
+            return defaultValue
+        }
+        return func.apply(optional)
+    }
 }
