@@ -119,7 +119,7 @@ configure(javaProjects) {
     }
 
     configure<KotlinJvmProjectExtension> {
-        jvmToolchain(21)
+        jvmToolchain(javaVersion.majorVersion.toInt())
     }
 
     configure<JavaPluginExtension> {
