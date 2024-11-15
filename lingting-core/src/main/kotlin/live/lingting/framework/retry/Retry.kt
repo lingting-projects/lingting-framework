@@ -1,29 +1,25 @@
 package live.lingting.framework.retry
 
-import live.lingting.framework.function.ThrowingSupplier
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.time.Duration
+import live.lingting.framework.function.ThrowingSupplier
 
 /**
  * @author lingting 2023-10-23 19:14
  */
 open class Retry<T>(protected val supplier: ThrowingSupplier<T>, protected val function: RetryFunction) {
-    protected val logs: MutableList<RetryLog<T?>> = ArrayList()
+    protected val logs: MutableList<RetryLog<T>> = ArrayList()
 
     /**
      * 当前重试次数
      */
     protected var count: Int = 0
 
-
-    fun get(): T? {
+    fun get(): T {
         return value().get()
     }
 
-
-    fun value(): RetryValue<T?> {
-        var ex: Exception? = null
+    fun value(): RetryValue<T> {
+        var ex: Throwable? = null
         while (true) {
             try {
                 if (ex != null) {
@@ -50,19 +46,20 @@ open class Retry<T>(protected val supplier: ThrowingSupplier<T>, protected val f
             } catch (e: InterruptedException) {
                 Thread.currentThread().interrupt()
                 ex = e
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 ex = e
             }
         }
     }
 
     companion object {
-        private val log: Logger = LoggerFactory.getLogger(Retry::class.java)
+        @JvmStatic
         fun <T> simple(supplier: ThrowingSupplier<T>): Retry<T> {
             return simple(3, Duration.ofMillis(10), supplier)
         }
 
-        fun <T> simple(maxRetryCount: Int, delay: Duration?, supplier: ThrowingSupplier<T>): Retry<T> {
+        @JvmStatic
+        fun <T> simple(maxRetryCount: Int, delay: Duration, supplier: ThrowingSupplier<T>): Retry<T> {
             return SimpleRetry(maxRetryCount, delay, supplier)
         }
     }

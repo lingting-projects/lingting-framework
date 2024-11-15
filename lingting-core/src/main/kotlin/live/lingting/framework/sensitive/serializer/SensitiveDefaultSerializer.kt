@@ -17,13 +17,10 @@ import live.lingting.framework.sensitive.SensitiveUtils
  *
  * @author lingting 2024-05-21 10:20
  */
-class SensitiveDefaultSerializer private constructor() : SensitiveSerializer {
+object SensitiveDefaultSerializer : SensitiveSerializer {
 
     override fun serialize(sensitive: Sensitive, raw: String): String {
         return SensitiveUtils.serialize(raw, 1, 1, sensitive)
     }
 
-    companion object {
-        val INSTANCE: SensitiveDefaultSerializer = SensitiveDefaultSerializer()
-    }
 }

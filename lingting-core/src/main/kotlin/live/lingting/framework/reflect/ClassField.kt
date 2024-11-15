@@ -1,10 +1,11 @@
 package live.lingting.framework.reflect
 
-import live.lingting.framework.util.AnnotationUtils
 import java.lang.reflect.AccessibleObject
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import live.lingting.framework.util.AnnotationUtils
+import live.lingting.framework.util.ClassUtils.Companion.toFiledName
 
 /**
  * 用于获取指定字段的值
@@ -25,8 +26,18 @@ import java.lang.reflect.Modifier
  */
 
 data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: Method?) {
-    val filedName: String
-        get() = field.getName()
+
+    val name: String = field?.name ?: when {
+        methodGet != null -> toFiledName(methodGet.name)
+        methodSet != null -> toFiledName(methodSet.name)
+        else -> ""
+    }
+
+    val valueType: Class<*> = field?.type ?: methodGet!!.returnType
+
+    val hasField = field != null
+
+    val isFinalField = field != null && Modifier.isFinal(field.modifiers)
 
     /**
      * 是否拥有指定注解, 会同时对 字段 和 方法进行判断
@@ -55,7 +66,6 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
      * @param obj 对象
      * @return java.lang.Object 对象指定字段值
      */
-
     fun get(obj: Any?): Any {
         if (methodGet != null) {
             return methodGet.invoke(obj)
@@ -68,7 +78,6 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
      * @param obj 对象
      * @param args set方法参数, 如果无set方法, 则第一个参数会被作为值通过字段设置
      */
-
     fun set(obj: Any?, vararg args: Any?) {
         if (methodSet != null) {
             methodSet.invoke(obj, *args)
@@ -77,10 +86,8 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
         field!![obj] = args[0]
     }
 
-    val valueType: Class<*>
-        get() = if (field == null) methodGet!!.returnType else field.getType()
-
     // region visible
+
     /**
      * 是否能够获取值
      */
@@ -136,13 +143,5 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
     }
 
     // endregion
-    // region get
-    // endregion
-    // region field
-    fun hasField(): Boolean {
-        return field != null
-    }
 
-    val isFinalField: Boolean
-        get() = field != null && Modifier.isFinal(field.getModifiers()) // endregion
 }

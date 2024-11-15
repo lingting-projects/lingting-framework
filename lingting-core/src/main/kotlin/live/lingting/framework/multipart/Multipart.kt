@@ -1,15 +1,14 @@
 package live.lingting.framework.multipart
 
+import java.io.File
+import java.io.FileOutputStream
+import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Consumer
 import live.lingting.framework.stream.CloneInputStream
 import live.lingting.framework.stream.FileCloneInputStream
 import live.lingting.framework.stream.RandomAccessInputStream
 import live.lingting.framework.util.FileUtils
 import live.lingting.framework.util.StreamUtils
-import java.io.File
-import java.io.FileOutputStream
-
-import java.util.concurrent.ConcurrentHashMap
-import java.util.function.Consumer
 
 /**
  * @author lingting 2024-09-05 14:47
@@ -22,7 +21,7 @@ class Multipart(
     /**
      *
      */
-    val source: File,
+    val source: File?,
     /**
      * 原始内容大小: byte
      */
@@ -51,7 +50,7 @@ class Multipart(
         return cache.computeIfAbsent(part.index) { k ->
             val dir = File(TEMP_DIR, id)
             val temp: File = FileUtils.createTemp(".part$k", dir)
-            RandomAccessInputStream(source).use { input ->
+            RandomAccessInputStream(source!!).use { input ->
                 input.seek(part.start)
                 FileOutputStream(temp).use { output ->
                     StreamUtils.write(input, output, part.size)
@@ -110,7 +109,7 @@ class Multipart(
                 val part = Part(i, start, end)
                 parts.add(part)
             }
-            return Collections.unmodifiableCollection(parts)
+            return parts.toList()
         }
     }
 }

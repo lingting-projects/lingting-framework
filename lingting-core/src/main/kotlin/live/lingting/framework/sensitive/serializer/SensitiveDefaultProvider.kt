@@ -7,22 +7,19 @@ import live.lingting.framework.sensitive.SensitiveSerializer
 /**
  * @author lingting 2024-05-21 10:30
  */
-class SensitiveDefaultProvider private constructor() : SensitiveProvider {
+object SensitiveDefaultProvider : SensitiveProvider {
     override fun find(sensitive: Sensitive): SensitiveSerializer {
-        if (SensitiveAllSerializer::class.java.isAssignableFrom(sensitive.value)) {
-            return SensitiveAllSerializer.INSTANCE
+        if (SensitiveAllSerializer::class.java.isAssignableFrom(sensitive.value.java)) {
+            return SensitiveAllSerializer
         }
 
-        if (SensitiveMobileSerializer::class.java.isAssignableFrom(sensitive.value)) {
-            return SensitiveMobileSerializer.INSTANCE
+        if (SensitiveMobileSerializer::class.java.isAssignableFrom(sensitive.value.java)) {
+            return SensitiveMobileSerializer
         }
-        return SensitiveDefaultSerializer.INSTANCE
+        return SensitiveDefaultSerializer
     }
 
     override val sequence: Int
         get() = Int.MAX_VALUE
 
-    companion object {
-        val INSTANCE: SensitiveDefaultProvider = SensitiveDefaultProvider()
-    }
 }

@@ -1,9 +1,9 @@
 package live.lingting.framework.multipart
 
-import live.lingting.framework.stream.FileCloneInputStream
-import live.lingting.framework.util.ValueUtils
 import java.io.File
 import java.io.InputStream
+import live.lingting.framework.stream.FileCloneInputStream
+import live.lingting.framework.util.ValueUtils
 
 /**
  * @author lingting 2024-09-14 10:39
@@ -42,7 +42,7 @@ class MultipartBuilder {
 
 
     fun source(source: InputStream): MultipartBuilder {
-        this.source = if (source is FileCloneInputStream) source else FileCloneInputStream(source)
+        this.source = source as? FileCloneInputStream ?: FileCloneInputStream(source)
         return size(this.source!!.size())
     }
 
@@ -86,7 +86,6 @@ class MultipartBuilder {
 
     fun build(): Multipart {
         val parts = parts()
-        val file = if (source == null) null else source!!.source()
-        return Multipart(id, file, size, partSize, parts)
+        return Multipart(id, source?.source(), size, partSize, parts)
     }
 }

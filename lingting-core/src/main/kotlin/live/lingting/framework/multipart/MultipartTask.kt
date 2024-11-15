@@ -1,15 +1,14 @@
 package live.lingting.framework.multipart
 
-import live.lingting.framework.kt.logger
-import live.lingting.framework.lock.JavaReentrantLock
-import live.lingting.framework.thread.Async
-import live.lingting.framework.util.ValueUtils
 import java.time.Duration
-
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Supplier
+import live.lingting.framework.kt.logger
+import live.lingting.framework.lock.JavaReentrantLock
+import live.lingting.framework.thread.Async
+import live.lingting.framework.util.ValueUtils
 
 /**
  * @author lingting 2024-09-05 14:48
@@ -45,6 +44,9 @@ abstract class MultipartTask<I : MultipartTask<I>> protected constructor(val mul
     val isStarted: Boolean
         get() = MultipartTaskStatus.WAIT != status()
 
+    val id: String
+        get() = multipart.id
+
     open val isCompleted: Boolean
         get() = MultipartTaskStatus.COMPLETED == status()
 
@@ -53,7 +55,7 @@ abstract class MultipartTask<I : MultipartTask<I>> protected constructor(val mul
     }
 
     fun tasks(): List<PartTask> {
-        return Collections.unmodifiableList(tasks)
+        return tasks.toList()
     }
 
     fun tasksFailed(): List<PartTask> {
@@ -111,7 +113,7 @@ abstract class MultipartTask<I : MultipartTask<I>> protected constructor(val mul
             log.debug("[{}] onStarted", id)
             onStarted()
             for (part in multipart.parts) {
-                async.submit(name + "-" + part.index) { doPart(part!!) }
+                async.submit(name + "-" + part.index) { doPart(part) }
             }
         }
         return this as I
@@ -165,6 +167,4 @@ abstract class MultipartTask<I : MultipartTask<I>> protected constructor(val mul
         //
     }
 
-    val id: String
-        get() = multipart.id
 }

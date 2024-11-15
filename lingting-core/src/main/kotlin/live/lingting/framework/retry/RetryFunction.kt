@@ -12,7 +12,7 @@ interface RetryFunction {
      * @param e 当前触发异常
      * @return true 继续重试
      */
-    fun allowRetry(retryCount: Int, e: Exception?): Boolean
+    fun allowRetry(retryCount: Int, e: Throwable?): Boolean
 
     /**
      * 获取重试延迟
@@ -20,5 +20,5 @@ interface RetryFunction {
      * @param e 当前触发异常
      * @return 重试延迟时间
      */
-    fun getDelay(retryCount: Int, e: Exception?): Duration?
+    fun getDelay(retryCount: Int, e: Throwable?): Duration?
 }

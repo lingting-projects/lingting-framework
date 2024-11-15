@@ -17,7 +17,7 @@ import live.lingting.framework.sensitive.SensitiveUtils
  *
  * @author lingting 2024-05-21 10:20
  */
-class SensitiveMobileSerializer private constructor() : SensitiveSerializer {
+object SensitiveMobileSerializer : SensitiveSerializer {
 
     override fun serialize(sensitive: Sensitive, raw: String): String {
         if (raw.startsWith("+")) {
@@ -27,7 +27,4 @@ class SensitiveMobileSerializer private constructor() : SensitiveSerializer {
         return SensitiveUtils.serialize(raw, 2, 2, sensitive)
     }
 
-    companion object {
-        val INSTANCE: SensitiveMobileSerializer = SensitiveMobileSerializer()
-    }
 }

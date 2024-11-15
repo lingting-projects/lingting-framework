@@ -1,5 +1,7 @@
 package live.lingting.framework
 
+import kotlin.math.max
+import kotlin.math.min
 import live.lingting.framework.util.ClassUtils
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
@@ -11,6 +13,7 @@ import org.springframework.core.annotation.Order
  * @author lingting 2024-01-30 11:15
  */
 interface Sequence {
+
     val sequence: Int
 
     class SequenceComparator(private val isAsc: Boolean, private val defaultSequence: Int) : Comparator<Any?> {
@@ -67,9 +70,9 @@ interface Sequence {
             if (!ClassUtils.isPresent("org.springframework.core.annotation.Order", javaClass.getClassLoader())) {
                 return null
             }
-            val annotation: Order = obj.javaClass.getAnnotation<Order>(Order::class.java)
+            val annotation = obj.javaClass.getAnnotation<Order>(Order::class.java)
             // 注解上的排序值
-            val oa = if (annotation != null) annotation.value else null
+            val oa = annotation?.value
             // 类方法上的排序值
             val om = if (obj is Ordered) obj.order else null
             // 均为null则返回null
@@ -81,24 +84,30 @@ interface Sequence {
     }
 
     companion object {
-        fun <T> asc(list: List<T>) {
-            list.sort(INSTANCE_ASC)
+        @JvmStatic
+        fun <T> asc(list: MutableList<T>) {
+            list.sortWith(INSTANCE_ASC)
         }
 
+        @JvmStatic
         fun <T> asc(collection: Collection<T>): List<T> {
             return collection.stream().sorted(INSTANCE_ASC).toList()
         }
 
-        fun <T> desc(list: List<T>) {
-            list.sort(INSTANCE_DESC)
+        @JvmStatic
+        fun <T> desc(list: MutableList<T>) {
+            list.sortWith(INSTANCE_DESC)
         }
 
+        @JvmStatic
         fun <T> desc(collection: Collection<T>): List<T> {
             return collection.stream().sorted(INSTANCE_DESC).toList()
         }
 
+        @JvmStatic
         val INSTANCE_ASC: SequenceComparator = SequenceComparator(true, 0)
 
+        @JvmStatic
         val INSTANCE_DESC: SequenceComparator = SequenceComparator(false, 0)
     }
 }

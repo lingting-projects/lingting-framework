@@ -5,12 +5,13 @@ package live.lingting.framework.retry
  * @author lingting 2023-10-23 18:59
  */
 
-data class RetryValue<T>(val value: T, val success: Boolean, val logs: List<RetryLog<T>>) {
+data class RetryValue<T>(val value: T?, val success: Boolean, val logs: List<RetryLog<T>>) {
 
     fun get(): T {
         if (success) {
-            return value
+            return value!!
         }
-        throw logs.getLast().getException()
+        val last = logs.last()
+        throw last.ex!!
     }
 }

@@ -13,17 +13,16 @@ class WaitQueue<V> constructor(private val queue: LinkedBlockingQueue<V> = Linke
         return queue.poll()
     }
 
+    fun size(): Int {
+        return queue.size
+    }
 
-    fun poll(timeout: Long = 10, unit: TimeUnit? = TimeUnit.HOURS): V {
+    fun poll(timeout: Long = 10, unit: TimeUnit = TimeUnit.HOURS): V {
         var v: V?
         do {
             v = queue.poll(timeout, unit)
         } while (v == null)
         return v
-    }
-
-    fun clear() {
-        queue.clear()
     }
 
     fun add(seat: V) {
@@ -34,5 +33,9 @@ class WaitQueue<V> constructor(private val queue: LinkedBlockingQueue<V> = Linke
         for (account in accounts) {
             add(account)
         }
+    }
+
+    fun clear() {
+        queue.clear()
     }
 }

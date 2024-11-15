@@ -1,13 +1,11 @@
 package live.lingting.framework.util
 
-import live.lingting.framework.reflect.ClassField
 import java.lang.reflect.AccessibleObject
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
-
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.BiConsumer
 import java.util.function.BiFunction
@@ -15,6 +13,7 @@ import java.util.function.Function
 import java.util.function.Predicate
 import java.util.function.Supplier
 import java.util.stream.Collectors
+import live.lingting.framework.reflect.ClassField
 
 /**
  * @author lingting 2021/2/25 21:17
@@ -315,7 +314,7 @@ class ClassUtils private constructor() {
          */
         fun classField(fieldName: String, cls: Class<*>): ClassField? {
             for (field in classFields(cls)) {
-                if (field.filedName == fieldName) {
+                if (field.name == fieldName) {
                     return field
                 }
             }
