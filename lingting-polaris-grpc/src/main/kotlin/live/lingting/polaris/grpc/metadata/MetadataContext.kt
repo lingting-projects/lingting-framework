@@ -1,7 +1,7 @@
 package live.lingting.polaris.grpc.metadata
 
 import io.grpc.Context
-import java.util.*
+
 import java.util.concurrent.ConcurrentHashMap
 
 /**

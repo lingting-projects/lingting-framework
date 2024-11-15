@@ -1,7 +1,7 @@
 package live.lingting.framework.id
 
-import java.util.*
 import java.util.concurrent.locks.LockSupport
+import kotlin.math.max
 
 /**
  * @author lingting 2024-04-18 20:23
@@ -11,61 +11,61 @@ class Snowflake(params: SnowflakeParams, workerId: Long, datacenterId: Long) {
      * 雪花算法的开始时间戳（自定义）
      */
     // 雪花算法的开始时间戳（自定义）
-    protected val startTimestamp: Long = params.getStartTimestamp()
+    protected val startTimestamp: Long = params.startTimestamp
 
     /**
      * 机器ID所占位数
      */
     // 机器ID所占位数
-    protected val workerIdBits: Long = params.getWorkerIdBits()
+    protected val workerIdBits: Long = params.workerIdBits
 
     /**
      * 数据中心ID所占位数
      */
     // 数据中心ID所占位数
-    protected val datacenterIdBits: Long = params.getDatacenterIdBits()
+    protected val datacenterIdBits: Long = params.datacenterIdBits
 
     /**
      * 支持的最大机器ID数量
      */
     // 支持的最大机器ID数量
-    protected val maxWorkerId: Long = params.getMaxWorkerId()
+    protected val maxWorkerId: Long = params.maxWorkerId
 
     /**
      * 支持的最大数据中心ID数量
      */
     // 支持的最大数据中心ID数量
-    protected val maxDatacenterId: Long = params.getMaxDatacenterId()
+    protected val maxDatacenterId: Long = params.maxDatacenterId
 
     /**
      * 序列号所占位数
      */
     // 序列号所占位数
-    protected val sequenceBits: Long = params.getSequenceBits()
+    protected val sequenceBits: Long = params.sequenceBits
 
     /**
      * 机器ID左移位数
      */
     // 机器ID左移位数
-    protected val workerIdShift: Long = params.getWorkerIdShift()
+    protected val workerIdShift: Long = params.workerIdShift
 
     /**
      * 数据中心ID左移位数
      */
     // 数据中心ID左移位数
-    protected val datacenterIdShift: Long = params.getDatacenterIdShift()
+    protected val datacenterIdShift: Long = params.datacenterIdShift
 
     /**
      * 时间戳左移位数
      */
     // 时间戳左移位数
-    protected val timestampLeftShift: Long = params.getTimestampLeftShift()
+    protected val timestampLeftShift: Long = params.timestampLeftShift
 
     /**
      * 生成序列号的掩码
      */
     // 生成序列号的掩码
-    protected val sequenceMask: Long = params.getSequenceMask()
+    protected val sequenceMask: Long = params.sequenceMask
 
     /**
      * 机器ID
@@ -128,7 +128,7 @@ class Snowflake(params: SnowflakeParams, workerId: Long, datacenterId: Long) {
         var timestamp = currentTimestamp()
         // 如果当前时间小于上一次ID生成的时间戳，说明系统时钟回拨了
         if (timestamp < lastTimestamp) {
-            check(allowClockBackwards(timestamp)) { "Clock moved backwards! current: %d; last: %d".formatted(timestamp, lastTimestamp) }
+            check(allowClockBackwards(timestamp)) { "Clock moved backwards! current: $timestamp; last: $lastTimestamp" }
             // 允许回拨, 使用上次的时间
             timestamp = lastTimestamp
         }
@@ -142,7 +142,7 @@ class Snowflake(params: SnowflakeParams, workerId: Long, datacenterId: Long) {
     fun nextIds(count: Int): List<Long> {
         val max: Int = max(1, count)
         val ids: MutableList<Long> = ArrayList(max)
-        for (i in 0 until max) {
+        (0 until max).forEach {
             ids.add(nextId())
         }
         return ids

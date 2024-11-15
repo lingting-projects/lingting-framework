@@ -47,10 +47,10 @@ class JavaReentrantLock {
     }
 
 
-    fun runByInterruptibly(runnable: () -> Unit) {
+    fun runByInterruptibly(runnable: LockRunnable) {
         lockInterruptibly()
         try {
-            runnable()
+            runnable.run()
         } finally {
             unlock()
         }
@@ -121,7 +121,6 @@ class JavaReentrantLock {
     /**
      * @return 是否被唤醒
      */
-
     fun await(time: Long, timeUnit: TimeUnit): Boolean {
         return getByInterruptibly { defaultCondition.await(time, timeUnit) }
     }

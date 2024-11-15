@@ -1,14 +1,11 @@
 package live.lingting.framework.value
 
 import live.lingting.framework.lock.JavaReentrantLock
-import live.lingting.framework.util.CollectionUtils
-import live.lingting.framework.util.StringUtils
 import live.lingting.framework.util.ValueUtils
-import java.util.*
+
 import java.util.concurrent.TimeUnit
+import java.util.function.Function
 import java.util.function.Predicate
-import java.util.function.Supplier
-import java.util.function.UnaryOperator
 
 /**
  * @author lingting 2023-05-21 20:13
@@ -19,15 +16,17 @@ class WaitValue<T> {
     /**
      * 如果直接调用 set 方法是不会触发 [JavaReentrantLock.signalAll]. 会导致在set之前挂起的等待线程不会被唤醒
      */
-    protected var value: T? = null
+    var value: T? = null
 
+    val isNull: Boolean
+        get() = value == null
 
-    fun update(t: T?) {
-        update { v: T? -> t }
+    fun update(t: T) {
+        update { t }
     }
 
 
-    fun update(operator: UnaryOperator<T?>) {
+    fun update(operator: Function<T?, T>) {
         lock.runByInterruptibly {
             value = operator.apply(value)
             lock.signalAll()
@@ -40,7 +39,7 @@ class WaitValue<T> {
      * @param operator 运行行为
      */
 
-    fun compute(operator: UnaryOperator<T?>): T? {
+    fun compute(operator: Function<T?, T>): T {
         return lock.getByInterruptibly {
             val v = operator.apply(value)
             update(v)
@@ -49,54 +48,38 @@ class WaitValue<T> {
     }
 
 
-    fun notNull(): T? {
-        return wait { obj: T? -> Objects.nonNull(obj) }
+    fun notNull(): T {
+        return wait { obj: T -> Objects.nonNull(obj) }
     }
 
 
-    fun notEmpty(): T? {
-        return wait { v: T? ->
-            if (v == null) {
-                return@wait false
-            }
-            if (v is Collection<*>) {
-                return@wait !CollectionUtils.isEmpty(v as Collection<*>)
-            } else if (v is Map<*, *>) {
-                return@wait !CollectionUtils.isEmpty(v as Map<*, *>)
-            } else if (v is String) {
-                return@wait StringUtils.hasText(v as CharSequence)
-            }
-            true
-        }
+    fun notEmpty(): T {
+        return wait { ValueUtils.isPresent(it) }
     }
 
 
-    fun wait(predicate: Predicate<T?>?): T? {
+    fun wait(predicate: Predicate<T>): T {
         lock.lockInterruptibly()
         try {
-            return ValueUtils.await<T?>(Supplier<T?> { value }, predicate) { lock.await(1, TimeUnit.HOURS) }
+            return ValueUtils.await(
+                { value },
+                { it != null && predicate.test(it) },
+                { lock.await(1, TimeUnit.HOURS) }
+            )!!
         } finally {
             lock.unlock()
         }
     }
 
-    val isNull: Boolean
-        get() = value == null
-
-    fun getValue(): T {
-        return this.value
-    }
-
-    fun setValue(value: T) {
-        this.value = value
-    }
 
     companion object {
+        @JvmStatic
         fun <T> of(): WaitValue<T> {
             return WaitValue()
         }
 
 
+        @JvmStatic
         fun <T> of(t: T): WaitValue<T> {
             val of = of<T>()
             of.value = t

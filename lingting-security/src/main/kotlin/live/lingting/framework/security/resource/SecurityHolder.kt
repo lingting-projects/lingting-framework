@@ -2,7 +2,7 @@ package live.lingting.framework.security.resource
 
 import live.lingting.framework.security.domain.SecurityScope
 import live.lingting.framework.thread.StackThreadLocal
-import java.util.*
+
 
 /**
  * @author lingting 2023-03-29 20:29

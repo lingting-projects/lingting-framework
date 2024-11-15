@@ -14,9 +14,12 @@ import co.elastic.clients.json.JsonData
 import co.elastic.clients.util.ObjectBuilder
 import live.lingting.framework.elasticsearch.ElasticsearchFunction
 import live.lingting.framework.elasticsearch.ElasticsearchUtils
+import live.lingting.framework.elasticsearch.composer.QueryComposer.Companion.must
+import live.lingting.framework.elasticsearch.composer.QueryComposer.Companion.not
+import live.lingting.framework.elasticsearch.composer.QueryComposer.Companion.should
+import live.lingting.framework.elasticsearch.composer.QueryComposer.Companion.term
 import live.lingting.framework.elasticsearch.function.TermOperator
 import live.lingting.framework.util.CollectionUtils
-import java.util.*
 import java.util.function.Function
 
 /**

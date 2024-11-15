@@ -1,6 +1,6 @@
 package live.lingting.framework.datascope.holder
 
-import java.util.*
+
 import java.util.concurrent.atomic.AtomicInteger
 
 /**

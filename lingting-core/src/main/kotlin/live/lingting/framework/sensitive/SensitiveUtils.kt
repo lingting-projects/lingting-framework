@@ -3,7 +3,7 @@ package live.lingting.framework.sensitive
 import live.lingting.framework.Sequence
 import live.lingting.framework.sensitive.serializer.SensitiveDefaultProvider
 import live.lingting.framework.util.StringUtils
-import java.util.*
+
 
 /**
  * @author lingting 2023-04-27 15:42

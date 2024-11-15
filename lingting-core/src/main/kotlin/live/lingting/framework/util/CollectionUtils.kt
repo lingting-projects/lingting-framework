@@ -1,6 +1,5 @@
 package live.lingting.framework.util
 
-import java.util.*
 
 /**
  * @author lingting

@@ -6,7 +6,7 @@ import live.lingting.framework.util.SystemUtils
 import java.io.File
 import java.io.OutputStream
 import java.nio.charset.Charset
-import java.util.*
+
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 

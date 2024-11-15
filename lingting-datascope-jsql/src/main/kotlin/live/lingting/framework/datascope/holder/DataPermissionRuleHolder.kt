@@ -2,9 +2,7 @@ package live.lingting.framework.datascope.holder
 
 import live.lingting.framework.datascope.annotation.DataPermission
 import live.lingting.framework.datascope.handler.DataPermissionRule
-import java.util.*
 import java.util.function.Supplier
-import kotlin.collections.ArrayDeque
 
 /**
  * 数据权限规则的持有者，使用栈存储调用链中的数据权限规则

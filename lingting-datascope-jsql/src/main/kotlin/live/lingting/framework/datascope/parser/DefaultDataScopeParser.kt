@@ -25,7 +25,7 @@ import net.sf.jsqlparser.statement.select.Select
 import net.sf.jsqlparser.statement.select.SelectItem
 import net.sf.jsqlparser.statement.select.WithItem
 import net.sf.jsqlparser.statement.update.Update
-import java.util.*
+
 import java.util.function.Consumer
 
 /**

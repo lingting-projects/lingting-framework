@@ -1,7 +1,7 @@
 package live.lingting.framework.util
 
 import java.io.CharArrayWriter
-import java.util.*
+
 
 /**
  * @author lingting

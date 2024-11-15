@@ -17,7 +17,7 @@ import live.lingting.framework.util.StringUtils
 import live.lingting.framework.value.WaitValue
 import java.time.Duration
 import java.time.LocalDateTime
-import java.util.*
+
 
 /**
  * @author lingting 2024-09-12 21:27
@@ -61,7 +61,7 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
     @JvmOverloads
     fun refreshToken(force: Boolean = false) {
         if (!force) {
-            val value = tokenValue.getValue()
+            val value = tokenValue.value
             if (value != null && !value.isExpired(tokenEarlyExpire)) {
                 return
             }

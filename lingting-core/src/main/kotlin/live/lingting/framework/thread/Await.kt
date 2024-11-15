@@ -13,21 +13,20 @@ import java.util.function.Supplier
 /**
  * @author lingting 2024-05-31 11:14
  */
-class Await<S>(private val supplier: Supplier<S>?, private val predicate: Predicate<S>?, private val sleep: InterruptedRunnable, private val timeout: Duration?, private val executor: ExecutorService?) {
+class Await<S>(private val supplier: Supplier<S>, private val predicate: Predicate<S>, private val sleep: InterruptedRunnable, private val timeout: Duration?, private val executor: ExecutorService) {
     fun await(): S {
-        val supply = Supplier<S> {
-            while (true) {
-                val s = supplier!!.get()
-                if (predicate!!.test(s)) {
-                    return@Supplier s
-                }
+        val supply = {
+            var s: S = supplier.get()
 
+            while (!predicate.test(s)) {
                 sleep.run()
+                s = supplier.get()
             }
+            s
         }
         // 未设置超时
         if (timeout == null || timeout.isNegative || timeout.isZero) {
-            return supply.get()
+            return supply()
         }
 
         try {
@@ -49,14 +48,14 @@ class Await<S>(private val supplier: Supplier<S>?, private val predicate: Predic
 
         private var timeout: Duration? = null
 
-        private var executor: ExecutorService? = VirtualThread.executor()
+        private var executor: ExecutorService = VirtualThread.executor()
 
-        fun supplier(supplier: Supplier<S>?): AwaitBuilder<S> {
+        fun supplier(supplier: Supplier<S>): AwaitBuilder<S> {
             this.supplier = supplier
             return this
         }
 
-        fun predicate(predicate: Predicate<S>?): AwaitBuilder<S> {
+        fun predicate(predicate: Predicate<S>): AwaitBuilder<S> {
             this.predicate = predicate
             return this
         }
@@ -71,7 +70,7 @@ class Await<S>(private val supplier: Supplier<S>?, private val predicate: Predic
             return this
         }
 
-        fun executor(executor: ExecutorService?): AwaitBuilder<S> {
+        fun executor(executor: ExecutorService): AwaitBuilder<S> {
             this.executor = executor
             return this
         }
@@ -85,7 +84,7 @@ class Await<S>(private val supplier: Supplier<S>?, private val predicate: Predic
         }
 
         fun build(): Await<S> {
-            return Await(supplier, predicate, sleep, timeout, executor)
+            return Await(supplier!!, predicate!!, sleep, timeout, executor)
         }
 
         fun await(): S {
@@ -94,7 +93,7 @@ class Await<S>(private val supplier: Supplier<S>?, private val predicate: Predic
     }
 
     companion object {
-        fun <S> builder(supplier: Supplier<S>?, predicate: Predicate<S>?): AwaitBuilder<S> {
+        fun <S> builder(supplier: Supplier<S>, predicate: Predicate<S>): AwaitBuilder<S> {
             return builder<S>().supplier(supplier).predicate(predicate)
         }
 

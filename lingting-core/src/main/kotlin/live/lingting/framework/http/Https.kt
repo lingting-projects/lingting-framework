@@ -10,32 +10,30 @@ import javax.net.ssl.X509TrustManager
 /**
  * @author lingting 2024-09-28 11:32
  */
-class Https private constructor() {
-    init {
-        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+object Https {
+
+    val SSL_DISABLED_TRUST_MANAGER: X509TrustManager = X509TrustAllManager
+
+
+    val SSL_DISABLED_HOSTNAME_VERIFIER: HostnameVerifier = HostnameAllVerifier
+
+
+    fun sslContext(tm: TrustManager, vararg tms: TrustManager): SSLContext {
+        return sslContext("TLS", tm, tms)
     }
 
-    companion object {
-
-        val SSL_DISABLED_TRUST_MANAGER: X509TrustManager = X509TrustAllManager.INSTANCE
-
-
-        val SSL_DISABLED_HOSTNAME_VERIFIER: HostnameVerifier = HostnameAllVerifier.INSTANCE
-
-
-        fun sslContext(tm: TrustManager, vararg tms: TrustManager): SSLContext {
-            val context = SSLContext.getInstance("TLS")
-            val random = SecureRandom()
-            val list: MutableList<TrustManager> = ArrayList()
-            list.add(tm)
-            Arrays.stream(tms).filter { obj: TrustManager? -> Objects.nonNull(obj) }.forEach { e: TrustManager -> list.add(e) }
-            context.init(null, list.toTypedArray<TrustManager>(), random)
-            return context
-        }
-
-
-        fun sslDisabledContext(): SSLContext {
-            return sslContext(SSL_DISABLED_TRUST_MANAGER)
-        }
+    fun sslContext(protocol: String, tm: TrustManager, tms: Array<out TrustManager>): SSLContext {
+        val context = SSLContext.getInstance(protocol)
+        val random = SecureRandom()
+        val list: MutableList<TrustManager> = ArrayList()
+        list.add(tm)
+        tms.filter { Objects.nonNull(it) }.forEach { list.add(it) }
+        context.init(null, list.toTypedArray<TrustManager>(), random)
+        return context
     }
+
+    fun sslDisabledContext(): SSLContext {
+        return sslContext(SSL_DISABLED_TRUST_MANAGER)
+    }
+
 }

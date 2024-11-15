@@ -9,12 +9,16 @@ class BooleanUtils private constructor() {
     }
 
     companion object {
+
         private val STR_TRUE = arrayOf("1", "true", "yes", "ok", "y", "t")
 
         private val STR_FALSE = arrayOf("0", "false", "no", "n", "f")
 
-
-        fun isTrue(obj: Any): Boolean {
+        @JvmStatic
+        fun isTrue(obj: Any?): Boolean {
+            if (obj == null) {
+                return false
+            }
             if (obj is String) {
                 return ArrayUtils.containsIgnoreCase(STR_TRUE, obj)
             }
@@ -28,7 +32,11 @@ class BooleanUtils private constructor() {
         }
 
 
-        fun isFalse(obj: Any): Boolean {
+        @JvmStatic
+        fun isFalse(obj: Any?): Boolean {
+            if (obj == null) {
+                return false
+            }
             if (obj is String) {
                 return ArrayUtils.containsIgnoreCase(STR_FALSE, obj)
             }

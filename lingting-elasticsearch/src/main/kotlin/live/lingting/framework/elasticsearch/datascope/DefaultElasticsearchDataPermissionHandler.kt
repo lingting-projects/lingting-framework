@@ -1,6 +1,5 @@
 package live.lingting.framework.elasticsearch.datascope
 
-import java.util.*
 
 /**
  * @author lingting 2023-06-27 11:06

@@ -1,9 +1,9 @@
 package live.lingting.framework.money
 
-import live.lingting.framework.exception.BizException
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.*
+
 
 /**
  * @author lingting 2023-05-07 17:44
@@ -89,7 +89,7 @@ class Money private constructor(
      * @param money 金额
      * @return 增加指定金额后的新金额
      */
-    fun add(money: BigDecimal?): Money {
+    fun add(money: BigDecimal): Money {
         return use(value.add(money))
     }
 
@@ -129,7 +129,7 @@ class Money private constructor(
      * @param money 金额
      * @return 减少指定金额后的新金额
      */
-    fun subtract(money: BigDecimal?): Money {
+    fun subtract(money: BigDecimal): Money {
         return use(value.subtract(money))
     }
 
@@ -169,7 +169,7 @@ class Money private constructor(
      * @param money 金额
      * @return 乘以指定金额后的新金额
      */
-    fun multiply(money: BigDecimal?): Money {
+    fun multiply(money: BigDecimal): Money {
         return use(value.multiply(money))
     }
 
@@ -209,7 +209,7 @@ class Money private constructor(
      * @param money 金额
      * @return 除以指定金额后的新金额
      */
-    fun divide(money: BigDecimal?): Money {
+    fun divide(money: BigDecimal): Money {
         return use(value.divide(money, decimalType))
     }
 
@@ -254,7 +254,7 @@ class Money private constructor(
      * @param money 金额
      * @return boolean true 表示大于目标金额
      */
-    fun isGt(money: BigDecimal?): Boolean {
+    fun isGt(money: BigDecimal): Boolean {
         return value.compareTo(money) > 0
     }
 
@@ -274,7 +274,7 @@ class Money private constructor(
      * @param money 金额
      * @return boolean true 表示大于等于目标金额
      */
-    fun isGe(money: BigDecimal?): Boolean {
+    fun isGe(money: BigDecimal): Boolean {
         return value.compareTo(money) > -1
     }
 
@@ -294,7 +294,7 @@ class Money private constructor(
      * @param money 金额
      * @return boolean true 表示等于目标金额
      */
-    fun isEquals(money: BigDecimal?): Boolean {
+    fun isEquals(money: BigDecimal): Boolean {
         return value.compareTo(money) == 0
     }
 
@@ -314,7 +314,7 @@ class Money private constructor(
      * @param money 金额
      * @return boolean true 表示小于目标金额
      */
-    fun isLt(money: BigDecimal?): Boolean {
+    fun isLt(money: BigDecimal): Boolean {
         return value.compareTo(money) < 0
     }
 
@@ -334,7 +334,7 @@ class Money private constructor(
      * @param money 金额
      * @return boolean true 表示小于等于目标金额
      */
-    fun isLe(money: BigDecimal?): Boolean {
+    fun isLe(money: BigDecimal): Boolean {
         return value.compareTo(money) < 1
     }
 
@@ -416,12 +416,16 @@ class Money private constructor(
     }
 
     companion object {
+        @JvmStatic
         val DEFAULT_DECIMAL_TYPE: RoundingMode = RoundingMode.HALF_UP
 
+        @JvmStatic
         val ZERO: Money = of(0)
 
+        @JvmStatic
         val TEN: Money = of(10)
 
+        @JvmStatic
         val HUNDRED: Money = of(100)
 
         /**
@@ -430,7 +434,7 @@ class Money private constructor(
          * @param value 金额值
          * @return 金额实例
          */
-
+        @JvmStatic
         fun of(value: String): Money {
             return of(BigDecimal(value))
         }
@@ -441,6 +445,7 @@ class Money private constructor(
          * @param value 金额值
          * @return 金额实例
          */
+        @JvmStatic
         fun of(value: Long): Money {
             return of(BigDecimal.valueOf(value))
         }
@@ -451,10 +456,10 @@ class Money private constructor(
          * @param value 金额值
          * @return 金额实例
          */
+        @JvmStatic
         fun of(value: Double): Money {
             return of(BigDecimal.valueOf(value))
         }
-
         /**
          * 通过指定金额值和上下文的配置进行构建
          *
@@ -462,9 +467,10 @@ class Money private constructor(
          * @return 金额实例
          */
 
+        @JvmStatic
         fun of(value: BigDecimal): Money {
             // 上下文自定义的金额配置
-            val config: MoneyConfig = MoneyConfigHolder.get()
+            val config = MoneyConfigHolder.get()
             if (config != null) {
                 return of(value, config)
             }
@@ -478,6 +484,7 @@ class Money private constructor(
          * @param config 金额配置
          * @return 金额实例
          */
+        @JvmStatic
         fun of(value: BigDecimal, config: MoneyConfig): Money {
             return of(value, config.decimalLimit, config.decimalType, config.quantileLimit, config.quantileSymbol)
         }
@@ -495,14 +502,12 @@ class Money private constructor(
          * @param quantileLimit 分位间隔数量
          * @return 金额实例
          */
+        @JvmStatic
         fun of(
             value: BigDecimal, decimalLimit: Int, decimalType: RoundingMode?, quantileLimit: Int?,
             quantileSymbol: String?
         ): Money {
             var decimalType = decimalType
-            if (value == null) {
-                throw BizException(MoneyResultCode.VALUE_ERROR)
-            }
             // 小数位配置, 如果指定了小数位数量, 但是未指定小数位处理方案, 则使用默认的方案
             decimalType = if (MoneyConfig.validDecimal(decimalLimit)) {
                 decimalType ?: DEFAULT_DECIMAL_TYPE
@@ -512,7 +517,7 @@ class Money private constructor(
             // 分位配置
             if (MoneyConfig.validQuantile(quantileLimit)) {
                 // 有效分位则进行校验
-                MoneyConfig.validQuantile(quantileLimit, quantileSymbol!!)
+                MoneyConfig.validQuantile(quantileLimit, quantileSymbol)
             }
             return ofPrivate(value, decimalLimit, decimalType, quantileLimit, quantileSymbol)
         }

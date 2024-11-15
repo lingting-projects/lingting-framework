@@ -1,5 +1,6 @@
 package live.lingting.framework.map
 
+import live.lingting.framework.kt.optional
 import live.lingting.framework.util.BooleanUtils
 import java.util.*
 import java.util.function.Function
@@ -9,18 +10,19 @@ import java.util.function.Predicate
  * @author lingting 2024-04-20 16:17
  */
 interface SimpleMap<K, V> : MutableMap<K, V> {
+
     fun find(key: K): V? {
         return if (isEmpty()) null else get(key)
     }
 
-    fun <T> find(key: K, func: Function<Optional<V>?, T>): T {
+    fun <T> find(key: K, func: Function<Optional<V>, T>): T {
         val v = find(key)
-        val optional: Optional<V> = Optional.ofNullable(v)
+        val optional = v.optional()
         return func.apply(optional)
     }
 
     fun <T> find(key: K, defaultValue: T, func: Function<V, T>): T {
-        return find(key, defaultValue, { obj: V -> Objects.isNull(obj) }, func)
+        return find(key, defaultValue, { it == null }, func)
     }
 
     /**
@@ -35,6 +37,6 @@ interface SimpleMap<K, V> : MutableMap<K, V> {
     }
 
     fun toBoolean(key: K): Boolean {
-        return find<Boolean>(key, false, Function<V, Boolean> { obj: V -> BooleanUtils.isTrue(obj) })
+        return find<Boolean>(key, false, Function<V, Boolean> { BooleanUtils.isTrue(it) })
     }
 }

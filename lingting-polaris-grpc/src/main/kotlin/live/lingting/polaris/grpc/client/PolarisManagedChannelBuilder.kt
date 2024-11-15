@@ -17,11 +17,9 @@ import live.lingting.polaris.grpc.loadbalance.PolarisLoadBalancerProvider
 import live.lingting.polaris.grpc.resolver.PolarisNameResolverFactory
 import live.lingting.polaris.grpc.util.JvmHookHelper
 import java.nio.charset.StandardCharsets
-import java.util.*
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.concurrent.Volatile
 
 /**
  * @author [liaochuntao](mailto:liaochuntao@live.com)

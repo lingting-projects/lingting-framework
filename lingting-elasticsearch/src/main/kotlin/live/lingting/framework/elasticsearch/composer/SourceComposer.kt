@@ -4,7 +4,7 @@ import co.elastic.clients.elasticsearch.core.search.SourceConfig
 import co.elastic.clients.elasticsearch.core.search.SourceFilter
 import live.lingting.framework.elasticsearch.ElasticsearchFunction
 import live.lingting.framework.elasticsearch.ElasticsearchUtils
-import java.util.*
+
 
 /**
  * @author lingting 2024-03-06 17:45

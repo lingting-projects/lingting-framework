@@ -50,7 +50,7 @@ class NtpCn private constructor() {
 
         fun instance(): Ntp? {
             if (!instance.isNull) {
-                return instance.getValue()
+                return instance.value
             }
 
             return instance.compute(object : UnaryOperator<Ntp?> {

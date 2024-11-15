@@ -33,7 +33,6 @@ import live.lingting.framework.api.PaginationResult
 import live.lingting.framework.api.ScrollCursor
 import live.lingting.framework.api.ScrollParams
 import live.lingting.framework.api.ScrollResult
-import live.lingting.framework.elasticsearch.ElasticsearchApi
 import live.lingting.framework.elasticsearch.builder.QueryBuilder
 import live.lingting.framework.elasticsearch.composer.SortComposer
 import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataPermissionHandler
@@ -47,7 +46,6 @@ import live.lingting.framework.util.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
-import java.util.*
 import java.util.function.BiConsumer
 import java.util.function.Consumer
 import java.util.function.Function

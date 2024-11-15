@@ -40,6 +40,7 @@ class MoneyConfig(
         /**
          * 默认金额配置
          */
+        @JvmStatic
         val DEFAULT: MoneyConfig = MoneyConfig(2, RoundingMode.HALF_UP, null, "")
 
         /**
@@ -47,6 +48,7 @@ class MoneyConfig(
          *
          * @return true 有效, 需要进行小数位处理
          */
+        @JvmStatic
         fun validDecimal(decimalLimit: Int?): Boolean {
             return decimalLimit != null && decimalLimit > 0
         }
@@ -56,6 +58,7 @@ class MoneyConfig(
          *
          * @return true 表示有效, 需要进行分位控制
          */
+        @JvmStatic
         fun validQuantile(quantileLimit: Int?): Boolean {
             return quantileLimit != null && quantileLimit > 0
         }
@@ -63,7 +66,8 @@ class MoneyConfig(
         /**
          * 校验分位配置
          */
-        fun validQuantile(quantileLimit: Int?, quantileSymbol: String) {
+        @JvmStatic
+        fun validQuantile(quantileLimit: Int?, quantileSymbol: String?) {
             // 无效分位配置不管
             if (!validQuantile(quantileLimit)) {
                 return

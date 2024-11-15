@@ -6,7 +6,9 @@ import javax.net.ssl.X509TrustManager
 /**
  * @author lingting 2024-01-29 16:27
  */
-class X509TrustAllManager private constructor() : X509TrustManager {
+@Suppress("kotlin:S5527", "kotlin:S6516")
+object X509TrustAllManager : X509TrustManager {
+    val ARRAY = arrayOf<X509Certificate>()
 
     override fun checkClientTrusted(x509Certificates: Array<X509Certificate>, authType: String) {
         //
@@ -18,10 +20,7 @@ class X509TrustAllManager private constructor() : X509TrustManager {
     }
 
     override fun getAcceptedIssuers(): Array<X509Certificate> {
-        return arrayOfNulls(0)
+        return ARRAY
     }
 
-    companion object {
-        val INSTANCE: X509TrustAllManager = X509TrustAllManager()
-    }
 }

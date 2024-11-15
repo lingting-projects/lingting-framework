@@ -1,7 +1,6 @@
 package live.lingting.framework.thread
 
 import live.lingting.framework.context.ContextHolder.start
-import live.lingting.framework.retry.Retry.value
 import live.lingting.framework.util.ThreadUtils
 import live.lingting.framework.util.ValueUtils
 import org.junit.jupiter.api.Assertions
@@ -51,7 +50,7 @@ internal class AbstractTimerTest {
         timer.wake()
         ValueUtils.await({ atomic.get() }, { v -> v > 1 })
         Assertions.assertEquals(2, atomic.get())
-        val thread = timer.threadValue.getValue()
+        val thread = timer.threadValue.value
         Assertions.assertNotNull(thread)
         Assertions.assertFalse(thread.isInterrupted)
         thread.interrupt()

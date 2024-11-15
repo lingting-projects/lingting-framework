@@ -1,9 +1,7 @@
 package live.lingting.framework.datascope.holder
 
 import live.lingting.framework.datascope.JsqlDataScope
-import java.util.*
 import java.util.function.Supplier
-import kotlin.collections.ArrayDeque
 
 class DataScopeHolder private constructor() {
     init {

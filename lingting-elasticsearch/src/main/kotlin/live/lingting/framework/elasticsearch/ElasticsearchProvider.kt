@@ -6,11 +6,11 @@ import co.elastic.clients.json.jackson.JacksonJsonpMapper
 import co.elastic.clients.transport.ElasticsearchTransport
 import co.elastic.clients.transport.rest_client.RestClientTransport
 import com.fasterxml.jackson.databind.ObjectMapper
+import live.lingting.framework.elasticsearch.ElasticsearchProvider.Companion.restClient
 import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataPermissionHandler
 import live.lingting.framework.jackson.JacksonUtils
 import org.apache.http.HttpHost
 import org.elasticsearch.client.RestClient
-import java.util.*
 import java.util.function.Function
 
 /**

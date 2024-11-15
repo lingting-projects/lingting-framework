@@ -1,7 +1,7 @@
 package live.lingting.framework.security.domain
 
 import live.lingting.framework.util.StringUtils
-import java.util.*
+
 import java.util.function.Function
 import java.util.function.Predicate
 

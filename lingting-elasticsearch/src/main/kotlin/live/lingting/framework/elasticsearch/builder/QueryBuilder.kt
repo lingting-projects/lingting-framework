@@ -6,7 +6,7 @@ import live.lingting.framework.elasticsearch.ElasticsearchFunction
 import live.lingting.framework.elasticsearch.composer.QueryComposer
 import live.lingting.framework.elasticsearch.function.TermOperator
 import live.lingting.framework.util.CollectionUtils
-import java.util.*
+
 import java.util.function.Supplier
 
 /**

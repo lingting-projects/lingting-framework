@@ -7,8 +7,6 @@ import live.lingting.framework.value.multi.StringMultiValue
 import java.net.URI
 import java.net.URISyntaxException
 import java.net.URL
-import java.util.*
-import java.util.function.BiConsumer
 
 /**
  * @author lingting 2024-01-29 16:13
@@ -136,23 +134,18 @@ class HttpUrlBuilder {
     }
 
     fun addParams(params: MultiValue<String, *, *>): HttpUrlBuilder {
-        params.forEach { name: Any?, value: Any? -> }
-        params.forEach(object : BiConsumer<Any?, Any?> {
-            override fun accept(t: Any?, u: Any?) {
-                addParam(t.toString(), u)
-            }
-        })
+        params.forEach { name: Any?, value: Any? -> addParam(name!!.toString(), value) }
         return this
     }
 
     fun build(): String {
-        require(StringUtils.hasText(host)) { "Host [%s] is invalid!".formatted(host) }
-        require(!(port != null && (port!! < 0 || port!! > 65535))) { "Port [%d] is invalid!".formatted(port) }
+        require(StringUtils.hasText(host)) { "Host [$host] is invalid!" }
+        require(!(port != null && (port!! < 0 || port!! > 65535))) { "Port [$port] is invalid!" }
 
         val builder = StringBuilder()
         builder.append(scheme).append("://")
         builder.append(host)
-        if (host.endsWith("/")) {
+        if (host!!.endsWith("/")) {
             builder.deleteCharAt(builder.length - 1)
         }
         if (port != null) {
@@ -161,8 +154,8 @@ class HttpUrlBuilder {
         builder.append(buildPath())
         val query = buildQuery()
         if (StringUtils.hasText(query)) {
-            if (builder[builder.length - 1] != '') {
-                builder.append("")
+            if (builder[builder.length - 1] != '?') {
+                builder.append("?")
             }
             builder.append(query)
         }
@@ -185,6 +178,8 @@ class HttpUrlBuilder {
         return builder.toString()
     }
 
+    fun buildQuery(): String = buildQuery(params)
+
     fun buildUri(): URI {
         try {
             val path = buildPath()
@@ -197,51 +192,56 @@ class HttpUrlBuilder {
         }
     }
 
-
     fun buildUrl(): URL {
         return buildUri().toURL()
     }
 
     fun copy(): HttpUrlBuilder {
-        return builder().scheme(scheme).host(host!!).port(port).uri(uri).addParams(params)
+        val builder = builder().addParams(params).scheme(scheme).uri(uri)
+        host?.let { builder.host(it) }
+        port?.let { builder.port(it) }
+        return builder
     }
 
     companion object {
 
+        @JvmStatic
         fun builder(): HttpUrlBuilder {
             return HttpUrlBuilder()
         }
 
-
+        @JvmStatic
         fun from(url: String): HttpUrlBuilder {
             val u = URI.create(url)
             return from(u)
         }
 
-
+        @JvmStatic
         fun from(u: URI): HttpUrlBuilder {
             val builder = builder().scheme(u.scheme).host(u.host).port(u.port).uri(u.path)
             val query = u.query
             if (StringUtils.hasText(query)) {
-                Arrays.stream<String>(query.split("&".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()).forEach { s: String ->
-                    val split: Array<String> = s.split("=".toRegex(), limit = 2).toTypedArray()
-                    val name = split[0]
-                    builder.addParam(name, if (split.size == 1) null else split[1])
-                }
+                query.split("&")
+                    .dropLastWhile { it.isBlank() }
+                    .forEach {
+                        it.split("=", limit = 2)
+                            .let { builder.addParam(it[0], if (it.size == 1) null else it[1]) }
+                    }
             }
             return builder
         }
 
-
-        fun buildQuery(value: MultiValue<String, String, *> = params): String {
-            return buildQuery(value.map() as Map<String, Collection<String>>)
+        @JvmStatic
+        fun buildQuery(value: MultiValue<String, String, *>): String {
+            return buildQuery(value.map())
         }
 
+        @JvmStatic
         fun buildQuery(map: Map<String, Collection<String>>): String {
             if (CollectionUtils.isEmpty(map)) {
                 return ""
             }
-            val keys = map!!.keys.stream().sorted().toList()
+            val keys = map.keys.stream().sorted().toList()
 
             val builder = StringBuilder()
             for (key in keys) {
