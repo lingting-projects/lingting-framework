@@ -120,6 +120,9 @@ configure(javaProjects) {
 
     configure<KotlinJvmProjectExtension> {
         jvmToolchain(javaVersion.majorVersion.toInt())
+        compilerOptions {
+            freeCompilerArgs.add("-Xjvm-default=all")
+        }
     }
 
     configure<JavaPluginExtension> {
