@@ -1,9 +1,9 @@
 package live.lingting.framework.util
 
-import live.lingting.framework.function.ThrowableSupplier
-import live.lingting.framework.value.LazyValue
 import java.io.File
 import java.nio.charset.Charset
+import live.lingting.framework.function.ThrowableSupplier
+import live.lingting.framework.value.LazyValue
 
 /**
  * @author lingting 2022/6/25 12:10
@@ -52,8 +52,8 @@ class SystemUtils private constructor() {
         /**
          * 获取系统字符集
          */
-        fun charset(): Charset? {
-            return charset.get()
+        fun charset(): Charset {
+            return charset.get()!!
         }
 
         fun lineSeparator(): String {

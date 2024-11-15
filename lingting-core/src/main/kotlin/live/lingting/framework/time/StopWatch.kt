@@ -60,13 +60,12 @@ class StopWatch {
      *
      */
     fun timeNanos(): Long {
-        if (durationNanos == null) {
-            return if (startTimeNanos == null) 0 else System.nanoTime() - startTimeNanos!!
-        }
-        return durationNanos
+        return durationNanos ?: if (startTimeNanos == null) 0 else System.nanoTime() - startTimeNanos!!
     }
 
     fun timeMillis(): Long {
-        return TimeUnit.NANOSECONDS.toMillis(timeNanos())
+        val duration = timeNanos()
+        return TimeUnit.NANOSECONDS.toMillis(duration)
     }
+
 }

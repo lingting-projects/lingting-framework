@@ -1,8 +1,8 @@
 package live.lingting.framework.thread
 
+import java.time.Duration
 import live.lingting.framework.time.StopWatch
 import live.lingting.framework.util.CollectionUtils
-import java.time.Duration
 
 
 /**
@@ -11,13 +11,37 @@ import java.time.Duration
  * @author lingting 2021/3/2 15:07
  */
 abstract class AbstractQueueThread<E> : AbstractThreadContextComponent() {
-    protected val data: MutableList<E> = ArrayList<E>(this.batchSize)
+
+    /**
+     * 用于子类自定义缓存数据数量
+     * @return long
+     */
+    open val batchSize: Int = BATCH_SIZE
+
+    /**
+     * 用于子类自定义等待时长
+     *
+     *
+     * 不要和 [.getPollTimeout]值相差过大, 否则会导致等待时间不是预期的值, 而是
+     * [.getPollTimeout]的值
+     *
+     * @return 返回时长，单位毫秒
+     */
+    open val batchTimeout: Duration = BATCH_TIMEOUT
+
+    /**
+     * 用于子类自定义 获取数据的超时时间
+     * @return 返回时长，单位毫秒
+     */
+    open val pollTimeout: Duration = POLL_TIMEOUT
+
+    protected val data: MutableList<E> = ArrayList<E>(batchSize)
 
     /**
      * 往队列插入数据
      * @param e 数据
      */
-    abstract fun put(e: E)
+    abstract fun put(e: E?)
 
     /**
      * 数据处理前执行
@@ -31,15 +55,14 @@ abstract class AbstractQueueThread<E> : AbstractThreadContextComponent() {
      * @return E
      * @throws InterruptedException 线程中断
      */
-
-    protected abstract fun poll(timeout: Duration): E
+    protected abstract fun poll(timeout: Duration): E?
 
     /**
      * 处理单个接收的数据
      * @param e 接收的数据
      * @return 返回要放入队列的数据
      */
-    protected fun process(e: E?): E? {
+    protected fun process(e: E): E {
         return e
     }
 
@@ -48,9 +71,7 @@ abstract class AbstractQueueThread<E> : AbstractThreadContextComponent() {
      * @param list 所有已接收的数据
      * @throws Exception 异常
      */
-
     protected abstract fun process(list: List<E>?)
-
 
     override fun doRun() {
         preProcess()
@@ -69,7 +90,7 @@ abstract class AbstractQueueThread<E> : AbstractThreadContextComponent() {
         val watch = StopWatch()
         while (count < this.batchSize) {
             val e = poll()
-            val p = process(e)
+            val p = if (e != null) process(e) else null
 
             if (p != null) {
                 // 第一次插入数据
@@ -131,36 +152,19 @@ abstract class AbstractQueueThread<E> : AbstractThreadContextComponent() {
         /**
          * 默认缓存数据数量
          */
-        const val batchSize: Int = 500
-            /**
-             * 用于子类自定义缓存数据数量
-             * @return long
-             */
-            get() = Companion.field
+        @JvmStatic
+        val BATCH_SIZE: Int = 500
 
         /**
          * 默认等待时长 30秒
          */
-        val batchTimeout: Duration = Duration.ofSeconds(30)
-            /**
-             * 用于子类自定义等待时长
-             *
-             *
-             * 不要和 [.getPollTimeout]值相差过大, 否则会导致等待时间不是预期的值, 而是
-             * [.getPollTimeout]的值
-             *
-             * @return 返回时长，单位毫秒
-             */
-            get() = Companion.field
+        @JvmStatic
+        val BATCH_TIMEOUT: Duration = Duration.ofSeconds(30)
 
         /**
          * 默认获取数据时的超时时间
          */
-        val pollTimeout: Duration = Duration.ofSeconds(5)
-            /**
-             * 用于子类自定义 获取数据的超时时间
-             * @return 返回时长，单位毫秒
-             */
-            get() = Companion.field
+        @JvmStatic
+        val POLL_TIMEOUT: Duration = Duration.ofSeconds(5)
     }
 }

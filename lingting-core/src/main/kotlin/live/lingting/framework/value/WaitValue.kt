@@ -1,11 +1,13 @@
 package live.lingting.framework.value
 
-import live.lingting.framework.lock.JavaReentrantLock
-import live.lingting.framework.util.ValueUtils
-
+import java.util.Objects
 import java.util.concurrent.TimeUnit
+import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Predicate
+import live.lingting.framework.kt.optional
+import live.lingting.framework.lock.JavaReentrantLock
+import live.lingting.framework.util.ValueUtils
 
 /**
  * @author lingting 2023-05-21 20:13
@@ -21,12 +23,11 @@ class WaitValue<T> {
     val isNull: Boolean
         get() = value == null
 
-    fun update(t: T) {
+    fun update(t: T?) {
         update { t }
     }
 
-
-    fun update(operator: Function<T?, T>) {
+    fun update(operator: Function<T?, T?>) {
         lock.runByInterruptibly {
             value = operator.apply(value)
             lock.signalAll()
@@ -38,8 +39,7 @@ class WaitValue<T> {
      *
      * @param operator 运行行为
      */
-
-    fun compute(operator: Function<T?, T>): T {
+    fun compute(operator: Function<T?, T?>): T? {
         return lock.getByInterruptibly {
             val v = operator.apply(value)
             update(v)
@@ -47,16 +47,21 @@ class WaitValue<T> {
         }
     }
 
+    fun consumer(consumer: Consumer<T?>) {
+        lock.runByInterruptibly {
+            consumer.accept(value)
+        }
+    }
 
     fun notNull(): T {
         return wait { obj: T -> Objects.nonNull(obj) }
     }
 
-
     fun notEmpty(): T {
         return wait { ValueUtils.isPresent(it) }
     }
 
+    fun optional() = value.optional()
 
     fun wait(predicate: Predicate<T>): T {
         lock.lockInterruptibly()
@@ -71,7 +76,6 @@ class WaitValue<T> {
         }
     }
 
-
     companion object {
         @JvmStatic
         fun <T> of(): WaitValue<T> {
@@ -80,7 +84,7 @@ class WaitValue<T> {
 
 
         @JvmStatic
-        fun <T> of(t: T): WaitValue<T> {
+        fun <T> of(t: T?): WaitValue<T> {
             val of = of<T>()
             of.value = t
             return of

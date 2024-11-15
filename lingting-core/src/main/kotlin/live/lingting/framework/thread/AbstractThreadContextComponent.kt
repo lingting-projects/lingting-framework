@@ -1,17 +1,16 @@
 package live.lingting.framework.thread
 
+import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
+import java.util.function.Consumer
 import live.lingting.framework.context.ContextComponent
 import live.lingting.framework.context.ContextHolder
+import live.lingting.framework.kt.ifTrue
 import live.lingting.framework.kt.logger
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.util.ThreadUtils
 import live.lingting.framework.util.ValueUtils
 import live.lingting.framework.value.WaitValue
-import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
-import java.util.function.Consumer
-import java.util.function.Function
-import java.util.function.Supplier
 
 /**
  * @author lingting 2023-04-22 10:40
@@ -19,38 +18,22 @@ import java.util.function.Supplier
 abstract class AbstractThreadContextComponent : ContextComponent {
     protected val log = logger()
 
-
     val threadValue: WaitValue<Thread> = WaitValue.of<Thread>()
 
-    private var executor: ExecutorService? = VirtualThread.executor()
+    private var executor: ExecutorService = VirtualThread.executor()
 
-    protected fun thread(consumer: Consumer<Thread?>) {
-        thread<Any?>({ thread: Thread? ->
-            consumer.accept(thread)
-            null
-        }, null)
-    }
-
-    protected fun <T> thread(function: Function<Thread?, T>, defaultValue: T): T {
-        if (!threadValue.isNull) {
-            val value = threadValue.value
-            return function.apply(value)
-        }
-        return defaultValue
+    protected fun thread(consumer: Consumer<Thread>) {
+        threadValue.optional().ifPresent { consumer.accept(it) }
     }
 
     protected fun threadId(): Long {
-        return thread({ obj: Thread? -> obj!!.threadId() }, -1L)
+        return threadValue.optional().map { it.threadId() }.orElse(-1L)
     }
 
-
     protected fun interrupt() {
-        thread { t: Thread? ->
-            if (!t!!.isInterrupted) {
-                t.interrupt()
-            }
+        threadValue.consumer {
+            it?.isInterrupted.ifTrue { it?.interrupt() }
         }
-        threadValue.update(null as Thread?)
     }
 
     protected fun init() {
@@ -58,11 +41,11 @@ abstract class AbstractThreadContextComponent : ContextComponent {
 
     open val isRun: Boolean
         get() {
-            val threadAvailable = thread({ thread: Thread? -> !thread!!.isInterrupted && thread.isAlive }, false)
-            return threadAvailable && !ContextHolder.isStop()
+            val available = threadValue.optional().map { !it.isInterrupted && it.isAlive }.orElse(false)
+            return !ContextHolder.isStop && available
         }
 
-    protected open fun executor(): Executor? {
+    protected open fun executor(): Executor {
         return executor
     }
 
@@ -76,19 +59,24 @@ abstract class AbstractThreadContextComponent : ContextComponent {
 
     override fun onApplicationStart() {
         val name = simpleName
-        val current = executor()
-        current!!.execute(object : KeepRunnable(name) {
-
-            override fun process() {
-                val thread = Thread.currentThread()
-                threadValue.update(thread)
-                try {
-                    this@AbstractThreadContextComponent.run()
-                } finally {
-                    threadValue.update(null as Thread?)
-                }
+        threadValue.consumer {
+            // 已分配, 不再重新分配
+            if (it != null) {
+                return@consumer
             }
-        })
+
+            executor().execute(object : KeepRunnable(name) {
+                override fun process() {
+                    val thread = Thread.currentThread()
+                    threadValue.update(thread)
+                    try {
+                        this@AbstractThreadContextComponent.run()
+                    } finally {
+                        threadValue.update(null)
+                    }
+                }
+            })
+        }
     }
 
     override fun onApplicationStop() {
@@ -110,7 +98,7 @@ abstract class AbstractThreadContextComponent : ContextComponent {
         while (isRun) {
             try {
                 doRun()
-            } catch (e: InterruptedException) {
+            } catch (_: InterruptedException) {
                 interrupt()
                 shutdown()
             } catch (e: Exception) {
@@ -129,13 +117,13 @@ abstract class AbstractThreadContextComponent : ContextComponent {
         log.warn("Class: {}; ThreadId: {}; shutdown!", simpleName, threadId())
     }
 
-    protected fun error(e: Exception?) {
+    protected fun error(e: Exception) {
         log.error("Class: {}; ThreadId: {}; error!", simpleName, threadId(), e)
     }
 
     fun awaitTerminated() {
         log.debug("wait thread terminated.")
-        ValueUtils.awaitTrue(Supplier<Boolean?> { thread<Boolean>({ thread: Thread? -> Thread.State.TERMINATED == thread!!.state }, true) })
+        ValueUtils.awaitTrue { threadValue.optional().map { Thread.State.TERMINATED == it.state }.orElse(true) }
         log.debug("thread terminated.")
     }
 }

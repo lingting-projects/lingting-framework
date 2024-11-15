@@ -1,9 +1,8 @@
 package live.lingting.framework.thread
 
+import live.lingting.framework.kt.logger
 import live.lingting.framework.util.MdcUtils
 import live.lingting.framework.util.StringUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 
 /**
@@ -11,7 +10,14 @@ import org.slf4j.MDC
  *
  * @author lingting 2024-04-28 17:25
  */
-abstract class KeepRunnable protected constructor(protected val name: String? = "", protected val mdc: Map<String, String> = MdcUtils.copyContext()) : Runnable {
+abstract class KeepRunnable protected constructor(protected val name: String, protected val mdc: Map<String, String>) : Runnable {
+
+    constructor() : this("")
+
+    constructor(name: String?) : this(name ?: "", MdcUtils.copyContext())
+
+    protected val log = logger()
+
     override fun run() {
         val thread = Thread.currentThread()
         val oldName = thread.name
@@ -42,7 +48,4 @@ abstract class KeepRunnable protected constructor(protected val name: String? = 
     protected open fun onFinally() {
     }
 
-    companion object {
-        private val log: Logger = LoggerFactory.getLogger(KeepRunnable::class.java)
-    }
 }

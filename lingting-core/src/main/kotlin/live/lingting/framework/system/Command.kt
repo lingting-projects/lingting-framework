@@ -1,19 +1,19 @@
 package live.lingting.framework.system
 
-import live.lingting.framework.util.FileUtils
-import live.lingting.framework.util.StringUtils
-import live.lingting.framework.util.SystemUtils
 import java.io.File
 import java.io.OutputStream
 import java.nio.charset.Charset
-
+import java.util.StringTokenizer
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import live.lingting.framework.util.FileUtils
+import live.lingting.framework.util.StringUtils
+import live.lingting.framework.util.SystemUtils
 
 /**
  * @author lingting 2022/6/25 11:55
  */
-class Command protected constructor(init: String, enter: String, exit: String, charset: Charset?) {
+class Command protected constructor(init: String, enter: String, exit: String, charset: Charset) {
 
     val init: String
 
@@ -34,7 +34,7 @@ class Command protected constructor(init: String, enter: String, exit: String, c
 
     val exit: String
 
-    val charset: Charset?
+    val charset: Charset
 
     val startTime: Long
 
@@ -65,7 +65,7 @@ class Command protected constructor(init: String, enter: String, exit: String, c
     }
 
     fun history(): List<String> {
-        return Collections.unmodifiableList(history)
+        return history.toList()
     }
 
 
@@ -195,14 +195,14 @@ class Command protected constructor(init: String, enter: String, exit: String, c
          *
          * @param init 初始命令
          */
+        fun of(init: String): Command = of(init, SystemUtils.charset())
 
-
-        fun of(init: String, charset: Charset? = SystemUtils.charset()): Command {
+        fun of(init: String, charset: Charset): Command {
             return of(init, ENTER, EXIT, charset)
         }
 
 
-        fun of(init: String, enter: String, exit: String, charset: Charset?): Command {
+        fun of(init: String, enter: String, exit: String, charset: Charset): Command {
             return Command(init, enter, exit, charset)
         }
     }

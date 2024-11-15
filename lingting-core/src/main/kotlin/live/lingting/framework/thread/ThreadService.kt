@@ -1,22 +1,23 @@
 package live.lingting.framework.thread
 
-import live.lingting.framework.function.ThrowableRunnable
 import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
 import java.util.function.Supplier
+import live.lingting.framework.function.ThrowableRunnable
 
 /**
  * @author lingting 2024-09-20 13:21
  */
 interface ThreadService {
+
     fun executor(): ExecutorService
 
     val isRunning: Boolean
         get() {
             val executor = executor()
-            return executor != null && !executor.isShutdown && !executor.isTerminated
+            return !executor.isShutdown && !executor.isTerminated
         }
 
     fun execute(runnable: ThrowableRunnable) {

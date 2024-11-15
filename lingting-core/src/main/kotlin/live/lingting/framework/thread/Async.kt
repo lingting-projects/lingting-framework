@@ -1,17 +1,15 @@
 package live.lingting.framework.thread
 
-import live.lingting.framework.function.ThrowableRunnable
-import live.lingting.framework.lock.JavaReentrantLock
-import live.lingting.framework.util.ThreadUtils
-import live.lingting.framework.util.ValueUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executor
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.function.Supplier
+import live.lingting.framework.function.ThrowableRunnable
+import live.lingting.framework.lock.JavaReentrantLock
+import live.lingting.framework.util.ThreadUtils
+import live.lingting.framework.util.ValueUtils
 
 /**
  * @author lingting 2023-06-05 17:31
@@ -166,7 +164,6 @@ class Async constructor(
     }
 
     companion object {
-        private val log: Logger = LoggerFactory.getLogger(Async::class.java)
         protected var defaultExecutor: Executor = VirtualThread.executor()
 
         const val UNLIMITED: Long = -1

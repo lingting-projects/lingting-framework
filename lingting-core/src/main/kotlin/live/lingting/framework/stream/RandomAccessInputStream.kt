@@ -1,11 +1,11 @@
 package live.lingting.framework.stream
 
-import live.lingting.framework.util.FileUtils
 import java.io.File
 import java.io.InputStream
 import java.io.RandomAccessFile
 import java.nio.file.Files
 import java.nio.file.Path
+import live.lingting.framework.util.FileUtils
 
 /**
  * @author lingting 2024-09-05 14:38
@@ -79,6 +79,7 @@ class RandomAccessInputStream : InputStream {
     companion object {
         const val MODE: String = "r"
 
+        @JvmStatic
         val TEMP_DIR: File = RandomAccessOutputStream.TEMP_DIR
     }
 }

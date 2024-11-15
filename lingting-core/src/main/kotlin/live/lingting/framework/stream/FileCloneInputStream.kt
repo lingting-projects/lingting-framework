@@ -1,10 +1,10 @@
 package live.lingting.framework.stream
 
-import live.lingting.framework.util.FileUtils
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 import java.nio.file.Files
+import live.lingting.framework.util.FileUtils
 
 /**
  * 克隆输入流, 可直接读取, 也可以克隆出一个新流然后读取
@@ -22,7 +22,7 @@ class FileCloneInputStream constructor(source: File, size: Long = Files.size(sou
         if (input is FileCloneInputStream)
             input.source()
         else
-            FileUtils.createTemp(input, ".clone", CloneInputStream.TEMP_DIR)
+            FileUtils.createTemp(input, ".clone", TEMP_DIR)
     )
 
 

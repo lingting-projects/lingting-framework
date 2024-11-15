@@ -31,20 +31,20 @@ class ClassUtils private constructor() {
 
         val CACHE_FIELDS: MutableMap<Class<*>, Array<Field>> = ConcurrentHashMap(16)
 
-        val CACHE_METHODS: MutableMap<Class<*>?, Array<Method?>> = ConcurrentHashMap(16)
+        val CACHE_METHODS: MutableMap<Class<*>, Array<Method>> = ConcurrentHashMap(16)
 
         val CACHE_CLASS_FIELDS: MutableMap<Class<*>, Array<ClassField>> = ConcurrentHashMap(16)
 
-        val CACHE_TYPE_ARGUMENTS: MutableMap<Class<*>, Array<Type?>> = ConcurrentHashMap()
+        val CACHE_TYPE_ARGUMENTS: MutableMap<Class<*>, Array<Type>> = ConcurrentHashMap()
 
         val CACHE_CONSTRUCTOR: MutableMap<Class<*>, Array<Constructor<*>>> = ConcurrentHashMap()
 
         /**
          * 获取指定类的泛型
          */
-        fun typeArguments(cls: Class<*>): Array<Type?> {
-            return CACHE_TYPE_ARGUMENTS.computeIfAbsent(cls) { k: Class<*>? ->
-                val superclass = cls.genericSuperclass as? ParameterizedType ?: return@computeIfAbsent arrayOfNulls<Type>(0)
+        fun typeArguments(cls: Class<*>): Array<Type> {
+            return CACHE_TYPE_ARGUMENTS.computeIfAbsent(cls) { k: Class<*> ->
+                val superclass = cls.genericSuperclass as ParameterizedType : return@computeIfAbsent arrayOfNulls<Type>(0)
                 superclass.actualTypeArguments
             }
         }
@@ -82,15 +82,15 @@ class ClassUtils private constructor() {
 
         fun isPresent(className: String, vararg classLoaders: ClassLoader): Boolean {
             val loaders: Collection<ClassLoader> = Arrays.stream<ClassLoader>(classLoaders)
-                .filter { obj: ClassLoader? -> Objects.nonNull(obj) }
+                .filter { obj: ClassLoader -> Objects.nonNull(obj) }
                 .collect(Collectors.toCollection<ClassLoader, LinkedHashSet<ClassLoader>>(Supplier<LinkedHashSet<ClassLoader>> { LinkedHashSet() }))
             require(!CollectionUtils.isEmpty(loaders)) { "ClassLoaders can not be empty!" }
             val absent = CACHE_CLASS_PRESENT.computeIfAbsent(
                 className
-            ) { k: String? -> ConcurrentHashMap(loaders.size) }
+            ) { k: String -> ConcurrentHashMap(loaders.size) }
 
             for (loader in loaders) {
-                val flag = absent.computeIfAbsent(loader) { k: ClassLoader? ->
+                val flag = absent.computeIfAbsent(loader) { k: ClassLoader ->
                     try {
                         Class.forName(className, true, loader)
                         return@computeIfAbsent true
@@ -113,8 +113,8 @@ class ClassUtils private constructor() {
         }
 
 
-        fun <T> scan(basePack: String, cls: Class<*>?): Set<Class<T>> {
-            return scan(basePack, { tClass: Class<T>? -> cls == null || cls.isAssignableFrom(tClass) }, { s: String?, e: Exception? -> })
+        fun <T> scan(basePack: String, cls: Class<*>): Set<Class<T>> {
+            return scan(basePack, { tClass: Class<T> -> cls == null || cls.isAssignableFrom(tClass) }, { s: String, e: Exception -> })
         }
 
         /**
@@ -127,13 +127,13 @@ class ClassUtils private constructor() {
          */
 
         fun <T> scan(
-            basePack: String, filter: Predicate<Class<T>?>,
-            error: BiConsumer<String?, Exception?>
+            basePack: String, filter: Predicate<Class<T>>,
+            error: BiConsumer<String, Exception>
         ): Set<Class<T>> {
             val scanName: String = basePack.replace(".", "/")
 
             val collection: Collection<ResourceUtils.Resource> = ResourceUtils.scan(scanName,
-                Predicate<ResourceUtils.Resource?> { resource: ResourceUtils.Resource? -> !resource!!.isDirectory && resource.getName().endsWith(".class") })
+                Predicate<ResourceUtils.Resource> { resource: ResourceUtils.Resource -> !resource.isDirectory && resource.getName().endsWith(".class") })
 
             val classes: MutableSet<Class<T>> = HashSet()
             for (resource in collection) {
@@ -160,8 +160,8 @@ class ClassUtils private constructor() {
          * @param o 需要转化的对象
          * @return java.util.Map<java.lang.String></java.lang.String>, java.lang.Object>
          */
-        fun toMap(o: Any?): Map<String, Any?> {
-            return toMap(o, { field: Field? -> true }, { obj: Field -> obj.name }, { field: Field?, v: Any? -> v })
+        fun toMap(o: Any): Map<String, Any> {
+            return toMap(o, { field: Field -> true }, { obj: Field -> obj.name }, { field: Field, v: Any -> v })
         }
 
         /**
@@ -174,8 +174,8 @@ class ClassUtils private constructor() {
          * @return java.util.Map<java.lang.String></java.lang.String>, java.lang.Object>
          */
         fun <T> toMap(
-            o: Any?, filter: Predicate<Field?>, toKey: Function<Field, String>,
-            toVal: BiFunction<Field?, Any?, T>
+            o: Any, filter: Predicate<Field>, toKey: Function<Field, String>,
+            toVal: BiFunction<Field, Any, T>
         ): Map<String, T> {
             if (o == null) {
                 return emptyMap<String, T>()
@@ -183,7 +183,7 @@ class ClassUtils private constructor() {
             val map = HashMap<String, T>()
             for (field in fields(o.javaClass)) {
                 if (filter.test(field)) {
-                    var `val`: Any? = null
+                    var `val`: Any = null
 
                     try {
                         `val` = field[o]
@@ -204,7 +204,7 @@ class ClassUtils private constructor() {
          * @return java.lang.reflect.Field[]
          */
         fun fields(cls: Class<*>): Array<Field> {
-            return CACHE_FIELDS.computeIfAbsent(cls) { k: Class<*>? ->
+            return CACHE_FIELDS.computeIfAbsent(cls) { k: Class<*> ->
                 var k = k
                 val fields: MutableList<Field> = ArrayList()
                 while (k != null && !k.isAssignableFrom(Any::class.java)) {
@@ -215,8 +215,8 @@ class ClassUtils private constructor() {
             }
         }
 
-        fun methods(cls: Class<*>?): Array<Method?> {
-            return CACHE_METHODS.computeIfAbsent(cls) { k: Class<*>? ->
+        fun methods(cls: Class<*>): Array<Method> {
+            return CACHE_METHODS.computeIfAbsent(cls) { k: Class<*> ->
                 var k = k
                 val methods: MutableList<Method> = ArrayList()
                 while (k != null && !k.isAssignableFrom(Any::class.java)) {
@@ -227,16 +227,16 @@ class ClassUtils private constructor() {
             }
         }
 
-        fun method(cls: Class<*>?, name: String): Method? {
+        fun method(cls: Class<*>, name: String): Method? {
             return method(cls, name, *EMPTY_CLASS_ARRAY)
         }
 
-        fun method(cls: Class<*>?, name: String, vararg types: Class<*>?): Method? {
-            return Arrays.stream<Method?>(methods(cls)).filter { method: Method? ->
-                if (method!!.name != name) {
+        fun method(cls: Class<*>, name: String, vararg types: Class<*>): Method {
+            return Arrays.stream<Method>(methods(cls)).filter { method: Method ->
+                if (method.name != name) {
                     return@filter false
                 }
-                val len = types?.size ?: 0
+                val len = types.size : 0
 
                 // 参数数量不一致
                 if (len != method.parameterCount) {
@@ -268,7 +268,7 @@ class ClassUtils private constructor() {
          * @return live.lingting.framework.domain.ClassField 可用于获取字段值的数组
          */
         fun classFields(cls: Class<*>): Array<ClassField> {
-            return CACHE_CLASS_FIELDS.computeIfAbsent(cls) { k: Class<*>? ->
+            return CACHE_CLASS_FIELDS.computeIfAbsent(cls) { k: Class<*> ->
                 var k = k
                 val methods = methods(cls)
 
@@ -280,21 +280,21 @@ class ClassUtils private constructor() {
                         val getMethodName = "get$fieldName"
 
                         var optionalGet = Arrays.stream(methods)
-                            .filter { method: Method? -> method!!.name == getMethodName && method.parameterCount == 0 }
+                            .filter { method: Method -> method.name == getMethodName && method.parameterCount == 0 }
                             .findFirst()
 
                         // get 不存在则尝试获取 is 方法
                         if (optionalGet.isEmpty) {
                             val isMethodName = "is$fieldName"
                             optionalGet = Arrays.stream(methods)
-                                .filter { method: Method? -> method!!.name == isMethodName && method.parameterCount == 0 }
+                                .filter { method: Method -> method.name == isMethodName && method.parameterCount == 0 }
                                 .findFirst()
                         }
 
                         // 尝试获取set方法
                         val setMethodName = "set$fieldName"
                         val optionalSet = Arrays.stream(methods)
-                            .filter { method: Method? -> method!!.name.equals(setMethodName, ignoreCase = true) }
+                            .filter { method: Method -> method.name.equals(setMethodName, ignoreCase = true) }
                             .findFirst()
 
                         fields.add(ClassField(field, optionalGet.orElse(null), optionalSet.orElse(null)))
@@ -312,7 +312,7 @@ class ClassUtils private constructor() {
          * @param cls       指定类
          * @return live.lingting.framework.domain.ClassField 字段
          */
-        fun classField(fieldName: String, cls: Class<*>): ClassField? {
+        fun classField(fieldName: String, cls: Class<*>): ClassField {
             for (field in classFields(cls)) {
                 if (field.name == fieldName) {
                     return field
@@ -330,7 +330,7 @@ class ClassUtils private constructor() {
         }
 
 
-        fun loadClass(className: String, vararg classLoaders: ClassLoader?): Class<*> {
+        fun loadClass(className: String, vararg classLoaders: ClassLoader): Class<*> {
             for (loader in classLoaders) {
                 if (loader != null) {
                     try {
@@ -350,8 +350,8 @@ class ClassUtils private constructor() {
          * @param <T>    类型
          * @return 返回设置后的对象
         </T> */
-        fun <T : AccessibleObject?> setAccessible(`object`: T): T {
-            if (!`object`!!.trySetAccessible()) {
+        fun <T : AccessibleObject> setAccessible(`object`: T): T {
+            if (!`object`.trySetAccessible()) {
                 `object`.isAccessible = true
             }
             return `object`

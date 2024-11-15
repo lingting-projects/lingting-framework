@@ -3,115 +3,137 @@ package live.lingting.framework.time
 import java.time.LocalDateTime
 import java.time.temporal.TemporalAmount
 import java.time.temporal.TemporalUnit
+import live.lingting.framework.util.LocalDateTimeUtils
 
 /**
  * @author lingting 2024-05-29 20:30
  */
-class Time private constructor() {
-    init {
-        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+object Time {
+    /**
+     * 当前系统时间比实际真实时间慢多少毫秒
+     */
+    private var diff: Long = 0
+
+    @JvmStatic
+    fun setDiff(diff: Long) {
+        this.diff = diff
     }
 
-    companion object {
-        /**
-         * 当前系统时间比实际真实时间慢多少毫秒
-         */
-        private var diff: Long = 0
+    @JvmStatic
+    fun currentTimestamp(): Long {
+        return System.currentTimeMillis() + diff
+    }
 
-        fun setDiff(diff: Long) {
-            Companion.diff = diff
-        }
+    @JvmStatic
+    fun current(): LocalDateTime {
+        val timestamp = currentTimestamp()
+        return LocalDateTimeUtils.parse(timestamp)
+    }
 
-        fun currentTimestamp(): Long {
-            return System.currentTimeMillis() + diff
-        }
+    @JvmStatic
+    fun plus(amount: TemporalAmount): LocalDateTime {
+        return current().plus(amount)
+    }
 
-        fun current(): LocalDateTime {
-            return parse(currentTimestamp())
-        }
+    @JvmStatic
+    fun plus(amountToAdd: Long, unit: TemporalUnit): LocalDateTime {
+        return current().plus(amountToAdd, unit)
+    }
 
-        fun plus(amount: TemporalAmount): LocalDateTime {
-            return current().plus(amount)
-        }
+    @JvmStatic
+    fun plusYears(years: Long): LocalDateTime {
+        return current().plusYears(years)
+    }
 
-        fun plus(amountToAdd: Long, unit: TemporalUnit): LocalDateTime {
-            return current().plus(amountToAdd, unit)
-        }
+    @JvmStatic
+    fun plusMonths(months: Long): LocalDateTime {
+        return current().plusMonths(months)
+    }
 
-        fun plusYears(years: Long): LocalDateTime {
-            return current().plusYears(years)
-        }
+    @JvmStatic
+    fun plusWeeks(weeks: Long): LocalDateTime {
+        return current().plusWeeks(weeks)
+    }
 
-        fun plusMonths(months: Long): LocalDateTime {
-            return current().plusMonths(months)
-        }
+    @JvmStatic
+    fun plusDays(days: Long): LocalDateTime {
+        return current().plusDays(days)
+    }
 
-        fun plusWeeks(weeks: Long): LocalDateTime {
-            return current().plusWeeks(weeks)
-        }
+    @JvmStatic
+    fun plusHours(hours: Long): LocalDateTime {
+        return current().plusHours(hours)
+    }
 
-        fun plusDays(days: Long): LocalDateTime {
-            return current().plusDays(days)
-        }
+    @JvmStatic
+    fun plusMinutes(minutes: Long): LocalDateTime {
+        return current().plusMinutes(minutes)
+    }
 
-        fun plusHours(hours: Long): LocalDateTime {
-            return current().plusHours(hours)
-        }
+    @JvmStatic
+    fun plusSeconds(seconds: Long): LocalDateTime {
+        return current().plusSeconds(seconds)
+    }
 
-        fun plusMinutes(minutes: Long): LocalDateTime {
-            return current().plusMinutes(minutes)
-        }
+    @JvmStatic
+    fun plusNanos(nanos: Long): LocalDateTime {
+        return current().plusNanos(nanos)
+    }
 
-        fun plusSeconds(seconds: Long): LocalDateTime {
-            return current().plusSeconds(seconds)
-        }
+    @JvmStatic
+    fun minus(amount: TemporalAmount): LocalDateTime {
+        return current().minus(amount)
+    }
 
-        fun plusNanos(nanos: Long): LocalDateTime {
-            return current().plusNanos(nanos)
-        }
+    @JvmStatic
+    fun minus(amountToAdd: Long, unit: TemporalUnit): LocalDateTime {
+        return current().minus(amountToAdd, unit)
+    }
 
-        fun minus(amount: TemporalAmount): LocalDateTime {
-            return current().minus(amount)
-        }
+    @JvmStatic
+    fun minusYears(years: Long): LocalDateTime {
+        return current().minusYears(years)
+    }
 
-        fun minus(amountToAdd: Long, unit: TemporalUnit): LocalDateTime {
-            return current().minus(amountToAdd, unit)
-        }
+    @JvmStatic
+    fun minusMonths(months: Long): LocalDateTime {
+        return current().minusMonths(months)
+    }
 
-        fun minusYears(years: Long): LocalDateTime {
-            return current().minusYears(years)
-        }
+    @JvmStatic
+    fun minusWeeks(weeks: Long): LocalDateTime {
+        return current().minusWeeks(weeks)
+    }
 
-        fun minusMonths(months: Long): LocalDateTime {
-            return current().minusMonths(months)
-        }
+    @JvmStatic
+    fun minusDays(days: Long): LocalDateTime {
+        return current().minusDays(days)
+    }
 
-        fun minusWeeks(weeks: Long): LocalDateTime {
-            return current().minusWeeks(weeks)
-        }
+    @JvmStatic
+    fun minusHours(hours: Long): LocalDateTime {
+        return current().minusHours(hours)
+    }
 
-        fun minusDays(days: Long): LocalDateTime {
-            return current().minusDays(days)
-        }
+    @JvmStatic
+    fun minusMinutes(minutes: Long): LocalDateTime {
+        return current().minusMinutes(minutes)
+    }
 
-        fun minusHours(hours: Long): LocalDateTime {
-            return current().minusHours(hours)
-        }
+    @JvmStatic
+    fun minusSeconds(seconds: Long): LocalDateTime {
+        return current().minusSeconds(seconds)
+    }
 
-        fun minusMinutes(minutes: Long): LocalDateTime {
-            return current().minusMinutes(minutes)
-        }
+    @JvmStatic
+    fun minusNanos(nanos: Long): LocalDateTime {
+        return current().minusNanos(nanos)
+    }
 
-        fun minusSeconds(seconds: Long): LocalDateTime {
-            return current().minusSeconds(seconds)
-        }
-
-        fun minusNanos(nanos: Long): LocalDateTime {
-            return current().minusNanos(nanos)
-        }
-
-        fun format(): String {
-            return format(current())
-        }
+    @JvmStatic
+    fun format(): String {
+        val current = current()
+        return LocalDateTimeUtils.format(current)
     }
 }
+

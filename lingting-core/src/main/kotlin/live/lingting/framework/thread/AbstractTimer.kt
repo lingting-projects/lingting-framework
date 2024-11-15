@@ -1,27 +1,22 @@
 package live.lingting.framework.thread
 
-import live.lingting.framework.lock.JavaReentrantLock
 import java.time.Duration
 import java.util.concurrent.TimeUnit
+import live.lingting.framework.lock.JavaReentrantLock
 
 /**
  * @author lingting 2022/6/27 20:26
  */
 abstract class AbstractTimer : AbstractThreadContextComponent() {
+
     protected val lock: JavaReentrantLock = JavaReentrantLock()
 
-    open val timeout: Duration
-        /**
-         * 获取超时时间, 单位: 毫秒
-         */
-        get() = Duration.ofSeconds(30)
+    open val timeout: Duration = Duration.ofSeconds(30)
 
     /**
      * 执行任务
      */
-
     protected abstract fun process()
-
 
     override fun doRun() {
         lock.lockInterruptibly()
@@ -37,8 +32,8 @@ abstract class AbstractTimer : AbstractThreadContextComponent() {
     /**
      * 唤醒定时器, 立即执行代码
      */
-
     fun wake() {
         lock.runByTry { lock.signalAll() }
     }
+
 }

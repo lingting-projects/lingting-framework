@@ -1,10 +1,5 @@
 package live.lingting.framework.util
 
-import live.lingting.framework.function.ThrowingBiConsumerE
-import live.lingting.framework.function.ThrowingBiFunctionE
-import live.lingting.framework.function.ThrowingConsumerE
-import live.lingting.framework.stream.CloneInputStream
-import live.lingting.framework.stream.FileCloneInputStream
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.File
@@ -18,6 +13,11 @@ import java.nio.file.Files
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.BiConsumer
+import live.lingting.framework.function.ThrowingBiConsumerE
+import live.lingting.framework.function.ThrowingBiFunctionE
+import live.lingting.framework.function.ThrowingConsumerE
+import live.lingting.framework.stream.CloneInputStream
+import live.lingting.framework.stream.FileCloneInputStream
 
 /**
  * @author lingting
@@ -38,7 +38,7 @@ class StreamUtils private constructor() {
 
         fun readByFlag(
             `in`: InputStream, size: Int,
-            function: ThrowingBiFunctionE<ByteArray?, Int?, Boolean, IOException?>
+            function: ThrowingBiFunctionE<ByteArray, Int, Boolean, IOException>
         ) {
             val bytes = ByteArray(size)
             var len: Int
@@ -67,7 +67,7 @@ class StreamUtils private constructor() {
         }
 
 
-        fun read(`in`: InputStream, consumer: ThrowingBiConsumerE<ByteArray?, Int?, IOException?>) {
+        fun read(`in`: InputStream, consumer: ThrowingBiConsumerE<ByteArray, Int, IOException>) {
             read(`in`, readSize, consumer)
         }
 
@@ -80,21 +80,21 @@ class StreamUtils private constructor() {
          * @throws IOException 读取异常
          */
 
-        fun read(`in`: InputStream, size: Int, consumer: ThrowingBiConsumerE<ByteArray?, Int?, IOException?>) {
-            readByFlag(`in`, size) { bytes: ByteArray?, length: Int? ->
+        fun read(`in`: InputStream, size: Int, consumer: ThrowingBiConsumerE<ByteArray, Int, IOException>) {
+            readByFlag(`in`, size) { bytes: ByteArray, length: Int ->
                 consumer.accept(bytes, length)
                 true
             }
         }
 
 
-        fun readCopy(`in`: InputStream, consumer: ThrowingConsumerE<ByteArray?, IOException?>) {
+        fun readCopy(`in`: InputStream, consumer: ThrowingConsumerE<ByteArray, IOException>) {
             readCopy(`in`, readSize, consumer)
         }
 
 
-        fun readCopy(`in`: InputStream, size: Int, consumer: ThrowingConsumerE<ByteArray?, IOException?>) {
-            read(`in`, size) { bytes: ByteArray?, length: Int? ->
+        fun readCopy(`in`: InputStream, size: Int, consumer: ThrowingConsumerE<ByteArray, IOException>) {
+            read(`in`, size) { bytes: ByteArray, length: Int ->
                 val copy: ByteArray = bytes.copyOf(length)
                 consumer.accept(copy)
             }
@@ -109,7 +109,7 @@ class StreamUtils private constructor() {
 
 
         fun write(`in`: InputStream, out: OutputStream, size: Int = readSize) {
-            read(`in`, size) { bytes: ByteArray?, len: Int? -> out.write(bytes, 0, len!!) }
+            read(`in`, size) { bytes: ByteArray, len: Int -> out.write(bytes, 0, len!!) }
         }
 
 
@@ -120,7 +120,7 @@ class StreamUtils private constructor() {
 
         fun write(`in`: InputStream, out: OutputStream, size: Int, length: Long) {
             val atomic = AtomicLong(0)
-            readByFlag(`in`, size) { bytes: ByteArray?, len: Int? ->
+            readByFlag(`in`, size) { bytes: ByteArray, len: Int ->
                 // 计算剩余字节长度
                 val remainLength = length - atomic.get()
                 // 计算本次写入的字节长度, 不能大于剩余字节长度
@@ -133,12 +133,13 @@ class StreamUtils private constructor() {
         }
 
 
-        fun toString(`in`: InputStream, charset: Charset? = StandardCharsets.UTF_8): String {
+        fun toString(`in`: InputStream): String = toString(`in`, StandardCharsets.UTF_8)
+
+        fun toString(`in`: InputStream, charset: Charset): String {
             return toString(`in`, readSize, charset)
         }
 
-
-        fun toString(`in`: InputStream, size: Int, charset: Charset?): String {
+        fun toString(`in`: InputStream, size: Int, charset: Charset): String {
             ByteArrayOutputStream().use { out ->
                 write(`in`, out, size)
                 return out.toString(charset)
@@ -162,18 +163,18 @@ class StreamUtils private constructor() {
             return ret
         }
 
-        fun close(closeable: AutoCloseable?) {
+        fun close(closeable: AutoCloseable) {
             try {
-                closeable?.close()
+                closeable.close()
             } catch (e: Exception) {
                 //
             }
         }
 
 
-        fun close(closeable: Closeable?) {
+        fun close(closeable: Closeable) {
             try {
-                closeable?.close()
+                closeable.close()
             } catch (e: Exception) {
                 //
             }
@@ -214,7 +215,7 @@ class StreamUtils private constructor() {
          * @throws IOException 异常
          */
 
-        fun readLine(`in`: InputStream, charset: Charset, consumer: BiConsumer<Int?, String?>) {
+        fun readLine(`in`: InputStream, charset: Charset, consumer: BiConsumer<Int, String>) {
             readLine(`in`, charset, readSize, consumer)
         }
 
@@ -227,8 +228,8 @@ class StreamUtils private constructor() {
          * @throws IOException 异常
          */
 
-        fun readLine(`in`: InputStream, charset: Charset, size: Int, consumer: BiConsumer<Int?, String?>) {
-            readLine(`in`, size) { index: Int?, bytes: ByteArray? ->
+        fun readLine(`in`: InputStream, charset: Charset, size: Int, consumer: BiConsumer<Int, String>) {
+            readLine(`in`, size) { index: Int, bytes: ByteArray ->
                 val string = String(bytes, charset)
                 val clean: String = StringUtils.cleanBom(string)
                 consumer.accept(index, clean)
@@ -243,7 +244,7 @@ class StreamUtils private constructor() {
          * @throws IOException 异常
          */
 
-        fun readLine(`in`: InputStream, consumer: BiConsumer<Int?, ByteArray?>) {
+        fun readLine(`in`: InputStream, consumer: BiConsumer<Int, ByteArray>) {
             readLine(`in`, readSize, consumer)
         }
 
@@ -256,8 +257,8 @@ class StreamUtils private constructor() {
          * @throws IOException 异常
          */
 
-        fun readLine(`in`: InputStream, size: Int, consumer: BiConsumer<Int?, ByteArray?>) {
-            val doConsumer = BiConsumer<Int, List<Byte>> { index: Int?, list: List<Byte> ->
+        fun readLine(`in`: InputStream, size: Int, consumer: BiConsumer<Int, ByteArray>) {
+            val doConsumer = BiConsumer<Int, List<Byte>> { index: Int, list: List<Byte> ->
                 val bytes: ByteArray = ByteUtils.trimEndLine(list)
                 consumer.accept(index, bytes)
             }
@@ -265,7 +266,7 @@ class StreamUtils private constructor() {
             val list: MutableList<Byte> = ArrayList()
             val atomic = AtomicInteger(0)
 
-            read(`in`, size) { bytes: ByteArray?, length: Int? ->
+            read(`in`, size) { bytes: ByteArray, length: Int ->
                 for (i in 0 until length) {
                     val b = bytes!![i]
                     list.add(b)

@@ -16,14 +16,12 @@ abstract class StateKeepRunnable : KeepRunnable {
 
     protected constructor(name: String?) : super(name)
 
-
     override fun process() {
         start = System.currentTimeMillis()
         state = State.RUNNING
         thread = Thread.currentThread()
         doProcess()
     }
-
 
     protected abstract fun doProcess()
 

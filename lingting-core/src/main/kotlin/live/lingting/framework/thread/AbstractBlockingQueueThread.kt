@@ -10,21 +10,21 @@ import java.util.concurrent.TimeUnit
  *
  * @author lingting
  */
-abstract class AbstractBlockingQueueThread<T> : AbstractQueueThread<T?>() {
+abstract class AbstractBlockingQueueThread<T> : AbstractQueueThread<T>() {
     protected val queue: BlockingQueue<T> = LinkedBlockingQueue()
 
     override fun put(t: T?) {
-        if (t != null) {
-            try {
-                queue.put(t)
-            } catch (e: InterruptedException) {
-                Thread.currentThread().interrupt()
-            } catch (e: Exception) {
-                log.error("{} put Object error, object: {}", simpleName, t, e)
-            }
+        if (t == null) {
+            return
+        }
+        try {
+            queue.put(t)
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+        } catch (e: Exception) {
+            log.error("{} put Object error, object: {}", simpleName, t, e)
         }
     }
-
 
     override fun poll(timeout: Duration): T? {
         return queue.poll(timeout.toMillis(), TimeUnit.MILLISECONDS)

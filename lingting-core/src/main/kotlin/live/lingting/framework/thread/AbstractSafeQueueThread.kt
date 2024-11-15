@@ -6,23 +6,26 @@ package live.lingting.framework.thread
  * @author lingting 2024-01-03 11:18
  */
 abstract class AbstractSafeQueueThread<E> : AbstractQueueThread<E>() {
-    override fun put(e: E) {
+
+    override val isRun: Boolean
+        // 在队列中还有数据时, 不停止处理
+        get() = queueSize() > 0 || super.isRun
+
+    override fun put(e: E?) {
         // 已停止运行
-        if (!super.isRun()) {
+        if (!super.isRun) {
             log.debug("Stopped, but data is being put!")
         }
         doPut(e)
     }
 
-    protected abstract fun doPut(e: E)
+    protected abstract fun doPut(e: E?)
 
     protected abstract fun queueSize(): Long
 
-    override val isRun: Boolean
-        get() =// 在队列中还有数据时, 不停止处理
-            queueSize() > 0 || super.isRun()
 
     override fun onApplicationStopBefore() {
         awaitTerminated()
     }
+
 }

@@ -1,9 +1,9 @@
 package live.lingting.framework.stream
 
-import live.lingting.framework.util.FileUtils
-import live.lingting.framework.util.StreamUtils
 import java.io.File
 import java.io.InputStream
+import live.lingting.framework.util.FileUtils
+import live.lingting.framework.util.StreamUtils
 
 /**
  * @author lingting 2024/10/24 11:00
@@ -102,6 +102,7 @@ abstract class CloneInputStream(
     abstract fun clear()
 
     companion object {
+        @JvmStatic
         val TEMP_DIR: File = FileUtils.createTempDir("clone")
     }
 }
