@@ -1,10 +1,9 @@
 package live.lingting.framework.multipart
 
+import live.lingting.framework.kt.logger
 import live.lingting.framework.lock.JavaReentrantLock
 import live.lingting.framework.thread.Async
 import live.lingting.framework.util.ValueUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
@@ -17,7 +16,7 @@ import java.util.function.Supplier
  */
 abstract class MultipartTask<I : MultipartTask<I>> protected constructor(val multipart: Multipart, protected val async: Async = Async()) {
 
-    protected val log: Logger = LoggerFactory.getLogger(javaClass)
+    protected val log = logger()
 
     protected val lock: JavaReentrantLock = JavaReentrantLock()
 

@@ -1,13 +1,12 @@
 package live.lingting.framework.download
 
 import live.lingting.framework.exception.DownloadException
+import live.lingting.framework.kt.logger
 import live.lingting.framework.multipart.Multipart
 import live.lingting.framework.multipart.Part
 import live.lingting.framework.thread.Async
 import live.lingting.framework.util.FileUtils
 import live.lingting.framework.util.ValueUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.InputStream
 import java.time.Duration
@@ -18,7 +17,7 @@ import java.util.function.Supplier
  * @author lingting 2024-09-06 16:39
  */
 abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor(builder: DownloadBuilder<*>) : Download {
-    protected val log: Logger = LoggerFactory.getLogger(javaClass)
+    protected val log = logger()
 
 
     val url: String = builder.url

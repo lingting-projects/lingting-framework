@@ -2,12 +2,11 @@ package live.lingting.framework.thread
 
 import live.lingting.framework.context.ContextComponent
 import live.lingting.framework.context.ContextHolder
+import live.lingting.framework.kt.logger
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.util.ThreadUtils
 import live.lingting.framework.util.ValueUtils
 import live.lingting.framework.value.WaitValue
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.function.Consumer
@@ -18,7 +17,7 @@ import java.util.function.Supplier
  * @author lingting 2023-04-22 10:40
  */
 abstract class AbstractThreadContextComponent : ContextComponent {
-    protected val log: Logger = LoggerFactory.getLogger(javaClass)
+    protected val log = logger()
 
 
     val threadValue: WaitValue<Thread> = WaitValue.of<Thread>()

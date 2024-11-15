@@ -6,9 +6,8 @@ import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.kt.logger
 import live.lingting.framework.value.multi.StringMultiValue
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.time.Duration
 
 /**
@@ -16,7 +15,7 @@ import java.time.Duration
  */
 abstract class ApiClient<R : ApiRequest?> protected constructor(@JvmField protected val host: String) {
     @JvmField
-    val log: Logger = LoggerFactory.getLogger(javaClass)
+    val log = logger()
 
     protected var client: HttpClient = defaultClient
 

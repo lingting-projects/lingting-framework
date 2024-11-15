@@ -1,8 +1,8 @@
 package live.lingting.framework.value
 
+import live.lingting.framework.kt.logger
 import live.lingting.framework.util.CollectionUtils
 import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
@@ -10,8 +10,9 @@ import java.util.stream.StreamSupport
 /**
  * @author lingting 2023-12-29 11:30
  */
-abstract class CursorValue<T> : MutableIterator<T> {
-    protected val log: Logger = LoggerFactory.getLogger(javaClass)
+abstract class CursorValue<T> : Iterator<T> {
+
+    protected val log: Logger = logger()
 
     protected val current: MutableList<T> = ArrayList()
 
@@ -65,7 +66,4 @@ abstract class CursorValue<T> : MutableIterator<T> {
         return StreamSupport.stream(spliterator, false)
     }
 
-    override fun remove() {
-        throw UnsupportedOperationException()
-    }
 }

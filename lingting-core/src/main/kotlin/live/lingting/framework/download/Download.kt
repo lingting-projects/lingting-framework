@@ -22,7 +22,6 @@ interface Download {
     /**
      * 使用下载文件覆盖指定文件
      */
-
     fun transferTo(file: File): File {
         val source = this.file
         FileUtils.copy(source, file, true)

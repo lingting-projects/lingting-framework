@@ -1,6 +1,5 @@
 package live.lingting.framework.value
 
-import live.lingting.framework.function.InterruptedRunnable
 import live.lingting.framework.lock.JavaReentrantLock
 import live.lingting.framework.util.CollectionUtils
 import live.lingting.framework.util.StringUtils
@@ -75,7 +74,7 @@ class WaitValue<T> {
     fun wait(predicate: Predicate<T?>?): T? {
         lock.lockInterruptibly()
         try {
-            return ValueUtils.await<T?>(Supplier<T?> { value }, predicate, InterruptedRunnable { lock.await(1, TimeUnit.HOURS) })
+            return ValueUtils.await<T?>(Supplier<T?> { value }, predicate) { lock.await(1, TimeUnit.HOURS) }
         } finally {
             lock.unlock()
         }

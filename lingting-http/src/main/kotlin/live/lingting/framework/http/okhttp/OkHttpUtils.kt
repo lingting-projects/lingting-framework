@@ -2,7 +2,6 @@ package live.lingting.framework.http.okhttp
 
 import live.lingting.framework.http.HttpRequest
 import live.lingting.framework.util.StringUtils
-import okhttp3.Cookie.Builder.value
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import okio.Buffer
@@ -46,7 +45,7 @@ class OkHttpUtils private constructor() {
         }
 
         fun mediaType(contentType: String): MediaType? {
-            return if (StringUtils.hasText(contentType)) parse.parse(contentType) else null
+            return if (StringUtils.hasText(contentType)) MediaType.parse(contentType) else null
         }
     }
 }

@@ -1,11 +1,10 @@
 package live.lingting.framework.mybatis.typehandler
 
 import live.lingting.framework.jackson.JacksonUtils
+import live.lingting.framework.kt.logger
 import live.lingting.framework.util.StringUtils
 import org.apache.ibatis.type.BaseTypeHandler
 import org.apache.ibatis.type.JdbcType
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.sql.CallableStatement
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -15,7 +14,7 @@ import java.sql.SQLException
  * @author lingting 2022/9/28 14:43
  */
 abstract class AbstractJacksonTypeHandler<T> : BaseTypeHandler<T>() {
-    private val log: Logger = LoggerFactory.getLogger(javaClass)
+    private val log = logger()
 
     protected fun parse(json: String?): T {
         try {

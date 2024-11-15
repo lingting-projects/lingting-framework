@@ -3,6 +3,7 @@ package live.lingting.framework.datascope.parser
 import live.lingting.framework.datascope.JsqlDataScope
 import live.lingting.framework.datascope.exception.DataScopeException
 import live.lingting.framework.datascope.holder.DataScopeHolder
+import live.lingting.framework.kt.logger
 import net.sf.jsqlparser.parser.CCJSqlParserUtil
 import net.sf.jsqlparser.statement.Statement
 import net.sf.jsqlparser.statement.Statements
@@ -10,14 +11,12 @@ import net.sf.jsqlparser.statement.delete.Delete
 import net.sf.jsqlparser.statement.insert.Insert
 import net.sf.jsqlparser.statement.select.Select
 import net.sf.jsqlparser.statement.update.Update
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2024-01-19 15:48
  */
 abstract class DataScopeParser {
-    protected val log: Logger = LoggerFactory.getLogger(javaClass)
+    protected val log = logger()
 
     fun parser(sql: String?, scopes: List<JsqlDataScope>, isMulti: Boolean): String {
         try {

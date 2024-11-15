@@ -12,10 +12,12 @@ data class ScrollResult<T, C>(
     constructor() : this(emptyList(), null, 0)
 
     companion object {
+        @JvmStatic
         fun <T, C> of(collection: List<T>, cursor: C): ScrollResult<T, C> {
             return ScrollResult(collection, cursor, collection.size.toLong())
         }
 
+        @JvmStatic
         fun <T, C> empty(): ScrollResult<T, C> {
             return ScrollResult<T, C>(emptyList<T>(), null, 0)
         }

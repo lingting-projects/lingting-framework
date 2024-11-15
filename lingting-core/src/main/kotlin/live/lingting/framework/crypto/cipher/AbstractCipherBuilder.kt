@@ -6,6 +6,7 @@ import live.lingting.framework.util.StringUtils
 /**
  * @author lingting 2024-09-04 11:31
  */
+@Suppress("Unchecked", "kotlin:S6530", "UNCHECKED_CAST")
 open class AbstractCipherBuilder<B : AbstractCipherBuilder<B>> : AbstractCryptoBuilder<B, Cipher>() {
     /**
      * 加密模式
@@ -48,6 +49,6 @@ open class AbstractCipherBuilder<B : AbstractCipherBuilder<B>> : AbstractCryptoB
 
     override fun doBuild(): Cipher {
         val symbol = symbol()
-        return Cipher(algorithm, mode, padding, symbol, charset, secret, iv)
+        return Cipher(algorithm!!, mode!!, padding!!, symbol, charset, secret!!, iv)
     }
 }

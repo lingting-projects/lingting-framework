@@ -3,6 +3,7 @@ package live.lingting.framework.crypto.cipher
 /**
  * @author lingting 2024-09-04 11:26
  */
+@Suppress("Unchecked", "kotlin:S6530", "UNCHECKED_CAST")
 class CipherBuilder : AbstractCipherBuilder<CipherBuilder>() {
     abstract class SpecificCipherBuilder<B : SpecificCipherBuilder<B>>
     protected constructor(algorithm: String) : AbstractCipherBuilder<B>() {

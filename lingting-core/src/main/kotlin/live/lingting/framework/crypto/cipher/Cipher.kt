@@ -143,15 +143,18 @@ class Cipher(
     // endregion
 
     companion object {
+        @JvmStatic
         fun builder(): CipherBuilder {
             return CipherBuilder()
         }
 
 
+        @JvmStatic
         fun aesBuilder(): CipherBuilder.AES {
             return CipherBuilder.AES()
         }
 
+        @JvmStatic
         fun aes(): Cipher {
             return aesBuilder().build()
         }

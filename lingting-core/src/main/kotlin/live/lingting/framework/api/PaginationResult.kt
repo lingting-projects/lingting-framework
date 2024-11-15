@@ -7,4 +7,6 @@ data class PaginationResult<T>(var total: Long, var records: List<T>) {
 
     constructor() : this(0, emptyList())
 
+    constructor(records: List<T>) : this(records.size.toLong(), records)
+
 }

@@ -1,6 +1,5 @@
 package live.lingting.framework.crypto
 
-import live.lingting.framework.api.R
 import live.lingting.framework.util.StringUtils
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
@@ -10,6 +9,7 @@ import javax.crypto.spec.SecretKeySpec
 /**
  * @author lingting 2024-09-04 13:47
  */
+@Suppress("Unchecked", "kotlin:S6530", "UNCHECKED_CAST")
 abstract class AbstractCryptoBuilder<B : AbstractCryptoBuilder<B, R>, R> {
     /**
      * 加密方式

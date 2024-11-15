@@ -86,11 +86,13 @@ class Mac(algorithm: String, charset: Charset, secret: SecretKeySpec, iv: IvPara
     }
 
     companion object {
+        @JvmStatic
         fun builder(): MacBuilder {
             return MacBuilder()
         }
 
 
+        @JvmStatic
         fun hmacBuilder(): Hmac {
             return Hmac()
         }
