@@ -12,7 +12,7 @@ ij_any_block_comment_at_first_column = false
 ij_any_line_comment_add_space = true
 ij_any_block_comment_add_space = true
 
-[*.java]
+[*.{java, kts, kt}]
 indent_size = 4
 indent_style = tab
 ij_any_else_on_new_line = true
@@ -21,3 +21,6 @@ ij_any_catch_on_new_line = true
 ij_any_finally_on_new_line = true
 ij_java_class_count_to_use_import_on_demand = 999999
 ij_java_names_count_to_use_import_on_demand = 999999
+ij_kotlin_name_count_to_use_star_import = 999999
+ij_java_use_single_class_imports = true
+ij_kotlin_packages_to_use_import_on_demand =
