@@ -1,48 +1,45 @@
 package live.lingting.framework.util
 
+import java.util.UUID
 import org.slf4j.MDC
 
 
 /**
  * @author lingting 2022/12/11 20:14
  */
-class MdcUtils private constructor() {
-    init {
-        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+object MdcUtils {
+
+    const val TRACE_ID: String = "traceId"
+
+    @JvmStatic
+    fun traceId(): String {
+        return UUID.randomUUID().toString().replace("-", "")
     }
 
-    companion object {
-        const val TRACE_ID: String = "traceId"
+    @JvmStatic
+    val traceId: String?
+        get() = MDC.get(TRACE_ID)
 
+    @JvmStatic
+    fun fillTraceId(): String {
+        val traceId = traceId()
+        fillTraceId(traceId)
+        return traceId
+    }
 
-        fun traceId(): String {
-            return UUID.randomUUID().toString().replace("-", "")
-        }
+    @JvmStatic
+    fun fillTraceId(traceId: String) {
+        MDC.put(TRACE_ID, traceId)
+    }
 
+    @JvmStatic
+    fun removeTraceId() {
+        MDC.remove(TRACE_ID)
+    }
 
-        val traceId: String
-            get() = MDC.get(TRACE_ID)
-
-
-        fun fillTraceId(): String {
-            val traceId = traceId()
-            fillTraceId(traceId)
-            return traceId
-        }
-
-
-        fun fillTraceId(traceId: String?) {
-            MDC.put(TRACE_ID, traceId)
-        }
-
-
-        fun removeTraceId() {
-            MDC.remove(TRACE_ID)
-        }
-
-        fun copyContext(): Map<String, String> {
-            val copy = MDC.getCopyOfContextMap() ?: return HashMap()
-            return copy
-        }
+    @JvmStatic
+    fun copyContext(): Map<String, String> {
+        return MDC.getCopyOfContextMap() ?: HashMap()
     }
 }
+
