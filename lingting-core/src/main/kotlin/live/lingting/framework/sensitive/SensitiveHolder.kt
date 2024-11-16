@@ -8,11 +8,11 @@ object SensitiveHolder {
     private val THREAD_LOCAL = ThreadLocal<Boolean>()
 
     /**
-     * @return 是否允许对敏感信息进行脱敏
+     * @return 是否允许对敏感信息进行脱敏. 默认值为true
      */
     @JvmStatic
     fun allowSensitive(): Boolean {
-        return THREAD_LOCAL.get() ?: false
+        return THREAD_LOCAL.get() ?: true
     }
 
     /**

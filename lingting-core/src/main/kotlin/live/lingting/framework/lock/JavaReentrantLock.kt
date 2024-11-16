@@ -89,11 +89,11 @@ class JavaReentrantLock {
     }
 
 
-    fun <R> getByInterruptibly(runnable: () -> R): R {
+    fun <R> getByInterruptibly(runnable: LockSupplier<R>): R {
         val reentrantLock = lock
         reentrantLock.lockInterruptibly()
         try {
-            return runnable()
+            return runnable.get()
         } finally {
             reentrantLock.unlock()
         }

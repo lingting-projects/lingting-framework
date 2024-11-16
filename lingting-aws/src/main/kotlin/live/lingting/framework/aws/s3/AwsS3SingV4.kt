@@ -1,5 +1,11 @@
 package live.lingting.framework.aws.s3
 
+import java.security.InvalidAlgorithmParameterException
+import java.security.InvalidKeyException
+import java.security.NoSuchAlgorithmException
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.function.BiConsumer
 import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.HttpRequest
@@ -10,13 +16,6 @@ import live.lingting.framework.util.CollectionUtils
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.value.multi.StringMultiValue
-import java.security.InvalidAlgorithmParameterException
-import java.security.InvalidKeyException
-import java.security.NoSuchAlgorithmException
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-
-import java.util.function.BiConsumer
 
 /**
  * @author lingting 2024-09-19 17:01
@@ -176,7 +175,7 @@ class AwsS3SingV4(protected val dateTime: LocalDateTime, protected val method: S
 
         headersForEach { k: String?, vs: Collection<String> ->
             for (v in vs) {
-                builder.append(k).append(":").append(v.trim { it <= ' ' }).append("\n")
+                builder.append(k).append(":").append(v.trim()).append("\n")
             }
         }
 

@@ -136,9 +136,9 @@ class Resource(val protocol: String, paths: Collection<String>, val name: String
 
     val path: String
 
-    val uri: URI by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { URI.create(path) }
+    val uri: URI by lazy { URI.create(path) }
 
-    val url: URL by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { uri.toURL() }
+    val url: URL by lazy { uri.toURL() }
 
     init {
         val suffix = if (isJar && !name.startsWith("/")) "/$name" else name

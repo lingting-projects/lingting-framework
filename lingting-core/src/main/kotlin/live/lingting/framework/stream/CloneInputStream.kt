@@ -18,45 +18,42 @@ abstract class CloneInputStream(
     protected val lock: Any = ""
 
     protected var stream: InputStream? = null
+        get() {
+            if (field != null) {
+                return field
+            }
+
+            synchronized(lock) {
+                if (field != null) {
+                    return field
+                }
+                field = newStream()
+            }
+            return field
+        }
 
     var isCloseAndDelete: Boolean = false
-
-
-    protected fun getStream(): InputStream? {
-        if (stream != null) {
-            return stream
-        }
-
-        synchronized(lock) {
-            if (stream != null) {
-                return stream
-            }
-            stream = newStream()
-        }
-        return stream
-    }
-
 
     protected abstract fun newStream(): InputStream
 
 
     override fun read(b: ByteArray): Int {
-        return getStream()!!.read(b)
+        return stream!!.read(b)
     }
 
 
     override fun read(b: ByteArray, off: Int, len: Int): Int {
-        return getStream()!!.read(b, off, len)
+        return stream!!.read(b, off, len)
     }
 
 
     override fun skip(n: Long): Long {
-        return getStream()!!.skip(n)
+        return stream!!.skip(n)
     }
 
 
     override fun available(): Int {
-        return getStream()!!.available()
+        return stream!!.available()
     }
 
     override fun close() {
@@ -81,12 +78,12 @@ abstract class CloneInputStream(
 
 
     override fun markSupported(): Boolean {
-        return getStream()!!.markSupported()
+        return stream!!.markSupported()
     }
 
 
     override fun read(): Int {
-        return getStream()!!.read()
+        return stream!!.read()
     }
 
     fun size(): Long {

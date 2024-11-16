@@ -1,6 +1,9 @@
 package live.lingting.framework.time
 
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
@@ -10,14 +13,14 @@ internal class StopWatchTest {
     @Test
     fun test() {
         val watch = StopWatch()
-        Assertions.assertFalse(watch.isRunning)
+        assertFalse(watch.isRunning)
         watch.start()
         val nanos1 = watch.timeNanos()
-        Assertions.assertTrue(nanos1 > 0)
+        assertTrue(nanos1 > 0)
         watch.stop()
         val nanos2 = watch.timeNanos()
-        Assertions.assertNotEquals(nanos1, nanos2)
+        assertNotEquals(nanos1, nanos2)
         val nanos3 = watch.timeNanos()
-        Assertions.assertEquals(nanos2, nanos3)
+        assertEquals(nanos2, nanos3)
     }
 }

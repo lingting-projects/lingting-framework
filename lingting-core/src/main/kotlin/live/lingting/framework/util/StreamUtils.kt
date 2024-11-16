@@ -163,18 +163,18 @@ object StreamUtils {
     }
 
     @JvmStatic
-    fun close(closeable: AutoCloseable) {
+    fun close(closeable: AutoCloseable?) {
         try {
-            closeable.close()
+            closeable?.close()
         } catch (e: Exception) {
             //
         }
     }
 
     @JvmStatic
-    fun close(closeable: Closeable) {
+    fun close(closeable: Closeable?) {
         try {
-            closeable.close()
+            closeable?.close()
         } catch (e: Exception) {
             //
         }

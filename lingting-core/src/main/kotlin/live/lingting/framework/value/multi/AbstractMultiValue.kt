@@ -1,12 +1,12 @@
 package live.lingting.framework.value.multi
 
-import live.lingting.framework.util.CollectionUtils
-import live.lingting.framework.value.MultiValue
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.BiConsumer
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
+import live.lingting.framework.util.CollectionUtils
+import live.lingting.framework.value.MultiValue
 
 /**
  * @author lingting 2024-09-05 20:33
@@ -15,9 +15,10 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
     protected val allowModify: Boolean,
     protected val supplier: Supplier<C>
 ) : MultiValue<K, V, C> {
-    protected val map: MutableMap<K, C> = ConcurrentHashMap()
 
     protected constructor(supplier: Supplier<C>) : this(true, supplier)
+
+    protected val map: MutableMap<K, C> = ConcurrentHashMap()
 
     protected open fun convert(key: K): K {
         return key
@@ -143,7 +144,7 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
         get() = map.isEmpty()
 
     override fun isEmpty(key: K): Boolean {
-        return isEmpty || !hasKey(key) || absent(key)!!.isEmpty()
+        return isEmpty || !hasKey(key) || absent(key).isEmpty()
     }
 
     override fun size(): Int {
@@ -164,15 +165,15 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
     }
 
     override fun iterator(key: K): Iterator<V> {
-        return get(key)!!.iterator()
+        return get(key).iterator()
     }
 
-    override fun first(key: K): V {
+    override fun first(key: K): V? {
         val collection: Collection<V> = get(key)
         if (CollectionUtils.isEmpty(collection)) {
             return null
         }
-        return collection!!.iterator().next()
+        return collection.iterator().next()
     }
 
     override fun keys(): Set<K> {
@@ -197,7 +198,7 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
         return map.entries
     }
 
-    override fun unmodifiable(): MultiValue<K, V, Collection<V>> {
+    override fun unmodifiable(): MultiValue<K, V, out Collection<V>> {
         return UnmodifiableMultiValue(this)
     }
 
@@ -215,7 +216,7 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
             throw UnsupportedOperationException()
         }
         absent(key)
-        return map.remove(key)
+        return map.remove(key)!!
     }
 
     override fun remove(key: K, value: V): Boolean {
@@ -232,10 +233,10 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
     // endregion
     // region function
     override fun forEach(consumer: BiConsumer<K, C>) {
-        map.forEach(consumer!!)
+        map.forEach(consumer)
     }
 
     override fun each(consumer: BiConsumer<K, V>) {
-        forEach { k: K, c: C -> c!!.forEach { v: V -> consumer.accept(k, v) } }
+        forEach { k: K, c: C -> c.forEach { v: V -> consumer.accept(k, v) } }
     } // endregion
 }

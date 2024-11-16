@@ -18,7 +18,7 @@ internal class CommandTest {
     @Test
     @Throws(IOException::class, InterruptedException::class)
     fun test() {
-        val result = if (SystemUtils.isWindows()) {
+        val result = if (SystemUtils.isWindows) {
             testWindows()
         } else {
             testLinux()

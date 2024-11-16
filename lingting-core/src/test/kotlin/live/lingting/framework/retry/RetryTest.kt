@@ -1,10 +1,13 @@
 package live.lingting.framework.retry
 
-import live.lingting.framework.function.ThrowingSupplier
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicInteger
+import live.lingting.framework.function.ThrowingSupplier
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 /**
  * @author lingting 2023-10-24 14:33
@@ -24,17 +27,17 @@ internal class RetryTest {
             throw IllegalStateException("异常")
         }
 
-        var retry: Retry<Int?> = Retry.simple(4, Duration.ZERO, supplier)!!
+        var retry: Retry<Int> = Retry.simple(4, Duration.ZERO, supplier)
         var value = retry.value()
-        Assertions.assertTrue(value.success)
-        Assertions.assertEquals(expected, value.get())
-        Assertions.assertEquals(4, value.logs.size)
+        assertTrue(value.success)
+        assertEquals(expected, value.get())
+        assertEquals(4, value.logs.size)
 
         atomic.set(0)
-        retry = Retry.simple(2, Duration.ZERO, supplier)!!
+        retry = Retry.simple(2, Duration.ZERO, supplier)
         value = retry.value()
-        Assertions.assertFalse(value.success)
-        Assertions.assertNull(value.value)
-        Assertions.assertEquals(3, value.logs.size)
+        assertFalse(value.success)
+        assertNull(value.value)
+        assertEquals(3, value.logs.size)
     }
 }

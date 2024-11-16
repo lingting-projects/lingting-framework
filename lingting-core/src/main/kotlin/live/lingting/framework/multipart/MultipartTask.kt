@@ -13,6 +13,7 @@ import live.lingting.framework.util.ValueUtils
 /**
  * @author lingting 2024-09-05 14:48
  */
+@Suppress("UNCHECKED_CAST")
 abstract class MultipartTask<I : MultipartTask<I>> protected constructor(val multipart: Multipart, protected val async: Async = Async()) {
 
     protected val log = logger()

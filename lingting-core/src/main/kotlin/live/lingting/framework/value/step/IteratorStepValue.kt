@@ -1,25 +1,20 @@
 package live.lingting.framework.value.step
 
-import live.lingting.framework.value.StepValue
 import java.math.BigInteger
 import java.util.concurrent.ConcurrentHashMap
+import live.lingting.framework.value.StepValue
 
 /**
  * @author lingting 2024-01-23 15:30
  */
-class IteratorStepValue<T> protected constructor(map: MutableMap<BigInteger?, T>, iterator: Iterator<T>) : AbstractConcurrentStepValue<T?>() {
-    private val map: MutableMap<BigInteger?, T?>
-
+open class IteratorStepValue<T> protected constructor(
+    private val map: MutableMap<BigInteger, T>,
     private val iterator: Iterator<T>
+) : AbstractConcurrentStepValue<T>() {
 
-    constructor(iterator: Iterator<T>) : this(ConcurrentHashMap<BigInteger?, T>(), iterator)
+    constructor(iterator: Iterator<T>) : this(ConcurrentHashMap<BigInteger, T>(), iterator)
 
-    init {
-        this.map = map
-        this.iterator = iterator
-    }
-
-    override fun copy(): StepValue<T?> {
+    override fun copy(): StepValue<T> {
         return IteratorStepValue(map, iterator)
     }
 
@@ -32,18 +27,18 @@ class IteratorStepValue<T> protected constructor(map: MutableMap<BigInteger?, T>
         return iterator.hasNext()
     }
 
-    override fun doNext(): T? {
-        return map.computeIfAbsent(increasing()) { i: BigInteger? -> iterator.next() }
+    override fun doNext(): T {
+        return map.computeIfAbsent(increasing()) { i: BigInteger -> iterator.next() }
     }
 
-    override fun doCalculate(index: BigInteger): T? {
+    override fun doCalculate(index: BigInteger): T {
         if (map.containsKey(index)) {
-            return map[index]
+            return map[index]!!
         }
 
         // 如果迭代器已经取空了
         if (!iterator.hasNext()) {
-            return null
+            throw NoSuchElementException()
         }
 
         // 没取空, 接着取
@@ -54,13 +49,13 @@ class IteratorStepValue<T> protected constructor(map: MutableMap<BigInteger?, T>
                 return t
             }
         }
-        return null
+        throw NoSuchElementException()
     }
 
     /**
      * 移除上一个next返回的元素
      */
-    override fun remove() {
+    fun remove() {
         lock.runByInterruptibly {
             // 至少需要调用一次next
             check(index.compareTo(BigInteger.ZERO) != 0)

@@ -1,6 +1,9 @@
 package live.lingting.framework.value
 
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
@@ -10,10 +13,10 @@ internal class LazyValueTest {
     @Test
     fun test() {
         val lazyValue = LazyValue { "test" }
-        Assertions.assertNull(lazyValue.t)
-        Assertions.assertTrue(lazyValue.isFirst())
-        Assertions.assertEquals("test", lazyValue.get())
-        Assertions.assertEquals("test", lazyValue.t)
-        Assertions.assertFalse(lazyValue.isFirst())
+        assertNull(lazyValue.t)
+        assertTrue(lazyValue.isFirst())
+        assertEquals("test", lazyValue.get())
+        assertEquals("test", lazyValue.t)
+        assertFalse(lazyValue.isFirst())
     }
 }

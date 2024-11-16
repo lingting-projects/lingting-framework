@@ -9,6 +9,7 @@ import kotlin.math.min
 /**
  * @author lingting
  */
+@Suppress("UNCHECKED_CAST")
 object ArrayUtils {
     const val NOT_FOUNT: Int = -1
 
@@ -140,10 +141,7 @@ object ArrayUtils {
      * @param end   右开
      */
     @JvmStatic
-    fun <T> sub(array: Array<T>?, start: Int, end: Int): Array<T>? {
-        if (array == null) {
-            return null
-        }
+    fun <T> sub(array: Array<T>, start: Int, end: Int): Array<T> {
         val type: Class<*> = array.javaClass.componentType
 
         if (array.isEmpty()) {

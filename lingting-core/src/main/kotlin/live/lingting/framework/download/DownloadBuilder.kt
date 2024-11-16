@@ -1,12 +1,13 @@
 package live.lingting.framework.download
 
-import live.lingting.framework.util.ThreadUtils
 import java.time.Duration
 import java.util.concurrent.ExecutorService
+import live.lingting.framework.util.ThreadUtils
 
 /**
  * @author lingting 2024-01-16 19:33
  */
+@Suppress("UNCHECKED_CAST")
 abstract class DownloadBuilder<B : DownloadBuilder<B>> protected constructor(
     /**
      * 文件下载地址

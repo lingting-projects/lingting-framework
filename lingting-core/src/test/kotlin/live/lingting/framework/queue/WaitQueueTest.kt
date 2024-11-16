@@ -2,6 +2,7 @@ package live.lingting.framework.queue
 
 import live.lingting.framework.util.ThreadUtils
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 /**
@@ -13,9 +14,9 @@ internal class WaitQueueTest {
         val queue = WaitQueue<Int>()
         Assertions.assertNull(queue.get())
         queue.add(1)
-        Assertions.assertEquals(1, queue.get())
+        assertEquals(1, queue.get())
 
-        ThreadUtils.execute { Assertions.assertEquals(2, queue.poll()) }
+        ThreadUtils.execute { assertEquals(2, queue.poll()) }
         queue.add(2)
     }
 }

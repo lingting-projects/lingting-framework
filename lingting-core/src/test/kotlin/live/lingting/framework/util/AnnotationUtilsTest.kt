@@ -1,8 +1,11 @@
 package live.lingting.framework.util
 
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import java.lang.reflect.AnnotatedElement
+import java.util.Objects
+import live.lingting.framework.util.AnnotationUtils.findAnnotation
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Test
 
 
 /**
@@ -11,15 +14,15 @@ import java.lang.reflect.AnnotatedElement
 internal class AnnotationUtilsTest {
     @Test
     fun test() {
-        assertEquals(A1::class.java, Objects.requireNonNull<T>(findAnnotation(A3::class.java, A1::class.java)).annotationType())
-        Assertions.assertNull(findAnnotation(A3::class.java, A2::class.java))
-        Assertions.assertNull(findAnnotation(P1::class.java, A2::class.java))
-        assertEquals(A2::class.java, Objects.requireNonNull<T>(findAnnotation(I2::class.java, A2::class.java)).annotationType())
-        assertEquals(A1::class.java, Objects.requireNonNull<T>(findAnnotation(E1::class.java, A1::class.java)).annotationType())
-        assertEquals(A2::class.java, Objects.requireNonNull<T>(findAnnotation(E2::class.java, A2::class.java)).annotationType())
-        assertEquals(A3::class.java, Objects.requireNonNull<T>(findAnnotation(E3::class.java, A3::class.java)).annotationType())
-        assertEquals(A1::class.java, Objects.requireNonNull<T>(findAnnotation(E4::class.java, A1::class.java)).annotationType())
-        Assertions.assertNull(findAnnotation(E4::class.java as AnnotatedElement, A1::class.java))
+        assertEquals(A1::class.java, Objects.requireNonNull(findAnnotation(A3::class.java, A1::class.java))!!.annotationClass.java)
+        assertNull(findAnnotation(A3::class.java, A2::class.java))
+        assertNull(findAnnotation(P1::class.java, A2::class.java))
+        assertEquals(A2::class.java, Objects.requireNonNull(findAnnotation(I2::class.java, A2::class.java))!!.annotationClass.java)
+        assertEquals(A1::class.java, Objects.requireNonNull(findAnnotation(E1::class.java, A1::class.java))!!.annotationClass.java)
+        assertEquals(A2::class.java, Objects.requireNonNull(findAnnotation(E2::class.java, A2::class.java))!!.annotationClass.java)
+        assertEquals(A3::class.java, Objects.requireNonNull(findAnnotation(E3::class.java, A3::class.java))!!.annotationClass.java)
+        assertEquals(A1::class.java, Objects.requireNonNull(findAnnotation(E4::class.java, A1::class.java))!!.annotationClass.java)
+        assertNull(findAnnotation(E4::class.java as AnnotatedElement, A1::class.java))
     }
 
     @Retention(AnnotationRetention.RUNTIME)

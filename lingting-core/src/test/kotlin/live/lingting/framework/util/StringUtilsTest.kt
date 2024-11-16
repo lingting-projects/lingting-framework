@@ -1,8 +1,9 @@
 package live.lingting.framework.util
 
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import java.nio.charset.StandardCharsets
+import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 /**
  * @author lingting 2023-06-25 16:56
@@ -12,7 +13,7 @@ internal class StringUtilsTest {
     fun underscoreToHump() {
         val raw = "contact_id"
         val hump = StringUtils.underscoreToHump(raw)
-        Assertions.assertEquals("contactId", hump)
+        assertEquals("contactId", hump)
     }
 
     @Test
@@ -30,7 +31,7 @@ internal class StringUtilsTest {
         val base64 = "QmFzZTY05Y6f5paH"
 
         assertEquals(base64, StringUtils.base64(bytes))
-        Assertions.assertEquals(source, String(StringUtils.base64(base64), StandardCharsets.UTF_8))
+        assertEquals(source, String(StringUtils.base64(base64), StandardCharsets.UTF_8))
     }
 
     @Test

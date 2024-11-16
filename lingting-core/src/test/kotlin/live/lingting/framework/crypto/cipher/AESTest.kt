@@ -1,6 +1,6 @@
 package live.lingting.framework.crypto.cipher
 
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 
@@ -16,26 +16,26 @@ internal class AESTest {
 
         val aes1 = Cipher.aesBuilder().secret(secret).build()
         val e1 = aes1.encryptBase64(plaintext)
-        Assertions.assertEquals(ciphertext, e1)
+        assertEquals(ciphertext, e1)
 
         val d1 = aes1.decryptBase64(ciphertext)
-        Assertions.assertEquals(plaintext, d1)
+        assertEquals(plaintext, d1)
 
         // java 中 默认Cipher 使用 ECB + pkcs7
         val aes2 = Cipher.aesBuilder().secret(secret).ecb().pkcs7().build()
         val e21 = aes2.encryptBase64(plaintext)
-        Assertions.assertEquals(ciphertext, e21)
+        assertEquals(ciphertext, e21)
 
         val d21 = aes2.decryptBase64(ciphertext)
-        Assertions.assertEquals(plaintext, d21)
+        assertEquals(plaintext, d21)
 
         // pkcs7 和 pkcs5 等效
         val aes3 = Cipher.aesBuilder().secret(secret).ecb().pkcs7().build()
         val e31 = aes3.encryptBase64(plaintext)
-        Assertions.assertEquals(ciphertext, e31)
+        assertEquals(ciphertext, e31)
 
         val d31 = aes3.decryptBase64(ciphertext)
-        Assertions.assertEquals(plaintext, d31)
+        assertEquals(plaintext, d31)
     }
 
 
@@ -46,25 +46,25 @@ internal class AESTest {
 
         val ciphertextPkcs5 = "dIW9PQf3/GFbuhhtw252yw=="
         var aes = Cipher.aesBuilder().ecb().pkcs5().secret(secret).build()
-        Assertions.assertEquals(ciphertextPkcs5, aes.encryptBase64(plaintext))
-        Assertions.assertEquals(plaintext, aes.decryptBase64(ciphertextPkcs5))
+        assertEquals(ciphertextPkcs5, aes.encryptBase64(plaintext))
+        assertEquals(plaintext, aes.decryptBase64(ciphertextPkcs5))
 
         val ciphertextPkcs7 = "dIW9PQf3/GFbuhhtw252yw=="
         aes = Cipher.aesBuilder().ecb().pkcs7().secret(secret).build()
-        Assertions.assertEquals(ciphertextPkcs7, aes.encryptBase64(plaintext))
-        Assertions.assertEquals(plaintext, aes.decryptBase64(ciphertextPkcs7))
+        assertEquals(ciphertextPkcs7, aes.encryptBase64(plaintext))
+        assertEquals(plaintext, aes.decryptBase64(ciphertextPkcs7))
 
         val ciphertextIso10126 = "nKnxu8X+MTPePKWnOffLBQ=="
         aes = Cipher.aesBuilder().ecb().iso10126().secret(secret).build()
         // 填入的是随机字节, 所有每次加密结果都不一样, 只需要校验解密
-        Assertions.assertEquals(plaintext, aes.decryptBase64(ciphertextIso10126))
+        assertEquals(plaintext, aes.decryptBase64(ciphertextIso10126))
 
         // 无填充要求明文长度是16字节的倍数
         val plaintextNo = "1234567890123456"
         val ciphertextNo = "Vk90UnG6Meq3uxQJaWl7EQ=="
         aes = Cipher.aesBuilder().ecb().no().secret(secret).build()
-        Assertions.assertEquals(ciphertextNo, aes.encryptBase64(plaintextNo))
-        Assertions.assertEquals(plaintextNo, aes.decryptBase64(ciphertextNo))
+        assertEquals(ciphertextNo, aes.encryptBase64(plaintextNo))
+        assertEquals(plaintextNo, aes.decryptBase64(ciphertextNo))
     }
 
     @Test
@@ -75,23 +75,23 @@ internal class AESTest {
 
         val ciphertextPkcs5 = "vlqZ2ozl5muE1XOj3Srh1g=="
         var aes = Cipher.aesBuilder().cbc().pkcs5().secret(secret).iv(iv).build()
-        Assertions.assertEquals(ciphertextPkcs5, aes.encryptBase64(plaintext))
-        Assertions.assertEquals(plaintext, aes.decryptBase64(ciphertextPkcs5))
+        assertEquals(ciphertextPkcs5, aes.encryptBase64(plaintext))
+        assertEquals(plaintext, aes.decryptBase64(ciphertextPkcs5))
 
         val ciphertextPkcs7 = "vlqZ2ozl5muE1XOj3Srh1g=="
         aes = Cipher.aesBuilder().cbc().pkcs7().secret(secret).iv(iv).build()
-        Assertions.assertEquals(ciphertextPkcs7, aes.encryptBase64(plaintext))
-        Assertions.assertEquals(plaintext, aes.decryptBase64(ciphertextPkcs7))
+        assertEquals(ciphertextPkcs7, aes.encryptBase64(plaintext))
+        assertEquals(plaintext, aes.decryptBase64(ciphertextPkcs7))
 
         val ciphertextIso10126 = "0jdg0wcVcdAzAqewb5LENA=="
         aes = Cipher.aesBuilder().cbc().iso10126().secret(secret).iv(iv).build()
-        Assertions.assertEquals(plaintext, aes.decryptBase64(ciphertextIso10126))
+        assertEquals(plaintext, aes.decryptBase64(ciphertextIso10126))
 
         // 无填充要求明文长度是16字节的倍数
         val plaintextNo = "1234567890123456"
         val ciphertextNo = "eoTQrLWSu1cYUro/HaHzIw=="
         aes = Cipher.aesBuilder().cbc().no().secret(secret).iv(iv).build()
-        Assertions.assertEquals(ciphertextNo, aes.encryptBase64(plaintextNo))
-        Assertions.assertEquals(plaintextNo, aes.decryptBase64(ciphertextNo))
+        assertEquals(ciphertextNo, aes.encryptBase64(plaintextNo))
+        assertEquals(plaintextNo, aes.decryptBase64(ciphertextNo))
     }
 }

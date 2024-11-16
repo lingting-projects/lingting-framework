@@ -1,6 +1,7 @@
 package live.lingting.framework.thread
 
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -23,20 +24,20 @@ internal class StackThreadLocalTest {
         }
 
         async.await()
-        Assertions.assertEquals(max.toLong(), async.allCount())
+        assertEquals(max.toLong(), async.allCount())
     }
 
     fun assertStack() {
         val id = Thread.currentThread().threadId()
-        Assertions.assertNull(local.get())
+        assertNull(local.get())
         local.put(id)
-        Assertions.assertEquals(id, local.get())
-        Assertions.assertEquals(id, local.pop())
-        Assertions.assertNull(local.get())
-        Assertions.assertNull(local.pop())
+        assertEquals(id, local.get())
+        assertEquals(id, local.pop())
+        assertNull(local.get())
+        assertNull(local.pop())
         local.put(null)
-        Assertions.assertNull(local.get())
-        Assertions.assertNull(local.pop())
+        assertNull(local.get())
+        assertNull(local.pop())
     }
 
     companion object {

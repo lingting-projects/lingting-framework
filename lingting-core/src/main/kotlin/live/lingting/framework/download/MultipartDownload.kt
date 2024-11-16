@@ -1,5 +1,10 @@
 package live.lingting.framework.download
 
+import java.io.File
+import java.io.InputStream
+import java.time.Duration
+import java.util.concurrent.ExecutorService
+import java.util.function.Supplier
 import live.lingting.framework.exception.DownloadException
 import live.lingting.framework.kt.logger
 import live.lingting.framework.multipart.Multipart
@@ -7,18 +12,13 @@ import live.lingting.framework.multipart.Part
 import live.lingting.framework.thread.Async
 import live.lingting.framework.util.FileUtils
 import live.lingting.framework.util.ValueUtils
-import java.io.File
-import java.io.InputStream
-import java.time.Duration
-import java.util.concurrent.ExecutorService
-import java.util.function.Supplier
 
 /**
  * @author lingting 2024-09-06 16:39
  */
+@Suppress("UNCHECKED_CAST")
 abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor(builder: DownloadBuilder<*>) : Download {
     protected val log = logger()
-
 
     val url: String = builder.url
 
@@ -52,12 +52,23 @@ abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor
 
 
     override val file = FileUtils.createTemp(id, TEMP_DIR)
+        get() {
+            await()
+            val te = ex
+            if (te != null) {
+                throw te
+            }
+            return field
+        }
 
-    @kotlin.jvm.Synchronized
     override fun start(): Download {
         if (!isStart && !isFinished) {
-            downloadStatus = DownloadStatus.RUNNING
-            doStart()
+            synchronized(log) {
+                if (!isStart && !isFinished) {
+                    downloadStatus = DownloadStatus.RUNNING
+                    doStart()
+                }
+            }
         }
         return this as D
     }
@@ -103,16 +114,6 @@ abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor
 
     override val isSuccess: Boolean
         get() = isFinished && ex == null
-
-
-    fun getFile(): File {
-        await()
-        val te = ex
-        if (te != null) {
-            throw te
-        }
-        return file
-    }
 
 
     abstract fun size(): Long

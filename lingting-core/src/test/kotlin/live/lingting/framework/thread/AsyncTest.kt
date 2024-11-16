@@ -1,14 +1,15 @@
 package live.lingting.framework.thread
 
-import live.lingting.framework.time.StopWatch
-import live.lingting.framework.util.ThreadUtils
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.LockSupport
+import live.lingting.framework.time.StopWatch
+import live.lingting.framework.util.ThreadUtils
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2024-01-26 17:07
@@ -37,9 +38,9 @@ internal class AsyncTest {
         async.await()
         watch.stop()
 
-        Assertions.assertTrue(watch.timeMillis() > 500)
-        Assertions.assertEquals(0, async.notCompletedCount())
-        Assertions.assertEquals(max.toLong(), async.allCount())
+        assertTrue(watch.timeMillis() > 500)
+        assertEquals(0, async.notCompletedCount())
+        assertEquals(max.toLong(), async.allCount())
     }
 
     @Test
@@ -61,10 +62,10 @@ internal class AsyncTest {
         while (async.notCompletedCount() > 0) {
             val runningCount = async.runningCount()
             // 执行中数量必须小于等于线程数限制
-            Assertions.assertTrue(runningCount <= async.limit)
+            assertTrue(runningCount <= async.limit)
             LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(95))
         }
-        Assertions.assertEquals(max.toLong(), async.allCount())
+        assertEquals(max.toLong(), async.allCount())
     }
 
     @Test
@@ -83,8 +84,8 @@ internal class AsyncTest {
         }
         async.await()
 
-        Assertions.assertEquals(0, async.notCompletedCount())
-        Assertions.assertEquals(max.toLong(), async.allCount())
+        assertEquals(0, async.notCompletedCount())
+        assertEquals(max.toLong(), async.allCount())
     }
 
     companion object {

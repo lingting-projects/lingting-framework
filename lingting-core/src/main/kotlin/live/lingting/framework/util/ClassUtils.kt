@@ -6,7 +6,6 @@ import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
-import java.util.Objects
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.BiConsumer
 import java.util.function.BiFunction
@@ -17,6 +16,7 @@ import live.lingting.framework.reflect.ClassField
 /**
  * @author lingting 2021/2/25 21:17
  */
+@Suppress("UNCHECKED_CAST")
 object ClassUtils {
     @JvmStatic
     val EMPTY_CLASS_ARRAY: Array<Class<*>> = arrayOf()
@@ -76,7 +76,9 @@ object ClassUtils {
      */
     @JvmStatic
     fun isPresent(className: String): Boolean {
-        return isPresent(className, ClassUtils::class.java.getClassLoader(), ClassLoader.getSystemClassLoader())
+        val classLoader = ClassUtils::class.java.classLoader
+        val systemClassLoader = ClassLoader.getSystemClassLoader()
+        return isPresent(className, classLoader, systemClassLoader)
     }
 
     /**
@@ -86,15 +88,15 @@ object ClassUtils {
      * @param classLoaders 类加载
      */
     @JvmStatic
-    fun isPresent(className: String, vararg classLoaders: ClassLoader): Boolean {
-        val loaders = classLoaders.filter { Objects.nonNull(it) }.toSet()
+    fun isPresent(className: String, vararg classLoaders: ClassLoader?): Boolean {
+        val loaders = classLoaders.filterNotNull().toSet()
         require(!CollectionUtils.isEmpty(loaders)) { "ClassLoaders can not be empty!" }
         val absent = CACHE_CLASS_PRESENT.computeIfAbsent(
             className
         ) { k: String -> ConcurrentHashMap(loaders.size) }
 
         for (loader in loaders) {
-            val flag = absent.computeIfAbsent(loader) { k: ClassLoader ->
+            val flag = absent.computeIfAbsent(loader) {
                 try {
                     Class.forName(className, true, loader)
                     true

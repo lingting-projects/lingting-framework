@@ -1,20 +1,19 @@
 package live.lingting.framework.value.step
 
-import live.lingting.framework.lock.JavaReentrantLock
-import live.lingting.framework.lock.LockSupplier
 import java.math.BigInteger
+import live.lingting.framework.lock.JavaReentrantLock
 
 /**
  * @author lingting 2024-01-15 19:21
  */
-abstract class AbstractConcurrentStepValue<T> : AbstractStepValue<T?>() {
+abstract class AbstractConcurrentStepValue<T> : AbstractStepValue<T>() {
     protected val lock: JavaReentrantLock = JavaReentrantLock()
 
-    override fun firt(): T? {
+    override fun first(): T {
         return calculate(BigInteger.ZERO)
     }
 
-    override fun index(): BigInteger? {
+    override fun index(): BigInteger {
         return lock.getByInterruptibly { super.index() }
     }
 
@@ -22,11 +21,11 @@ abstract class AbstractConcurrentStepValue<T> : AbstractStepValue<T?>() {
         lock.runByInterruptibly { super.reset() }
     }
 
-    override fun values(): List<T?> {
-        return lock.getByInterruptibly<List<T?>>(LockSupplier<List<T>> { super.values() })!!
+    override fun values(): List<T> {
+        return lock.getByInterruptibly<List<T>> { super.values() }
     }
 
-    override fun next(): T? {
+    override fun next(): T {
         return lock.getByInterruptibly {
             if (!hasNext()) {
                 throw NoSuchElementException()
@@ -35,25 +34,25 @@ abstract class AbstractConcurrentStepValue<T> : AbstractStepValue<T?>() {
         }
     }
 
-    override fun increasing(): BigInteger? {
+    override fun increasing(): BigInteger {
         return lock.getByInterruptibly { super.increasing() }
     }
 
-    override fun calculateNext(): T? {
+    override fun calculateNext(): T {
         return lock.getByInterruptibly { super.calculateNext() }
     }
 
-    override fun calculate(index: BigInteger): T? {
+    override fun calculate(index: BigInteger): T {
         return lock.getByInterruptibly { doCalculate(index) }
     }
 
     override fun hasNext(): Boolean {
-        return lock.getByInterruptibly { this.doHasNext() }!!
+        return lock.getByInterruptibly { this.doHasNext() }
     }
 
     abstract fun doHasNext(): Boolean
 
-    open fun doNext(): T? {
+    open fun doNext(): T {
         return super.next()
     }
 

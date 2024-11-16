@@ -1,46 +1,45 @@
 package live.lingting.framework.util
 
-import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigInteger
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 /**
  * @author lingting 2023-11-24 13:34
  */
 internal class NumberUtilsTest {
-    @get:Test
-    val isInteger: Unit
-        get() {
-            assertTrue(NumberUtils.isInteger(2))
-            assertTrue(NumberUtils.isInteger(BigDecimal("2.0000")))
-            assertFalse(NumberUtils.isInteger(BigDecimal("2.0010")))
-            assertFalse(NumberUtils.isInteger(2.7))
-        }
+    @Test
+    fun isInteger() {
+        assertTrue(NumberUtils.isInteger(2))
+        assertTrue(NumberUtils.isInteger(BigDecimal("2.0000")))
+        assertFalse(NumberUtils.isInteger(BigDecimal("2.0010")))
+        assertFalse(NumberUtils.isInteger(2.7))
+    }
 
-    @get:Test
-    val isBig: Unit
-        get() {
-            assertTrue(NumberUtils.isBig(BigDecimal("2.0000")))
-            assertFalse(NumberUtils.isBig(2.7))
-        }
+    @Test
+    fun isBig() {
+        assertTrue(NumberUtils.isBig(BigDecimal("2.0000")))
+        assertFalse(NumberUtils.isBig(2.7))
+    }
 
-    @get:Test
-    val isPower2: Unit
-        get() {
-            assertTrue(NumberUtils.isPower2(2))
-            assertTrue(NumberUtils.isPower2(BigDecimal("2.0000")))
-            assertFalse(NumberUtils.isPower2(BigDecimal("2.0010")))
-            assertFalse(NumberUtils.isPower2(2.7))
-        }
+    @Test
+    fun isPower2() {
+        assertTrue(NumberUtils.isPower2(2))
+        assertTrue(NumberUtils.isPower2(BigDecimal("2.0000")))
+        assertFalse(NumberUtils.isPower2(BigDecimal("2.0010")))
+        assertFalse(NumberUtils.isPower2(2.7))
+    }
 
-    @get:Test
-    val isEven: Unit
-        get() {
-            assertTrue(NumberUtils.isEven(2))
-            assertTrue(NumberUtils.isEven(BigDecimal("2.0000")))
-            assertFalse(NumberUtils.isEven(BigDecimal("2.0010")))
-            assertFalse(NumberUtils.isEven(2.7))
-        }
+    @Test
+    fun isEven() {
+        assertTrue(NumberUtils.isEven(2))
+        assertTrue(NumberUtils.isEven(BigDecimal("2.0000")))
+        assertFalse(NumberUtils.isEven(BigDecimal("2.0010")))
+        assertFalse(NumberUtils.isEven(2.7))
+    }
 
     @Test
     fun bitLength() {

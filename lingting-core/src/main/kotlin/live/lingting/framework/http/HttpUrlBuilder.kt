@@ -1,12 +1,12 @@
 package live.lingting.framework.http
 
+import java.net.URI
+import java.net.URISyntaxException
+import java.net.URL
 import live.lingting.framework.util.CollectionUtils
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.value.MultiValue
 import live.lingting.framework.value.multi.StringMultiValue
-import java.net.URI
-import java.net.URISyntaxException
-import java.net.URL
 
 /**
  * @author lingting 2024-01-29 16:13
@@ -120,8 +120,8 @@ class HttpUrlBuilder {
         if (value is Map<*, *>) {
             value.forEach { (k: Any?, v: Any?) -> addParam(k.toString(), v) }
         } else if (CollectionUtils.isMulti(value)) {
-            val list: List<Any> = CollectionUtils.multiToList(value)
-            list.forEach { o: Any -> addParam(name, o) }
+            val list: List<Any?> = CollectionUtils.multiToList(value)
+            list.forEach { addParam(name, it) }
         } else if (value != null) {
             params.add(name, value.toString())
         }

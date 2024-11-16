@@ -37,18 +37,18 @@ open class AbstractCipherBuilder<B : AbstractCipherBuilder<B>> : AbstractCryptoB
         return padding
     }
 
-    fun mode(mode: String): B {
+    fun mode(mode: String?): B {
         this.mode = mode
         return this as B
     }
 
-    fun padding(padding: String): B {
+    fun padding(padding: String?): B {
         this.padding = padding
         return this as B
     }
 
     override fun doBuild(): Cipher {
         val symbol = symbol()
-        return Cipher(algorithm!!, mode!!, padding!!, symbol, charset, secret!!, iv)
+        return Cipher(algorithm!!, mode, padding, symbol, charset, secret!!, iv)
     }
 }

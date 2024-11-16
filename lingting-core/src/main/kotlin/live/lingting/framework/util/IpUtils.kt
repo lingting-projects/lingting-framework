@@ -98,7 +98,7 @@ object IpUtils {
             return false
         }
         try {
-            val rawTrim: String = raw.trim { it <= ' ' }
+            val rawTrim: String = raw.trim()
             val rawNormalize: String = if (rawTrim.contains(IPV6_SPLIT))
                 rawTrim.replace("(^|:)0+(\\w+)".toRegex(), "$1$2")
             else

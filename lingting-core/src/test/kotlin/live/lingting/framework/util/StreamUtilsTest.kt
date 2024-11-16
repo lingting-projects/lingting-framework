@@ -1,13 +1,12 @@
 package live.lingting.framework.util
 
-import live.lingting.framework.retry.Retry.value
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 /**
  * @author lingting 2023-12-22 11:56
@@ -50,9 +49,9 @@ internal class StreamUtilsTest {
     @Throws(IOException::class)
     fun testClone() {
         val clone = StreamUtils.clone(of(line3))
-        Assertions.assertEquals(line3, StreamUtils.toString(clone))
+        assertEquals(line3, StreamUtils.toString(clone))
         val copy: InputStream = clone.copy()
-        Assertions.assertEquals(line3, StreamUtils.toString(copy))
+        assertEquals(line3, StreamUtils.toString(copy))
     }
 
     @Test
@@ -63,6 +62,6 @@ internal class StreamUtilsTest {
         val length = (source.available() / 2).toLong()
         val out = ByteArrayOutputStream()
         StreamUtils.write(source, out, length)
-        Assertions.assertEquals(length, out.size().toLong())
+        assertEquals(length, out.size().toLong())
     }
 }

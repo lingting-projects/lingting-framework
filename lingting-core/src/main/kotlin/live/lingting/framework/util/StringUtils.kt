@@ -182,7 +182,7 @@ object StringUtils {
             // 16进制单字符
             val h: String = hex.substring(i, i + 2)
             // 转byte
-            val b = h.toInt(16) as Byte
+            val b = h.toInt(16).toByte()
             byteArray[i / 2] = b
             i += 2
         }

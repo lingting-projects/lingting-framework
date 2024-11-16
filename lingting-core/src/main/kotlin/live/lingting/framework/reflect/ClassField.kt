@@ -5,7 +5,7 @@ import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import live.lingting.framework.util.AnnotationUtils
-import live.lingting.framework.util.ClassUtils.Companion.toFiledName
+import live.lingting.framework.util.ClassUtils.toFiledName
 
 /**
  * 用于获取指定字段的值
@@ -44,7 +44,7 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
      * @param a 注解类型
      * @return boolean true 表示拥有
      */
-    fun <T : Annotation?> getAnnotation(a: Class<T>): T? {
+    fun <T : Annotation> getAnnotation(a: Class<T>): T? {
         // 字段上找
         var annotation = getAnnotation(field, a)
         // 方法上找
@@ -57,8 +57,11 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
         return annotation
     }
 
-    fun <T : Annotation?> getAnnotation(`object`: AccessibleObject?, a: Class<T>): T? {
-        return if (`object` == null) null else AnnotationUtils.findAnnotation<T>(`object`, a)
+    fun <T : Annotation> getAnnotation(`object`: AccessibleObject?, a: Class<T>): T? {
+        if (`object` == null) {
+            return null
+        }
+        return AnnotationUtils.findAnnotation(`object`, a)
     }
 
     /**
@@ -66,7 +69,7 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
      * @param obj 对象
      * @return java.lang.Object 对象指定字段值
      */
-    fun get(obj: Any?): Any {
+    fun get(obj: Any): Any {
         if (methodGet != null) {
             return methodGet.invoke(obj)
         }
@@ -78,7 +81,7 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
      * @param obj 对象
      * @param args set方法参数, 如果无set方法, 则第一个参数会被作为值通过字段设置
      */
-    fun set(obj: Any?, vararg args: Any?) {
+    fun set(obj: Any, vararg args: Any) {
         if (methodSet != null) {
             methodSet.invoke(obj, *args)
             return
@@ -91,7 +94,7 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
     /**
      * 是否能够获取值
      */
-    fun canGet(o: Any?): Boolean {
+    fun canGet(o: Any): Boolean {
         if (methodGet != null) {
             return methodGet.canAccess(o)
         }
@@ -104,7 +107,7 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
     /**
      * 是否能够设置值
      */
-    fun canSet(o: Any?): Boolean {
+    fun canSet(o: Any): Boolean {
         if (methodSet == null) {
             return false
         }

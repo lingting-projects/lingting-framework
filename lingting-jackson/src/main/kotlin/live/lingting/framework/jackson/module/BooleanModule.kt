@@ -6,9 +6,9 @@ import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.module.SimpleModule
-import live.lingting.framework.util.BooleanUtils
 import java.io.IOException
 import java.math.BigDecimal
+import live.lingting.framework.util.BooleanUtils
 
 
 /**
@@ -29,7 +29,7 @@ class BooleanModule : SimpleModule() {
             return when (jsonParser.currentToken) {
                 JsonToken.NOT_AVAILABLE, JsonToken.VALUE_NULL -> null
                 JsonToken.VALUE_STRING -> {
-                    val text = jsonParser.text.trim { it <= ' ' }.lowercase(Locale.getDefault())
+                    val text = jsonParser.text.trim().lowercase(Locale.getDefault())
                     if (BooleanUtils.isTrue(text)) {
                         true
                     }

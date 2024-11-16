@@ -3,7 +3,9 @@ package live.lingting.framework.value
 import live.lingting.framework.value.cycle.IteratorCycleValue
 import live.lingting.framework.value.cycle.StepCycleValue
 import live.lingting.framework.value.step.LongStepValue
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrowsExactly
 import org.junit.jupiter.api.Test
 
 /**
@@ -11,16 +13,16 @@ import org.junit.jupiter.api.Test
  */
 internal class CycleValueTest {
     fun assertNumber(cycle: CycleValue<out Number?>) {
-        Assertions.assertEquals(1, cycle.next()!!.toLong())
-        Assertions.assertEquals(2, cycle.next()!!.toLong())
-        Assertions.assertEquals(3, cycle.next()!!.toLong())
-        Assertions.assertEquals(1, cycle.next()!!.toLong())
-        Assertions.assertEquals(2, cycle.next()!!.toLong())
-        Assertions.assertEquals(3, cycle.next()!!.toLong())
-        Assertions.assertEquals(1, cycle.next()!!.toLong())
+        assertEquals(1, cycle.next()!!.toLong())
+        assertEquals(2, cycle.next()!!.toLong())
+        assertEquals(3, cycle.next()!!.toLong())
+        assertEquals(1, cycle.next()!!.toLong())
+        assertEquals(2, cycle.next()!!.toLong())
+        assertEquals(3, cycle.next()!!.toLong())
+        assertEquals(1, cycle.next()!!.toLong())
         cycle.reset()
-        Assertions.assertEquals(1, cycle.next()!!.toLong())
-        Assertions.assertEquals(8, cycle.count().toLong())
+        assertEquals(1, cycle.next()!!.toLong())
+        assertEquals(8, cycle.count().toLong())
     }
 
     @Test
@@ -35,16 +37,16 @@ internal class CycleValueTest {
         val cycle = IteratorCycleValue<Int?>(list.iterator())
         assertNumber(cycle)
         cycle.reset()
-        Assertions.assertEquals(1, cycle.next())
-        Assertions.assertDoesNotThrow { cycle.remove() }
-        Assertions.assertEquals(2, cycle.next())
-        Assertions.assertEquals(3, cycle.next())
-        Assertions.assertDoesNotThrow { cycle.remove() }
-        Assertions.assertEquals(2, cycle.next())
+        assertEquals(1, cycle.next())
+        assertDoesNotThrow { cycle.remove() }
+        assertEquals(2, cycle.next())
+        assertEquals(3, cycle.next())
+        assertDoesNotThrow { cycle.remove() }
+        assertEquals(2, cycle.next())
         cycle.reset()
-        Assertions.assertThrowsExactly(IllegalStateException::class.java) { cycle.remove() }
-        Assertions.assertEquals(2, cycle.next())
-        Assertions.assertDoesNotThrow { cycle.remove() }
-        Assertions.assertThrowsExactly(NoSuchElementException::class.java) { cycle.next() }
+        assertThrowsExactly(IllegalStateException::class.java) { cycle.remove() }
+        assertEquals(2, cycle.next())
+        assertDoesNotThrow { cycle.remove() }
+        assertThrowsExactly(NoSuchElementException::class.java) { cycle.next() }
     }
 }

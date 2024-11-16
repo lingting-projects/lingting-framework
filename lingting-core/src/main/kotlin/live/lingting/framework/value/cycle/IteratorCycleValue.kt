@@ -5,8 +5,8 @@ import live.lingting.framework.value.step.IteratorStepValue
 /**
  * @author lingting 2024-01-23 15:24
  */
-class IteratorCycleValue<T>(step: IteratorStepValue<T>) : AbstractCycleValue<T?>() {
-    private val step: IteratorStepValue<T?>
+class IteratorCycleValue<T>(step: IteratorStepValue<T>) : AbstractCycleValue<T>() {
+    private val step: IteratorStepValue<T>
 
     constructor(iterator: Iterator<T>) : this(IteratorStepValue<T>(iterator))
 
@@ -18,7 +18,7 @@ class IteratorCycleValue<T>(step: IteratorStepValue<T>) : AbstractCycleValue<T?>
         step.reset()
     }
 
-    override fun doNext(): T? {
+    override fun doNext(): T {
         if (!step.hasNext()) {
             step.reset()
         }

@@ -9,6 +9,7 @@ import java.io.InputStream
  * @author lingting 2024/10/24 10:59
  */
 class BytesInputStream(source: ByteArray) : CloneInputStream(source, source.size.toLong()) {
+
     constructor(source: File) : this(FileInputStream(source))
 
     constructor(input: BytesInputStream) : this(input.source())

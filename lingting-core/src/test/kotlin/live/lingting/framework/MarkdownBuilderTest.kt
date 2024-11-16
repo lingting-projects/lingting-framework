@@ -1,6 +1,8 @@
 package live.lingting.framework
 
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
@@ -40,10 +42,10 @@ internal class MarkdownBuilderTest {
             .json("[1,2,3]")
 
         val string = builder.build()
-        Assertions.assertFalse(string.isBlank())
-        Assertions.assertTrue(string.contains("####"))
-        Assertions.assertTrue(string.contains("-"))
-        Assertions.assertTrue(string.contains("```"))
-        Assertions.assertEquals(21, builder.lines())
+        assertFalse(string.isBlank())
+        assertTrue(string.contains("####"))
+        assertTrue(string.contains("-"))
+        assertTrue(string.contains("```"))
+        assertEquals(21, builder.lines())
     }
 }

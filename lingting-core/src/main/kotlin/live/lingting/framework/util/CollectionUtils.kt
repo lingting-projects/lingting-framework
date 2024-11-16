@@ -6,6 +6,7 @@ import java.util.Collections
 /**
  * @author lingting
  */
+@Suppress("UNCHECKED_CAST")
 object CollectionUtils {
     @SafeVarargs
     @JvmStatic

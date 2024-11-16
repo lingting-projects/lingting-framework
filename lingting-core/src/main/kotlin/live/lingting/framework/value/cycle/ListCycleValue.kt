@@ -11,7 +11,7 @@ class ListCycleValue<T>(private val list: List<T>) : AbstractConcurrentCycleValu
     val isEmpty: Boolean
         get() = CollectionUtils.isEmpty(list)
 
-    override fun doNext(): T? {
+    override fun doNext(): T {
         index += 1
         if (index < list.size) {
             return list[index]

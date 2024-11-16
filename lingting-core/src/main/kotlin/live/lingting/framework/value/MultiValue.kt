@@ -64,7 +64,7 @@ interface MultiValue<K, V, C : Collection<V>> {
 
     fun entries(): Set<Map.Entry<K, C>>
 
-    fun unmodifiable(): MultiValue<K, V, Collection<V>>
+    fun unmodifiable(): MultiValue<K, V, out Collection<V>>
 
     // endregion
     // region remove

@@ -1,9 +1,10 @@
 package live.lingting.framework.util
 
-import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.security.NoSuchAlgorithmException
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 /**
  * @author lingting 2024-09-05 19:48

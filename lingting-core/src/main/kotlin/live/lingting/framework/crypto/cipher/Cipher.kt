@@ -1,10 +1,10 @@
 package live.lingting.framework.crypto.cipher
 
-import live.lingting.framework.crypto.AbstractCrypt
-import live.lingting.framework.util.StringUtils
 import java.nio.charset.Charset
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
+import live.lingting.framework.crypto.AbstractCrypt
+import live.lingting.framework.util.StringUtils
 
 /**
  * @author lingting 2024-09-04 10:17
@@ -14,11 +14,11 @@ class Cipher(
     /**
      * 加密模式
      */
-    val mode: String,
+    val mode: String?,
     /**
      * 填充模式
      */
-    val padding: String,
+    val padding: String?,
     /**
      * 加密具体行为, 如: AES/ECB/NoPadding
      */

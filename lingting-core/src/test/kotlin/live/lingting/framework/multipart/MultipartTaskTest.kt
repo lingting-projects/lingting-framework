@@ -1,14 +1,16 @@
 package live.lingting.framework.multipart
 
-import live.lingting.framework.retry.Retry.value
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
+import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 
 /**
@@ -27,24 +29,24 @@ internal class MultipartTaskTest {
         val number = Multipart.calculate(size, partSize)
         val multipart = Multipart.builder().source(input).partSize(partSize).build()
 
-        Assertions.assertEquals(number, multipart.parts.size.toLong())
-        Assertions.assertEquals(size, multipart.parts.stream().mapToLong(Part::size).sum())
+        assertEquals(number, multipart.parts.size.toLong())
+        assertEquals(size, multipart.parts.stream().mapToLong(Part::size).sum())
         for (part in multipart.parts) {
-            Assertions.assertEquals(part.size, part.end - part.start + 1)
+            assertEquals(part.size, part.end - part.start + 1)
         }
         val task = TestMultipartTask(multipart)
-        Assertions.assertFalse(task.isStarted)
-        task.start()!!.await(Duration.ofSeconds(5))
-        Assertions.assertTrue(task.isCompleted)
+        assertFalse(task.isStarted)
+        task.start().await(Duration.ofSeconds(5))
+        assertTrue(task.isCompleted)
         val output = ByteArrayOutputStream(size.toInt())
         task.cache.keys.stream().sorted().forEach { i -> output.write(task.cache[i]) }
         val merged = output.toByteArray()
-        Assertions.assertArrayEquals(bytes, merged)
-        Assertions.assertEquals(source, String(merged))
+        assertArrayEquals(bytes, merged)
+        assertEquals(source, String(merged))
     }
 }
 
-internal class TestMultipartTask(multipart: Multipart) : MultipartTask<TestMultipartTask?>(multipart) {
+internal class TestMultipartTask(multipart: Multipart) : MultipartTask<TestMultipartTask>(multipart) {
     val cache: MutableMap<Long, ByteArray> = ConcurrentHashMap()
 
     override fun onPart(part: Part) {

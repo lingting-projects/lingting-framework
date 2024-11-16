@@ -123,7 +123,7 @@ class Snowflake(params: SnowflakeParams, workerId: Long, datacenterId: Long) {
      * 生成下一个ID
      * @return 唯一ID
      */
-    @kotlin.jvm.Synchronized
+    @Synchronized
     fun nextId(): Long {
         var timestamp = currentTimestamp()
         // 如果当前时间小于上一次ID生成的时间戳，说明系统时钟回拨了

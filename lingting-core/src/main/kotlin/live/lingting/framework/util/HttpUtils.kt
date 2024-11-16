@@ -1,6 +1,7 @@
 package live.lingting.framework.util
 
 import jakarta.servlet.http.HttpServletRequest
+import java.util.regex.Pattern
 
 /**
  * @author lingting 2022/10/28 17:54
@@ -15,6 +16,9 @@ object HttpUtils {
     const val HEADER_AUTHORIZATION: String = "Authorization"
 
     const val HEADER_ACCEPT_LANGUAGE: String = "Accept-Language"
+
+    @JvmStatic
+    val PATTERN: Pattern by lazy { Pattern.compile("^https?://[a-zA-Z0-9.\\-]+(:[0-9]+)?(/.*)?\$")!! }
 
     @JvmStatic
     fun host(request: HttpServletRequest): String {
@@ -40,5 +44,12 @@ object HttpUtils {
     fun userAgent(request: HttpServletRequest): String {
         return request.getHeader(HEADER_USER_AGENT)
     }
+
+    @JvmStatic
+    fun isHttpUrl(string: String): Boolean {
+        val matcher = PATTERN.matcher(string)
+        return matcher.matches()
+    }
+
 }
 

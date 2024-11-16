@@ -14,13 +14,13 @@ class CommandResult(val command: Command, val exitCode: Int) : Closeable {
 
     val duration: Duration = Duration.ofMillis(end - command.startTime)
 
-    val stdOut: String by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+    val stdOut: String by lazy {
         stdOut().use {
             StreamUtils.toString(it, command.charset)
         }
     }
 
-    val stdErr: String by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+    val stdErr: String by lazy {
         stdErr().use {
             StreamUtils.toString(it, command.charset)
         }

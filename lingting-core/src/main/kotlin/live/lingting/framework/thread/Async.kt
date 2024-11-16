@@ -164,24 +164,24 @@ class Async constructor(
     }
 
     companion object {
-        protected var defaultExecutor: Executor = VirtualThread.executor()
+        @JvmStatic
+        var defaultExecutor: Executor = VirtualThread.executor()
 
         const val UNLIMITED: Long = -1
 
-
+        @JvmStatic
+        @JvmOverloads
         fun pool(limit: Long = UNLIMITED): Async {
             val e: Executor = ThreadUtils.executor()
             return Async(e, limit)
         }
 
-
+        @JvmStatic
+        @JvmOverloads
         fun virtual(limit: Long = UNLIMITED): Async {
             val e: Executor = VirtualThread.executor()
             return Async(e, limit)
         }
 
-        fun setDefaultExecutor(defaultExecutor: Executor) {
-            Companion.defaultExecutor = defaultExecutor
-        }
     }
 }

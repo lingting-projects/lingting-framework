@@ -1,5 +1,10 @@
 package live.lingting.framework.util
 
+import live.lingting.framework.util.CharUtils.isLetter
+import live.lingting.framework.util.CharUtils.isLowerLetter
+import live.lingting.framework.util.CharUtils.isUpperLetter
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**

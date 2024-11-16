@@ -1,9 +1,10 @@
 package live.lingting.framework.util
 
-import live.lingting.framework.retry.Retry.value
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import java.net.UnknownHostException
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 /**
  * @author lingting 2023-12-21 14:09
@@ -17,23 +18,21 @@ internal class IpUtilsTest {
 
     val ip4: String = "53543aa"
 
-    @get:Test
-    val isIpv4: Unit
-        get() {
-            assertTrue(IpUtils.isIpv4(ip1))
-            assertFalse(IpUtils.isIpv4(ip2))
-            assertFalse(IpUtils.isIpv4(ip3))
-            assertFalse(IpUtils.isIpv4(ip4))
-        }
+    @Test
+    fun isIpv4() {
+        assertTrue(IpUtils.isIpv4(ip1))
+        assertFalse(IpUtils.isIpv4(ip2))
+        assertFalse(IpUtils.isIpv4(ip3))
+        assertFalse(IpUtils.isIpv4(ip4))
+    }
 
-    @get:Test
-    val isIpv6: Unit
-        get() {
-            assertFalse(IpUtils.isIpv6(ip1))
-            assertFalse(IpUtils.isIpv6(ip2))
-            assertTrue(IpUtils.isIpv6(ip3))
-            assertFalse(IpUtils.isIpv6(ip4))
-        }
+    @Test
+    fun isIpv6() {
+        assertFalse(IpUtils.isIpv6(ip1))
+        assertFalse(IpUtils.isIpv6(ip2))
+        assertTrue(IpUtils.isIpv6(ip3))
+        assertFalse(IpUtils.isIpv6(ip4))
+    }
 
     @Test
     @Throws(UnknownHostException::class)

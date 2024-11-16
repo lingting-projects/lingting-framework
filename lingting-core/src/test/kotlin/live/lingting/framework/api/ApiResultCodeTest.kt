@@ -2,6 +2,7 @@ package live.lingting.framework.api
 
 import live.lingting.framework.exception.BizException
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 /**
@@ -12,8 +13,8 @@ internal class ApiResultCodeTest {
     fun test() {
         val resultCode = ApiResultCode.SERVER_ERROR
         val r: R<Any> = R.failed(resultCode)
-        Assertions.assertEquals(resultCode.code, r.code)
-        Assertions.assertEquals(resultCode.message, r.message)
+        assertEquals(resultCode.code, r.code)
+        assertEquals(resultCode.message, r.message)
         val message = "testMessage"
         val with = resultCode.with(message)
         assertEquals(message, with.message)

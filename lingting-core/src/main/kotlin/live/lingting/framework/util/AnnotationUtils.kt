@@ -80,7 +80,7 @@ object AnnotationUtils {
      *
      */
     @JvmStatic
-    fun <A : Annotation> findAnnotation(element: AnnotatedElement, aClass: Class<A>): A? {
+    fun <A : Annotation, E : AnnotatedElement> findAnnotation(element: E, aClass: Class<A>): A? {
         val absent = CACHE.computeIfAbsent(element) { ConcurrentHashMap() }.computeIfAbsent(aClass) {
             // 1. 自身
             val annotation = element.getAnnotation(aClass)

@@ -2,6 +2,7 @@ package live.lingting.framework.util
 
 import com.baomidou.mybatisplus.annotation.IEnum
 import com.fasterxml.jackson.annotation.JsonValue
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 /**
