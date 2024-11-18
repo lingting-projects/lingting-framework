@@ -1,5 +1,13 @@
 package live.lingting.framework.ntp
 
+import java.net.InetAddress
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import java.time.Duration
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import live.lingting.framework.util.IpUtils
 import live.lingting.framework.util.ThreadUtils
 import live.lingting.framework.value.CycleValue
@@ -9,17 +17,6 @@ import live.lingting.framework.value.step.LongStepValue
 import org.apache.commons.net.ntp.NTPUDPClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.net.InetAddress
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
-import java.time.Duration
-
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
-import java.util.function.Supplier
-import java.util.stream.Collectors
 
 /**
  * @author lingting 2023-12-27 15:47
@@ -29,12 +26,12 @@ class NtpFactory protected constructor() {
 
     @Throws(InterruptedException::class)
     fun create(): Ntp? {
-        return create(*HOSTS)
+        return create(HOSTS)
     }
 
     @Throws(InterruptedException::class)
-    fun create(vararg hosts: String?): Ntp? {
-        return create(Arrays.asList(*hosts))
+    fun create(vararg hosts: String): Ntp? {
+        return create(hosts.toSet())
     }
 
     @Throws(InterruptedException::class)
@@ -46,10 +43,7 @@ class NtpFactory protected constructor() {
                 continue
             }
             try {
-                val ntp = createByFuture(cycle, host)
-                if (ntp != null) {
-                    return ntp
-                }
+                return createByFuture(cycle, host)
             } catch (e: UnknownHostException) {
                 log.warn("[{}] host cannot be resolved!", host)
                 blockHosts.add(host)
@@ -65,10 +59,10 @@ class NtpFactory protected constructor() {
     }
 
     @Throws(UnknownHostException::class, ExecutionException::class, TimeoutException::class, InterruptedException::class)
-    fun createByFuture(cycle: CycleValue<Long>, host: String): Ntp? {
+    fun createByFuture(cycle: CycleValue<Long>, host: String): Ntp {
         val ip = IpUtils.resolve(host)
 
-        var future: CompletableFuture<Ntp?> = ThreadUtils.async {
+        var future: CompletableFuture<Ntp> = ThreadUtils.async {
             val diff = diff(host)
             Ntp(host, diff)
         }
@@ -91,7 +85,7 @@ class NtpFactory protected constructor() {
         }
     }
 
-    fun diff(host: String?): Long {
+    fun diff(host: String): Long {
         try {
             NTPUDPClient().use { client ->
                 client.setDefaultTimeout(Duration.ofSeconds(5))
@@ -103,18 +97,21 @@ class NtpFactory protected constructor() {
                 return ntp - system
             }
         } catch (e: SocketTimeoutException) {
-            throw NtpException("Ntp get diff timeout! host: %s".formatted(host), e)
+            throw NtpException("Ntp get diff timeout! host: $host", e)
         } catch (e: Exception) {
-            throw NtpException("Ntp get diff error! host: %s".formatted(host), e)
+            throw NtpException("Ntp get diff error! host: $host", e)
         }
     }
 
     companion object {
+        @JvmField
         val STEP_INIT: StepValue<Long> = LongStepValue(1, null, 10)
 
-        val default: NtpFactory = NtpFactory()
+        @JvmField
+        val DEFAULT: NtpFactory = NtpFactory()
 
-        private val HOSTS = arrayOf(
+        @JvmField
+        val HOSTS = setOf(
             "time.windows.com", "time.nist.gov", "time.apple.com",
             "time.asia.apple.com", "cn.ntp.org.cn", "ntp.ntsc.ac.cn", "cn.pool.ntp.org", "ntp.aliyun.com",
             "ntp1.aliyun.com", "ntp2.aliyun.com", "ntp3.aliyun.com", "ntp4.aliyun.com", "ntp5.aliyun.com",
@@ -122,7 +119,5 @@ class NtpFactory protected constructor() {
         )
         private val log: Logger = LoggerFactory.getLogger(NtpFactory::class.java)
 
-        val defaultHosts: Set<String>
-            get() = Arrays.stream(HOSTS).collect(Collectors.toCollection(Supplier { LinkedHashSet() }))
     }
 }

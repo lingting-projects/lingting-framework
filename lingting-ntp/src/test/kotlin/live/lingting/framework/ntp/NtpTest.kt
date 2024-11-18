@@ -1,7 +1,8 @@
 package live.lingting.framework.ntp
 
-import live.lingting.framework.ntp.NtpCn.Companion.currentMillis
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
@@ -11,13 +12,13 @@ internal class NtpTest {
     @Test
     @Throws(InterruptedException::class)
     fun test() {
-        val instance: NtpFactory = NtpFactory.INSTANCE
+        val instance: NtpFactory = NtpFactory.DEFAULT
         val ntp = instance.create()
-        Assertions.assertNotNull(ntp)
+        assertNotNull(ntp)
         val now = ntp!!.now()
-        Assertions.assertNotNull(now)
-        Assertions.assertEquals(Ntp.DEFAULT_ZONE_ID, ntp.zoneId)
-        val millis = currentMillis()
-        Assertions.assertTrue(millis > 0)
+        assertNotNull(now)
+        assertEquals(Ntp.DEFAULT_ZONE_ID, ntp.zoneId)
+        val millis = ntp.currentMillis()
+        assertTrue(millis > 0)
     }
 }
