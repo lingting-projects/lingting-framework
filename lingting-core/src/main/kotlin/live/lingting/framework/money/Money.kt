@@ -2,7 +2,7 @@ package live.lingting.framework.money
 
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.*
+import java.util.Objects
 
 
 /**
@@ -221,6 +221,7 @@ class Money private constructor(
     }
 
     // endregion
+
     // region 金额比对操作
     val isZero: Boolean
         /**
@@ -339,6 +340,7 @@ class Money private constructor(
     }
 
     // endregion
+
     // region 值处理
     /**
      * 返回原始值, 剔除无用的小数位
@@ -400,6 +402,7 @@ class Money private constructor(
     }
 
     // endregion
+
     override fun equals(o: Any?): Boolean {
         if (this === o) {
             return true
@@ -408,7 +411,7 @@ class Money private constructor(
             return false
         }
         val money = o as Money
-        return value == money.value
+        return Objects.equals(value, money.value)
     }
 
     override fun hashCode(): Int {
@@ -416,16 +419,16 @@ class Money private constructor(
     }
 
     companion object {
-        @JvmStatic
+        @JvmField
         val DEFAULT_DECIMAL_TYPE: RoundingMode = RoundingMode.HALF_UP
 
-        @JvmStatic
+        @JvmField
         val ZERO: Money = of(0)
 
-        @JvmStatic
+        @JvmField
         val TEN: Money = of(10)
 
-        @JvmStatic
+        @JvmField
         val HUNDRED: Money = of(100)
 
         /**
@@ -460,6 +463,7 @@ class Money private constructor(
         fun of(value: Double): Money {
             return of(BigDecimal.valueOf(value))
         }
+
         /**
          * 通过指定金额值和上下文的配置进行构建
          *

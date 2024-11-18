@@ -1,6 +1,5 @@
 package live.lingting.framework.flow
 
-import live.lingting.framework.api.R
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Flow

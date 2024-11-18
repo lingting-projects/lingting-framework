@@ -17,7 +17,7 @@ import org.slf4j.Logger
  * @author lingting
  */
 object FileUtils {
-    @JvmStatic
+    @JvmField
     val TEMP_DIR: File = SystemUtils.tmpDirLingting()
     private val log: Logger = logger()
 

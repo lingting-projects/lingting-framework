@@ -1,6 +1,7 @@
 package live.lingting.framework.download
 
-import live.lingting.framework.download.DownloadFileMultipartTask
+import java.io.File
+import java.io.InputStream
 import live.lingting.framework.function.ThrowableFunction
 import live.lingting.framework.multipart.Multipart
 import live.lingting.framework.multipart.Part
@@ -9,10 +10,6 @@ import live.lingting.framework.multipart.file.FileMultipartTask
 import live.lingting.framework.stream.RandomAccessOutputStream
 import live.lingting.framework.thread.Async
 import live.lingting.framework.util.StreamUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import java.io.File
-import java.io.InputStream
 
 /**
  * @author lingting 2024-09-06 16:55
@@ -59,6 +56,5 @@ class DownloadFileMultipartTask(
     }
 
     companion object {
-        private val log: Logger = LoggerFactory.getLogger(DownloadFileMultipartTask::class.java)
     }
 }

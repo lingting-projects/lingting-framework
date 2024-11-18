@@ -1,7 +1,7 @@
 package live.lingting.framework.download
 
-import live.lingting.framework.util.FileUtils
 import java.io.File
+import live.lingting.framework.util.FileUtils
 
 /**
  * @author lingting 2024-01-17 10:09

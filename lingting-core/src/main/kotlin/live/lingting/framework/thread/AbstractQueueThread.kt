@@ -152,19 +152,19 @@ abstract class AbstractQueueThread<E> : AbstractThreadContextComponent() {
         /**
          * 默认缓存数据数量
          */
-        @JvmStatic
+        @JvmField
         val BATCH_SIZE: Int = 500
 
         /**
          * 默认等待时长 30秒
          */
-        @JvmStatic
+        @JvmField
         val BATCH_TIMEOUT: Duration = Duration.ofSeconds(30)
 
         /**
          * 默认获取数据时的超时时间
          */
-        @JvmStatic
+        @JvmField
         val POLL_TIMEOUT: Duration = Duration.ofSeconds(5)
     }
 }

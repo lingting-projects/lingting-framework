@@ -15,7 +15,7 @@ import live.lingting.framework.function.ThrowableRunnable
  */
 object ThreadPool {
 
-    @JvmStatic
+    @JvmField
     val instance: PoolThreadServiceImpl = PoolThreadServiceImpl(newExecutor())
 
     @JvmStatic
@@ -37,11 +37,6 @@ object ThreadPool {
     }
 
     @JvmStatic
-    fun instance(): PoolThreadServiceImpl {
-        return instance
-    }
-
-    @JvmStatic
     fun executor(): ThreadPoolExecutor {
         return instance.executor()
     }
@@ -49,7 +44,7 @@ object ThreadPool {
 
     @JvmStatic
     fun update(executor: ThreadPoolExecutor): PoolThreadServiceImpl {
-        return instance().executor(executor)
+        return instance.executor(executor)
     }
 
     @JvmStatic

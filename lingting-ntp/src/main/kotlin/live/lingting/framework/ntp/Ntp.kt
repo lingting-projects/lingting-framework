@@ -1,7 +1,5 @@
 package live.lingting.framework.ntp
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -18,9 +16,6 @@ class Ntp(val host: String, val diff: Long) {
         private set
 
     fun zoneId(zoneId: ZoneId): Ntp {
-        if (zoneId == null) {
-            throw NtpException("ZoneId must be not null!")
-        }
         this.zoneId = zoneId
         return this
     }
@@ -56,10 +51,10 @@ class Ntp(val host: String, val diff: Long) {
     }
 
     companion object {
+        @JvmField
         val DEFAULT_ZONE_OFFSET: ZoneOffset = ZoneOffset.of("+0")
 
         @JvmField
         val DEFAULT_ZONE_ID: ZoneId = DEFAULT_ZONE_OFFSET.normalized()
-        private val log: Logger = LoggerFactory.getLogger(Ntp::class.java)
     }
 }

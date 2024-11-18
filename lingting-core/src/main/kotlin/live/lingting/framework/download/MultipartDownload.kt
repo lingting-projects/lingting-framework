@@ -122,6 +122,7 @@ abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor
     abstract fun download(part: Part): InputStream
 
     companion object {
+        @JvmField
         val TEMP_DIR: File = FileUtils.createTempDir("download")
     }
 }

@@ -14,10 +14,10 @@ import live.lingting.framework.util.ClassUtils
  */
 object VirtualThread {
 
-    @JvmStatic
+    @JvmField
     val isSupport: Boolean
 
-    @JvmStatic
+    @JvmField
     val instance: VirtualThreadServiceImpl
 
     init {
@@ -27,18 +27,13 @@ object VirtualThread {
     }
 
     @JvmStatic
-    fun instance(): VirtualThreadServiceImpl {
-        return instance
-    }
-
-    @JvmStatic
     fun executor(): ExecutorService {
         return instance.executor()
     }
 
     @JvmStatic
     fun update(executor: ExecutorService): VirtualThreadServiceImpl {
-        return instance().executor(executor)
+        return instance.executor(executor)
     }
 
     @JvmStatic

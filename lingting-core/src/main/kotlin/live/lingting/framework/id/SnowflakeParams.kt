@@ -56,6 +56,7 @@ class SnowflakeParams(
     )
 
     companion object {
+        @JvmField
         val DEFAULT: SnowflakeParams = SnowflakeParams()
 
         /**

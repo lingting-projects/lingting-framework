@@ -15,7 +15,7 @@ import live.lingting.framework.thread.VirtualThread
  */
 object ThreadUtils {
     @JvmStatic
-    var instance: ThreadService = VirtualThread.instance()
+    var instance: ThreadService = VirtualThread.instance
 
     @JvmStatic
     fun instance(): ThreadService {

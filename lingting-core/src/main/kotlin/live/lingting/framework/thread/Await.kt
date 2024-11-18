@@ -1,7 +1,5 @@
 package live.lingting.framework.thread
 
-import live.lingting.framework.function.InterruptedRunnable
-import live.lingting.framework.util.ThreadUtils
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
@@ -9,6 +7,8 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.function.Predicate
 import java.util.function.Supplier
+import live.lingting.framework.function.InterruptedRunnable
+import live.lingting.framework.util.ThreadUtils
 
 /**
  * @author lingting 2024-05-31 11:14
@@ -93,10 +93,12 @@ class Await<S>(private val supplier: Supplier<S>, private val predicate: Predica
     }
 
     companion object {
+        @JvmStatic
         fun <S> builder(supplier: Supplier<S>, predicate: Predicate<S>): AwaitBuilder<S> {
             return builder<S>().supplier(supplier).predicate(predicate)
         }
 
+        @JvmStatic
         fun <S> builder(): AwaitBuilder<S> {
             return AwaitBuilder()
         }

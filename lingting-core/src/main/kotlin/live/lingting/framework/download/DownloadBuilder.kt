@@ -113,6 +113,7 @@ abstract class DownloadBuilder<B : DownloadBuilder<B>> protected constructor(
 
         protected const val DEFAULT_MAX_RETRY_COUNT: Long = 3
 
+        @JvmStatic
         protected val DEFAULT_TIMEOUT: Duration? = null
     }
 }

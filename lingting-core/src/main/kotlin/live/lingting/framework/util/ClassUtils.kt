@@ -18,25 +18,25 @@ import live.lingting.framework.reflect.ClassField
  */
 @Suppress("UNCHECKED_CAST")
 object ClassUtils {
-    @JvmStatic
+    @JvmField
     val EMPTY_CLASS_ARRAY: Array<Class<*>> = arrayOf()
 
-    @JvmStatic
+    @JvmField
     val CACHE_CLASS_PRESENT: MutableMap<String, MutableMap<ClassLoader, Boolean>> = ConcurrentHashMap(8)
 
-    @JvmStatic
+    @JvmField
     val CACHE_FIELDS: MutableMap<Class<*>, Array<Field>> = ConcurrentHashMap(16)
 
-    @JvmStatic
+    @JvmField
     val CACHE_METHODS: MutableMap<Class<*>, Array<Method>> = ConcurrentHashMap(16)
 
-    @JvmStatic
+    @JvmField
     val CACHE_CLASS_FIELDS: MutableMap<Class<*>, Array<ClassField>> = ConcurrentHashMap(16)
 
-    @JvmStatic
+    @JvmField
     val CACHE_TYPE_ARGUMENTS: MutableMap<Class<*>, Array<Type>> = ConcurrentHashMap()
 
-    @JvmStatic
+    @JvmField
     val CACHE_CONSTRUCTOR: MutableMap<Class<*>, Array<Constructor<*>>> = ConcurrentHashMap()
 
     /**

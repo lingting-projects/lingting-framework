@@ -1,8 +1,8 @@
 package live.lingting.framework.kt
 
+import kotlin.reflect.KClass
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import kotlin.reflect.KClass
 
 /**
  * @author lingting 2024/11/12 18:57
@@ -23,3 +23,7 @@ fun <T : Any> T.logger(cls: KClass<*>): Logger {
 fun <T : Any> T.logger(name: String): Logger {
     return LoggerFactory.getLogger(name)
 }
+
+inline val InlineLogger.log: Logger get() = logger()
+
+interface InlineLogger

@@ -1,7 +1,7 @@
 package live.lingting.framework.money
 
-import live.lingting.framework.exception.BizException
 import java.math.RoundingMode
+import live.lingting.framework.exception.BizException
 
 /**
  * @author lingting 2023-05-07 17:55
@@ -40,7 +40,7 @@ class MoneyConfig(
         /**
          * 默认金额配置
          */
-        @JvmStatic
+        @JvmField
         val DEFAULT: MoneyConfig = MoneyConfig(2, RoundingMode.HALF_UP, null, "")
 
         /**

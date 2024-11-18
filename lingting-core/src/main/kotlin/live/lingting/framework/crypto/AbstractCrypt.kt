@@ -1,6 +1,5 @@
 package live.lingting.framework.crypto
 
-import live.lingting.framework.api.R
 import java.nio.charset.Charset
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec

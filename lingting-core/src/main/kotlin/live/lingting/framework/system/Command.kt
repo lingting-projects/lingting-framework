@@ -180,8 +180,10 @@ class Command protected constructor(init: String, enter: String, exit: String, c
     }
 
     companion object {
+        @JvmField
         val TEMP_DIR: File = FileUtils.createTempDir("command")
 
+        @JvmField
         val ENTER: String = SystemUtils.lineSeparator()
 
         const val EXIT: String = "exit"
@@ -195,13 +197,16 @@ class Command protected constructor(init: String, enter: String, exit: String, c
          *
          * @param init 初始命令
          */
+        @JvmStatic
         fun of(init: String): Command = of(init, SystemUtils.charset())
 
+        @JvmStatic
         fun of(init: String, charset: Charset): Command {
             return of(init, ENTER, EXIT, charset)
         }
 
 
+        @JvmStatic
         fun of(init: String, enter: String, exit: String, charset: Charset): Command {
             return Command(init, enter, exit, charset)
         }

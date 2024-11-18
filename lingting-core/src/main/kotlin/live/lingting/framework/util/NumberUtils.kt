@@ -9,10 +9,10 @@ import java.math.BigInteger
  * @author lingting 2023-11-24 11:48
  */
 object NumberUtils {
-    @JvmStatic
+    @JvmField
     val DECIMAL_TWO: BigDecimal = BigDecimal("2")
 
-    @JvmStatic
+    @JvmField
     val INTEGER_TWO: BigInteger = DECIMAL_TWO.toBigInteger()
 
     /**

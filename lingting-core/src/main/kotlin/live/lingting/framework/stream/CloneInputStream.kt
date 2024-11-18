@@ -99,7 +99,7 @@ abstract class CloneInputStream(
     abstract fun clear()
 
     companion object {
-        @JvmStatic
+        @JvmField
         val TEMP_DIR: File = FileUtils.createTempDir("clone")
     }
 }

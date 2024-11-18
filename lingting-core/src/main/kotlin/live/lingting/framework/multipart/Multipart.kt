@@ -80,9 +80,11 @@ class Multipart(
     }
 
     companion object {
+        @JvmField
         val TEMP_DIR: File = FileUtils.createTempDir("multipart")
 
 
+        @JvmStatic
         fun builder(): MultipartBuilder {
             return MultipartBuilder()
         }
@@ -93,12 +95,13 @@ class Multipart(
          * @param size     总大小
          * @param partSize 每个分片大小
          */
-
+        @JvmStatic
         fun calculate(size: Long, partSize: Long): Long {
             val l = size / partSize
             return if (size % partSize == 0L) l else l + 1
         }
 
+        @JvmStatic
         fun split(size: Long, partSize: Long): Collection<Part> {
             val number = calculate(size, partSize)
             val parts: MutableList<Part> = ArrayList(number.toInt())

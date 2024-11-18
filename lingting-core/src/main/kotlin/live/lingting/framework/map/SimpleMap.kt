@@ -1,10 +1,10 @@
 package live.lingting.framework.map
 
-import live.lingting.framework.kt.optional
-import live.lingting.framework.util.BooleanUtils
-import java.util.*
+import java.util.Optional
 import java.util.function.Function
 import java.util.function.Predicate
+import live.lingting.framework.kt.optional
+import live.lingting.framework.util.BooleanUtils
 
 /**
  * @author lingting 2024-04-20 16:17

@@ -52,7 +52,7 @@ class RandomAccessOutputStream constructor(file: File = FileUtils.createTemp(".o
     companion object {
         const val MODE: String = "rw"
 
-        @JvmStatic
+        @JvmField
         val TEMP_DIR: File = FileUtils.createTempDir("random")
     }
 }

@@ -1,7 +1,7 @@
 package live.lingting.framework.http
 
 import java.security.SecureRandom
-import java.util.*
+import java.util.Objects
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager

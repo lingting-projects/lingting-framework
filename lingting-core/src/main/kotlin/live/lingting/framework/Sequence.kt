@@ -104,10 +104,10 @@ interface Sequence {
             return collection.stream().sorted(INSTANCE_DESC).toList()
         }
 
-        @JvmStatic
+        @JvmField
         val INSTANCE_ASC: SequenceComparator = SequenceComparator(true, 0)
 
-        @JvmStatic
+        @JvmField
         val INSTANCE_DESC: SequenceComparator = SequenceComparator(false, 0)
     }
 }

@@ -17,8 +17,8 @@ object HttpUtils {
 
     const val HEADER_ACCEPT_LANGUAGE: String = "Accept-Language"
 
-    @JvmStatic
-    val PATTERN: Pattern by lazy { Pattern.compile("^https?://[a-zA-Z0-9.\\-]+(:[0-9]+)?(/.*)?\$")!! }
+    @JvmField
+    val PATTERN: Pattern = Pattern.compile("^https?://[a-zA-Z0-9.\\-]+(:[0-9]+)?(/.*)?\$")!!
 
     @JvmStatic
     fun host(request: HttpServletRequest): String {

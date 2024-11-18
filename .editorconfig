@@ -23,4 +23,4 @@ ij_java_class_count_to_use_import_on_demand = 999999
 ij_java_names_count_to_use_import_on_demand = 999999
 ij_kotlin_name_count_to_use_star_import = 999999
 ij_java_use_single_class_imports = true
-ij_kotlin_packages_to_use_import_on_demand =
+ij_kotlin_packages_to_use_import_on_demand = ""

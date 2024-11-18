@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 @Suppress("UNCHECKED_CAST")
 object AnnotationUtils {
-    @JvmStatic
+    @JvmField
     val NULL: Annotation = object : Annotation {}
 
     private val CACHE: MutableMap<AnnotatedElement, MutableMap<Class<out Annotation>, Annotation>> = ConcurrentHashMap()

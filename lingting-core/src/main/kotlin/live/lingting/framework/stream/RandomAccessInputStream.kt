@@ -79,7 +79,7 @@ class RandomAccessInputStream : InputStream {
     companion object {
         const val MODE: String = "r"
 
-        @JvmStatic
+        @JvmField
         val TEMP_DIR: File = RandomAccessOutputStream.TEMP_DIR
     }
 }

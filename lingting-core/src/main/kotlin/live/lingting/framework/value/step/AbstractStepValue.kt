@@ -56,7 +56,7 @@ abstract class AbstractStepValue<T> : StepValue<T> {
     abstract fun calculate(index: BigInteger): T
 
     companion object {
-        @JvmStatic
+        @JvmField
         val DEFAULT_INDEX: BigInteger = BigInteger.valueOf(0)
     }
 }
