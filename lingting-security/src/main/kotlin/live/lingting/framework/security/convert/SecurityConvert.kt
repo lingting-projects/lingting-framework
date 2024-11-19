@@ -16,12 +16,12 @@ interface SecurityConvert {
     }
 
     fun scopeToVo(scope: SecurityScope?): AuthorizationVO {
-        val rawVO: AuthorizationVO = SecurityMapstruct.Companion.INSTANCE.toVo(scope)
+        val rawVO: AuthorizationVO = SecurityMapstruct.INSTANCE.toVo(scope)
         return voExpand(rawVO)
     }
 
     fun voToScope(vo: AuthorizationVO?): SecurityScope {
-        val rawScope: SecurityScope = SecurityMapstruct.Companion.INSTANCE.ofVo(vo)
+        val rawScope: SecurityScope = SecurityMapstruct.INSTANCE.ofVo(vo)
         return scopeExpand(rawScope)
     }
 }

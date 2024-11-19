@@ -1,11 +1,11 @@
 package live.lingting.framework.aws.s3.request
 
+import java.io.InputStream
 import live.lingting.framework.aws.s3.AwsS3Request
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.body.BodySource
-import live.lingting.framework.http.body.BodySource.Companion.of
+import live.lingting.framework.http.body.BodySource.of
 import live.lingting.framework.multipart.Part
-import java.io.InputStream
 
 /**
  * @author lingting 2024-09-13 16:31

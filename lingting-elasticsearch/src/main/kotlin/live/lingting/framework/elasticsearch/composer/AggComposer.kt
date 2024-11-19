@@ -2,9 +2,9 @@ package live.lingting.framework.elasticsearch.composer
 
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregation
 import co.elastic.clients.elasticsearch._types.aggregations.TermsAggregation
+import java.util.function.UnaryOperator
 import live.lingting.framework.elasticsearch.ElasticsearchFunction
 import live.lingting.framework.elasticsearch.ElasticsearchUtils
-import java.util.function.UnaryOperator
 
 /**
  * @author lingting 2024-03-06 17:47
@@ -16,11 +16,11 @@ class AggComposer private constructor() {
 
     companion object {
         fun <E> terms(function: ElasticsearchFunction<E, *>): Aggregation {
-            return terms(ElasticsearchUtils.Companion.fieldName(function))
+            return terms(ElasticsearchUtils.fieldName(function))
         }
 
         fun <E> terms(function: ElasticsearchFunction<E, *>, size: Int?): Aggregation {
-            return terms(ElasticsearchUtils.Companion.fieldName(function), size)
+            return terms(ElasticsearchUtils.fieldName(function), size)
         }
 
         @JvmOverloads
@@ -50,7 +50,7 @@ class AggComposer private constructor() {
             function: ElasticsearchFunction<E, *>, size: Int?,
             operator: UnaryOperator<Aggregation.Builder.ContainerBuilder?>
         ): Aggregation {
-            return terms(ElasticsearchUtils.Companion.fieldName(function), size, operator)
+            return terms(ElasticsearchUtils.fieldName(function), size, operator)
         }
     }
 }

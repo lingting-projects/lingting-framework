@@ -32,7 +32,7 @@ class JavaHttpClient(protected val client: java.net.http.HttpClient) : HttpClien
 
     override fun request(request: HttpRequest, callback: ResponseCallback) {
         val jr = convert(request)
-        client.sendAsync(jr, BodyHandlers.ofInputStream()).whenComplete { r: java.net.http.HttpResponse<InputStream>, throwable: Throwable? ->
+        client.sendAsync(jr, BodyHandlers.ofInputStream()).whenComplete { r, throwable ->
             try {
                 val response = convert(request, r)
 
@@ -47,15 +47,15 @@ class JavaHttpClient(protected val client: java.net.http.HttpClient) : HttpClien
         }
     }
 
-    class Builder : HttpClient.Builder<JavaHttpClient, Builder?>() {
+    class Builder : HttpClient.Builder<JavaHttpClient, Builder>() {
         protected var authenticator: Authenticator? = null
 
-        fun authenticator(authenticator: Authenticator?): Builder {
+        fun authenticator(authenticator: Authenticator): Builder {
             this.authenticator = authenticator
             return this
         }
 
-        override fun infiniteTimeout(): Builder? {
+        override fun infiniteTimeout(): Builder {
             return timeout(null, null, null, null)
         }
 
@@ -68,10 +68,10 @@ class JavaHttpClient(protected val client: java.net.http.HttpClient) : HttpClien
                 builder.sslContext(context)
             }
 
-            nonNull(connectTimeout, Consumer { duration: Duration? -> builder.connectTimeout(duration) })
-            nonNull(proxySelector, Consumer { proxySelector: ProxySelector? -> builder.proxy(proxySelector) })
-            nonNull(executor, Consumer { executor: ExecutorService? -> builder.executor(executor) })
-            nonNull(authenticator, Consumer { authenticator: Authenticator? -> builder.authenticator(authenticator) })
+            nonNull(connectTimeout, Consumer { duration: Duration -> builder.connectTimeout(duration) })
+            nonNull(proxySelector, Consumer { proxySelector: ProxySelector -> builder.proxy(proxySelector) })
+            nonNull(executor, Consumer { executor: ExecutorService -> builder.executor(executor) })
+            nonNull(authenticator, Consumer { authenticator: Authenticator -> builder.authenticator(authenticator) })
 
             builder.followRedirects(if (redirects) java.net.http.HttpClient.Redirect.ALWAYS else java.net.http.HttpClient.Redirect.NEVER)
 
@@ -92,7 +92,7 @@ class JavaHttpClient(protected val client: java.net.http.HttpClient) : HttpClien
         fun convert(request: HttpRequest, r: java.net.http.HttpResponse<InputStream>): HttpResponse {
             val code = r.statusCode()
             val map = r.headers().map()
-            val headers: HttpHeaders = HttpHeaders.Companion.of(map)
+            val headers: HttpHeaders = HttpHeaders.of(map)
             val body = r.body()
             return HttpResponse(request, code, headers, body)
         }
@@ -104,10 +104,10 @@ class JavaHttpClient(protected val client: java.net.http.HttpClient) : HttpClien
             val body = request.body()
 
             val builder = java.net.http.HttpRequest.newBuilder().uri(uri)
-            val publisher = convert(method!!, body)
+            val publisher = convert(method, body)
             builder.method(method.name, publisher)
-            headers!!.each { k: String, v: String? ->
-                if (HttpClient.Companion.HEADERS_DISABLED.contains(k)) {
+            headers.each { k: String, v: String ->
+                if (HEADERS_DISABLED.contains(k)) {
                     return@each
                 }
                 builder.header(k, v)
@@ -123,7 +123,7 @@ class JavaHttpClient(protected val client: java.net.http.HttpClient) : HttpClien
             if (source is MemoryBody) {
                 return BodyPublishers.ofByteArray(source.bytes())
             }
-            return BodyPublishers.ofInputStream { source!!.openInput() }
+            return BodyPublishers.ofInputStream { source.openInput() }
         }
     }
 }

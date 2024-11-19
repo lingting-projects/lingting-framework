@@ -1,5 +1,7 @@
 package live.lingting.framework.huawei.obs
 
+import java.time.LocalDateTime
+import java.util.function.Consumer
 import live.lingting.framework.aws.AwsS3Client
 import live.lingting.framework.aws.s3.AwsS3Request
 import live.lingting.framework.aws.s3.AwsS3Utils
@@ -10,8 +12,6 @@ import live.lingting.framework.huawei.HuaweiObs
 import live.lingting.framework.huawei.HuaweiUtils
 import live.lingting.framework.huawei.exception.HuaweiObsException
 import live.lingting.framework.value.multi.StringMultiValue
-import java.time.LocalDateTime
-import java.util.function.Consumer
 
 /**
  * @author lingting 2024/11/5 14:54
@@ -24,16 +24,16 @@ class HuaweiObsS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
     }
 
     override fun onAuthorization(request: AwsS3Request, headers: HttpHeaders, params: StringMultiValue?, now: LocalDateTime) {
-        val date: String = HuaweiUtils.Companion.format(now)
-        headers.put(HuaweiUtils.Companion.HEADER_DATE, date)
+        val date: String = HuaweiUtils.format(now)
+        headers.put(HuaweiUtils.HEADER_DATE, date)
 
         headers.keys().forEach(Consumer<String> { name: String ->
             if (name.startsWith(AwsS3Utils.HEADER_PREFIX)) {
-                val newName = name.replace(AwsS3Utils.HEADER_PREFIX, HuaweiObs.Companion.HEADER_PREFIX)
+                val newName = name.replace(AwsS3Utils.HEADER_PREFIX, HuaweiObs.HEADER_PREFIX)
                 headers.replace(name, newName)
             }
         })
-        val sing: HuaweiObsSing = HuaweiObsSing.Companion.builder()
+        val sing: HuaweiObsSing = HuaweiObsSing.builder()
             .dateTime(now)
             .method(request.method())
             .path(request.path())

@@ -1,5 +1,6 @@
 package live.lingting.framework.datascope.parser
 
+import java.util.function.Consumer
 import live.lingting.framework.datascope.JsqlDataScope
 import live.lingting.framework.datascope.holder.DataScopeHolder
 import live.lingting.framework.datascope.holder.DataScopeMatchNumHolder
@@ -25,8 +26,6 @@ import net.sf.jsqlparser.statement.select.Select
 import net.sf.jsqlparser.statement.select.SelectItem
 import net.sf.jsqlparser.statement.select.WithItem
 import net.sf.jsqlparser.statement.update.Update
-
-import java.util.function.Consumer
 
 /**
  * @author lingting 2024-01-19 16:01
@@ -254,10 +253,10 @@ class DefaultDataScopeParser : DataScopeParser() {
         // 生成数据权限条件
         for (table in tables) {
             // 获取表名
-            val tableName: String = SqlParseUtils.Companion.getTableName(table.name)
+            val tableName: String = SqlParseUtils.getTableName(table.name)
 
             // 进行 dataScope 的表名匹配
-            val matchDataScopes: List<JsqlDataScope?> = DataScopeHolder.Companion.peek()
+            val matchDataScopes: List<JsqlDataScope?> = DataScopeHolder.peek()
                 .stream()
                 .filter { x: JsqlDataScope? -> x!!.includes(tableName) }
                 .toList()
@@ -265,7 +264,7 @@ class DefaultDataScopeParser : DataScopeParser() {
             // 存在匹配成功的
             if (!CollectionUtils.isEmpty(matchDataScopes)) {
                 // 计数
-                DataScopeMatchNumHolder.Companion.incrementMatchNumIfPresent()
+                DataScopeMatchNumHolder.incrementMatchNumIfPresent()
                 // 获取到数据权限过滤的表达式
                 matchDataScopes.stream()
                     .map { x: JsqlDataScope? -> x!!.getExpression(tableName, table.alias) }

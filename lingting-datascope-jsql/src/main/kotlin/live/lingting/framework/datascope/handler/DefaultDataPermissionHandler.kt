@@ -32,7 +32,7 @@ class DefaultDataPermissionHandler(private val dataScopes: List<JsqlDataScope>?)
             return ArrayList()
         }
         // 获取权限规则
-        val dataPermissionRule: DataPermissionRule = DataPermissionRuleHolder.Companion.peek()
+        val dataPermissionRule: DataPermissionRule = DataPermissionRuleHolder.peek()
         return filterDataScopes(dataPermissionRule)
     }
 
@@ -49,7 +49,7 @@ class DefaultDataPermissionHandler(private val dataScopes: List<JsqlDataScope>?)
      * @return always false
     </Code> */
     override fun ignorePermissionControl(dataScopeList: List<JsqlDataScope>, mappedStatementId: String): Boolean {
-        return MappedStatementIdsWithoutDataScope.Companion.onAllWithoutSet(dataScopeList, mappedStatementId)
+        return MappedStatementIdsWithoutDataScope.onAllWithoutSet(dataScopeList, mappedStatementId)
     }
 
     /**

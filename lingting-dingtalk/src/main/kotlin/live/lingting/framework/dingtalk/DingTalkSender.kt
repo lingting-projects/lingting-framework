@@ -1,16 +1,16 @@
 package live.lingting.framework.dingtalk
 
-import live.lingting.framework.crypto.mac.Mac
-import live.lingting.framework.dingtalk.message.DingTalkMessage
-import live.lingting.framework.http.HttpClient
-import live.lingting.framework.http.HttpClient.Companion.okhttp
-import live.lingting.framework.http.HttpRequest.Companion.builder
-import live.lingting.framework.http.HttpUrlBuilder
-import live.lingting.framework.util.StringUtils
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.util.function.Supplier
+import live.lingting.framework.crypto.mac.Mac
+import live.lingting.framework.dingtalk.message.DingTalkMessage
+import live.lingting.framework.http.HttpClient
+import live.lingting.framework.http.HttpClient.okhttp
+import live.lingting.framework.http.HttpRequest.builder
+import live.lingting.framework.http.HttpUrlBuilder
+import live.lingting.framework.util.StringUtils
 
 /**
  * 订单消息发送
@@ -111,7 +111,7 @@ class DingTalkSender(
 
         val request = builder.build()
         val json = CLIENT.request(request, String::class.java)
-        return DingTalkResponse.Companion.of(json)
+        return DingTalkResponse.of(json)
     }
 
     fun setCurrentTimeMillisSupplier(currentTimeMillisSupplier: Supplier<Long>): DingTalkSender {

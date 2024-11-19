@@ -7,7 +7,8 @@ import live.lingting.framework.value.MultiValue
 /**
  * @author lingting 2024-09-12 23:38
  */
-interface HttpHeaders : MultiValue<String?, String?, Collection<String?>?> {
+interface HttpHeaders : MultiValue<String, String, MutableCollection<String>> {
+
     override fun unmodifiable(): UnmodifiableHttpHeaders
 
     // region get
@@ -25,7 +26,7 @@ interface HttpHeaders : MultiValue<String?, String?, Collection<String?>?> {
 
     fun contentLength(): Long {
         val first = first("Content-Length", "0")
-        return first!!.toLong()
+        return first.toLong()
     }
 
     fun etag(): String? {
@@ -34,19 +35,19 @@ interface HttpHeaders : MultiValue<String?, String?, Collection<String?>?> {
 
     // endregion
     // region set
-    fun host(host: String?): HttpHeaders {
+    fun host(host: String): HttpHeaders {
         put(HttpUtils.HEADER_HOST, host)
         return this
     }
 
-    fun authorization(authorization: String?): HttpHeaders {
+    fun authorization(authorization: String): HttpHeaders {
         put(HttpUtils.HEADER_AUTHORIZATION, authorization)
         return this
     }
 
     fun contentType(contentType: String?): HttpHeaders {
         if (StringUtils.hasText(contentType)) {
-            put("Content-Type", contentType)
+            put("Content-Type", contentType!!)
         } else {
             remove("Content-Type")
         }
@@ -58,7 +59,7 @@ interface HttpHeaders : MultiValue<String?, String?, Collection<String?>?> {
         return this
     }
 
-    fun etag(etag: String?): HttpHeaders {
+    fun etag(etag: String): HttpHeaders {
         put("ETag", etag)
         return this
     }
@@ -74,11 +75,11 @@ interface HttpHeaders : MultiValue<String?, String?, Collection<String?>?> {
             return CollectionHttpHeaders()
         }
 
-        fun of(value: MultiValue<String?, String?, out Collection<String?>?>): HttpHeaders {
+        fun of(value: MultiValue<String, String, out Collection<String>>): HttpHeaders {
             return of(value.map())
         }
 
-        fun of(map: Map<String?, Collection<String?>?>): HttpHeaders {
+        fun of(map: Map<String, Collection<String>>): HttpHeaders {
             val empty = empty()
             empty.addAll(map)
             return empty

@@ -1,5 +1,7 @@
 package live.lingting.framework.huawei
 
+import java.time.Duration
+import java.time.LocalDateTime
 import live.lingting.framework.aws.policy.Credential
 import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.api.ApiClient
@@ -15,8 +17,6 @@ import live.lingting.framework.huawei.properties.HuaweiIamProperties
 import live.lingting.framework.huawei.properties.HuaweiObsProperties
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.value.WaitValue
-import java.time.Duration
-import java.time.LocalDateTime
 
 
 /**
@@ -27,7 +27,7 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
     /**
      * token 提前多久过期
      */
-    var tokenEarlyExpire: Duration = HuaweiUtils.Companion.TOKEN_EARLY_EXPIRE
+    var tokenEarlyExpire: Duration = HuaweiUtils.TOKEN_EARLY_EXPIRE
 
     /**
      * token 需要外部维护
@@ -82,8 +82,8 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
         val convert = response.convert(HuaweiIamTokenResponse::class.java)
 
         val token = response.headers().first("X-Subject-Token")
-        val expire: LocalDateTime = HuaweiUtils.Companion.parse(convert.expire, properties.zone)
-        val issued: LocalDateTime = HuaweiUtils.Companion.parse(convert.issued, properties.zone)
+        val expire: LocalDateTime = HuaweiUtils.parse(convert.expire, properties.zone)
+        val issued: LocalDateTime = HuaweiUtils.parse(convert.issued, properties.zone)
         return HuaweiIamToken(token, expire, issued)
     }
 
@@ -99,7 +99,7 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
     }
 
     fun credential(statements: Collection<HuaweiStatement>?): Credential {
-        return credential(HuaweiUtils.Companion.CREDENTIAL_EXPIRE, statements)
+        return credential(HuaweiUtils.CREDENTIAL_EXPIRE, statements)
     }
 
     fun credential(timeout: Duration?, statements: Collection<HuaweiStatement>?): Credential {
@@ -111,7 +111,7 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
         val ak = convert.access
         val sk = convert.secret
         val token = convert.securityToken
-        val expire: LocalDateTime = HuaweiUtils.Companion.parse(convert.expire, properties.zone)
+        val expire: LocalDateTime = HuaweiUtils.parse(convert.expire, properties.zone)
         return Credential(ak!!, sk!!, token!!, expire)
     }
 
@@ -131,12 +131,12 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
     }
 
     fun obsBucket(properties: HuaweiObsProperties): HuaweiObsBucket {
-        return obsBucket(properties, HuaweiActions.Companion.OBS_BUCKET_DEFAULT)
+        return obsBucket(properties, HuaweiActions.OBS_BUCKET_DEFAULT)
     }
 
     fun obsBucket(properties: HuaweiObsProperties, actions: Collection<String?>): HuaweiObsBucket {
         val bucket = if (StringUtils.hasText(properties.bucket)) properties.bucket else "*"
-        val statement: HuaweiStatement = HuaweiStatement.Companion.allow()
+        val statement: HuaweiStatement = HuaweiStatement.allow()
         statement.addAction(actions)
         statement.addResource("obs:*:*:bucket:%s".formatted(bucket))
         statement.addResource("obs:*:*:object:%s/*".formatted(bucket))
@@ -161,12 +161,12 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
     }
 
     fun obsObject(properties: HuaweiObsProperties, key: String?): HuaweiObsObject {
-        return obsObject(properties, key, HuaweiActions.Companion.OBS_OBJECT_DEFAULT)
+        return obsObject(properties, key, HuaweiActions.OBS_OBJECT_DEFAULT)
     }
 
     fun obsObject(properties: HuaweiObsProperties, key: String?, actions: Collection<String?>): HuaweiObsObject {
         val bucket = properties.bucket
-        val statement: HuaweiStatement = HuaweiStatement.Companion.allow()
+        val statement: HuaweiStatement = HuaweiStatement.allow()
         statement.addAction(actions)
         statement.addResource("obs:*:*:object:%s/%s".formatted(bucket, key))
         val credential = credential(statement)

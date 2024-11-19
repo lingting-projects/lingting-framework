@@ -1,5 +1,6 @@
 package live.lingting.framework.aws.s3.impl
 
+import java.time.LocalDateTime
 import live.lingting.framework.aws.AwsS3Client
 import live.lingting.framework.aws.exception.AwsS3Exception
 import live.lingting.framework.aws.s3.AwsS3Request
@@ -10,7 +11,6 @@ import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.value.multi.StringMultiValue
 import org.slf4j.Logger
-import java.time.LocalDateTime
 
 /**
  * @author lingting 2024/11/5 14:48
@@ -29,15 +29,15 @@ open class AwsS3DefaultListener(@JvmField protected val client: AwsS3Client) : A
     }
 
     override fun onAuthorization(request: AwsS3Request, headers: HttpHeaders, params: StringMultiValue?, now: LocalDateTime) {
-        val date: String = AwsS3Utils.Companion.format(now, AwsS3SingV4.Companion.DATETIME_FORMATTER)
-        headers.put(AwsS3Utils.Companion.HEADER_DATE, date)
+        val date: String = AwsS3Utils.format(now, AwsS3SingV4.DATETIME_FORMATTER)
+        headers.put(AwsS3Utils.HEADER_DATE, date)
 
-        val sing: AwsS3SingV4 = AwsS3SingV4.Companion.builder()
+        val sing: AwsS3SingV4 = AwsS3SingV4.builder()
             .dateTime(now)
             .method(request.method())
             .path(request.path())
             .headers(headers)
-            .bodySha256(AwsS3Utils.Companion.PAYLOAD_UNSIGNED)
+            .bodySha256(AwsS3Utils.PAYLOAD_UNSIGNED)
             .params(params)
             .region(region)
             .ak(client.ak)

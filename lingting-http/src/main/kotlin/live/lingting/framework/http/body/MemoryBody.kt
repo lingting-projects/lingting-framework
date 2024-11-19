@@ -12,7 +12,8 @@ import live.lingting.framework.stream.BytesInputStream
 /**
  * @author lingting 2024-09-28 14:04
  */
-class MemoryBody(private val bytes: ByteArray) : BodySource() {
+open class MemoryBody(val bytes: ByteArray) : BodySource() {
+
     @JvmOverloads
     constructor(string: String, charset: Charset = StandardCharsets.UTF_8) : this(string.toByteArray(charset))
 
@@ -24,7 +25,7 @@ class MemoryBody(private val bytes: ByteArray) : BodySource() {
         return bytes.size.toLong()
     }
 
-    override fun bytes(): ByteArray? {
+    override fun bytes(): ByteArray {
         return bytes
     }
 

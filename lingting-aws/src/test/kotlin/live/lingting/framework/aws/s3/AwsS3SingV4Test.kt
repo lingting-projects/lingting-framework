@@ -1,8 +1,8 @@
 package live.lingting.framework.aws.s3
 
-import live.lingting.framework.aws.s3.AwsS3SingV4.Companion.builder
-import live.lingting.framework.aws.s3.AwsS3Utils.Companion.parse
-import live.lingting.framework.http.header.HttpHeaders.Companion.empty
+import live.lingting.framework.aws.s3.AwsS3SingV4.builder
+import live.lingting.framework.aws.s3.AwsS3Utils.parse
+import live.lingting.framework.http.header.HttpHeaders.empty
 import live.lingting.framework.value.multi.StringMultiValue
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

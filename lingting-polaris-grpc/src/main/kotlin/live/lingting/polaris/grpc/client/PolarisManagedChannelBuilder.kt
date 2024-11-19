@@ -10,16 +10,16 @@ import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import io.grpc.NameResolver
 import io.grpc.ProxyDetector
+import java.nio.charset.StandardCharsets
+import java.util.concurrent.Executor
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import live.lingting.framework.jackson.JacksonUtils
 import live.lingting.polaris.grpc.interceptor.PolarisClientInterceptor
 import live.lingting.polaris.grpc.loadbalance.PolarisLoadBalancerFactory
 import live.lingting.polaris.grpc.loadbalance.PolarisLoadBalancerProvider
 import live.lingting.polaris.grpc.resolver.PolarisNameResolverFactory
 import live.lingting.polaris.grpc.util.JvmHookHelper
-import java.nio.charset.StandardCharsets
-import java.util.concurrent.Executor
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * @author [liaochuntao](mailto:liaochuntao@live.com)
@@ -41,7 +41,7 @@ class PolarisManagedChannelBuilder private constructor(
         if (FIRST_INIT.compareAndSet(false, true)) {
             if (sdkContext == null) {
                 sdkContext = SDKContext.initContext()
-                JvmHookHelper.Companion.addShutdownHook(Runnable { sdkContext.destroy() })
+                JvmHookHelper.addShutdownHook(Runnable { sdkContext.destroy() })
             }
             PolarisLoadBalancerFactory.init(sdkContext)
             PolarisNameResolverFactory.init(sdkContext)
@@ -230,7 +230,7 @@ class PolarisManagedChannelBuilder private constructor(
             builder.intercept(clientInterceptor)
         }
         builder.intercept(interceptors)
-        builder.defaultLoadBalancingPolicy(PolarisLoadBalancerProvider.Companion.LOADBALANCER_PROVIDER)
+        builder.defaultLoadBalancingPolicy(PolarisLoadBalancerProvider.LOADBALANCER_PROVIDER)
         return builder.build()
     }
 

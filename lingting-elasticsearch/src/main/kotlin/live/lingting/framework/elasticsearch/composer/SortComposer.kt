@@ -36,7 +36,7 @@ class SortComposer private constructor() {
         }
 
         fun <E, T> sort(func: ElasticsearchFunction<E, T>, order: SortOrder?): SortOptions {
-            val field: String = ElasticsearchUtils.Companion.fieldName(func)
+            val field: String = ElasticsearchUtils.fieldName(func)
             return SortOptions.of { so: SortOptions.Builder -> so.field { fs: FieldSort.Builder -> fs.field(field).order(order) } }
         }
 

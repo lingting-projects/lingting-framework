@@ -13,15 +13,14 @@ import com.tencent.polaris.client.api.SDKContext
 import io.grpc.Attributes
 import io.grpc.EquivalentAddressGroup
 import io.grpc.NameResolver
+import java.net.InetSocketAddress
+import java.net.URI
+import java.util.function.Consumer
 import live.lingting.framework.jackson.JacksonUtils
 import live.lingting.polaris.grpc.util.Common
 import live.lingting.polaris.grpc.util.NetworkHelper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.net.InetSocketAddress
-import java.net.URI
-
-import java.util.function.Consumer
 
 /**
  * Service discovery class
@@ -44,7 +43,7 @@ class PolarisNameResolver(private val targetUri: URI, context: SDKContext, consu
     private var sourceService: ServiceKey? = null
 
     init {
-        val params: Map<String, String?> = NetworkHelper.Companion.getUrlParams(targetUri.query)
+        val params: Map<String, String?> = NetworkHelper.getUrlParams(targetUri.query)
         this.service = targetUri.host
         this.namespace = if (params["namespace"] == null) DEFAULT_NAMESPACE else params["namespace"]!!
         this.context = context
@@ -67,7 +66,7 @@ class PolarisNameResolver(private val targetUri: URI, context: SDKContext, consu
     }
 
     private fun doResolve(listener: Listener2) {
-        val resolverContext: ResolverContext = ResolverContext.Companion.builder()
+        val resolverContext: ResolverContext = ResolverContext.builder()
             .context(context)
             .targetUri(targetUri)
             .sourceService(sourceService)
@@ -117,7 +116,7 @@ class PolarisNameResolver(private val targetUri: URI, context: SDKContext, consu
         val builder = Attributes.newBuilder()
 
         if (sourceService != null) {
-            builder.set<ServiceKey>(Common.Companion.SOURCE_SERVICE_INFO, sourceService)
+            builder.set<ServiceKey>(Common.SOURCE_SERVICE_INFO, sourceService)
         }
 
         listener.onResult(
@@ -143,9 +142,9 @@ class PolarisNameResolver(private val targetUri: URI, context: SDKContext, consu
     private fun buildEquivalentAddressGroup(instance: Instance): EquivalentAddressGroup {
         val address = InetSocketAddress(instance.host, instance.port)
         val attributes = Attributes.newBuilder()
-            .set<Instance>(Common.Companion.INSTANCE_KEY, instance)
-            .set<String>(Common.Companion.TARGET_NAMESPACE_KEY, namespace)
-            .set<String>(Common.Companion.TARGET_SERVICE_KEY, service)
+            .set<Instance>(Common.INSTANCE_KEY, instance)
+            .set<String>(Common.TARGET_NAMESPACE_KEY, namespace)
+            .set<String>(Common.TARGET_SERVICE_KEY, service)
             .build()
         return EquivalentAddressGroup(address, attributes)
     }

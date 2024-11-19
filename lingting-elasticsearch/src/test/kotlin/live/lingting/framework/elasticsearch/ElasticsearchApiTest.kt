@@ -4,10 +4,10 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient
 import co.elastic.clients.elasticsearch._types.query_dsl.Query
 import co.elastic.clients.json.JsonpMapper
 import co.elastic.clients.transport.ElasticsearchTransport
-import live.lingting.framework.elasticsearch.ElasticsearchProvider.Companion.client
-import live.lingting.framework.elasticsearch.ElasticsearchProvider.Companion.jacksonMapper
-import live.lingting.framework.elasticsearch.ElasticsearchProvider.Companion.restClient
-import live.lingting.framework.elasticsearch.ElasticsearchProvider.Companion.transport
+import live.lingting.framework.elasticsearch.ElasticsearchProvider.client
+import live.lingting.framework.elasticsearch.ElasticsearchProvider.jacksonMapper
+import live.lingting.framework.elasticsearch.ElasticsearchProvider.restClient
+import live.lingting.framework.elasticsearch.ElasticsearchProvider.transport
 import live.lingting.framework.elasticsearch.composer.QueryComposer
 import live.lingting.framework.elasticsearch.datascope.DefaultElasticsearchDataPermissionHandler
 import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataScope

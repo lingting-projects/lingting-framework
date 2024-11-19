@@ -134,7 +134,7 @@ class PolarisGrpcServer internal constructor(private val builder: PolarisGrpcSer
         }
         val polarisServerAddr = context!!.config.global.serverConnector.addresses[0]
         val detail = polarisServerAddr.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        host = NetworkHelper.Companion.getLocalHost(detail[0], detail[1].toInt())
+        host = NetworkHelper.getLocalHost(detail[0], detail[1].toInt())
     }
 
     /**

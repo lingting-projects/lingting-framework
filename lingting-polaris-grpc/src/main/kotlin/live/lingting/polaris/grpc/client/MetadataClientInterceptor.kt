@@ -7,9 +7,8 @@ import io.grpc.ClientInterceptor
 import io.grpc.ForwardingClientCall.SimpleForwardingClientCall
 import io.grpc.Metadata
 import io.grpc.MethodDescriptor
-import live.lingting.polaris.grpc.metadata.MetadataContext
-
 import java.util.function.Predicate
+import live.lingting.polaris.grpc.metadata.MetadataContext
 
 /**
  * @author [liaochuntao](mailto:liaochuntao@live.com)
@@ -35,7 +34,7 @@ class MetadataClientInterceptor(transitiveFilter: Predicate<String?>) : ClientIn
     }
 
     private fun copyMetadataToHeader(headers: Metadata) {
-        val metadataContext: MetadataContext = MetadataContext.Companion.METADATA_CONTEXT_KEY.get()
+        val metadataContext: MetadataContext = MetadataContext.METADATA_CONTEXT_KEY.get()
 
         metadataContext.headerFragment.forEach { (key: String?, `val`: String?) ->
             if (!transitiveFilter.test(key)) {

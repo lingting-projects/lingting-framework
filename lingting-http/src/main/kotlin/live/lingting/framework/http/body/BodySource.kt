@@ -11,9 +11,10 @@ import live.lingting.framework.stream.BytesInputStream
  * @author lingting 2024-09-28 14:04
  */
 abstract class BodySource {
+
     abstract fun length(): Long
 
-    abstract fun bytes(): ByteArray?
+    abstract fun bytes(): ByteArray
 
     abstract fun openInput(): InputStream
 
@@ -23,24 +24,23 @@ abstract class BodySource {
 
     abstract fun string(charset: Charset): String
 
-
     abstract fun transferTo(output: OutputStream): Long
-
 
     abstract fun transferTo(channel: WritableByteChannel): Long
 
     companion object {
+        @JvmStatic
         fun empty(): MemoryBody {
-            return MemoryBody(ByteArray(0))
+            return EmptyBody
         }
 
         @JvmStatic
-
         fun of(stream: InputStream): BodySource {
             if (stream is BytesInputStream) {
                 return MemoryBody(stream.source())
             }
             return FileBody(stream)
         }
+
     }
 }

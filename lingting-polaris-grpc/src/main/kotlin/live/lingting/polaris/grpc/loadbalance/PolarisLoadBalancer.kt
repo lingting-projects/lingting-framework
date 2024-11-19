@@ -14,15 +14,14 @@ import io.grpc.ConnectivityStateInfo
 import io.grpc.EquivalentAddressGroup
 import io.grpc.LoadBalancer
 import io.grpc.Status
-import live.lingting.polaris.grpc.util.Common
-import live.lingting.polaris.grpc.util.GrpcHelper
 import java.net.SocketAddress
-
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Predicate
+import live.lingting.polaris.grpc.util.Common
+import live.lingting.polaris.grpc.util.GrpcHelper
 
 /**
  * @author [liaochuntao](mailto:liaochuntao@live.com)
@@ -53,7 +52,7 @@ class PolarisLoadBalancer(private val context: SDKContext, helper: Helper) : Loa
         this.function = Function<EquivalentAddressGroup, Tuple<EquivalentAddressGroup, PolarisSubChannel>> { addressGroup: EquivalentAddressGroup ->
             val newAttributes = addressGroup.attributes
                 .toBuilder()
-                .set<GrpcHelper.Ref<ConnectivityStateInfo>>(GrpcHelper.Companion.STATE_INFO, GrpcHelper.Ref<ConnectivityStateInfo>(ConnectivityStateInfo.forNonError(ConnectivityState.IDLE)))
+                .set<GrpcHelper.Ref<ConnectivityStateInfo>>(GrpcHelper.STATE_INFO, GrpcHelper.Ref<ConnectivityStateInfo>(ConnectivityStateInfo.forNonError(ConnectivityState.IDLE)))
                 .build()
             val subChannel = helper.createSubchannel(
                 CreateSubchannelArgs.newBuilder().setAddresses(addressGroup).setAttributes(newAttributes).build()
@@ -62,14 +61,14 @@ class PolarisLoadBalancer(private val context: SDKContext, helper: Helper) : Loa
             subChannel.start { state: ConnectivityStateInfo -> processSubChannelState(subChannel, state) }
             subChannel.requestConnection()
 
-            val channel = PolarisSubChannel(subChannel, newAttributes.get<Instance>(Common.Companion.INSTANCE_KEY))
+            val channel = PolarisSubChannel(subChannel, newAttributes.get<Instance>(Common.INSTANCE_KEY))
             Tuple<EquivalentAddressGroup, PolarisSubChannel>(addressGroup, channel)
         }
     }
 
     override fun handleResolvedAddresses(resolvedAddresses: ResolvedAddresses) {
         if (Objects.isNull(sourceService)) {
-            this.sourceService = resolvedAddresses.attributes.get<ServiceKey>(Common.Companion.SOURCE_SERVICE_INFO)
+            this.sourceService = resolvedAddresses.attributes.get<ServiceKey>(Common.SOURCE_SERVICE_INFO)
         }
 
         val servers = resolvedAddresses.addresses
@@ -80,7 +79,7 @@ class PolarisLoadBalancer(private val context: SDKContext, helper: Helper) : Loa
 
         val serversMap: Map<String, EquivalentAddressGroup> = servers.stream()
             .collect({ HashMap() }, { m: java.util.HashMap<String, EquivalentAddressGroup>, e: EquivalentAddressGroup -> m[buildKey(e)] = e }, { obj: java.util.HashMap<String, EquivalentAddressGroup>, m: java.util.HashMap<String, EquivalentAddressGroup>? -> obj.putAll(m!!) })
-        val removed: Set<String> = GrpcHelper.Companion.setsDifference<String>(subChannels.keys, serversMap.keys)
+        val removed: Set<String> = GrpcHelper.setsDifference<String>(subChannels.keys, serversMap.keys)
 
         synchronized(subChannels) {
             for (addressGroup in servers) {
@@ -88,7 +87,7 @@ class PolarisLoadBalancer(private val context: SDKContext, helper: Helper) : Loa
                 if (subChannels.containsKey(key)) {
                     val value = subChannels[key]!!
                     // 更新实例的状态信息到 SubChannel 中
-                    value.b.instance = addressGroup.attributes.get<Instance>(Common.Companion.INSTANCE_KEY)
+                    value.b.instance = addressGroup.attributes.get<Instance>(Common.INSTANCE_KEY)
                 } else {
                     subChannels[key] = function.apply(addressGroup)
                 }
@@ -97,7 +96,7 @@ class PolarisLoadBalancer(private val context: SDKContext, helper: Helper) : Loa
 
         removed.forEach(Consumer<String> { entry: String ->
             val channel: Subchannel = subChannels.remove(entry)!!.b
-            GrpcHelper.Companion.shutdownSubChannel(channel)
+            GrpcHelper.shutdownSubChannel(channel)
         })
     }
 
@@ -122,7 +121,7 @@ class PolarisLoadBalancer(private val context: SDKContext, helper: Helper) : Loa
         if (stateInfo.state == ConnectivityState.IDLE) {
             subChannel.requestConnection()
         }
-        val subChannelStateRef: GrpcHelper.Ref<ConnectivityStateInfo> = GrpcHelper.Companion.getSubChannelStateInfoRef(subChannel)
+        val subChannelStateRef: GrpcHelper.Ref<ConnectivityStateInfo> = GrpcHelper.getSubChannelStateInfoRef(subChannel)
         if (subChannelStateRef.value.state == ConnectivityState.TRANSIENT_FAILURE
             && (stateInfo.state == ConnectivityState.CONNECTING || stateInfo.state == ConnectivityState.IDLE)
         ) {
@@ -134,7 +133,7 @@ class PolarisLoadBalancer(private val context: SDKContext, helper: Helper) : Loa
 
     private fun updateBalancingState() {
         val holder = AtomicReference<Attributes?>()
-        val activeList: Map<PolarisSubChannel?, PolarisSubChannel?> = GrpcHelper.Companion.filterNonFailingSubChannels(
+        val activeList: Map<PolarisSubChannel?, PolarisSubChannel?> = GrpcHelper.filterNonFailingSubChannels(
             subChannels,
             holder
         )
@@ -143,7 +142,7 @@ class PolarisLoadBalancer(private val context: SDKContext, helper: Helper) : Loa
             var aggStatus = EMPTY_OK
             for (tuple in subChannels.values) {
                 val subchannel: Subchannel = tuple.b
-                val stateInfo: ConnectivityStateInfo = GrpcHelper.Companion.getSubChannelStateInfoRef(subchannel).getValue()
+                val stateInfo: ConnectivityStateInfo = GrpcHelper.getSubChannelStateInfoRef(subchannel).getValue()
                 if (stateInfo.state == ConnectivityState.CONNECTING || stateInfo.state == ConnectivityState.IDLE) {
                     isConnecting = true
                 }
@@ -175,8 +174,8 @@ class PolarisLoadBalancer(private val context: SDKContext, helper: Helper) : Loa
 
     private fun buildKey(group: EquivalentAddressGroup): String {
         val builder = StringBuilder()
-        builder.append(group.attributes.get<String>(Common.Companion.TARGET_NAMESPACE_KEY))
-        builder.append(group.attributes.get<String>(Common.Companion.TARGET_SERVICE_KEY))
+        builder.append(group.attributes.get<String>(Common.TARGET_NAMESPACE_KEY))
+        builder.append(group.attributes.get<String>(Common.TARGET_SERVICE_KEY))
         group.addresses.forEach(Consumer { obj: SocketAddress? -> builder.append(obj) })
         return builder.toString()
     }

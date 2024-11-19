@@ -1,9 +1,9 @@
 package live.lingting.framework.elasticsearch.builder
 
-import live.lingting.framework.elasticsearch.builder.ScriptBuilder.Companion.builder
-import live.lingting.framework.elasticsearch.builder.ScriptBuilder.Companion.genSetIfAbsent
-import live.lingting.framework.elasticsearch.builder.ScriptBuilder.Companion.genSetNull
-import live.lingting.framework.elasticsearch.builder.ScriptBuilder.Companion.genSetParams
+import live.lingting.framework.elasticsearch.builder.ScriptBuilder.builder
+import live.lingting.framework.elasticsearch.builder.ScriptBuilder.genSetIfAbsent
+import live.lingting.framework.elasticsearch.builder.ScriptBuilder.genSetNull
+import live.lingting.framework.elasticsearch.builder.ScriptBuilder.genSetParams
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 

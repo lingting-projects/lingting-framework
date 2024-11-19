@@ -18,7 +18,7 @@ class ScriptBuilder<T> {
 
     // region params
     fun <R> put(func: ElasticsearchFunction<T, R>, value: R): ScriptBuilder<T> {
-        val field: String = ElasticsearchUtils.Companion.fieldName(func)
+        val field: String = ElasticsearchUtils.fieldName(func)
         return put(field, value)
     }
 
@@ -48,7 +48,7 @@ class ScriptBuilder<T> {
     }
 
     fun <R> set(func: ElasticsearchFunction<T, R>, value: R): ScriptBuilder<T> {
-        val field: String = ElasticsearchUtils.Companion.fieldName(func)
+        val field: String = ElasticsearchUtils.fieldName(func)
         return set(field, value)
     }
 

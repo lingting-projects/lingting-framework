@@ -1,7 +1,5 @@
 package live.lingting.framework.huawei
 
-import live.lingting.framework.aws.s3.AwsS3Utils.Companion.format
-import live.lingting.framework.aws.s3.AwsS3Utils.Companion.parse
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.time.Duration

@@ -26,13 +26,12 @@ import io.grpc.LoadBalancer.PickSubchannelArgs
 import io.grpc.LoadBalancer.SubchannelPicker
 import io.grpc.Metadata
 import io.grpc.Status
+import java.util.function.Consumer
 import live.lingting.polaris.grpc.util.ClientCallInfo
 import live.lingting.polaris.grpc.util.Common
 import live.lingting.polaris.grpc.util.PolarisHelper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-
-import java.util.function.Consumer
 
 /**
  * The main balancing logic. It **must be thread-safe**. Typically it should
@@ -51,8 +50,8 @@ class PolarisPicker(
             return PickResult.withNoResult()
         }
 
-        val targetNamespace = attributes!!.get<String>(Common.Companion.TARGET_NAMESPACE_KEY)
-        val targetService = attributes.get<String>(Common.Companion.TARGET_SERVICE_KEY)
+        val targetNamespace = attributes!!.get<String>(Common.TARGET_NAMESPACE_KEY)
+        val targetService = attributes.get<String>(Common.TARGET_SERVICE_KEY)
         val target = ServiceKey(targetNamespace, targetService)
 
         val instances: MutableList<Instance> = ArrayList()
@@ -71,7 +70,7 @@ class PolarisPicker(
             return PickResult.withSubchannel(
                 channel,
                 PolarisClientStreamTracerFactory(
-                    ClientCallInfo.Companion.builder()
+                    ClientCallInfo.builder()
                         .consumerAPI(consumerAPI)
                         .instance(instance)
                         .targetNamespace(targetNamespace)
@@ -149,7 +148,7 @@ class PolarisPicker(
             }
         })
 
-        return PolarisHelper.Companion.getLabelsInject().modifyRoute(HashSet<RouteArgument>(arguments))
+        return PolarisHelper.getLabelsInject().modifyRoute(HashSet<RouteArgument>(arguments))
     }
 
     private fun loadRouteRule(target: ServiceKey, source: ServiceKey?): List<RoutingProto.Route> {

@@ -1,9 +1,9 @@
 package live.lingting.framework.elasticsearch
 
+import java.time.Duration
 import live.lingting.framework.function.ThrowingSupplier
 import live.lingting.framework.retry.Retry
 import live.lingting.framework.retry.RetryFunction
-import java.time.Duration
 
 /**
  * @author lingting 2023-12-19 14:19
@@ -22,7 +22,7 @@ class ElasticsearchRetry<T>(retry: ElasticsearchProperties.Retry, supplier: Thro
             }
 
             // 版本控制异常
-            if (ElasticsearchUtils.Companion.isVersionConflictException(e)) {
+            if (ElasticsearchUtils.isVersionConflictException(e)) {
                 return allowVersionConflictRetry()
             }
 
@@ -48,7 +48,7 @@ class ElasticsearchRetry<T>(retry: ElasticsearchProperties.Retry, supplier: Thro
         }
 
         override fun getDelay(retryCount: Int, e: Exception?): Duration? {
-            if (ElasticsearchUtils.Companion.isVersionConflictException(e) && retry.versionConflictDelay != null) {
+            if (ElasticsearchUtils.isVersionConflictException(e) && retry.versionConflictDelay != null) {
                 return retry.versionConflictDelay
             }
             return retry.delay

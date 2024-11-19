@@ -70,7 +70,7 @@ interface MultiValue<K, V, C : Collection<V>> {
     // region remove
     fun clear()
 
-    fun remove(key: K): C
+    fun remove(key: K): C?
 
     fun remove(key: K, value: V): Boolean
 

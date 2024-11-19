@@ -65,7 +65,7 @@ class AwsS3SingV4(protected val dateTime: LocalDateTime, protected val method: S
 
 
         fun bodyUnsigned(): S3SingV4Builder {
-            return body(AwsS3Utils.Companion.PAYLOAD_UNSIGNED)
+            return body(AwsS3Utils.PAYLOAD_UNSIGNED)
         }
 
 
@@ -80,8 +80,8 @@ class AwsS3SingV4(protected val dateTime: LocalDateTime, protected val method: S
 
 
         fun body(body: String?): S3SingV4Builder {
-            if (AwsS3Utils.Companion.PAYLOAD_UNSIGNED == body) {
-                return bodySha256(AwsS3Utils.Companion.PAYLOAD_UNSIGNED)
+            if (AwsS3Utils.PAYLOAD_UNSIGNED == body) {
+                return bodySha256(AwsS3Utils.PAYLOAD_UNSIGNED)
             }
             val hex = DigestUtils.sha256Hex(body!!)
             return bodySha256(hex)
@@ -127,7 +127,7 @@ class AwsS3SingV4(protected val dateTime: LocalDateTime, protected val method: S
     }
 
     fun date(): String {
-        return AwsS3Utils.Companion.format(dateTime, DATE_FORMATTER)
+        return AwsS3Utils.format(dateTime, DATE_FORMATTER)
     }
 
     fun canonicalUri(): String {
@@ -144,13 +144,13 @@ class AwsS3SingV4(protected val dateTime: LocalDateTime, protected val method: S
         val builder = StringBuilder()
         if (params != null && !params.isEmpty) {
             params.forEachSorted(BiConsumer<String, Collection<String?>> { k: String, vs: Collection<String?> ->
-                val name: String = AwsS3Utils.Companion.encode(k)
+                val name: String = AwsS3Utils.encode(k)
                 if (CollectionUtils.isEmpty(vs)) {
                     builder.append(name).append("=").append("&")
                     return@forEachSorted
                 }
                 vs.stream().sorted().forEach { v: String ->
-                    val value: String = AwsS3Utils.Companion.encode(v)
+                    val value: String = AwsS3Utils.encode(v)
                     builder.append(name).append("=").append(value).append("&")
                 }
             })
@@ -160,7 +160,7 @@ class AwsS3SingV4(protected val dateTime: LocalDateTime, protected val method: S
 
     fun headersForEach(consumer: BiConsumer<String?, Collection<String>>) {
         headers!!.forEachSorted(BiConsumer<String, Collection<String>> { k: String, vs: Collection<String> ->
-            if (!k.startsWith(AwsS3Utils.Companion.HEADER_PREFIX) && !ArrayUtils.contains(HEADER_INCLUDE, k)) {
+            if (!k.startsWith(AwsS3Utils.HEADER_PREFIX) && !ArrayUtils.contains(HEADER_INCLUDE, k)) {
                 return@forEachSorted
             }
             consumer.accept(k, vs)
@@ -242,7 +242,7 @@ class AwsS3SingV4(protected val dateTime: LocalDateTime, protected val method: S
         val scopeDate = date()
         val scope = scope(scopeDate)
 
-        val date = headers!!.first(AwsS3Utils.Companion.HEADER_DATE)
+        val date = headers!!.first(AwsS3Utils.HEADER_DATE)
         val source = source(date, scope, request)
         val sourceHmacSha = sourceHmacSha(source, scopeDate)
 

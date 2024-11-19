@@ -12,10 +12,10 @@ interface SecurityResourceService {
     fun resolve(token: SecurityToken): SecurityScope?
 
     fun putScope(scope: SecurityScope) {
-        SecurityHolder.Companion.put(scope)
+        SecurityHolder.put(scope)
     }
 
     fun popScope() {
-        SecurityHolder.Companion.pop()
+        SecurityHolder.pop()
     }
 }

@@ -134,7 +134,7 @@ class SecurityAuthorize(@JvmField val order: Int) {
     }
 
     protected fun valid(predicate: Predicate<SecurityScope?>) {
-        val scope: SecurityScope = SecurityHolder.Companion.scope()
+        val scope: SecurityScope = SecurityHolder.scope()
         val flag = predicate.test(scope)
         if (!flag) {
             throw PermissionsException()

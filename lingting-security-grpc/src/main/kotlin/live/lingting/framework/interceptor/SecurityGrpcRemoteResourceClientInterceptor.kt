@@ -19,7 +19,7 @@ class SecurityGrpcRemoteResourceClientInterceptor(properties: SecurityGrpcProper
     override fun <S, R> interceptCall(method: MethodDescriptor<S, R>, callOptions: CallOptions, next: Channel): ClientCall<S, R> {
         return object : ForwardingClientOnCall<S, R>(method, callOptions, next) {
             override fun onStartBefore(responseListener: Listener<R?>?, headers: Metadata?) {
-                val securityToken: SecurityToken = SecurityGrpcRemoteContent.Companion.get()
+                val securityToken: SecurityToken = SecurityGrpcRemoteContent.get()
                 if (securityToken != null && securityToken.isAvailable) {
                     headers!!.put(authorizationKey, securityToken.raw)
                 }

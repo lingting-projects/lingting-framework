@@ -21,7 +21,7 @@ class MetadataServerInterceptor : ServerInterceptor {
     }
 
     private fun copyMetadataToMetadataContext(headers: Metadata): Context {
-        val metadataContext: MetadataContext = MetadataContext.Companion.METADATA_CONTEXT_KEY.get()
+        val metadataContext: MetadataContext = MetadataContext.METADATA_CONTEXT_KEY.get()
         metadataContext.reset()
 
         val keys = headers.keys()
@@ -31,6 +31,6 @@ class MetadataServerInterceptor : ServerInterceptor {
             metadataContext.putHeaderFragment(key, `val`)
         }
 
-        return Context.current().withValue<MetadataContext>(MetadataContext.Companion.METADATA_CONTEXT_KEY, metadataContext)
+        return Context.current().withValue<MetadataContext>(MetadataContext.METADATA_CONTEXT_KEY, metadataContext)
     }
 }

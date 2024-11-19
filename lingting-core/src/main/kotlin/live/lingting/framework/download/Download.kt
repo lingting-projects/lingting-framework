@@ -19,6 +19,8 @@ interface Download {
 
     val file: File
 
+    fun file(): File
+
     /**
      * 使用下载文件覆盖指定文件
      */

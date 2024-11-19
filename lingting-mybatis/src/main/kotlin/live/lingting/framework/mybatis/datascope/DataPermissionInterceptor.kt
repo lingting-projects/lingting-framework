@@ -2,9 +2,9 @@ package live.lingting.framework.mybatis.datascope
 
 import java.sql.Connection
 import live.lingting.framework.datascope.handler.DataPermissionHandler
-import live.lingting.framework.datascope.holder.DataScopeMatchNumHolder.Companion.initMatchNum
-import live.lingting.framework.datascope.holder.DataScopeMatchNumHolder.Companion.pollMatchNum
-import live.lingting.framework.datascope.holder.DataScopeMatchNumHolder.Companion.removeIfEmpty
+import live.lingting.framework.datascope.holder.DataScopeMatchNumHolder.initMatchNum
+import live.lingting.framework.datascope.holder.DataScopeMatchNumHolder.pollMatchNum
+import live.lingting.framework.datascope.holder.DataScopeMatchNumHolder.removeIfEmpty
 import live.lingting.framework.datascope.holder.MappedStatementIdsWithoutDataScope
 import live.lingting.framework.datascope.parser.DataScopeParser
 import live.lingting.framework.mybatis.util.PluginUtils
@@ -29,7 +29,7 @@ class DataPermissionInterceptor(private val parser: DataScopeParser, private val
         // 第一版，测试用
         val target = invocation.target
         val sh = target as StatementHandler
-        val mpSh: PluginUtils.MPStatementHandler = PluginUtils.Companion.mpStatementHandler(sh)
+        val mpSh: PluginUtils.MPStatementHandler = PluginUtils.mpStatementHandler(sh)
         val ms = mpSh.mappedStatement()
         val sct = ms!!.sqlCommandType
         val mpBs = mpSh.mPBoundSql()

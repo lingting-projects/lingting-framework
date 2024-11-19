@@ -1,5 +1,6 @@
 package live.lingting.framework.aws
 
+import java.time.LocalDateTime
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3Properties
 import live.lingting.framework.aws.s3.AwsS3Request
@@ -12,7 +13,6 @@ import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.value.multi.StringMultiValue
-import java.time.LocalDateTime
 
 /**
  * @author lingting 2024-09-19 15:02
@@ -36,14 +36,14 @@ abstract class AwsS3Client protected constructor(val properties: AwsS3Properties
 
     override fun customize(request: AwsS3Request, headers: HttpHeaders, source: BodySource?, params: StringMultiValue?) {
         if (request.acl != null) {
-            headers.put(AwsS3Utils.Companion.HEADER_ACL, request.acl.value)
+            headers.put(AwsS3Utils.HEADER_ACL, request.acl.value)
         }
 
         val now = LocalDateTime.now()
-        headers.put(AwsS3Utils.Companion.HEADER_CONTENT_SHA256, AwsS3Utils.Companion.PAYLOAD_UNSIGNED)
+        headers.put(AwsS3Utils.HEADER_CONTENT_SHA256, AwsS3Utils.PAYLOAD_UNSIGNED)
 
         if (StringUtils.hasText(token)) {
-            headers.put(AwsS3Utils.Companion.HEADER_TOKEN, token)
+            headers.put(AwsS3Utils.HEADER_TOKEN, token)
         }
         listener.onAuthorization(request, headers, params, now)
     }

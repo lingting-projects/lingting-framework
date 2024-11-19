@@ -24,8 +24,8 @@ class SourceComposer private constructor() {
             function: ElasticsearchFunction<E, *>,
             vararg functions: ElasticsearchFunction<E, *>
         ): SourceConfig {
-            val value: String = ElasticsearchUtils.Companion.fieldName(function)
-            val values = Arrays.stream<ElasticsearchFunction<E, *>>(functions).map<String> { func: ElasticsearchFunction<E, *> -> ElasticsearchUtils.Companion.fieldName(func) }.toArray<String> { _Dummy_.__Array__() }
+            val value: String = ElasticsearchUtils.fieldName(function)
+            val values = Arrays.stream<ElasticsearchFunction<E, *>>(functions).map<String> { func: ElasticsearchFunction<E, *> -> ElasticsearchUtils.fieldName(func) }.toArray<String> { _Dummy_.__Array__() }
             return includes(value, *values)
         }
     }

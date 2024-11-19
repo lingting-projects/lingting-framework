@@ -56,7 +56,7 @@ class LocalTimeTypeHandler : BaseTypeHandler<LocalTime?>(), AutoRegisterTypeHand
             return LocalTime.parse(`val`, FORMATTER)
         } catch (e: DateTimeParseException) {
             log.error("Unable to convert string [{}] to LocalTime! using LocalDateTime.toLocalTime", `val`, e)
-            val dateTime: LocalDateTime = LocalDateTimeTypeHandler.Companion.parse(`val`) ?: return null
+            val dateTime: LocalDateTime = LocalDateTimeTypeHandler.parse(`val`) ?: return null
             return dateTime.toLocalTime()
         }
     }

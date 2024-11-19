@@ -18,6 +18,7 @@ class DownloadFileMultipartTask(
     multipart: Multipart, maxRetryCount: Long, async: Async, target: File,
     download: ThrowableFunction<Part, InputStream>
 ) : FileMultipartTask<DownloadFileMultipartTask>(multipart, async) {
+
     protected val target: File
 
     protected val download: ThrowableFunction<Part, InputStream>

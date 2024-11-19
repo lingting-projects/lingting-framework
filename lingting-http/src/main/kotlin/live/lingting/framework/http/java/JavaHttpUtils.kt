@@ -18,19 +18,23 @@ class JavaHttpUtils private constructor() {
     }
 
     companion object {
+        @JvmStatic
         fun write(publisher: BodyPublisher): File {
-            val subscriber: FutureSubscriber<File, ByteBuffer> = object : FutureSubscriber<File?, ByteBuffer?>() {
-                override fun convert(list: List<ByteBuffer>): File {
+            val subscriber: FutureSubscriber<File, ByteBuffer> = object : FutureSubscriber<File, ByteBuffer>() {
+                override fun convert(list: List<ByteBuffer>?): File {
                     val file = FileUtils.createTemp(".http")
 
-                    FileOutputStream(file).use { out ->
-                        for (buffer in list) {
-                            val remaining = buffer.remaining()
-                            val bytes = ByteArray(remaining)
-                            buffer[bytes]
-                            out.write(bytes)
+                    if (!list.isNullOrEmpty()) {
+                        FileOutputStream(file).use { out ->
+                            for (buffer in list) {
+                                val remaining = buffer.remaining()
+                                val bytes = ByteArray(remaining)
+                                buffer[bytes]
+                                out.write(bytes)
+                            }
                         }
                     }
+
                     return file
                 }
             }
@@ -39,7 +43,7 @@ class JavaHttpUtils private constructor() {
             return subscriber.get()
         }
 
-
+        @JvmStatic
         fun toString(publisher: BodyPublisher): String {
             val file = write(publisher)
             FileInputStream(file).use { stream ->

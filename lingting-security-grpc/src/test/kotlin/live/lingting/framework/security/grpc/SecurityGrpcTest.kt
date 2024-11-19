@@ -5,6 +5,7 @@ import io.grpc.Channel
 import io.grpc.ClientInterceptor
 import io.grpc.ManagedChannel
 import io.grpc.StatusRuntimeException
+import java.util.List
 import live.lingting.framework.endpoint.SecurityGrpcAuthorizationEndpoint
 import live.lingting.framework.exception.SecurityGrpcExceptionInstance
 import live.lingting.framework.grpc.GrpcClientProvide
@@ -16,8 +17,8 @@ import live.lingting.framework.grpc.interceptor.GrpcServerExceptionInterceptor
 import live.lingting.framework.grpc.interceptor.GrpcServerTraceIdInterceptor
 import live.lingting.framework.grpc.properties.GrpcClientProperties
 import live.lingting.framework.grpc.properties.GrpcServerProperties
-import live.lingting.framework.interceptor.SecurityGrpcRemoteContent.Companion.pop
-import live.lingting.framework.interceptor.SecurityGrpcRemoteContent.Companion.put
+import live.lingting.framework.interceptor.SecurityGrpcRemoteContent.pop
+import live.lingting.framework.interceptor.SecurityGrpcRemoteContent.put
 import live.lingting.framework.interceptor.SecurityGrpcRemoteResourceClientInterceptor
 import live.lingting.framework.interceptor.SecurityGrpcResourceServerInterceptor
 import live.lingting.framework.properties.SecurityGrpcProperties
@@ -25,7 +26,7 @@ import live.lingting.framework.protobuf.SecurityGrpcAuthorization
 import live.lingting.framework.protobuf.SecurityGrpcAuthorizationServiceGrpc
 import live.lingting.framework.protobuf.SecurityGrpcAuthorizationServiceGrpc.SecurityGrpcAuthorizationServiceBlockingStub
 import live.lingting.framework.security.authorize.SecurityAuthorize
-import live.lingting.framework.security.domain.SecurityToken.Companion.ofDelimiter
+import live.lingting.framework.security.domain.SecurityToken.ofDelimiter
 import live.lingting.framework.security.grpc.authorization.AuthorizationServiceImpl
 import live.lingting.framework.security.grpc.authorization.Password
 import live.lingting.framework.security.resolver.SecurityTokenDefaultResolver
@@ -37,7 +38,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.util.List
 
 /**
  * @author lingting 2024-01-30 20:16

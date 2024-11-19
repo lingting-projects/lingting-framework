@@ -22,14 +22,13 @@ import io.grpc.Metadata
 import io.grpc.ServerCall
 import io.grpc.ServerCallHandler
 import io.grpc.Status
+import java.util.function.BiFunction
+import java.util.function.Consumer
 import live.lingting.polaris.grpc.interceptor.PolarisServerInterceptor
 import live.lingting.polaris.grpc.util.Common
 import live.lingting.polaris.grpc.util.PolarisHelper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-
-import java.util.function.BiFunction
-import java.util.function.Consumer
 
 /**
  * gRPC-Server 端限流拦截器
@@ -119,8 +118,8 @@ class PolarisRateLimitServerInterceptor : PolarisServerInterceptor() {
                 }
 
                 MatchArgument.Type.CALLER_SERVICE -> {
-                    val callerNamespace = headers.get<String>(Common.Companion.CALLER_NAMESPACE_KEY)
-                    val callerService = headers.get<String>(Common.Companion.CALLER_SERVICE_KEY)
+                    val callerNamespace = headers.get<String>(Common.CALLER_NAMESPACE_KEY)
+                    val callerService = headers.get<String>(Common.CALLER_SERVICE_KEY)
                     arguments.add(Argument.buildCallerService(callerNamespace, callerService))
                 }
 
@@ -128,7 +127,7 @@ class PolarisRateLimitServerInterceptor : PolarisServerInterceptor() {
             }
         })
 
-        return PolarisHelper.Companion.getLabelsInject().modifyRateLimit(arguments)
+        return PolarisHelper.getLabelsInject().modifyRateLimit(arguments)
     }
 
     private fun loadRateLimitRule(target: ServiceKey): RateLimitResp {

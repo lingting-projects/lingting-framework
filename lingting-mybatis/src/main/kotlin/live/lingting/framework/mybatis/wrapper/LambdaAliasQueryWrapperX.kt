@@ -3,9 +3,9 @@ package live.lingting.framework.mybatis.wrapper
 import com.baomidou.mybatisplus.core.conditions.SharedString
 import com.baomidou.mybatisplus.core.conditions.segments.MergeSegments
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction
+import java.util.concurrent.atomic.AtomicInteger
 import live.lingting.framework.mybatis.alias.TableAlias
 import live.lingting.framework.mybatis.alias.TableAliasHelper
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * 生成可携带表别名的查询条件 当前实体必须被配置表列名注解
@@ -29,18 +29,18 @@ class LambdaAliasQueryWrapperX<T> : LambdaQueryWrapperX<T?> {
          */
         get() {
             if (field == null) {
-                field = TableAliasHelper.Companion.tableAliasSelectSql(entityClass)
+                field = TableAliasHelper.tableAliasSelectSql(entityClass)
             }
             return field
         }
         private set
 
     constructor(entity: T) : super(entity) {
-        this.tableAlias = TableAliasHelper.Companion.tableAlias(entityClass)
+        this.tableAlias = TableAliasHelper.tableAlias(entityClass)
     }
 
     constructor(entityClass: Class<T>?) : super(entityClass) {
-        this.tableAlias = TableAliasHelper.Companion.tableAlias(getEntityClass())
+        this.tableAlias = TableAliasHelper.tableAlias(getEntityClass())
     }
 
     /**
@@ -54,7 +54,7 @@ class LambdaAliasQueryWrapperX<T> : LambdaQueryWrapperX<T?> {
         entity, entityClass, sqlSelect, paramNameSeq, paramNameValuePairs, mergeSegments, lastSql, sqlComment,
         sqlFirst
     ) {
-        this.tableAlias = TableAliasHelper.Companion.tableAlias(getEntityClass())
+        this.tableAlias = TableAliasHelper.tableAlias(getEntityClass())
     }
 
     /**

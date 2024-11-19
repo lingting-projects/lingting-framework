@@ -3,7 +3,7 @@ package live.lingting.framework.datascope.parser
 import live.lingting.framework.datascope.JsqlDataScope
 import live.lingting.framework.datascope.handler.DataPermissionHandler
 import live.lingting.framework.datascope.handler.DefaultDataPermissionHandler
-import live.lingting.framework.datascope.util.SqlParseUtils.Companion.getAliasColumn
+import live.lingting.framework.datascope.util.SqlParseUtils.getAliasColumn
 import net.sf.jsqlparser.expression.Alias
 import net.sf.jsqlparser.expression.Expression
 import net.sf.jsqlparser.expression.LongValue

@@ -20,7 +20,7 @@ abstract class DataScopeParser {
 
     fun parser(sql: String?, scopes: List<JsqlDataScope>, isMulti: Boolean): String {
         try {
-            DataScopeHolder.Companion.push(scopes)
+            DataScopeHolder.push(scopes)
             val statements = parser(sql, isMulti)
 
             val builder = StringBuilder()
@@ -37,7 +37,7 @@ abstract class DataScopeParser {
 
             return builder.toString()
         } finally {
-            DataScopeHolder.Companion.poll()
+            DataScopeHolder.poll()
         }
     }
 

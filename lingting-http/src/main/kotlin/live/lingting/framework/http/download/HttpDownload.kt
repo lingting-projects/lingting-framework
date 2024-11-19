@@ -13,43 +13,43 @@ import live.lingting.framework.util.StreamUtils
 /**
  * @author lingting 2023-12-20 16:43
  */
-class HttpDownload(builder: HttpDownloadBuilder) : MultipartDownload<HttpDownload?>(builder) {
-    protected val client: HttpClient? = builder.client
+class HttpDownload(builder: HttpDownloadBuilder) : MultipartDownload<HttpDownload>(builder) {
+    protected val client: HttpClient = builder.client
 
     protected val uri: URI = URI.create(url)
 
 
-    fun write(request: HttpRequest, output: OutputStream?) {
-        val response = client!!.request(request)
+    fun write(request: HttpRequest, output: OutputStream) {
+        val response = client.request(request)
 
-        if (!response!!.is2xx) {
+        if (!response.is2xx) {
             throw DownloadException(String.format("response status: %d", response.code()))
         }
 
         response.body().use { input ->
-            StreamUtils.write(input, output!!)
+            StreamUtils.write(input, output)
         }
     }
 
 
     override fun size(): Long {
-        val builder: HttpRequest.Builder = HttpRequest.Companion.builder().url(uri).header("Accept-Encoding", "identity")
-        val response = client!!.request(builder.build())
-        val headers = response!!.headers()
-        return headers!!.contentLength()
+        val builder: HttpRequest.Builder = HttpRequest.builder().url(uri).header("Accept-Encoding", "identity")
+        val response = client.request(builder.build())
+        val headers = response.headers()
+        return headers.contentLength()
     }
 
 
     override fun download(part: Part): InputStream {
-        val builder: HttpRequest.Builder = HttpRequest.Companion.builder().get().url(uri)
+        val builder: HttpRequest.Builder = HttpRequest.builder().get().url(uri)
         if (isMulti) {
             builder.header("Range", String.format("bytes=%d-%d", part.start, part.end))
         }
 
         val request = builder.build()
-        val response = client!!.request(request)
+        val response = client.request(request)
 
-        if (!response!!.is2xx) {
+        if (!response.is2xx) {
             throw DownloadException(String.format("response status: %d", response.code()))
         }
 
@@ -57,31 +57,34 @@ class HttpDownload(builder: HttpDownloadBuilder) : MultipartDownload<HttpDownloa
     }
 
     companion object {
+        @JvmStatic
         fun builder(url: String): HttpDownloadBuilder {
             return HttpDownloadBuilder(url)
         }
 
         @JvmStatic
         fun single(url: String): HttpDownloadBuilder {
-            return HttpDownloadBuilder(url).single()!!
+            return HttpDownloadBuilder(url).single()
         }
 
+        @JvmStatic
         fun multi(url: String): HttpDownloadBuilder {
-            return HttpDownloadBuilder(url).multi()!!
+            return HttpDownloadBuilder(url).multi()
         }
 
+        @JvmStatic
         fun builder(url: URI): HttpDownloadBuilder {
             return HttpDownloadBuilder(url)
         }
 
         @JvmStatic
         fun single(url: URI): HttpDownloadBuilder {
-            return HttpDownloadBuilder(url).single()!!
+            return HttpDownloadBuilder(url).single()
         }
 
         @JvmStatic
         fun multi(url: URI): HttpDownloadBuilder {
-            return HttpDownloadBuilder(url).multi()!!
+            return HttpDownloadBuilder(url).multi()
         }
     }
 }

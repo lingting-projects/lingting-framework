@@ -28,6 +28,7 @@ import live.lingting.framework.value.LazyValue
 /**
  * @author lingting 2024-09-02 15:28
  */
+@Suppress("UNCHECKED_CAST")
 abstract class HttpClient {
     protected var cookie: CookieStore? = null
 
@@ -44,18 +45,18 @@ abstract class HttpClient {
     abstract fun request(request: HttpRequest, callback: ResponseCallback)
 
 
-    fun <T> request(request: HttpRequest, cls: Class<T>?): T? {
+    fun <T> request(request: HttpRequest, cls: Class<T>): T {
         val response = request(request)
         return response.convert(cls)
     }
 
 
-    fun get(uri: URI?): HttpResponse {
-        return request(HttpRequest.Companion.builder().get().url(uri).build())
+    fun get(uri: URI): HttpResponse {
+        return request(HttpRequest.builder().get().url(uri).build())
     }
 
-    abstract class Builder<C : HttpClient?, B : Builder<C, B>?> {
-        protected var executor: ExecutorService = ThreadUtils.executor()
+    abstract class Builder<C : HttpClient, B : Builder<C, B>> {
+        protected var executor: ExecutorService? = ThreadUtils.executor()
 
         protected var redirects: Boolean = true
 
@@ -106,8 +107,8 @@ abstract class HttpClient {
         }
 
 
-        fun ssl(trustManager: X509TrustManager?): B {
-            val context = Https.sslContext(trustManager!!)
+        fun ssl(trustManager: X509TrustManager): B {
+            val context = Https.sslContext(trustManager)
             return ssl(context, trustManager)
         }
 
@@ -121,7 +122,7 @@ abstract class HttpClient {
         fun disableSsl(): B {
             val manager = Https.SSL_DISABLED_TRUST_MANAGER
             val verifier = Https.SSL_DISABLED_HOSTNAME_VERIFIER
-            return ssl(manager)!!.hostnameVerifier(verifier)
+            return ssl(manager).hostnameVerifier(verifier)
         }
 
         fun callTimeout(callTimeout: Duration?): B {
@@ -152,11 +153,11 @@ abstract class HttpClient {
         }
 
         fun timeout(connectTimeout: Duration?, readTimeout: Duration?): B {
-            return connectTimeout(connectTimeout)!!.readTimeout(readTimeout)
+            return connectTimeout(connectTimeout).readTimeout(readTimeout)
         }
 
         fun timeout(callTimeout: Duration?, connectTimeout: Duration?, readTimeout: Duration?, writeTimeout: Duration?): B {
-            return callTimeout(callTimeout)!!.connectTimeout(connectTimeout)
+            return callTimeout(callTimeout).connectTimeout(connectTimeout)
                 .readTimeout(readTimeout)
                 .writeTimeout(writeTimeout)
         }
@@ -185,7 +186,7 @@ abstract class HttpClient {
 
         fun build(): C {
             val c = doBuild()
-            c!!.cookie = cookie
+            c.cookie = cookie
             return c
         }
 
@@ -196,16 +197,19 @@ abstract class HttpClient {
         /**
          * @see jdk.internal.net.http.common.Utils.getDisallowedHeaders
          */
-        protected val HEADERS_DISABLED: Set<String> = setOf(
+        @JvmField
+        val HEADERS_DISABLED: Set<String> = setOf(
             "connection", "content-length", "expect", "host",
             "upgrade"
         )
 
+        @JvmField
         val TEMP_DIR: File = FileUtils.createTempDir("http")
 
         /**
          * 默认大小以内文件直接放内存里面, 单位: bytes
          */
+        @JvmField
         var defaultMaxBytes: Long = 1048576
 
         @JvmStatic
@@ -218,8 +222,8 @@ abstract class HttpClient {
             return OkHttpClient.Builder()
         }
 
+        @JvmStatic
         @JvmOverloads
-
         fun wrap(source: InputStream?, maxBytes: Long = defaultMaxBytes): InputStream {
             if (source == null) {
                 return ByteArrayInputStream(ByteArray(0))
@@ -234,14 +238,14 @@ abstract class HttpClient {
                 file
             }
             StreamUtils.read(source) { bytes, len ->
-                if (!fileValue.isFirst() || size.addAndGet(len) > maxBytes) {
+                if (!fileValue.isFirst() || size.addAndGet(len.toLong()) > maxBytes) {
                     if (fileValue.isFirst()) {
                         fileValue.get()
                         fileOutValue.get()!!.write(byteOut.toByteArray())
                     }
-                    fileOutValue.get()!!.write(bytes, 0, len!!)
+                    fileOutValue.get()!!.write(bytes, 0, len)
                 } else {
-                    byteOut.write(bytes, 0, len!!)
+                    byteOut.write(bytes, 0, len)
                 }
             }
             if (fileValue.isFirst()) {

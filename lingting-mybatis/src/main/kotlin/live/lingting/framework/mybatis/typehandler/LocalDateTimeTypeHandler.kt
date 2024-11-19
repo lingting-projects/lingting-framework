@@ -83,7 +83,7 @@ class LocalDateTimeTypeHandler : BaseTypeHandler<LocalDateTime?>(), AutoRegister
             } catch (e: DateTimeParseException) {
                 log.error("Unable to convert string [{}] to LocalDataTime! using LocalDate.asStartOfDay", `val`, e)
                 // 使用当天0点处理
-                return LocalDate.parse(`val`, LocalDateTypeHandler.Companion.FORMATTER).atStartOfDay()
+                return LocalDate.parse(`val`, LocalDateTypeHandler.FORMATTER).atStartOfDay()
             }
         }
     }

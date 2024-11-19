@@ -12,6 +12,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.UntypedRangeQuery
 import co.elastic.clients.elasticsearch._types.query_dsl.WildcardQuery
 import co.elastic.clients.json.JsonData
 import co.elastic.clients.util.ObjectBuilder
+import java.util.function.Function
 import live.lingting.framework.elasticsearch.ElasticsearchFunction
 import live.lingting.framework.elasticsearch.ElasticsearchUtils
 import live.lingting.framework.elasticsearch.composer.QueryComposer.Companion.must
@@ -20,7 +21,6 @@ import live.lingting.framework.elasticsearch.composer.QueryComposer.Companion.sh
 import live.lingting.framework.elasticsearch.composer.QueryComposer.Companion.term
 import live.lingting.framework.elasticsearch.function.TermOperator
 import live.lingting.framework.util.CollectionUtils
-import java.util.function.Function
 
 /**
  * @author lingting 2024-03-06 17:33
@@ -37,7 +37,7 @@ class QueryComposer private constructor() {
         }
 
         fun <T> term(field: String?, obj: T, operator: Function<TermQuery.Builder?, ObjectBuilder<TermQuery>?>): Query {
-            val value: FieldValue = ElasticsearchUtils.Companion.fieldValue(obj)
+            val value: FieldValue = ElasticsearchUtils.fieldValue(obj)
             return Query.of { qb: Query.Builder ->
                 qb.term { tq: TermQuery.Builder ->
                     val builder = tq.field(field).value(value)
@@ -54,7 +54,7 @@ class QueryComposer private constructor() {
                     if (`object` == null) {
                         continue
                     }
-                    val value: FieldValue = ElasticsearchUtils.Companion.fieldValue(`object`)
+                    val value: FieldValue = ElasticsearchUtils.fieldValue(`object`)
                     values.add(value)
                 }
             }
@@ -160,12 +160,12 @@ class QueryComposer private constructor() {
         }
 
         fun <T> term(func: ElasticsearchFunction<*, T>, obj: T, operator: TermOperator): Query {
-            val field: String = ElasticsearchUtils.Companion.fieldName(func)
+            val field: String = ElasticsearchUtils.fieldName(func)
             return term(field, obj, operator)
         }
 
         fun <T> terms(func: ElasticsearchFunction<*, T>, objects: Collection<T>): Query {
-            val field: String = ElasticsearchUtils.Companion.fieldName(func)
+            val field: String = ElasticsearchUtils.fieldName(func)
             return terms<T>(field, objects)
         }
 
@@ -173,7 +173,7 @@ class QueryComposer private constructor() {
          * 小于
          */
         fun <T> lt(func: ElasticsearchFunction<*, T>, obj: T): Query {
-            val field: String = ElasticsearchUtils.Companion.fieldName(func)
+            val field: String = ElasticsearchUtils.fieldName(func)
             return lt(field, obj)
         }
 
@@ -181,7 +181,7 @@ class QueryComposer private constructor() {
          * 小于等于
          */
         fun <T> le(func: ElasticsearchFunction<*, T>, obj: T): Query {
-            val field: String = ElasticsearchUtils.Companion.fieldName(func)
+            val field: String = ElasticsearchUtils.fieldName(func)
             return le(field, obj)
         }
 
@@ -189,7 +189,7 @@ class QueryComposer private constructor() {
          * 大于
          */
         fun <T> gt(func: ElasticsearchFunction<*, T>, obj: T): Query {
-            val field: String = ElasticsearchUtils.Companion.fieldName(func)
+            val field: String = ElasticsearchUtils.fieldName(func)
             return gt(field, obj)
         }
 
@@ -197,7 +197,7 @@ class QueryComposer private constructor() {
          * 大于等于
          */
         fun <T> ge(func: ElasticsearchFunction<*, T>, obj: T): Query {
-            val field: String = ElasticsearchUtils.Companion.fieldName(func)
+            val field: String = ElasticsearchUtils.fieldName(func)
             return ge(field, obj)
         }
 
@@ -205,17 +205,17 @@ class QueryComposer private constructor() {
          * 大于等于 start 小于等于 end
          */
         fun <T> between(func: ElasticsearchFunction<*, T>, start: T, end: T): Query {
-            val field: String = ElasticsearchUtils.Companion.fieldName(func)
+            val field: String = ElasticsearchUtils.fieldName(func)
             return between(field, start, end)
         }
 
         fun <T> wildcardAll(func: ElasticsearchFunction<*, T>, obj: T): Query {
-            val field: String = ElasticsearchUtils.Companion.fieldName(func)
+            val field: String = ElasticsearchUtils.fieldName(func)
             return wildcardAll(field, obj)
         }
 
         fun <T> wildcard(func: ElasticsearchFunction<*, T>, obj: T): Query {
-            val field: String = ElasticsearchUtils.Companion.fieldName(func)
+            val field: String = ElasticsearchUtils.fieldName(func)
             return wildcard(field, obj)
         } // endregion
     }

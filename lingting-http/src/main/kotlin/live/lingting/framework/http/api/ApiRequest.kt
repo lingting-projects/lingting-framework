@@ -12,7 +12,7 @@ import live.lingting.framework.value.multi.StringMultiValue
  */
 abstract class ApiRequest {
     @JvmField
-    val headers: HttpHeaders = HttpHeaders.Companion.empty()
+    val headers: HttpHeaders = HttpHeaders.empty()
 
     @JvmField
     val params: StringMultiValue = StringMultiValue()
@@ -21,7 +21,7 @@ abstract class ApiRequest {
 
     abstract fun path(): String
 
-    open fun body(): BodySource? {
+    open fun body(): BodySource {
         val json = JacksonUtils.toJson(this)
         return MemoryBody(json)
     }

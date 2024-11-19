@@ -102,7 +102,7 @@ class AwsS3Object(properties: AwsS3Properties, override val key: String?) : AwsS
 
 
     override fun multipart(source: InputStream?): AwsS3MultipartTask? {
-        return multipart(source, AwsS3Utils.Companion.MULTIPART_DEFAULT_PART_SIZE, Async(20))
+        return multipart(source, AwsS3Utils.MULTIPART_DEFAULT_PART_SIZE, Async(20))
     }
 
 
@@ -113,9 +113,9 @@ class AwsS3Object(properties: AwsS3Properties, override val key: String?) : AwsS
             .id(uploadId!!)
             .source(source!!)
             .partSize(parSize)
-            .maxPartCount(AwsS3Utils.Companion.MULTIPART_MAX_PART_COUNT)
-            .maxPartSize(AwsS3Utils.Companion.MULTIPART_MAX_PART_SIZE)
-            .minPartSize(AwsS3Utils.Companion.MULTIPART_MIN_PART_SIZE)
+            .maxPartCount(AwsS3Utils.MULTIPART_MAX_PART_COUNT)
+            .maxPartSize(AwsS3Utils.MULTIPART_MAX_PART_SIZE)
+            .minPartSize(AwsS3Utils.MULTIPART_MIN_PART_SIZE)
             .build()
 
         val task = AwsS3MultipartTask(multipart, async, this)

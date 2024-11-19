@@ -3,12 +3,13 @@ package live.lingting.framework.http.download
 import java.io.File
 import java.io.FileInputStream
 import java.net.URI
-import live.lingting.framework.http.download.HttpDownload.Companion.multi
-import live.lingting.framework.http.download.HttpDownload.Companion.single
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.FileUtils
 import live.lingting.framework.util.StreamUtils
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertThrowsExactly
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -24,14 +25,13 @@ internal class HttpDownloadTest {
     val md5: String = "2ce519cf7373a533e1fd297edb9ad1c3"
 
     @Test
+    fun testSingle() {
+        val download = HttpDownload.single(url).build()
 
-    fun single() {
-        val download = single(url).build()
-
-        Assertions.assertFalse(download.isStart)
-        Assertions.assertFalse(download.isSuccess)
-        Assertions.assertFalse(download.isFinished)
-        Assertions.assertThrowsExactly(IllegalStateException::class.java) { download.await() }
+        assertFalse(download.isStart)
+        assertFalse(download.isSuccess)
+        assertFalse(download.isFinished)
+        assertThrowsExactly(IllegalStateException::class.java) { download.await() }
 
         val await: HttpDownload = download.start().await()
 
@@ -39,18 +39,18 @@ internal class HttpDownloadTest {
             log.error("error", download.ex)
         }
 
-        Assertions.assertEquals(download, await)
-        Assertions.assertTrue(download.isStart)
-        Assertions.assertTrue(download.isSuccess)
-        Assertions.assertTrue(download.isFinished)
+        assertEquals(download, await)
+        assertTrue(download.isStart)
+        assertTrue(download.isSuccess)
+        assertTrue(download.isFinished)
 
-        val file = download.getFile()
+        val file = download.file
         println(file.absolutePath)
         try {
             FileInputStream(file).use { stream ->
                 val string = StreamUtils.toString(stream)
                 val md5Hex = DigestUtils.md5Hex(string)
-                Assertions.assertEquals(md5, md5Hex)
+                assertEquals(md5, md5Hex)
             }
         } finally {
             FileUtils.delete(file)
@@ -58,26 +58,25 @@ internal class HttpDownloadTest {
     }
 
     @Test
+    fun testMulti() {
+        val download = HttpDownload.multi(url).partSize(50).build()
 
-    fun multi() {
-        val download = multi(url).partSize(50)!!.build()
-
-        Assertions.assertFalse(download.isStart)
-        Assertions.assertFalse(download.isSuccess)
-        Assertions.assertFalse(download.isFinished)
-        Assertions.assertThrowsExactly(IllegalStateException::class.java) { download.await() }
+        assertFalse(download.isStart)
+        assertFalse(download.isSuccess)
+        assertFalse(download.isFinished)
+        assertThrowsExactly(IllegalStateException::class.java) { download.await() }
         val await: HttpDownload = download.start().await()
 
         if (!download.isSuccess) {
             log.error("error", download.ex)
         }
 
-        Assertions.assertEquals(download, await)
-        Assertions.assertTrue(download.isStart)
-        Assertions.assertTrue(download.isSuccess)
-        Assertions.assertTrue(download.isFinished)
+        assertEquals(download, await)
+        assertTrue(download.isStart)
+        assertTrue(download.isSuccess)
+        assertTrue(download.isFinished)
 
-        val file = download.getFile()
+        val file = download.file
         println(file.absolutePath)
         val temp = FileUtils.createTemp(".2")
         try {
@@ -90,12 +89,11 @@ internal class HttpDownloadTest {
         }
     }
 
-
     fun assertFile(target: File) {
         FileInputStream(target).use { stream ->
             val string = StreamUtils.toString(stream)
             val md5Hex = DigestUtils.md5Hex(string)
-            Assertions.assertEquals(md5, md5Hex)
+            assertEquals(md5, md5Hex)
         }
     }
 

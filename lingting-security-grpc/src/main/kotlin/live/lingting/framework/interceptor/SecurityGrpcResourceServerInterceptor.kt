@@ -4,6 +4,7 @@ import io.grpc.Metadata
 import io.grpc.MethodDescriptor
 import io.grpc.ServerCall
 import io.grpc.ServerCallHandler
+import java.util.function.Consumer
 import live.lingting.framework.Sequence
 import live.lingting.framework.exception.SecurityGrpcThrowing
 import live.lingting.framework.grpc.interceptor.AbstractServerInterceptor
@@ -11,12 +12,11 @@ import live.lingting.framework.grpc.simple.ForwardingServerOnCallListener
 import live.lingting.framework.security.authorize.SecurityAuthorize
 import live.lingting.framework.security.domain.SecurityScope
 import live.lingting.framework.security.domain.SecurityToken
-import live.lingting.framework.security.domain.SecurityToken.Companion.ofDelimiter
+import live.lingting.framework.security.domain.SecurityToken.ofDelimiter
 import live.lingting.framework.security.resource.SecurityResourceService
 import live.lingting.framework.util.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.function.Consumer
 
 /**
  * @author lingting 2023-12-14 16:28
@@ -60,7 +60,7 @@ class SecurityGrpcResourceServerInterceptor(
         try {
             return service.resolve(token)
         } catch (ex: Exception) {
-            SecurityGrpcThrowing.Companion.throwing(ex, Consumer<Exception?> { e: Exception? -> log.error("resolve token error! token: {}", token, e) })
+            SecurityGrpcThrowing.throwing(ex, Consumer<Exception?> { e: Exception? -> log.error("resolve token error! token: {}", token, e) })
             return null
         }
     }

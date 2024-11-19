@@ -6,6 +6,5 @@ package live.lingting.framework.http
 interface ResponseCallback {
     fun onError(request: HttpRequest?, e: Throwable?)
 
-
     fun onResponse(response: HttpResponse?)
 }

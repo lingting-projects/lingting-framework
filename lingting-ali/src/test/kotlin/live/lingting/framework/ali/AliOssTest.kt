@@ -1,5 +1,8 @@
 package live.lingting.framework.ali
 
+import java.io.ByteArrayInputStream
+import java.nio.file.Files
+import java.util.function.Consumer
 import live.lingting.framework.ali.exception.AliException
 import live.lingting.framework.ali.properties.AliOssProperties
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
@@ -7,7 +10,7 @@ import live.lingting.framework.aws.s3.AwsS3Utils
 import live.lingting.framework.aws.s3.request.AwsS3SimpleRequest
 import live.lingting.framework.aws.s3.response.AwsS3MultipartItem
 import live.lingting.framework.http.download.HttpDownload
-import live.lingting.framework.http.download.HttpDownload.Companion.single
+import live.lingting.framework.http.download.HttpDownload.single
 import live.lingting.framework.id.Snowflake
 import live.lingting.framework.thread.Async
 import live.lingting.framework.util.CollectionUtils
@@ -19,9 +22,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.ByteArrayInputStream
-import java.nio.file.Files
-import java.util.function.Consumer
 
 /**
  * @author lingting 2024-09-18 14:29

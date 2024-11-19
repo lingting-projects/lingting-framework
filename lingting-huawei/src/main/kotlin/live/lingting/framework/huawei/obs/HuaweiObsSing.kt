@@ -133,12 +133,12 @@ class HuaweiObsSing(protected val dateTime: LocalDateTime, protected val method:
     }
 
     fun date(): String {
-        return HuaweiUtils.Companion.format(dateTime)
+        return HuaweiUtils.format(dateTime)
     }
 
     fun canonicalizedHeaders(): String {
         val builder = StringBuilder()
-        headers!!.keys().stream().filter { k: String -> k.startsWith(HuaweiObs.Companion.HEADER_PREFIX) }.sorted().forEach { k: String ->
+        headers!!.keys().stream().filter { k: String -> k.startsWith(HuaweiObs.HEADER_PREFIX) }.sorted().forEach { k: String ->
             val vs = headers.get(k)
             if (vs!!.isEmpty()) {
                 return@forEach
@@ -188,7 +188,7 @@ class HuaweiObsSing(protected val dateTime: LocalDateTime, protected val method:
 
     fun calculate(): String {
         val source = source()
-        val mac = Mac.hmacBuilder().sha1().secret(sk!!).charset(HuaweiUtils.Companion.CHARSET).build()
+        val mac = Mac.hmacBuilder().sha1().secret(sk!!).charset(HuaweiUtils.CHARSET).build()
         val base64 = mac.calculateBase64(source)
         return "OBS %s:%s".formatted(ak, base64)
     }

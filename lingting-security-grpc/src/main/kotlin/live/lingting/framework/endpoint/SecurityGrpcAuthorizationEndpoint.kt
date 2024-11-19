@@ -11,8 +11,8 @@ import live.lingting.framework.security.domain.AuthorizationVO
 import live.lingting.framework.security.domain.SecurityScope
 import live.lingting.framework.security.exception.AuthorizationException
 import live.lingting.framework.security.password.SecurityPassword
-import live.lingting.framework.security.resource.SecurityHolder.Companion.scope
-import live.lingting.framework.security.resource.SecurityHolder.Companion.token
+import live.lingting.framework.security.resource.SecurityHolder.scope
+import live.lingting.framework.security.resource.SecurityHolder.token
 import live.lingting.framework.security.store.SecurityStore
 
 /**

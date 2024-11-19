@@ -1,5 +1,8 @@
 package live.lingting.framework.ali
 
+import java.time.Duration
+import java.time.LocalDateTime
+import java.util.function.BiConsumer
 import live.lingting.framework.ali.exception.AliStsException
 import live.lingting.framework.ali.properties.AliOssProperties
 import live.lingting.framework.ali.properties.AliStsProperties
@@ -8,7 +11,7 @@ import live.lingting.framework.ali.sts.AliStsCredentialResponse
 import live.lingting.framework.ali.sts.AliStsRequest
 import live.lingting.framework.aws.policy.Credential
 import live.lingting.framework.aws.policy.Statement
-import live.lingting.framework.aws.policy.Statement.Companion.allow
+import live.lingting.framework.aws.policy.Statement.allow
 import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.HttpUrlBuilder
@@ -19,10 +22,6 @@ import live.lingting.framework.util.ArrayUtils
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.value.multi.StringMultiValue
-import java.time.Duration
-import java.time.LocalDateTime
-
-import java.util.function.BiConsumer
 
 /**
  * @author lingting 2024-09-14 11:52
@@ -57,7 +56,7 @@ class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsReque
         params: StringMultiValue?
     ) {
         val now = LocalDateTime.now()
-        val date: String = AliUtils.Companion.format(now, DatePattern.FORMATTER_ISO_8601)
+        val date: String = AliUtils.format(now, DatePattern.FORMATTER_ISO_8601)
         headers.put("x-acs-date", date)
 
         val method = request.method().name
@@ -72,7 +71,7 @@ class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsReque
         val headerBuilder = StringBuilder()
         val signHeaderBuilder = StringBuilder()
         headers.forEachSorted(BiConsumer<String, Collection<String?>> { k: String, vs: Collection<String?> ->
-            if (!k.startsWith(HEADER_PREFIX) && !ArrayUtils.containsIgnoreCase(AliClient.Companion.HEADER_INCLUDE, k)) {
+            if (!k.startsWith(HEADER_PREFIX) && !ArrayUtils.containsIgnoreCase(AliClient.HEADER_INCLUDE, k)) {
                 return@forEachSorted
             }
             for (v in vs) {
@@ -120,7 +119,7 @@ class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsReque
     }
 
     fun credential(statements: Collection<Statement>?): Credential {
-        return credential(AliUtils.Companion.CREDENTIAL_EXPIRE, statements)
+        return credential(AliUtils.CREDENTIAL_EXPIRE, statements)
     }
 
     fun credential(timeout: Duration, statements: Collection<Statement>?): Credential {
@@ -134,7 +133,7 @@ class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsReque
         val ak = convert.accessKeyId
         val sk = convert.accessKeySecret
         val token = convert.securityToken
-        val expire: LocalDateTime = AliUtils.Companion.parse(convert.expire)
+        val expire: LocalDateTime = AliUtils.parse(convert.expire)
         return Credential(ak!!, sk!!, token!!, expire)
     }
 
@@ -154,7 +153,7 @@ class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsReque
     }
 
     fun ossBucket(properties: AliOssProperties): AliOssBucket {
-        return ossBucket(properties, AliActions.Companion.OSS_BUCKET_DEFAULT)
+        return ossBucket(properties, AliActions.OSS_BUCKET_DEFAULT)
     }
 
     fun ossBucket(properties: AliOssProperties, actions: Collection<String?>): AliOssBucket {
@@ -184,7 +183,7 @@ class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsReque
     }
 
     fun ossObject(properties: AliOssProperties, key: String?): AliOssObject {
-        return ossObject(properties, key, AliActions.Companion.OSS_OBJECT_DEFAULT)
+        return ossObject(properties, key, AliActions.OSS_OBJECT_DEFAULT)
     }
 
     fun ossObject(properties: AliOssProperties, key: String?, actions: Collection<String?>): AliOssObject {

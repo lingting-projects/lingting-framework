@@ -211,12 +211,12 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
         map.clear()
     }
 
-    override fun remove(key: K): C {
+    override fun remove(key: K): C? {
         if (!allowModify) {
             throw UnsupportedOperationException()
         }
         absent(key)
-        return map.remove(key)!!
+        return map.remove(key)
     }
 
     override fun remove(key: K, value: V): Boolean {

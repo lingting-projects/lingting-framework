@@ -67,7 +67,7 @@ class ElasticsearchApi<T>(
     constructor(
         cls: Class<T>, idFunc: Function<T, String?>, properties: ElasticsearchProperties,
         handler: ElasticsearchDataPermissionHandler?, client: ElasticsearchClient
-    ) : this(ElasticsearchUtils.Companion.index(cls), cls, idFunc, properties, handler, client)
+    ) : this(ElasticsearchUtils.index(cls), cls, idFunc, properties, handler, client)
 
     init {
         var currentScrollSize: Long? = null
@@ -108,7 +108,7 @@ class ElasticsearchApi<T>(
     }
 
     fun merge(vararg arrays: Query): Query? {
-        val builder: QueryBuilder<T> = QueryBuilder.Companion.builder<T>()
+        val builder: QueryBuilder<T> = QueryBuilder.builder<T>()
         Arrays.stream(arrays).filter { obj: Query? -> Objects.nonNull(obj) }.forEach { queries: Query? -> builder.addMust(queries) }
         return merge(builder)
     }
@@ -129,7 +129,7 @@ class ElasticsearchApi<T>(
 
 
     fun getByQuery(vararg queries: Query?): T? {
-        return getByQuery(QueryBuilder.Companion.builder<T>(*queries))
+        return getByQuery(QueryBuilder.builder<T>(*queries))
     }
 
 
@@ -148,7 +148,7 @@ class ElasticsearchApi<T>(
 
 
     fun count(vararg queries: Query?): Long {
-        return count(QueryBuilder.Companion.builder<T>(*queries))
+        return count(QueryBuilder.builder<T>(*queries))
     }
 
 
@@ -160,7 +160,7 @@ class ElasticsearchApi<T>(
 
 
     fun search(vararg queries: Query?): HitsMetadata<T> {
-        return search(QueryBuilder.Companion.builder<T>(*queries))
+        return search(QueryBuilder.builder<T>(*queries))
     }
 
 
@@ -190,7 +190,7 @@ class ElasticsearchApi<T>(
         }
         return sorts.stream().map<SortOptions> { sort: PaginationParams.Sort? ->
             val field = StringUtils.underscoreToHump(sort!!.field)
-            SortComposer.Companion.sort(field, sort.desc)
+            SortComposer.sort(field, sort.desc)
         }.toList()
     }
 
@@ -299,7 +299,7 @@ class ElasticsearchApi<T>(
 
 
     fun updateByQuery(script: Script?, vararg queries: Query?): Boolean {
-        return updateByQuery(script, QueryBuilder.Companion.builder<T>(*queries))
+        return updateByQuery(script, QueryBuilder.builder<T>(*queries))
     }
 
 
@@ -410,7 +410,7 @@ class ElasticsearchApi<T>(
 
 
     fun deleteByQuery(vararg queries: Query?): Boolean {
-        return deleteByQuery(QueryBuilder.Companion.builder<T>(*queries))
+        return deleteByQuery(QueryBuilder.builder<T>(*queries))
     }
 
 
@@ -433,7 +433,7 @@ class ElasticsearchApi<T>(
 
 
     fun list(vararg queries: Query?): List<T?> {
-        return list(QueryBuilder.Companion.builder<T>(*queries))
+        return list(QueryBuilder.builder<T>(*queries))
     }
 
 
@@ -443,7 +443,7 @@ class ElasticsearchApi<T>(
 
 
     fun list(operator: UnaryOperator<SearchRequest.Builder>, vararg queries: Query?): List<T?> {
-        return list(operator, QueryBuilder.Companion.builder<T>(*queries))
+        return list(operator, QueryBuilder.builder<T>(*queries))
     }
 
 
@@ -468,7 +468,7 @@ class ElasticsearchApi<T>(
 
 
     fun scroll(params: ScrollParams<String?>, vararg queries: Query?): ScrollResult<T, String> {
-        return scroll(params, QueryBuilder.Companion.builder<T>(*queries))
+        return scroll(params, QueryBuilder.builder<T>(*queries))
     }
 
 
@@ -537,7 +537,7 @@ class ElasticsearchApi<T>(
     }
 
     fun pageCursor(params: PaginationParams, vararg queries: Query?): LimitCursor<T> {
-        return pageCursor(params, QueryBuilder.Companion.builder<T>(*queries))
+        return pageCursor(params, QueryBuilder.builder<T>(*queries))
     }
 
     fun pageCursor(params: PaginationParams, queries: QueryBuilder<T>): LimitCursor<T> {
@@ -549,7 +549,7 @@ class ElasticsearchApi<T>(
 
 
     fun scrollCursor(params: ScrollParams<String?>, vararg queries: Query?): ScrollCursor<T, String> {
-        return scrollCursor(params, QueryBuilder.Companion.builder<T>(*queries))
+        return scrollCursor(params, QueryBuilder.builder<T>(*queries))
     }
 
 

@@ -12,9 +12,7 @@ class LazyValue<T>(protected val supplier: ThrowableSupplier<T>) {
 
     protected val first: AtomicBoolean = AtomicBoolean(true)
 
-
     var t: T? = null
-
 
     fun get(): T? {
         if (!isFirst()) {

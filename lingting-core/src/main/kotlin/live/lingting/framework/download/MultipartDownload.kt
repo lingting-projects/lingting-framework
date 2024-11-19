@@ -50,18 +50,9 @@ abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor
     var ex: DownloadException? = null
         protected set
 
-
     override val file = FileUtils.createTemp(id, TEMP_DIR)
-        get() {
-            await()
-            val te = ex
-            if (te != null) {
-                throw te
-            }
-            return field
-        }
 
-    override fun start(): Download {
+    override fun start(): D {
         if (!isStart && !isFinished) {
             synchronized(log) {
                 if (!isStart && !isFinished) {
@@ -99,11 +90,20 @@ abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor
         }
     }
 
-    override fun await(): Download {
+    override fun await(): D {
         check(isStart) { "download not start!" }
 
         ValueUtils.awaitTrue(Supplier<Boolean> { this.isFinished })
         return this as D
+    }
+
+    override fun file(): File {
+        await()
+        val te = ex
+        if (te != null) {
+            throw te
+        }
+        return file
     }
 
     override val isStart: Boolean
@@ -115,9 +115,7 @@ abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor
     override val isSuccess: Boolean
         get() = isFinished && ex == null
 
-
     abstract fun size(): Long
-
 
     abstract fun download(part: Part): InputStream
 

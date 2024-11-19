@@ -23,12 +23,12 @@ class SecurityTokenGrpcRemoteResolver(protected val channel: ManagedChannel, pro
 
     protected fun resolveByRemote(token: SecurityToken?): SecurityGrpcAuthorization.AuthorizationVO {
         try {
-            SecurityGrpcRemoteContent.Companion.put(token)
+            SecurityGrpcRemoteContent.put(token)
             return blocking.resolve(Empty.getDefaultInstance())
         } catch (e: Exception) {
-            throw SecurityGrpcThrowing.Companion.convert(e)
+            throw SecurityGrpcThrowing.convert(e)
         } finally {
-            SecurityGrpcRemoteContent.Companion.pop()
+            SecurityGrpcRemoteContent.pop()
         }
     }
 

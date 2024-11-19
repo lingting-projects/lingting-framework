@@ -3,10 +3,10 @@ package live.lingting.framework.http
 import java.net.InetSocketAddress
 import java.net.ProxySelector
 import java.net.URI
-import live.lingting.framework.http.HttpClient.Companion.java
-import live.lingting.framework.http.HttpClient.Companion.okhttp
-import live.lingting.framework.http.HttpRequest.Companion.builder
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -29,14 +29,14 @@ internal class HttpClientTest {
     @Test
 
     fun test() {
-        val java = java()
+        val java = HttpClient.java()
             .disableSsl()
             .infiniteTimeout()
             .memoryCookie()
             .proxySelector(selector)
             .build()
         assertClient(java)
-        val okhttp = okhttp()
+        val okhttp = HttpClient.okhttp()
             .disableSsl()
             .infiniteTimeout()
             .memoryCookie()
@@ -54,38 +54,38 @@ internal class HttpClientTest {
 
 
     fun assertGet(http: HttpClient) {
-        val builder = builder().url(URI.create("https://www.baidu.com"))
+        val builder = HttpRequest.builder().url(URI.create("https://www.baidu.com"))
         val httpResponse = http.request(builder.build())
-        Assertions.assertNotNull(httpResponse.body())
-        val string = Assertions.assertDoesNotThrow<String?> { httpResponse.string() }
-        Assertions.assertTrue(string!!.contains("<") && string.contains(">"))
+        assertNotNull(httpResponse.body())
+        val string = assertDoesNotThrow<String?> { httpResponse.string() }
+        assertTrue(string!!.contains("<") && string.contains(">"))
         builder.url(
             "https://maven.aliyun.com/repository/central/live/lingting/components/component-validation/0.0.1/component-validation-0.0.1.pom"
         )
             .build()
         val r2 = http.request(builder.build())
-        Assertions.assertNotNull(r2.body())
-        val string2 = Assertions.assertDoesNotThrow<String?> { r2.string() }
-        Assertions.assertTrue(string2!!.contains("component-validation"))
+        assertNotNull(r2.body())
+        val string2 = assertDoesNotThrow<String?> { r2.string() }
+        assertTrue(string2!!.contains("component-validation"))
     }
 
 
     fun assertPost(http: HttpClient) {
-        val builder = builder()
+        val builder = HttpRequest.builder()
             .post()
             .body("user_login=sunlisten@foxmail.com")
             .url(URI.create("https://gitee.com/check_user_login"))
 
         val httpResponse = http.request(builder.build())
-        Assertions.assertNotNull(httpResponse.body())
-        val string = Assertions.assertDoesNotThrow<String?> { httpResponse.string() }
-        Assertions.assertNotNull(string)
+        assertNotNull(httpResponse.body())
+        val string = assertDoesNotThrow<String?> { httpResponse.string() }
+        assertNotNull(string)
     }
 
     fun assertCookie(http: HttpClient) {
         val cookie = http.cookie()
-        Assertions.assertNotNull(cookie)
+        assertNotNull(cookie)
         val cookies = cookie!!.cookies
-        Assertions.assertFalse(cookies.isEmpty())
+        assertFalse(cookies.isEmpty())
     }
 }
