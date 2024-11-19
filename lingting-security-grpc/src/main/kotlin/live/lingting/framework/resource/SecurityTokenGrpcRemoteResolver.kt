@@ -20,7 +20,7 @@ import live.lingting.framework.security.resolver.SecurityTokenResolver
 class SecurityTokenGrpcRemoteResolver(protected val channel: ManagedChannel, protected val convert: SecurityGrpcConvert) : SecurityTokenResolver, ContextComponent, Sequence {
     protected val blocking: SecurityGrpcAuthorizationServiceBlockingStub = SecurityGrpcAuthorizationServiceGrpc.newBlockingStub(channel)
 
-    @Throws(Exception::class)
+
     protected fun resolveByRemote(token: SecurityToken?): SecurityGrpcAuthorization.AuthorizationVO {
         try {
             SecurityGrpcRemoteContent.Companion.put(token)

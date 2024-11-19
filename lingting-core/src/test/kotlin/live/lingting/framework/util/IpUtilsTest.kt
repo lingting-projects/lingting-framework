@@ -1,6 +1,5 @@
 package live.lingting.framework.util
 
-import java.net.UnknownHostException
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -35,7 +34,7 @@ internal class IpUtilsTest {
     }
 
     @Test
-    @Throws(UnknownHostException::class)
+
     fun resolve() {
         val resolve = IpUtils.resolve("ntp.ntsc.ac.cn")
         println(resolve)

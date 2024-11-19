@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
  */
 internal class CircularQueueTest {
     @Test
-    @Throws(InterruptedException::class)
+
     fun test() {
         val queue = CircularQueue<Int>()
         queue.add(1).addAll(mutableListOf(2, 3)).add(4)

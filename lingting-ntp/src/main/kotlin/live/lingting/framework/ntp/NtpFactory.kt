@@ -5,7 +5,6 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import live.lingting.framework.util.IpUtils
@@ -24,17 +23,17 @@ import org.slf4j.LoggerFactory
 class NtpFactory protected constructor() {
     private val blockHosts: MutableSet<String> = HashSet()
 
-    @Throws(InterruptedException::class)
+
     fun create(): Ntp? {
         return create(HOSTS)
     }
 
-    @Throws(InterruptedException::class)
+
     fun create(vararg hosts: String): Ntp? {
         return create(hosts.toSet())
     }
 
-    @Throws(InterruptedException::class)
+
     fun create(hosts: Collection<String>): Ntp? {
         val cycle: CycleValue<Long> = StepCycleValue(STEP_INIT)
         for (host in hosts) {
@@ -58,7 +57,7 @@ class NtpFactory protected constructor() {
         return null
     }
 
-    @Throws(UnknownHostException::class, ExecutionException::class, TimeoutException::class, InterruptedException::class)
+
     fun createByFuture(cycle: CycleValue<Long>, host: String): Ntp {
         val ip = IpUtils.resolve(host)
 

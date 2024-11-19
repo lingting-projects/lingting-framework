@@ -1,9 +1,5 @@
 package live.lingting.framework.http
 
-import live.lingting.framework.http.body.MemoryBody
-import live.lingting.framework.http.header.HttpHeaders
-import okhttp3.Cookie.Builder.value
-import java.io.IOException
 import java.io.InputStream
 import java.net.Authenticator
 import java.net.CookieManager
@@ -16,6 +12,8 @@ import java.time.Duration
 import java.util.concurrent.ExecutorService
 import java.util.function.Consumer
 import java.util.function.Supplier
+import live.lingting.framework.http.body.MemoryBody
+import live.lingting.framework.http.header.HttpHeaders
 
 /**
  * @author lingting 2024-09-02 15:33
@@ -26,7 +24,6 @@ class JavaHttpClient(protected val client: java.net.http.HttpClient) : HttpClien
     }
 
 
-    @Throws(IOException::class)
     override fun request(request: HttpRequest): HttpResponse {
         val jr = convert(request)
         val r = client.send(jr, BodyHandlers.ofInputStream())

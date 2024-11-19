@@ -1,5 +1,7 @@
 package live.lingting.framework.security.authorize
 
+import java.lang.reflect.Method
+import java.util.function.Predicate
 import live.lingting.framework.security.annotation.Authorize
 import live.lingting.framework.security.domain.SecurityScope
 import live.lingting.framework.security.exception.AuthorizationException
@@ -8,8 +10,6 @@ import live.lingting.framework.security.resource.SecurityHolder
 import live.lingting.framework.util.AnnotationUtils
 import live.lingting.framework.util.ArrayUtils
 import live.lingting.framework.util.CollectionUtils
-import java.lang.reflect.Method
-import java.util.function.Predicate
 
 /**
  * @author lingting 2023-03-29 20:45
@@ -25,7 +25,7 @@ class SecurityAuthorize(@JvmField val order: Int) {
         return AnnotationUtils.findAnnotation(cls!!, Authorize::class.java)
     }
 
-    @Throws(AuthorizationException::class)
+
     fun valid(cls: Class<*>?, method: Method?) {
         val authorize = findAuthorize(cls, method)
         valid(authorize)
@@ -34,7 +34,7 @@ class SecurityAuthorize(@JvmField val order: Int) {
     /**
      * 校验当前权限数据是否满足指定注解的要求
      */
-    @Throws(PermissionsException::class)
+
     fun valid(authorize: Authorize?) {
         val allowAnyone = authorize != null && authorize.anyone
         val allowDisabled = authorize != null && !authorize.onlyEnabled

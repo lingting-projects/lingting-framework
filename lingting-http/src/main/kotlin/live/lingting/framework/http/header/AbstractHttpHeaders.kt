@@ -1,8 +1,7 @@
 package live.lingting.framework.http.header
 
-import live.lingting.framework.value.multi.StringMultiValue
-
 import java.util.function.Supplier
+import live.lingting.framework.value.multi.StringMultiValue
 
 /**
  * @author lingting 2024-09-13 11:15
@@ -13,7 +12,7 @@ abstract class AbstractHttpHeaders : StringMultiValue, HttpHeaders {
     protected constructor(allowModify: Boolean, supplier: Supplier<Collection<String>>) : super(allowModify, supplier)
 
     override fun convert(key: String): String {
-        return key.lowercase(Locale.getDefault())
+        return key.lowercase()
     }
 
     override fun unmodifiable(): UnmodifiableHttpHeaders {

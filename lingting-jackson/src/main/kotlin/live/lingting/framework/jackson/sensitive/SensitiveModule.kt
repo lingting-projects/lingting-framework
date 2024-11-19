@@ -12,10 +12,6 @@ import live.lingting.framework.sensitive.Sensitive
  */
 class SensitiveModule : SimpleModule() {
     init {
-        init()
-    }
-
-    protected fun init() {
         setSerializerModifier(Modifier())
     }
 

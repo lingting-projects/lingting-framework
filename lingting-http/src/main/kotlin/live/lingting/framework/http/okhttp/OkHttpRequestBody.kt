@@ -1,18 +1,16 @@
 package live.lingting.framework.http.okhttp
 
+import java.io.File
+import java.io.InputStream
 import live.lingting.framework.http.HttpRequest
 import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.body.FileBody
 import live.lingting.framework.http.body.MemoryBody
 import live.lingting.framework.stream.FileCloneInputStream
 import live.lingting.framework.util.StreamUtils
-import okhttp3.Cookie.Builder.value
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import okio.BufferedSink
-import java.io.File
-import java.io.IOException
-import java.io.InputStream
 
 /**
  * @author lingting 2024-09-02 16:20
@@ -38,7 +36,7 @@ class OkHttpRequestBody(protected val source: BodySource?, protected val mediaTy
         return source!!.length()
     }
 
-    @Throws(IOException::class)
+
     override fun writeTo(bufferedSink: BufferedSink) {
         if (source is MemoryBody) {
             bufferedSink.write(source.bytes()!!)

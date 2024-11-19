@@ -1,7 +1,9 @@
 package live.lingting.framework.jackson.module
 
 import live.lingting.framework.jackson.JacksonUtils
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
@@ -27,15 +29,15 @@ internal class BooleanModuleTest {
 				""".trimIndent()
 
         val obj = JacksonUtils.toObj(json, Entity::class.java)
-        Assertions.assertTrue(obj.bt1!!)
-        Assertions.assertTrue(obj.bt2!!)
-        Assertions.assertTrue(obj.bt3!!)
-        Assertions.assertTrue(obj.bt4!!)
-        Assertions.assertFalse(obj.bf1!!)
-        Assertions.assertFalse(obj.bf2!!)
-        Assertions.assertFalse(obj.bf3!!)
-        Assertions.assertFalse(obj.bf4!!)
-        Assertions.assertNull(obj.bn)
+        assertTrue(obj.bt1!!)
+        assertTrue(obj.bt2!!)
+        assertTrue(obj.bt3!!)
+        assertTrue(obj.bt4!!)
+        assertFalse(obj.bf1!!)
+        assertFalse(obj.bf2!!)
+        assertFalse(obj.bf3!!)
+        assertFalse(obj.bf4!!)
+        assertNull(obj.bn)
     }
 
     internal class Entity {

@@ -2,8 +2,15 @@ package live.lingting.framework.jackson
 
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.JsonNode
+import live.lingting.framework.jackson.JacksonUtils.toJson
+import live.lingting.framework.jackson.JacksonUtils.toNode
+import live.lingting.framework.jackson.JacksonUtils.toObj
+import live.lingting.framework.jackson.JacksonUtils.toXml
+import live.lingting.framework.jackson.JacksonUtils.xmlToNode
 import live.lingting.framework.util.StringUtils
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
@@ -12,18 +19,19 @@ import org.junit.jupiter.api.Test
 internal class JacksonUtilsTest {
     @Test
     fun test() {
-        assertTrue(StringUtils.hasText(toJson(null)))
+        val nv = toJson(null)
+        assertTrue(StringUtils.hasText(nv))
         val entity = Entity("f1", "f2")
         val json: String = toJson(entity)
         val node: JsonNode = toNode(json)
-        Assertions.assertEquals("f1", node["f1"].asText())
+        assertEquals("f1", node["f1"].asText())
         val obj: Entity = toObj(json, Entity::class.java)
-        Assertions.assertEquals("f1", obj.f1)
-        Assertions.assertEquals("f2", obj.f2)
+        assertEquals("f1", obj.f1)
+        assertEquals("f2", obj.f2)
 
-        Assertions.assertThrows<JsonMappingException>(JsonMappingException::class.java) { toXml(null) }
+        assertThrows<JsonMappingException>(JsonMappingException::class.java) { toXml(null) }
         val xmlNode: JsonNode = xmlToNode("<root><f1>f1</f1><f2>f2</f2></root>")
-        Assertions.assertEquals("f1", xmlNode["f1"].asText())
+        assertEquals("f1", xmlNode["f1"].asText())
     }
 
     class Entity {

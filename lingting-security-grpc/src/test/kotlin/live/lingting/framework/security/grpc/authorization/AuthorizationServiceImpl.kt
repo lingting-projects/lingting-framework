@@ -1,5 +1,7 @@
 package live.lingting.framework.security.grpc.authorization
 
+import java.time.LocalDateTime
+import java.util.List
 import live.lingting.framework.security.authorize.SecurityAuthorizationService
 import live.lingting.framework.security.domain.SecurityScope
 import live.lingting.framework.security.domain.SecurityScopeAttributes
@@ -7,14 +9,12 @@ import live.lingting.framework.security.exception.AuthorizationException
 import live.lingting.framework.security.store.SecurityStore
 import live.lingting.framework.util.LocalDateTimeUtils
 import live.lingting.framework.util.MdcUtils
-import java.time.LocalDateTime
-import java.util.List
 
 /**
  * @author lingting 2024-01-30 20:30
  */
 class AuthorizationServiceImpl(private val store: SecurityStore) : SecurityAuthorizationService {
-    @Throws(AuthorizationException::class)
+
     override fun validAndBuildScope(username: String?, password: String?): SecurityScope? {
         if (username != "user" && username != "admin") {
             throw AuthorizationException()

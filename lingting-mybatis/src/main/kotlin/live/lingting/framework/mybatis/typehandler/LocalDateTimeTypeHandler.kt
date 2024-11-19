@@ -1,25 +1,24 @@
 package live.lingting.framework.mybatis.typehandler
 
-import live.lingting.framework.util.StringUtils
-import org.apache.ibatis.type.BaseTypeHandler
-import org.apache.ibatis.type.JdbcType
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.sql.CallableStatement
 import java.sql.PreparedStatement
 import java.sql.ResultSet
-import java.sql.SQLException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import kotlin.math.max
+import live.lingting.framework.util.StringUtils
+import org.apache.ibatis.type.BaseTypeHandler
+import org.apache.ibatis.type.JdbcType
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2022/8/22 9:41
  */
 class LocalDateTimeTypeHandler : BaseTypeHandler<LocalDateTime?>(), AutoRegisterTypeHandler<LocalDateTime?> {
-    @Throws(SQLException::class)
+
     override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: LocalDateTime?, jdbcType: JdbcType?) {
         if (parameter == null) {
             ps.setObject(i, null)
@@ -30,17 +29,17 @@ class LocalDateTimeTypeHandler : BaseTypeHandler<LocalDateTime?>(), AutoRegister
         }
     }
 
-    @Throws(SQLException::class)
+
     override fun getNullableResult(rs: ResultSet, columnName: String): LocalDateTime? {
         return parse(rs.getString(columnName))
     }
 
-    @Throws(SQLException::class)
+
     override fun getNullableResult(rs: ResultSet, columnIndex: Int): LocalDateTime? {
         return parse(rs.getString(columnIndex))
     }
 
-    @Throws(SQLException::class)
+
     override fun getNullableResult(cs: CallableStatement, columnIndex: Int): LocalDateTime? {
         return parse(cs.getString(columnIndex))
     }

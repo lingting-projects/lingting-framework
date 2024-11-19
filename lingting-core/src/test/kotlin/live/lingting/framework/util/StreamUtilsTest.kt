@@ -2,7 +2,6 @@ package live.lingting.framework.util
 
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -23,7 +22,7 @@ internal class StreamUtilsTest {
     }
 
     @Test
-    @Throws(IOException::class)
+
     fun readLine() {
         StreamUtils.readLine(of(line1), StandardCharsets.UTF_8) { index, line ->
             when (index) {
@@ -46,7 +45,7 @@ internal class StreamUtilsTest {
     }
 
     @Test
-    @Throws(IOException::class)
+
     fun testClone() {
         val clone = StreamUtils.clone(of(line3))
         assertEquals(line3, StreamUtils.toString(clone))
@@ -55,7 +54,7 @@ internal class StreamUtilsTest {
     }
 
     @Test
-    @Throws(IOException::class)
+
     fun testWriteLength() {
         val source = of(line3)
         source.reset()

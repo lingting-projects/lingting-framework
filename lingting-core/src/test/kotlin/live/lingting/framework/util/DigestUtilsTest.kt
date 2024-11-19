@@ -1,8 +1,6 @@
 package live.lingting.framework.util
 
 import java.io.ByteArrayInputStream
-import java.io.IOException
-import java.security.NoSuchAlgorithmException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -11,7 +9,7 @@ import org.junit.jupiter.api.Test
  */
 internal class DigestUtilsTest {
     @Test
-    @Throws(NoSuchAlgorithmException::class, IOException::class)
+
     fun md5Hex() {
         val source = "hello md5, digest to hex."
         val bytes = source.toByteArray()
@@ -24,7 +22,7 @@ internal class DigestUtilsTest {
     }
 
     @Test
-    @Throws(NoSuchAlgorithmException::class, IOException::class)
+
     fun sha1Hex() {
         val source = "hello sha1, digest to hex."
         val bytes = source.toByteArray()
@@ -37,7 +35,7 @@ internal class DigestUtilsTest {
     }
 
     @Test
-    @Throws(NoSuchAlgorithmException::class, IOException::class)
+
     fun sha256Hex() {
         val source = "hello sha256, digest to hex."
         val bytes = source.toByteArray()

@@ -1,14 +1,13 @@
 package live.lingting.framework.mybatis.typehandler
 
+import java.sql.CallableStatement
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 import live.lingting.framework.jackson.JacksonUtils
 import live.lingting.framework.kt.logger
 import live.lingting.framework.util.StringUtils
 import org.apache.ibatis.type.BaseTypeHandler
 import org.apache.ibatis.type.JdbcType
-import java.sql.CallableStatement
-import java.sql.PreparedStatement
-import java.sql.ResultSet
-import java.sql.SQLException
 
 /**
  * @author lingting 2022/9/28 14:43
@@ -38,22 +37,22 @@ abstract class AbstractJacksonTypeHandler<T> : BaseTypeHandler<T>() {
         return defaultJson()
     }
 
-    @Throws(SQLException::class)
+
     override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: T, jdbcType: JdbcType) {
         ps.setString(i, resolve(parameter))
     }
 
-    @Throws(SQLException::class)
+
     override fun getNullableResult(rs: ResultSet, columnName: String): T {
         return parse(rs.getString(columnName))
     }
 
-    @Throws(SQLException::class)
+
     override fun getNullableResult(rs: ResultSet, columnIndex: Int): T {
         return parse(rs.getString(columnIndex))
     }
 
-    @Throws(SQLException::class)
+
     override fun getNullableResult(cs: CallableStatement, columnIndex: Int): T {
         return parse(cs.getString(columnIndex))
     }

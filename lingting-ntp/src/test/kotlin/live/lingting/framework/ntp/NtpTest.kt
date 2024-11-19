@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
  */
 internal class NtpTest {
     @Test
-    @Throws(InterruptedException::class)
+
     fun test() {
         val instance: NtpFactory = NtpFactory.DEFAULT
         val ntp = instance.create()

@@ -1,16 +1,14 @@
 package live.lingting.framework.http.download
 
+import java.io.InputStream
+import java.io.OutputStream
+import java.net.URI
 import live.lingting.framework.download.MultipartDownload
 import live.lingting.framework.exception.DownloadException
 import live.lingting.framework.http.HttpClient
 import live.lingting.framework.http.HttpRequest
 import live.lingting.framework.multipart.Part
 import live.lingting.framework.util.StreamUtils
-import okhttp3.Cookie.Builder.value
-import java.io.IOException
-import java.io.InputStream
-import java.io.OutputStream
-import java.net.URI
 
 /**
  * @author lingting 2023-12-20 16:43
@@ -20,7 +18,7 @@ class HttpDownload(builder: HttpDownloadBuilder) : MultipartDownload<HttpDownloa
 
     protected val uri: URI = URI.create(url)
 
-    @Throws(IOException::class)
+
     fun write(request: HttpRequest, output: OutputStream?) {
         val response = client!!.request(request)
 
@@ -33,7 +31,7 @@ class HttpDownload(builder: HttpDownloadBuilder) : MultipartDownload<HttpDownloa
         }
     }
 
-    @Throws(IOException::class)
+
     override fun size(): Long {
         val builder: HttpRequest.Builder = HttpRequest.Companion.builder().url(uri).header("Accept-Encoding", "identity")
         val response = client!!.request(builder.build())
@@ -41,7 +39,7 @@ class HttpDownload(builder: HttpDownloadBuilder) : MultipartDownload<HttpDownloa
         return headers!!.contentLength()
     }
 
-    @Throws(Exception::class)
+
     override fun download(part: Part): InputStream {
         val builder: HttpRequest.Builder = HttpRequest.Companion.builder().get().url(uri)
         if (isMulti) {

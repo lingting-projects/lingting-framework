@@ -1,5 +1,6 @@
 package live.lingting.framework.mybatis.datascope
 
+import java.sql.Connection
 import live.lingting.framework.datascope.handler.DataPermissionHandler
 import live.lingting.framework.datascope.holder.DataScopeMatchNumHolder.Companion.initMatchNum
 import live.lingting.framework.datascope.holder.DataScopeMatchNumHolder.Companion.pollMatchNum
@@ -14,7 +15,6 @@ import org.apache.ibatis.plugin.Intercepts
 import org.apache.ibatis.plugin.Invocation
 import org.apache.ibatis.plugin.Plugin
 import org.apache.ibatis.plugin.Signature
-import java.sql.Connection
 
 /**
  * 数据权限拦截器
@@ -24,7 +24,7 @@ import java.sql.Connection
  */
 @Intercepts(Signature(type = StatementHandler::class, method = "prepare", args = [Connection::class, Int::class]))
 class DataPermissionInterceptor(private val parser: DataScopeParser, private val handler: DataPermissionHandler) : Interceptor {
-    @Throws(Throwable::class)
+
     override fun intercept(invocation: Invocation): Any {
         // 第一版，测试用
         val target = invocation.target

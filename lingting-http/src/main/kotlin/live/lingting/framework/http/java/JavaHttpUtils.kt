@@ -1,15 +1,13 @@
 package live.lingting.framework.http.java
 
-import live.lingting.framework.flow.FutureSubscriber
-import live.lingting.framework.util.FileUtils
-import live.lingting.framework.util.StreamUtils
-import okhttp3.Cookie.Builder.value
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.io.IOException
 import java.net.http.HttpRequest.BodyPublisher
 import java.nio.ByteBuffer
+import live.lingting.framework.flow.FutureSubscriber
+import live.lingting.framework.util.FileUtils
+import live.lingting.framework.util.StreamUtils
 
 /**
  * @author lingting 2024-09-14 17:47
@@ -41,7 +39,7 @@ class JavaHttpUtils private constructor() {
             return subscriber.get()
         }
 
-        @Throws(IOException::class)
+
         fun toString(publisher: BodyPublisher): String {
             val file = write(publisher)
             FileInputStream(file).use { stream ->

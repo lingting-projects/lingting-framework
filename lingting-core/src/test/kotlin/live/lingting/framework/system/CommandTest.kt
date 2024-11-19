@@ -1,6 +1,5 @@
 package live.lingting.framework.system
 
-import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import live.lingting.framework.util.StreamUtils
@@ -16,7 +15,7 @@ import org.junit.jupiter.api.Test
  */
 internal class CommandTest {
     @Test
-    @Throws(IOException::class, InterruptedException::class)
+
     fun test() {
         val result = if (SystemUtils.isWindows) {
             testWindows()
@@ -39,7 +38,7 @@ internal class CommandTest {
         }
     }
 
-    @Throws(InterruptedException::class, IOException::class)
+
     fun testLinux(): CommandResult {
         val command = Command.of("sh", StandardCharsets.UTF_8)
         command.exec("ls")
@@ -47,7 +46,7 @@ internal class CommandTest {
         return command.waitFor()
     }
 
-    @Throws(IOException::class, InterruptedException::class)
+
     fun testWindows(): CommandResult {
         val command = Command.of("cmd", StandardCharsets.UTF_8)
         command.exec("dir")

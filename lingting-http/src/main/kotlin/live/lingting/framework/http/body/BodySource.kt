@@ -1,13 +1,11 @@
 package live.lingting.framework.http.body
 
-import live.lingting.framework.stream.BytesInputStream
-import okhttp3.Cookie.Builder.value
-import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.channels.WritableByteChannel
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
+import live.lingting.framework.stream.BytesInputStream
 
 /**
  * @author lingting 2024-09-28 14:04
@@ -25,10 +23,10 @@ abstract class BodySource {
 
     abstract fun string(charset: Charset): String
 
-    @Throws(IOException::class)
+
     abstract fun transferTo(output: OutputStream): Long
 
-    @Throws(IOException::class)
+
     abstract fun transferTo(channel: WritableByteChannel): Long
 
     companion object {
@@ -37,7 +35,7 @@ abstract class BodySource {
         }
 
         @JvmStatic
-        @Throws(IOException::class)
+
         fun of(stream: InputStream): BodySource {
             if (stream is BytesInputStream) {
                 return MemoryBody(stream.source())

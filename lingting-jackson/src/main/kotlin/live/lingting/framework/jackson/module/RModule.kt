@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.DeserializationConfig
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JavaType
 import com.fasterxml.jackson.databind.JsonDeserializer
-import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition
 import com.fasterxml.jackson.databind.module.SimpleDeserializers
 import com.fasterxml.jackson.databind.module.SimpleModule
@@ -15,26 +14,21 @@ import com.fasterxml.jackson.databind.node.IntNode
 import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.databind.node.TextNode
 import live.lingting.framework.api.R
-import java.io.IOException
 
 /**
  * @author lingting 2023-09-27 11:25
  */
 class RModule : SimpleModule() {
     init {
-        init()
-    }
-
-    protected fun init() {
         setDeserializers(RJacksonDeserializers())
     }
 
     class RJacksonDeserializers : SimpleDeserializers() {
-        @Throws(JsonMappingException::class)
+
         override fun findBeanDeserializer(
             type: JavaType, config: DeserializationConfig,
             beanDesc: BeanDescription
-        ): JsonDeserializer<*> {
+        ): JsonDeserializer<*>? {
             val rawClass = type.rawClass
             if (R::class.java.isAssignableFrom(rawClass)) {
                 return RDeserializer(beanDesc)
@@ -44,7 +38,7 @@ class RModule : SimpleModule() {
     }
 
     class RDeserializer(private val beanDesc: BeanDescription) : JsonDeserializer<R<*>>() {
-        @Throws(IOException::class)
+
         override fun deserialize(p: JsonParser, ctxt: DeserializationContext): R<*> {
             val root = p.codec.readTree<TreeNode>(p)
             val code = getCode(root)
@@ -69,7 +63,7 @@ class RModule : SimpleModule() {
             return node.asText()
         }
 
-        @Throws(IOException::class)
+
         fun getData(root: TreeNode, definition: BeanPropertyDefinition, ctxt: DeserializationContext): Any? {
             val node = root[FIELD_DATA]
             if (isNull(node)) {

@@ -1,15 +1,13 @@
 package live.lingting.framework.http.body
 
-import live.lingting.framework.stream.BytesInputStream
-import okhttp3.Cookie.Builder.value
 import java.io.ByteArrayInputStream
-import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.channels.WritableByteChannel
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
+import live.lingting.framework.stream.BytesInputStream
 
 /**
  * @author lingting 2024-09-28 14:04
@@ -38,13 +36,13 @@ class MemoryBody(private val bytes: ByteArray) : BodySource() {
         return String(bytes, charset)
     }
 
-    @Throws(IOException::class)
+
     override fun transferTo(output: OutputStream): Long {
         output.write(bytes)
         return bytes.size.toLong()
     }
 
-    @Throws(IOException::class)
+
     override fun transferTo(channel: WritableByteChannel): Long {
         channel.write(ByteBuffer.wrap(bytes))
         return bytes.size.toLong()

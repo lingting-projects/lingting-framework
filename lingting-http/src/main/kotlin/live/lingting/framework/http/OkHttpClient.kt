@@ -1,30 +1,5 @@
 package live.lingting.framework.http
 
-import live.lingting.framework.flow.FutureSubscriber.get
-import live.lingting.framework.function.ThrowingFunction
-import live.lingting.framework.http.header.HttpHeaders
-import live.lingting.framework.http.okhttp.OkHttpCookie
-import live.lingting.framework.http.okhttp.OkHttpRequestBody
-import live.lingting.framework.jackson.JacksonUtils
-import live.lingting.framework.value.LazyValue.get
-import okhttp3.Authenticator
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.Cookie.Builder.value
-import okhttp3.Dispatcher
-import okhttp3.HttpUrl
-import okhttp3.OkHttpClient.Builder.cookieJar
-import okhttp3.OkHttpClient.Builder.followRedirects
-import okhttp3.OkHttpClient.Builder.followSslRedirects
-import okhttp3.OkHttpClient.Builder.sslSocketFactory
-import okhttp3.Request
-import okhttp3.Request.Builder.get
-import okhttp3.Request.Builder.header
-import okhttp3.Request.Builder.method
-import okhttp3.Request.Builder.post
-import okhttp3.Request.Builder.url
-import okhttp3.RequestBody
-import okhttp3.Response
 import java.io.IOException
 import java.net.ProxySelector
 import java.time.Duration
@@ -32,6 +7,27 @@ import java.util.function.Consumer
 import java.util.function.Supplier
 import javax.net.SocketFactory
 import javax.net.ssl.HostnameVerifier
+import live.lingting.framework.function.ThrowingFunction
+import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.http.okhttp.OkHttpCookie
+import live.lingting.framework.http.okhttp.OkHttpRequestBody
+import live.lingting.framework.jackson.JacksonUtils
+import okhttp3.Authenticator
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.Dispatcher
+import okhttp3.HttpUrl
+import okhttp3.OkHttpClient.Builder.cookieJar
+import okhttp3.OkHttpClient.Builder.followRedirects
+import okhttp3.OkHttpClient.Builder.followSslRedirects
+import okhttp3.OkHttpClient.Builder.sslSocketFactory
+import okhttp3.Request
+import okhttp3.Request.Builder.header
+import okhttp3.Request.Builder.method
+import okhttp3.Request.Builder.post
+import okhttp3.Request.Builder.url
+import okhttp3.RequestBody
+import okhttp3.Response
 
 /**
  * @author lingting 2024-09-02 15:36
@@ -41,7 +37,7 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
         return client
     }
 
-    @Throws(IOException::class)
+
     override fun request(request: HttpRequest): HttpResponse {
         val okhttp = convert(request)
 
@@ -50,7 +46,7 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
         }
     }
 
-    @Throws(IOException::class)
+
     override fun request(request: HttpRequest, callback: ResponseCallback) {
         val okhttp = convert(request)
         request(okhttp, object : Callback {
@@ -58,7 +54,7 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
                 callback.onError(request, e)
             }
 
-            @Throws(IOException::class)
+
             override fun onResponse(call: Call, r: Response) {
                 try {
                     val response = convert(request, r)
@@ -71,7 +67,7 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
     }
 
     // region 原始请求
-    @Throws(IOException::class)
+
     fun request(request: Request): Response {
         val call = client.newCall(request)
         return call.execute()
@@ -83,14 +79,13 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
     }
 
 
-    @Throws(IOException::class)
     fun <T> request(request: Request, function: ThrowingFunction<Response?, T>): T {
         request(request).use { response ->
             return function.apply(response)
         }
     }
 
-    @Throws(IOException::class)
+
     fun <T> request(request: Request, cls: Class<T>): T? {
         return request<T>(request, ThrowingFunction<Response, T> { response: Response ->
             val responseBody = response.body()
@@ -106,37 +101,37 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
         })
     }
 
-    @Throws(IOException::class)
+
     fun get(url: String): Response {
         val builder: Builder = Builder().url(url).get()
         return request(builder.build())
     }
 
-    @Throws(IOException::class)
+
     fun <T> get(url: String, cls: Class<T>): T {
         val builder: Builder = Builder().url(url).get()
         return request<T>(builder.build(), cls)
     }
 
-    @Throws(IOException::class)
+
     fun get(url: HttpUrl): Response {
         val builder: Builder = Builder().url(url).get()
         return request(builder.build())
     }
 
-    @Throws(IOException::class)
+
     fun <T> get(url: HttpUrl, cls: Class<T>): T {
         val builder: Builder = Builder().url(url).get()
         return request<T>(builder.build(), cls)
     }
 
-    @Throws(IOException::class)
+
     fun post(url: String, body: RequestBody): Response {
         val builder: Builder = Builder().url(url).post(body)
         return request(builder.build())
     }
 
-    @Throws(IOException::class)
+
     fun <T> post(url: String, requestBody: RequestBody, cls: Class<T>): T {
         val builder: Builder = Builder().url(url).post(requestBody)
         return request<T>(builder.build(), cls)
@@ -195,7 +190,7 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
     }
 
     companion object {
-        @Throws(IOException::class)
+
         fun convert(request: HttpRequest): Request {
             val method = request.method()
             val uri = request.uri()
@@ -216,7 +211,7 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
             return builder.build()
         }
 
-        @Throws(IOException::class)
+
         fun convert(request: HttpRequest, response: Response): HttpResponse {
             val code = response.code()
             val body = response.body()

@@ -1,24 +1,23 @@
 package live.lingting.framework.mybatis.typehandler
 
+import java.sql.CallableStatement
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import live.lingting.framework.util.StringUtils
 import org.apache.ibatis.type.BaseTypeHandler
 import org.apache.ibatis.type.JdbcType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.sql.CallableStatement
-import java.sql.PreparedStatement
-import java.sql.ResultSet
-import java.sql.SQLException
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 
 /**
  * @author lingting 2022/8/22 9:41
  */
 class LocalDateTypeHandler : BaseTypeHandler<LocalDate?>(), AutoRegisterTypeHandler<LocalDate?> {
-    @Throws(SQLException::class)
+
     override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: LocalDate?, jdbcType: JdbcType?) {
         if (parameter == null) {
             ps.setObject(i, null)
@@ -29,17 +28,17 @@ class LocalDateTypeHandler : BaseTypeHandler<LocalDate?>(), AutoRegisterTypeHand
         }
     }
 
-    @Throws(SQLException::class)
+
     override fun getNullableResult(rs: ResultSet, columnName: String): LocalDate? {
         return parse(rs.getString(columnName))
     }
 
-    @Throws(SQLException::class)
+
     override fun getNullableResult(rs: ResultSet, columnIndex: Int): LocalDate? {
         return parse(rs.getString(columnIndex))
     }
 
-    @Throws(SQLException::class)
+
     override fun getNullableResult(cs: CallableStatement, columnIndex: Int): LocalDate? {
         return parse(cs.getString(columnIndex))
     }

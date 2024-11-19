@@ -2,6 +2,9 @@ package live.lingting.framework.elasticsearch
 
 import co.elastic.clients.elasticsearch._types.FieldValue
 import co.elastic.clients.json.JsonData
+import java.lang.invoke.SerializedLambda
+import java.lang.reflect.Field
+import java.util.concurrent.ConcurrentHashMap
 import live.lingting.framework.elasticsearch.annotation.Document
 import live.lingting.framework.util.AnnotationUtils
 import live.lingting.framework.util.ClassUtils
@@ -9,11 +12,6 @@ import live.lingting.framework.util.StringUtils
 import org.elasticsearch.client.ResponseException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.lang.invoke.SerializedLambda
-import java.lang.reflect.Field
-import java.lang.reflect.InvocationTargetException
-
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * @author lingting 2023-06-16 11:25
@@ -47,7 +45,7 @@ class ElasticsearchUtils private constructor() {
             return StringUtils.humpToUnderscore(name)
         }
 
-        @Throws(NoSuchMethodException::class, InvocationTargetException::class, IllegalAccessException::class)
+
         fun <T, R> resolveByReflection(function: ElasticsearchFunction<T, R>): SerializedLambda {
             val fClass: Class<out ElasticsearchFunction<*, *>?> = function.javaClass
             val method = fClass.getDeclaredMethod("writeReplace")
@@ -129,7 +127,7 @@ class ElasticsearchUtils private constructor() {
             }
 
             // type为版本冲突
-            return phrase.lowercase(Locale.getDefault()).contains("version_conflict_engine_exception")
+            return phrase.lowercase().contains("version_conflict_engine_exception")
         }
 
         fun fieldValue(`object`: Any): FieldValue {

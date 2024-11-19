@@ -1,15 +1,14 @@
 package live.lingting.framework.http
 
+import java.net.InetSocketAddress
+import java.net.ProxySelector
+import java.net.URI
 import live.lingting.framework.http.HttpClient.Companion.java
 import live.lingting.framework.http.HttpClient.Companion.okhttp
 import live.lingting.framework.http.HttpRequest.Companion.builder
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.io.IOException
-import java.net.InetSocketAddress
-import java.net.ProxySelector
-import java.net.URI
 
 /**
  * @author lingting 2024-05-08 14:22
@@ -28,7 +27,7 @@ internal class HttpClientTest {
     }
 
     @Test
-    @Throws(IOException::class)
+
     fun test() {
         val java = java()
             .disableSsl()
@@ -46,14 +45,14 @@ internal class HttpClientTest {
         assertClient(okhttp)
     }
 
-    @Throws(IOException::class)
+
     fun assertClient(http: HttpClient) {
         assertGet(http)
         assertPost(http)
         assertCookie(http)
     }
 
-    @Throws(IOException::class)
+
     fun assertGet(http: HttpClient) {
         val builder = builder().url(URI.create("https://www.baidu.com"))
         val httpResponse = http.request(builder.build())
@@ -70,7 +69,7 @@ internal class HttpClientTest {
         Assertions.assertTrue(string2!!.contains("component-validation"))
     }
 
-    @Throws(IOException::class)
+
     fun assertPost(http: HttpClient) {
         val builder = builder()
             .post()

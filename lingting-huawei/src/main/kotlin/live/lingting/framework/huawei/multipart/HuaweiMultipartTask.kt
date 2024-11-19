@@ -1,13 +1,13 @@
 package live.lingting.framework.huawei.multipart
 
+import java.time.Duration
+import java.util.concurrent.ConcurrentHashMap
 import live.lingting.framework.huawei.HuaweiObsObject
 import live.lingting.framework.multipart.Multipart
 import live.lingting.framework.multipart.Part
 import live.lingting.framework.multipart.file.FileMultipartTask
 import live.lingting.framework.retry.Retry
 import live.lingting.framework.thread.Async
-import java.time.Duration
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * @author lingting 2024-09-13 20:37
@@ -59,7 +59,7 @@ class HuaweiMultipartTask(multipart: Multipart, async: Async, protected val obsO
         obsObject.multipartCancel(uploadId)
     }
 
-    @Throws(Throwable::class)
+
     override fun onPart(part: Part) {
         multipart.stream(part).use { `in` ->
             val etag = obsObject.multipartUpload(uploadId, part, `in`)

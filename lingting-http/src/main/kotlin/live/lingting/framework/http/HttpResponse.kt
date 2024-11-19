@@ -1,19 +1,17 @@
 package live.lingting.framework.http
 
 import com.fasterxml.jackson.core.type.TypeReference
+import java.io.Closeable
+import java.io.InputStream
+import java.lang.reflect.Type
+import java.net.URI
+import java.util.function.Function
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.jackson.JacksonUtils
 import live.lingting.framework.lock.JavaReentrantLock
 import live.lingting.framework.lock.LockRunnable
 import live.lingting.framework.stream.CloneInputStream
 import live.lingting.framework.util.StreamUtils
-import okhttp3.Cookie.Builder.value
-import java.io.Closeable
-import java.io.IOException
-import java.io.InputStream
-import java.lang.reflect.Type
-import java.net.URI
-import java.util.function.Function
 
 /**
  * @author lingting 2024-09-12 23:37
@@ -43,7 +41,7 @@ class HttpResponse(protected val request: HttpRequest, protected val code: Int, 
         return body
     }
 
-    @Throws(IOException::class)
+
     fun bytes(): ByteArray {
         body().use { `in` ->
             return `in`.readAllBytes()
@@ -57,7 +55,7 @@ class HttpResponse(protected val request: HttpRequest, protected val code: Int, 
         }
 
         lock.runByInterruptibly(object : LockRunnable {
-            @Throws(InterruptedException::class)
+
             override fun run() {
                 if (string != null) {
                     return
@@ -99,7 +97,7 @@ class HttpResponse(protected val request: HttpRequest, protected val code: Int, 
         return isRange(200, 299)
     }
 
-    @Throws(IOException::class)
+
     override fun close() {
         if (body is CloneInputStream) {
             body.isCloseAndDelete = true

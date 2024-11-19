@@ -1,8 +1,5 @@
 package live.lingting.framework.aws.s3
 
-import java.security.InvalidAlgorithmParameterException
-import java.security.InvalidKeyException
-import java.security.NoSuchAlgorithmException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.function.BiConsumer
@@ -66,22 +63,22 @@ class AwsS3SingV4(protected val dateTime: LocalDateTime, protected val method: S
             return this
         }
 
-        @Throws(NoSuchAlgorithmException::class)
+
         fun bodyUnsigned(): S3SingV4Builder {
             return body(AwsS3Utils.Companion.PAYLOAD_UNSIGNED)
         }
 
-        @Throws(NoSuchAlgorithmException::class)
+
         fun body(body: HttpRequest.Body): S3SingV4Builder {
             return body(body.string())
         }
 
-        @Throws(NoSuchAlgorithmException::class)
+
         fun body(body: BodySource): S3SingV4Builder {
             return body(body.string())
         }
 
-        @Throws(NoSuchAlgorithmException::class)
+
         fun body(body: String?): S3SingV4Builder {
             if (AwsS3Utils.Companion.PAYLOAD_UNSIGNED == body) {
                 return bodySha256(AwsS3Utils.Companion.PAYLOAD_UNSIGNED)
@@ -214,7 +211,7 @@ class AwsS3SingV4(protected val dateTime: LocalDateTime, protected val method: S
         return date + "/" + region + "/s3/" + SCOPE_SUFFIX
     }
 
-    @Throws(NoSuchAlgorithmException::class)
+
     fun source(date: String?, scope: String, request: String?): String {
         val requestSha = DigestUtils.sha256Hex(request!!)
         return """
@@ -225,7 +222,7 @@ class AwsS3SingV4(protected val dateTime: LocalDateTime, protected val method: S
             """.trimIndent()
     }
 
-    @Throws(InvalidAlgorithmParameterException::class, NoSuchAlgorithmException::class, InvalidKeyException::class)
+
     fun sourceHmacSha(source: String, scopeDate: String): String {
         val mac = Mac.hmacBuilder().sha256().secret("AWS4$sk").build()
         val sourceKey1 = mac.calculate(scopeDate)

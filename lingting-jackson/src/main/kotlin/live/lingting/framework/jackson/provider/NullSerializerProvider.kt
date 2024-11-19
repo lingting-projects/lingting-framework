@@ -2,7 +2,6 @@ package live.lingting.framework.jackson.provider
 
 import com.fasterxml.jackson.databind.BeanProperty
 import com.fasterxml.jackson.databind.JavaType
-import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializationConfig
 import com.fasterxml.jackson.databind.SerializerProvider
@@ -12,7 +11,6 @@ import com.fasterxml.jackson.databind.ser.SerializerFactory
 import live.lingting.framework.jackson.serializer.NullArrayJsonSerializer
 import live.lingting.framework.jackson.serializer.NullMapJsonSerializer
 import live.lingting.framework.jackson.serializer.NullStringJsonSerializer
-import java.io.Serial
 
 /**
  * @author lingting
@@ -41,7 +39,7 @@ class NullSerializerProvider : DefaultSerializerProvider {
         return NullSerializerProvider(this, config, jsf)
     }
 
-    @Throws(JsonMappingException::class)
+
     override fun findNullValueSerializer(property: BeanProperty): JsonSerializer<Any> {
         val propertyType = property.type
         return if (isStringType(propertyType)) {
@@ -86,22 +84,23 @@ class NullSerializerProvider : DefaultSerializerProvider {
     }
 
     companion object {
-        @Serial
-        private const val serialVersionUID = 1L
 
         /**
          * null array 或 list，set 则转 '[]'
          */
-        private val nullArrayJsonSerializer: JsonSerializer<Any> = NullArrayJsonSerializer()
+        @JvmStatic
+        val nullArrayJsonSerializer = NullArrayJsonSerializer()
 
         /**
          * null Map 转 '{}'
          */
-        private val nullMapJsonSerializer: JsonSerializer<Any> = NullMapJsonSerializer()
+        @JvmStatic
+        val nullMapJsonSerializer = NullMapJsonSerializer()
 
         /**
          * null 字符串转 ''
          */
-        private val nullStringJsonSerializer: JsonSerializer<Any> = NullStringJsonSerializer()
+        @JvmStatic
+        val nullStringJsonSerializer = NullStringJsonSerializer()
     }
 }

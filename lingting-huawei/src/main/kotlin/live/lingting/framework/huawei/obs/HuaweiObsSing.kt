@@ -1,5 +1,6 @@
 package live.lingting.framework.huawei.obs
 
+import java.time.LocalDateTime
 import live.lingting.framework.aws.s3.AwsS3Utils
 import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.http.HttpMethod
@@ -12,8 +13,6 @@ import live.lingting.framework.huawei.HuaweiUtils
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.value.multi.StringMultiValue
-import java.security.NoSuchAlgorithmException
-import java.time.LocalDateTime
 
 
 /**
@@ -65,22 +64,22 @@ class HuaweiObsSing(protected val dateTime: LocalDateTime, protected val method:
             return this
         }
 
-        @Throws(NoSuchAlgorithmException::class)
+
         fun bodyUnsigned(): HuaweiObsSingBuilder {
             return body(AwsS3Utils.PAYLOAD_UNSIGNED)
         }
 
-        @Throws(NoSuchAlgorithmException::class)
+
         fun body(body: HttpRequest.Body): HuaweiObsSingBuilder {
             return body(body.string())
         }
 
-        @Throws(NoSuchAlgorithmException::class)
+
         fun body(body: BodySource): HuaweiObsSingBuilder {
             return body(body.string())
         }
 
-        @Throws(NoSuchAlgorithmException::class)
+
         fun body(body: String?): HuaweiObsSingBuilder {
             if (AwsS3Utils.PAYLOAD_UNSIGNED == body) {
                 return bodySha256(AwsS3Utils.PAYLOAD_UNSIGNED)

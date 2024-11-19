@@ -19,7 +19,7 @@ internal class AbstractTimerTest {
     var executor: Executor? = null
 
     @Test
-    @Throws(InterruptedException::class)
+
     fun test() {
         executor = ThreadUtils.executor()
         doTest()
@@ -27,7 +27,7 @@ internal class AbstractTimerTest {
         doTest()
     }
 
-    @Throws(InterruptedException::class)
+
     fun doTest() {
         start()
         val atomic = AtomicInteger(0)
@@ -41,7 +41,7 @@ internal class AbstractTimerTest {
                 get() =// 设置执行间隔
                     Duration.ofMinutes(30)
 
-            @Throws(Exception::class)
+
             override fun process() {
                 atomic.set(atomic.get() + 1)
             }

@@ -1,25 +1,15 @@
 package live.lingting.framework.http
 
-import live.lingting.framework.stream.BytesInputStream
-import live.lingting.framework.stream.FileCloneInputStream
-import live.lingting.framework.util.FileUtils
-import live.lingting.framework.util.StreamUtils
-import live.lingting.framework.util.ThreadUtils
-import live.lingting.framework.value.LazyValue
-import okhttp3.Cookie.Builder.value
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 import java.io.InputStream
 import java.net.CookieManager
 import java.net.CookiePolicy
 import java.net.CookieStore
 import java.net.ProxySelector
 import java.net.URI
-import java.security.KeyManagementException
-import java.security.NoSuchAlgorithmException
 import java.time.Duration
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicLong
@@ -28,6 +18,12 @@ import javax.net.SocketFactory
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLContext
 import javax.net.ssl.X509TrustManager
+import live.lingting.framework.stream.BytesInputStream
+import live.lingting.framework.stream.FileCloneInputStream
+import live.lingting.framework.util.FileUtils
+import live.lingting.framework.util.StreamUtils
+import live.lingting.framework.util.ThreadUtils
+import live.lingting.framework.value.LazyValue
 
 /**
  * @author lingting 2024-09-02 15:28
@@ -41,19 +37,19 @@ abstract class HttpClient {
 
     abstract fun client(): Any
 
-    @Throws(IOException::class)
+
     abstract fun request(request: HttpRequest): HttpResponse
 
-    @Throws(IOException::class)
+
     abstract fun request(request: HttpRequest, callback: ResponseCallback)
 
-    @Throws(IOException::class)
+
     fun <T> request(request: HttpRequest, cls: Class<T>?): T? {
         val response = request(request)
         return response.convert(cls)
     }
 
-    @Throws(IOException::class)
+
     fun get(uri: URI?): HttpResponse {
         return request(HttpRequest.Companion.builder().get().url(uri).build())
     }
@@ -109,7 +105,7 @@ abstract class HttpClient {
             return this as B
         }
 
-        @Throws(NoSuchAlgorithmException::class, KeyManagementException::class)
+
         fun ssl(trustManager: X509TrustManager?): B {
             val context = Https.sslContext(trustManager!!)
             return ssl(context, trustManager)
@@ -223,7 +219,7 @@ abstract class HttpClient {
         }
 
         @JvmOverloads
-        @Throws(IOException::class)
+
         fun wrap(source: InputStream?, maxBytes: Long = defaultMaxBytes): InputStream {
             if (source == null) {
                 return ByteArrayInputStream(ByteArray(0))

@@ -2,7 +2,6 @@ package live.lingting.framework.multipart
 
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.IOException
 import java.io.InputStream
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
@@ -18,7 +17,7 @@ import org.junit.jupiter.api.Test
  */
 internal class MultipartTaskTest {
     @Test
-    @Throws(IOException::class)
+
     fun test() {
         val source = "hello multipart test"
         val bytes = source.toByteArray()

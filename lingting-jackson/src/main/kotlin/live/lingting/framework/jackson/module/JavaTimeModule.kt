@@ -10,8 +10,6 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.OffsetDateTimeSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer
-import live.lingting.framework.jackson.serializer.InstantSerializer
-import live.lingting.framework.time.DatePattern
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -19,6 +17,8 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import live.lingting.framework.jackson.serializer.InstantSerializer
+import live.lingting.framework.time.DatePattern
 
 /**
  * 自定义java8新增时间类型的序列化
@@ -27,10 +27,6 @@ import java.time.format.DateTimeFormatter
  */
 class JavaTimeModule : SimpleModule() {
     init {
-        init()
-    }
-
-    protected fun init() {
         addSerializer(
             LocalDateTime::class.java,
             LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN))

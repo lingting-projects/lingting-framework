@@ -38,7 +38,7 @@ abstract class AbstractFileValue<T> {
      */
     abstract fun fillFilename(filename: Any): String
 
-    protected abstract fun ofClass(str: String, cls: Class<T>): T
+    protected abstract fun ofClass(str: String, cls: Class<T>): T?
 
     protected abstract fun toString(t: T): String
 

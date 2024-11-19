@@ -1,5 +1,8 @@
 package live.lingting.framework.http.download
 
+import java.io.File
+import java.io.FileInputStream
+import java.net.URI
 import live.lingting.framework.http.download.HttpDownload.Companion.multi
 import live.lingting.framework.http.download.HttpDownload.Companion.single
 import live.lingting.framework.util.DigestUtils
@@ -9,11 +12,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.File
-import java.io.FileInputStream
-import java.io.IOException
-import java.net.URI
-import java.security.NoSuchAlgorithmException
 
 /**
  * @author lingting 2024-01-29 16:43
@@ -26,7 +24,7 @@ internal class HttpDownloadTest {
     val md5: String = "2ce519cf7373a533e1fd297edb9ad1c3"
 
     @Test
-    @Throws(IOException::class, NoSuchAlgorithmException::class)
+
     fun single() {
         val download = single(url).build()
 
@@ -60,7 +58,7 @@ internal class HttpDownloadTest {
     }
 
     @Test
-    @Throws(IOException::class, NoSuchAlgorithmException::class)
+
     fun multi() {
         val download = multi(url).partSize(50)!!.build()
 
@@ -92,7 +90,7 @@ internal class HttpDownloadTest {
         }
     }
 
-    @Throws(NoSuchAlgorithmException::class, IOException::class)
+
     fun assertFile(target: File) {
         FileInputStream(target).use { stream ->
             val string = StreamUtils.toString(stream)

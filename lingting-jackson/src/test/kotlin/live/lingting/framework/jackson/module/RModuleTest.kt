@@ -17,7 +17,7 @@ internal class RModuleTest {
         val json = JacksonUtils.toJson(r)
         println(json)
         Assertions.assertEquals("{\"code\":200,\"data\":{\"p1\":\"p1\",\"p2\":\"p2\"},\"message\":\"Success\"}", json)
-        val reference: TypeReference<R<REntity>> = object : TypeReference<R<REntity?>?>() {
+        val reference = object : TypeReference<R<REntity>>() {
         }
 
         val o1 = JacksonUtils

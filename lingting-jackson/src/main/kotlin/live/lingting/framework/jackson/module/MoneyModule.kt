@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.module.SimpleModule
 import live.lingting.framework.money.Money
 import live.lingting.framework.util.StringUtils
-import java.io.IOException
 
 /**
  * @author lingting 2024-04-28 10:43
@@ -21,7 +20,7 @@ class MoneyModule : SimpleModule() {
     }
 
     class MoneySerializer : JsonSerializer<Money>() {
-        @Throws(IOException::class)
+
         override fun serialize(value: Money, gen: JsonGenerator, serializers: SerializerProvider) {
             // 使用原始字符串
             val jsonValue = value.toRawString()
@@ -30,7 +29,7 @@ class MoneyModule : SimpleModule() {
     }
 
     class MoneyDeserializer : JsonDeserializer<Money?>() {
-        @Throws(IOException::class)
+
         override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Money? {
             val text = p.text
             if (!StringUtils.hasText(text)) {

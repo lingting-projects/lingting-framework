@@ -1,5 +1,7 @@
 package live.lingting.framework.aws
 
+import java.io.File
+import java.io.InputStream
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
 import live.lingting.framework.aws.s3.AwsS3Properties
@@ -18,9 +20,6 @@ import live.lingting.framework.multipart.Part
 import live.lingting.framework.stream.CloneInputStream
 import live.lingting.framework.stream.FileCloneInputStream
 import live.lingting.framework.thread.Async
-import java.io.File
-import java.io.IOException
-import java.io.InputStream
 
 /**
  * @author lingting 2024-09-19 15:09
@@ -47,22 +46,22 @@ class AwsS3Object(properties: AwsS3Properties, override val key: String?) : AwsS
 
     // endregion
     // region put
-    @Throws(IOException::class)
+
     override fun put(file: File?) {
         put(file, null)
     }
 
-    @Throws(IOException::class)
+
     override fun put(file: File?, acl: Acl?) {
         put(FileCloneInputStream(file!!), acl)
     }
 
-    @Throws(IOException::class)
+
     override fun put(`in`: InputStream) {
         put(`in`, null)
     }
 
-    @Throws(IOException::class)
+
     override fun put(`in`: InputStream, acl: Acl?) {
         put(FileCloneInputStream(`in`), acl)
     }
@@ -101,12 +100,12 @@ class AwsS3Object(properties: AwsS3Properties, override val key: String?) : AwsS
         return node["UploadId"].asText()
     }
 
-    @Throws(IOException::class)
+
     override fun multipart(source: InputStream?): AwsS3MultipartTask? {
         return multipart(source, AwsS3Utils.Companion.MULTIPART_DEFAULT_PART_SIZE, Async(20))
     }
 
-    @Throws(IOException::class)
+
     override fun multipart(source: InputStream?, parSize: Long, async: Async): AwsS3MultipartTask {
         val uploadId = multipartInit()
 

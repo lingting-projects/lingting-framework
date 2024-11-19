@@ -8,18 +8,16 @@ import com.tencent.polaris.client.api.SDKContext
 import com.tencent.polaris.factory.api.DiscoveryAPIFactory
 import io.grpc.Server
 import io.grpc.ServerServiceDefinition
-import live.lingting.polaris.grpc.server.impl.NoopDelayRegister
-import live.lingting.polaris.grpc.util.NetworkHelper
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import java.io.IOException
 import java.net.SocketAddress
 import java.time.Duration
-
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import live.lingting.polaris.grpc.server.impl.NoopDelayRegister
+import live.lingting.polaris.grpc.util.NetworkHelper
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * @author lixiaoshuang
@@ -44,7 +42,7 @@ class PolarisGrpcServer internal constructor(private val builder: PolarisGrpcSer
 
     private val registerHook: RegisterHook? = builder.registerHook
 
-    @Throws(IOException::class)
+
     override fun start(): Server {
         initLocalHost()
         targetServer = targetServer.start()
@@ -112,12 +110,12 @@ class PolarisGrpcServer internal constructor(private val builder: PolarisGrpcSer
         return targetServer.isTerminated
     }
 
-    @Throws(InterruptedException::class)
+
     override fun awaitTermination(timeout: Long, unit: TimeUnit): Boolean {
         return targetServer.awaitTermination(timeout, unit)
     }
 
-    @Throws(InterruptedException::class)
+
     override fun awaitTermination() {
         targetServer.awaitTermination()
     }
