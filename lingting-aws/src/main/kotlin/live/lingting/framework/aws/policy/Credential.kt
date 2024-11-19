@@ -6,7 +6,12 @@ import java.time.LocalDateTime
 /**
  * @author lingting 2024-09-12 20:38
  */
-class Credential(@JvmField val ak: String, @JvmField val sk: String, @JvmField val token: String, @JvmField val expire: LocalDateTime) {
+class Credential(
+    @JvmField val ak: String,
+    @JvmField val sk: String,
+    @JvmField val token: String?,
+    @JvmField val expire: LocalDateTime
+) {
     fun between(): Duration {
         val now = LocalDateTime.now()
         return between(now)

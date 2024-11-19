@@ -50,7 +50,7 @@ class HuaweiObsSing(protected val dateTime: LocalDateTime, protected val method:
         }
 
         fun method(method: String): HuaweiObsSingBuilder {
-            this.method = method.uppercase(Locale.getDefault())
+            this.method = method.uppercase()
             return this
         }
 

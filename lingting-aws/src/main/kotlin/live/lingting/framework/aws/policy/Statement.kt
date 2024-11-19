@@ -1,5 +1,7 @@
 package live.lingting.framework.aws.policy
 
+import java.util.Arrays
+
 
 /**
  * @author lingting 2024-09-12 20:31
@@ -13,8 +15,8 @@ open class Statement(val isAllow: Boolean) {
         actions.add(action)
     }
 
-    fun addAction(vararg actions: String?) {
-        addAction(Arrays.asList(*actions))
+    fun addAction(vararg actions: String) {
+        addAction(actions.toList())
     }
 
     fun addAction(actions: Collection<String>) {
@@ -27,7 +29,7 @@ open class Statement(val isAllow: Boolean) {
         resources.add(resource)
     }
 
-    fun addResource(vararg resources: String?) {
+    fun addResource(vararg resources: String) {
         addResource(Arrays.asList(*resources))
     }
 
@@ -37,7 +39,7 @@ open class Statement(val isAllow: Boolean) {
         }
     }
 
-    open fun map(): Map<String, Any>? {
+    open fun map(): Map<String, Any> {
         val map: MutableMap<String, Any> = HashMap(4)
         map["Effect"] = if (isAllow) "Allow" else "Deny"
         map["Action"] = LinkedHashSet(actions)

@@ -17,28 +17,28 @@ open class AwsS3Properties {
     var connector: String = "."
 
     @JvmField
-    var region: String? = null
+    var region: String = ""
 
     @JvmField
     var endpoint: String = "amazonaws.com"
 
     @JvmField
-    var bucket: String? = null
+    var bucket: String = ""
 
     @JvmField
     var acl: Acl = Acl.PRIVATE
 
     @JvmField
-    var ak: String? = null
+    var ak: String = ""
 
     @JvmField
-    var sk: String? = null
+    var sk: String = ""
 
     @JvmField
-    var token: String? = null
+    var token: String? = ""
 
-    fun <T : AwsS3Properties?> fill(properties: T): T {
-        properties!!.scheme = scheme
+    fun <T : AwsS3Properties> fill(properties: T): T {
+        properties.scheme = scheme
         properties.region = region
         properties.endpoint = endpoint
         properties.bucket = bucket
@@ -49,7 +49,7 @@ open class AwsS3Properties {
         return properties
     }
 
-    open fun copy(): AwsS3Properties? {
+    open fun copy(): AwsS3Properties {
         val properties = AwsS3Properties()
         fill(properties)
         return properties
@@ -62,6 +62,6 @@ open class AwsS3Properties {
     }
 
     fun host(): String {
-        return "%s://%s.%s%s%s.%s".formatted(scheme, bucket, prefix, connector, region, endpoint)
+        return "$scheme://$bucket.$prefix$connector$region.$endpoint"
     }
 }

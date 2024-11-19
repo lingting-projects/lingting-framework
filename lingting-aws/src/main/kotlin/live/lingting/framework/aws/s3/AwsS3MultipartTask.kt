@@ -10,8 +10,8 @@ import live.lingting.framework.thread.Async
 /**
  * @author lingting 2024-09-19 20:26
  */
-class AwsS3MultipartTask(multipart: Multipart, async: Async, protected val s3: AwsS3Object) : FileMultipartTask<AwsS3MultipartTask?>(multipart, async) {
-    protected val map: MutableMap<Part, String?> = ConcurrentHashMap(multipart.parts.size)
+class AwsS3MultipartTask(multipart: Multipart, async: Async, protected val s3: AwsS3Object) : FileMultipartTask<AwsS3MultipartTask>(multipart, async) {
+    protected val map: MutableMap<Part, String> = ConcurrentHashMap(multipart.parts.size)
 
     @JvmField
     val uploadId: String = multipart.id

@@ -20,15 +20,15 @@ open class AwsS3DefaultListener(@JvmField protected val client: AwsS3Client) : A
     protected val log: Logger = client.log
 
     @JvmField
-    protected val region: String? = client.properties.region
+    protected val region: String = client.properties.region
 
-    override fun onFailed(request: AwsS3Request?, response: HttpResponse) {
+    override fun onFailed(request: AwsS3Request, response: HttpResponse) {
         val string = response.string()
         log.error("Call error! uri: {}; code: {}; body:\n{}", response.uri(), response.code(), string)
         throw AwsS3Exception("request error! code: " + response.code())
     }
 
-    override fun onAuthorization(request: AwsS3Request, headers: HttpHeaders, params: StringMultiValue?, now: LocalDateTime) {
+    override fun onAuthorization(request: AwsS3Request, headers: HttpHeaders, params: StringMultiValue, now: LocalDateTime) {
         val date: String = AwsS3Utils.format(now, AwsS3SingV4.DATETIME_FORMATTER)
         headers.put(AwsS3Utils.HEADER_DATE, date)
 

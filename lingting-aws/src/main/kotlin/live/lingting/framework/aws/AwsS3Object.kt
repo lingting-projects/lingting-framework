@@ -24,9 +24,9 @@ import live.lingting.framework.thread.Async
 /**
  * @author lingting 2024-09-19 15:09
  */
-class AwsS3Object(properties: AwsS3Properties, override val key: String?) : AwsS3Client(properties), AwsS3ObjectInterface {
+class AwsS3Object(properties: AwsS3Properties, override val key: String) : AwsS3Client(properties), AwsS3ObjectInterface {
     // endregion
-    val publicUrl: String = HttpUrlBuilder.builder().https().host(host).uri(key!!).build()
+    val publicUrl: String = HttpUrlBuilder.builder().https().host(host).uri(key).build()
 
     override fun customize(request: AwsS3Request) {
         request.key = key
@@ -34,7 +34,7 @@ class AwsS3Object(properties: AwsS3Properties, override val key: String?) : AwsS
     }
 
     // region get
-    override fun publicUrl(): String? {
+    override fun publicUrl(): String {
         return publicUrl
     }
 
@@ -47,13 +47,13 @@ class AwsS3Object(properties: AwsS3Properties, override val key: String?) : AwsS
     // endregion
     // region put
 
-    override fun put(file: File?) {
+    override fun put(file: File) {
         put(file, null)
     }
 
 
-    override fun put(file: File?, acl: Acl?) {
-        put(FileCloneInputStream(file!!), acl)
+    override fun put(file: File, acl: Acl?) {
+        put(FileCloneInputStream(file), acl)
     }
 
 
@@ -86,11 +86,11 @@ class AwsS3Object(properties: AwsS3Properties, override val key: String?) : AwsS
 
     // endregion
     // region multipart
-    override fun multipartInit(): String? {
+    override fun multipartInit(): String {
         return multipartInit(null)
     }
 
-    override fun multipartInit(acl: Acl?): String? {
+    override fun multipartInit(acl: Acl?): String {
         val request = AwsS3SimpleRequest(HttpMethod.POST)
         request.acl = acl
         request.params.add("uploads")
@@ -101,17 +101,17 @@ class AwsS3Object(properties: AwsS3Properties, override val key: String?) : AwsS
     }
 
 
-    override fun multipart(source: InputStream?): AwsS3MultipartTask? {
+    override fun multipart(source: InputStream): AwsS3MultipartTask {
         return multipart(source, AwsS3Utils.MULTIPART_DEFAULT_PART_SIZE, Async(20))
     }
 
 
-    override fun multipart(source: InputStream?, parSize: Long, async: Async): AwsS3MultipartTask {
+    override fun multipart(source: InputStream, parSize: Long, async: Async): AwsS3MultipartTask {
         val uploadId = multipartInit()
 
         val multipart = Multipart.builder()
-            .id(uploadId!!)
-            .source(source!!)
+            .id(uploadId)
+            .source(source)
             .partSize(parSize)
             .maxPartCount(AwsS3Utils.MULTIPART_MAX_PART_COUNT)
             .maxPartSize(AwsS3Utils.MULTIPART_MAX_PART_SIZE)
@@ -128,13 +128,13 @@ class AwsS3Object(properties: AwsS3Properties, override val key: String?) : AwsS
      *
      * @return 合并用的 etag
      */
-    override fun multipartUpload(uploadId: String?, part: Part?, `in`: InputStream?): String? {
+    override fun multipartUpload(uploadId: String, part: Part, `in`: InputStream): String {
         val request = AwsS3ObjectPutRequest()
         request.stream = `in`
         request.multipart(uploadId, part)
         val response = call(request)
         val headers = response.headers()
-        return headers.etag()
+        return headers.etag()!!
     }
 
     /**
@@ -142,7 +142,7 @@ class AwsS3Object(properties: AwsS3Properties, override val key: String?) : AwsS
      *
      * @param map key: part. value: etag
      */
-    override fun multipartMerge(uploadId: String?, map: Map<Part, String?>?) {
+    override fun multipartMerge(uploadId: String, map: Map<Part, String>) {
         val request = AwsS3MultipartMergeRequest()
         request.uploadId = uploadId
         request.map = map

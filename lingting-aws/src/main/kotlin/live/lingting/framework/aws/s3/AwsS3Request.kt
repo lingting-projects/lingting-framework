@@ -15,7 +15,7 @@ abstract class AwsS3Request : ApiRequest() {
         return key!!
     }
 
-    fun setAclIfAbsent(acl: Acl?) {
+    fun setAclIfAbsent(acl: Acl) {
         if (this.acl == null) {
             this.acl = acl
         }

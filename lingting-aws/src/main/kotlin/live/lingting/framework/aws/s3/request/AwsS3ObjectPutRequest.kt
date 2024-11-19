@@ -4,7 +4,6 @@ import java.io.InputStream
 import live.lingting.framework.aws.s3.AwsS3Request
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.body.BodySource
-import live.lingting.framework.http.body.BodySource.of
 import live.lingting.framework.multipart.Part
 
 /**
@@ -19,7 +18,7 @@ class AwsS3ObjectPutRequest : AwsS3Request() {
     var part: Part? = null
         protected set
 
-    fun multipart(id: String?, part: Part?) {
+    fun multipart(id: String, part: Part) {
         this.uploadId = id
         this.part = part
     }
@@ -29,9 +28,8 @@ class AwsS3ObjectPutRequest : AwsS3Request() {
     }
 
 
-    override fun body(): BodySource? {
-        val inputStream = stream
-        return of(inputStream!!)
+    override fun body(): BodySource {
+        return BodySource.of(stream!!)
     }
 
     override fun onCall() {

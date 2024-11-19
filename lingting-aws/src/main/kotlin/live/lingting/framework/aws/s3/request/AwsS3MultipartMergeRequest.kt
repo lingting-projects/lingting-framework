@@ -12,17 +12,17 @@ import live.lingting.framework.multipart.Part
 class AwsS3MultipartMergeRequest : AwsS3Request() {
     var uploadId: String? = null
 
-    var map: Map<Part, String?>? = null
+    var map: Map<Part, String> = emptyMap()
 
     override fun method(): HttpMethod {
         return HttpMethod.POST
     }
 
-    override fun body(): BodySource? {
+    override fun body(): BodySource {
         val builder = StringBuilder("<CompleteMultipartUpload>\n")
 
-        map!!.keys.stream().sorted(Comparator.comparing(Part::index)).forEach { p: Part ->
-            val e = map!![p]
+        map.keys.stream().sorted(Comparator.comparing(Part::index)).forEach { p: Part ->
+            val e = map[p]
             builder.append("<Part><PartNumber>")
                 .append(p.index + 1)
                 .append("</PartNumber><ETag>")

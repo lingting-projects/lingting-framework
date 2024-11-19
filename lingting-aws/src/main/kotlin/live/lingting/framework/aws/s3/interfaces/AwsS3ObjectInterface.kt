@@ -14,19 +14,20 @@ import live.lingting.framework.thread.Async
  */
 interface AwsS3ObjectInterface {
     // region get
-    val key: String?
+    val key: String
 
-    fun publicUrl(): String?
+    fun publicUrl(): String
 
     fun head(): HttpHeaders
 
     // endregion
+
     // region put
 
-    fun put(file: File?)
+    fun put(file: File)
 
 
-    fun put(file: File?, acl: Acl?)
+    fun put(file: File, acl: Acl?)
 
 
     fun put(`in`: InputStream)
@@ -41,20 +42,21 @@ interface AwsS3ObjectInterface {
     fun delete()
 
     // endregion
+
     // region multipart
-    fun multipartInit(): String?
+    fun multipartInit(): String
 
-    fun multipartInit(acl: Acl?): String?
-
-
-    fun multipart(source: InputStream?): AwsS3MultipartTask?
+    fun multipartInit(acl: Acl?): String
 
 
-    fun multipart(source: InputStream?, parSize: Long, async: Async): AwsS3MultipartTask
+    fun multipart(source: InputStream): AwsS3MultipartTask
 
-    fun multipartUpload(uploadId: String?, part: Part?, `in`: InputStream?): String?
 
-    fun multipartMerge(uploadId: String?, map: Map<Part, String?>?)
+    fun multipart(source: InputStream, parSize: Long, async: Async): AwsS3MultipartTask
+
+    fun multipartUpload(uploadId: String, part: Part, `in`: InputStream): String
+
+    fun multipartMerge(uploadId: String, map: Map<Part, String>)
 
     fun multipartCancel(uploadId: String) // endregion
 }

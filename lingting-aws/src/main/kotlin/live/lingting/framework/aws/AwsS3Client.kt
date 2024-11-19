@@ -17,39 +17,39 @@ import live.lingting.framework.value.multi.StringMultiValue
 /**
  * @author lingting 2024-09-19 15:02
  */
-abstract class AwsS3Client protected constructor(val properties: AwsS3Properties) : ApiClient<AwsS3Request?>(properties.host()) {
+abstract class AwsS3Client protected constructor(val properties: AwsS3Properties) : ApiClient<AwsS3Request>(properties.host()) {
     @JvmField
-    val ak: String? = properties.ak
+    val ak: String = properties.ak
 
     @JvmField
-    val sk: String? = properties.sk
+    val sk: String = properties.sk
 
     val token: String? = properties.token
 
-    val acl: Acl? = properties.acl
+    val acl: Acl = properties.acl
 
     @JvmField
-    val bucket: String? = properties.bucket
+    val bucket: String = properties.bucket
 
     @JvmField
     var listener: AwsS3Listener = AwsS3DefaultListener(this)
 
-    override fun customize(request: AwsS3Request, headers: HttpHeaders, source: BodySource?, params: StringMultiValue?) {
+    override fun customize(request: AwsS3Request, headers: HttpHeaders, source: BodySource, params: StringMultiValue) {
         if (request.acl != null) {
-            headers.put(AwsS3Utils.HEADER_ACL, request.acl.value)
+            headers.put(AwsS3Utils.HEADER_ACL, request.acl!!.value)
         }
 
         val now = LocalDateTime.now()
         headers.put(AwsS3Utils.HEADER_CONTENT_SHA256, AwsS3Utils.PAYLOAD_UNSIGNED)
 
         if (StringUtils.hasText(token)) {
-            headers.put(AwsS3Utils.HEADER_TOKEN, token)
+            headers.put(AwsS3Utils.HEADER_TOKEN, token!!)
         }
         listener.onAuthorization(request, headers, params, now)
     }
 
     override fun checkout(request: AwsS3Request, response: HttpResponse): HttpResponse {
-        if (!response.is2xx()) {
+        if (!response.is2xx) {
             listener.onFailed(request, response)
         }
         return response

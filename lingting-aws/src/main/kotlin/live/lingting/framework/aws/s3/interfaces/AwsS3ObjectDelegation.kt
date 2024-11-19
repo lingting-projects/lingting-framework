@@ -13,77 +13,77 @@ import live.lingting.framework.thread.Async
 /**
  * @author lingting 2024-09-19 21:59
  */
-interface AwsS3ObjectDelegation : AwsS3ObjectInterface, AwsS3Delegation<AwsS3Object?> {
-    override val key: String?
-        get() = delegation().getKey()
+interface AwsS3ObjectDelegation : AwsS3ObjectInterface, AwsS3Delegation<AwsS3Object> {
+    override val key: String
+        get() = delegation().key
 
-    override fun publicUrl(): String? {
-        return delegation()!!.publicUrl()
+    override fun publicUrl(): String {
+        return delegation().publicUrl()
     }
 
     override fun head(): HttpHeaders {
-        return delegation()!!.head()
+        return delegation().head()
     }
 
 
-    override fun put(file: File?) {
-        delegation()!!.put(file)
+    override fun put(file: File) {
+        delegation().put(file)
     }
 
 
-    override fun put(file: File?, acl: Acl?) {
-        delegation()!!.put(file, acl)
+    override fun put(file: File, acl: Acl?) {
+        delegation().put(file, acl)
     }
 
 
     override fun put(`in`: InputStream) {
-        delegation()!!.put(`in`)
+        delegation().put(`in`)
     }
 
 
     override fun put(`in`: InputStream, acl: Acl?) {
-        delegation()!!.put(`in`, acl)
+        delegation().put(`in`, acl)
     }
 
     override fun put(`in`: CloneInputStream) {
-        delegation()!!.put(`in`)
+        delegation().put(`in`)
     }
 
     override fun put(`in`: CloneInputStream, acl: Acl?) {
-        delegation()!!.put(`in`, acl)
+        delegation().put(`in`, acl)
     }
 
     override fun delete() {
-        delegation()!!.delete()
+        delegation().delete()
     }
 
-    override fun multipartInit(): String? {
-        return delegation()!!.multipartInit()
+    override fun multipartInit(): String {
+        return delegation().multipartInit()
     }
 
-    override fun multipartInit(acl: Acl?): String? {
-        return delegation()!!.multipartInit(acl)
-    }
-
-
-    override fun multipart(source: InputStream?): AwsS3MultipartTask? {
-        return delegation()!!.multipart(source)
+    override fun multipartInit(acl: Acl?): String {
+        return delegation().multipartInit(acl)
     }
 
 
-    override fun multipart(source: InputStream?, parSize: Long, async: Async): AwsS3MultipartTask {
-        return delegation()!!.multipart(source, parSize, async)
+    override fun multipart(source: InputStream): AwsS3MultipartTask {
+        return delegation().multipart(source)
     }
 
-    override fun multipartUpload(uploadId: String?, part: Part?, `in`: InputStream?): String? {
-        return delegation()!!.multipartUpload(uploadId, part, `in`)
+
+    override fun multipart(source: InputStream, parSize: Long, async: Async): AwsS3MultipartTask {
+        return delegation().multipart(source, parSize, async)
     }
 
-    override fun multipartMerge(uploadId: String?, map: Map<Part, String?>?) {
-        delegation()!!.multipartMerge(uploadId, map)
+    override fun multipartUpload(uploadId: String, part: Part, `in`: InputStream): String {
+        return delegation().multipartUpload(uploadId, part, `in`)
+    }
+
+    override fun multipartMerge(uploadId: String, map: Map<Part, String>) {
+        delegation().multipartMerge(uploadId, map)
     }
 
     override fun multipartCancel(uploadId: String) {
-        delegation()!!.multipartCancel(uploadId)
+        delegation().multipartCancel(uploadId)
     }
 }
