@@ -1,42 +1,41 @@
-package live.lingting.framework.huawei;
+package live.lingting.framework.huawei
 
-import live.lingting.framework.aws.policy.Credential;
-import live.lingting.framework.huawei.properties.HuaweiIamProperties;
-import live.lingting.framework.util.StringUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import live.lingting.framework.aws.policy.Credential
+import live.lingting.framework.huawei.properties.HuaweiIamProperties
+import live.lingting.framework.util.StringUtils.hasText
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty
+import org.junit.jupiter.api.function.ThrowingSupplier
 
 /**
  * @author lingting 2024-09-13 11:58
  */
 @EnabledIfSystemProperty(named = "framework.huawei.iam.test", matches = "true")
-class HuaweiIamTest {
+internal class HuaweiIamTest {
+    var iam: HuaweiIam? = null
 
-	HuaweiIam iam;
+    var properties: HuaweiIamProperties? = null
 
-	HuaweiIamProperties properties;
+    @BeforeEach
+    fun before() {
+        iam = HuaweiBasic.iam()
+        properties = iam!!.properties
+    }
 
-	@BeforeEach
-	void before() {
-		iam = HuaweiBasic.iam();
-		properties = iam.properties;
-	}
-
-	@Test
-	void credential() {
-		HuaweiStatement statement = new HuaweiStatement(true);
-		statement.addAction("obs:*");
-		statement.addResource("obs:*:*:bucket:*");
-		Credential credential = assertDoesNotThrow(() -> iam.credential(statement));
-		assertNotNull(credential);
-		assertTrue(StringUtils.hasText(credential.ak));
-		assertTrue(StringUtils.hasText(credential.sk));
-		assertTrue(StringUtils.hasText(credential.token));
-		assertNotNull(credential.expire);
-	}
-
+    @Test
+    fun credential() {
+        val statement = HuaweiStatement(true)
+        statement.addAction("obs:*")
+        statement.addResource("obs:*:*:bucket:*")
+        val credential = assertDoesNotThrow<Credential?>(ThrowingSupplier { iam!!.credential(statement) })
+        assertNotNull(credential)
+        assertTrue(hasText(credential!!.ak))
+        assertTrue(hasText(credential.sk))
+        assertTrue(hasText(credential.token))
+        assertNotNull(credential.expire)
+    }
 }

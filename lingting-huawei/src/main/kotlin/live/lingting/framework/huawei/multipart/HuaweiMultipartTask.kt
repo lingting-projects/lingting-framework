@@ -12,8 +12,12 @@ import live.lingting.framework.thread.Async
 /**
  * @author lingting 2024-09-13 20:37
  */
-class HuaweiMultipartTask(multipart: Multipart, async: Async, protected val obsObject: HuaweiObsObject) : FileMultipartTask<HuaweiMultipartTask?>(multipart, async) {
-    protected val map: MutableMap<Part, String?> = ConcurrentHashMap(multipart.parts.size)
+class HuaweiMultipartTask(
+    multipart: Multipart,
+    async: Async,
+    protected val obsObject: HuaweiObsObject
+) : FileMultipartTask<HuaweiMultipartTask>(multipart, async) {
+    protected val map: MutableMap<Part, String> = ConcurrentHashMap(multipart.parts.size)
 
     val uploadId: String = multipart.id
 
@@ -26,7 +30,7 @@ class HuaweiMultipartTask(multipart: Multipart, async: Async, protected val obsO
     override fun onMerge() {
         log.debug("[{}] onMerge", uploadId)
 
-        val retry: Retry<Void> = Retry.simple(maxRetryCount.toInt(), Duration.ofSeconds(1), {
+        val retry: Retry<Void?> = Retry.simple(maxRetryCount.toInt(), Duration.ofSeconds(1)) {
             var ex: Exception? = null
             try {
                 obsObject.multipartMerge(uploadId, map)
@@ -44,7 +48,7 @@ class HuaweiMultipartTask(multipart: Multipart, async: Async, protected val obsO
                 }
             }
             null
-        })
+        }
 
         try {
             retry.get()

@@ -6,31 +6,29 @@ import com.fasterxml.jackson.annotation.JsonProperty
  * @author lingting 2024-09-13 14:00
  */
 class HuaweiIamCredentialResponse {
-    var credential: Credential? = null
+    var credential: Credential = Credential()
 
-    val access: String?
-        get() = credential!!.access
+    val access: String
+        get() = credential.access
 
-    val secret: String?
-        get() = credential!!.secret
+    val secret: String
+        get() = credential.secret
 
-    val securityToken: String?
-        get() = credential!!.securityToken
+    val securityToken: String
+        get() = credential.securityToken
 
-    val expire: String?
-        get() = credential!!.expire
+    val expire: String
+        get() = credential.expire
 
     class Credential {
-        var access: String? = null
+        var access: String = ""
 
-        var secret: String? = null
+        var secret: String = ""
 
-        @set:JsonProperty("securitytoken")
         @JsonProperty("securitytoken")
-        var securityToken: String? = null
+        var securityToken: String = ""
 
-        @set:JsonProperty("expires_at")
         @JsonProperty("expires_at")
-        var expire: String? = null
+        var expire: String = ""
     }
 }

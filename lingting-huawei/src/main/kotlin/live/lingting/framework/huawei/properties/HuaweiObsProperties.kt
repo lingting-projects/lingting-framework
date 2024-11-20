@@ -11,7 +11,7 @@ class HuaweiObsProperties : AwsS3Properties() {
         endpoint = "myhuaweicloud.com"
     }
 
-    override fun copy(): HuaweiObsProperties? {
+    override fun copy(): HuaweiObsProperties {
         return fill(HuaweiObsProperties())
     }
 }

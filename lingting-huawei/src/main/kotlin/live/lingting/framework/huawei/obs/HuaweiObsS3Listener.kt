@@ -17,13 +17,13 @@ import live.lingting.framework.value.multi.StringMultiValue
  * @author lingting 2024/11/5 14:54
  */
 class HuaweiObsS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
-    override fun onFailed(request: AwsS3Request?, response: HttpResponse) {
+    override fun onFailed(request: AwsS3Request, response: HttpResponse) {
         val string = response.string()
         log.error("Call error! uri: {}; code: {}; body:\n{}", response.uri(), response.code(), string)
         throw HuaweiObsException("request error! code: " + response.code())
     }
 
-    override fun onAuthorization(request: AwsS3Request, headers: HttpHeaders, params: StringMultiValue?, now: LocalDateTime) {
+    override fun onAuthorization(request: AwsS3Request, headers: HttpHeaders, params: StringMultiValue, now: LocalDateTime) {
         val date: String = HuaweiUtils.format(now)
         headers.put(HuaweiUtils.HEADER_DATE, date)
 
@@ -38,9 +38,7 @@ class HuaweiObsS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
             .method(request.method())
             .path(request.path())
             .headers(headers)
-            .bodySha256(AwsS3Utils.PAYLOAD_UNSIGNED)
             .params(params)
-            .region(region)
             .ak(client.ak)
             .sk(client.sk)
             .bucket(client.bucket)

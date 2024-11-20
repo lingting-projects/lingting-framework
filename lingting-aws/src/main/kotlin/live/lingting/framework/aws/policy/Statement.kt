@@ -39,7 +39,7 @@ open class Statement(val isAllow: Boolean) {
         }
     }
 
-    open fun map(): Map<String, Any> {
+    open fun map(): MutableMap<String, Any> {
         val map: MutableMap<String, Any> = HashMap(4)
         map["Effect"] = if (isAllow) "Allow" else "Deny"
         map["Action"] = LinkedHashSet(actions)
@@ -53,6 +53,7 @@ open class Statement(val isAllow: Boolean) {
             return Statement(true)
         }
 
+        @JvmStatic
         fun deny(): Statement {
             return Statement(false)
         }

@@ -6,20 +6,11 @@ import java.time.LocalDateTime
 /**
  * @author lingting 2024-09-12 22:04
  */
-class HuaweiIamToken {
-    var value: String? = null
-
-    var expire: LocalDateTime? = null
-
-    var issued: LocalDateTime? = null
-
-    constructor()
-
-    constructor(value: String?, expire: LocalDateTime?, issued: LocalDateTime?) {
-        this.value = value
-        this.expire = expire
-        this.issued = issued
-    }
+data class HuaweiIamToken(
+    val value: String,
+    val expire: LocalDateTime,
+    val issued: LocalDateTime,
+) {
 
     fun duration(now: LocalDateTime): Duration {
         return Duration.between(now, expire)

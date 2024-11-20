@@ -22,8 +22,7 @@ import live.lingting.framework.value.WaitValue
 /**
  * @author lingting 2024-09-12 21:27
  */
-class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<HuaweiIamRequest?>(properties.host) {
-    // endregion
+class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<HuaweiIamRequest>(properties.host) {
     /**
      * token 提前多久过期
      */
@@ -35,11 +34,10 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
     var tokenValue: WaitValue<HuaweiIamToken> = WaitValue.of()
         protected set
 
-
     override fun customize(request: HuaweiIamRequest, headers: HttpHeaders) {
         if (request.usingToken()) {
             val token = tokenValue.notNull()
-            headers.put("X-Auth-Token", token.getValue())
+            headers.put("X-Auth-Token", token.value)
         }
     }
 
@@ -51,7 +49,7 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
         }
 
         val string = response.string()
-        if (!response.is2xx()) {
+        if (!response.is2xx) {
             log.error("HuaweiIam request error! uri: {}; code: {}; body:\n{}", response.uri(), response.code(), string)
             throw HuaweiIamException("request error! code: " + response.code())
         }
@@ -71,7 +69,6 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
         tokenValue.update(token)
     }
 
-
     fun token(): HuaweiIamToken {
         val request = HuaweiIamTokenRequest()
         request.domain = properties.domain
@@ -81,7 +78,7 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
         val response = call(request)
         val convert = response.convert(HuaweiIamTokenResponse::class.java)
 
-        val token = response.headers().first("X-Subject-Token")
+        val token = response.headers().first("X-Subject-Token")!!
         val expire: LocalDateTime = HuaweiUtils.parse(convert.expire, properties.zone)
         val issued: LocalDateTime = HuaweiUtils.parse(convert.issued, properties.zone)
         return HuaweiIamToken(token, expire, issued)
@@ -91,18 +88,18 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
         return credential(setOf(statement))
     }
 
-    fun credential(statement: HuaweiStatement, vararg statements: HuaweiStatement?): Credential {
+    fun credential(statement: HuaweiStatement, vararg statements: HuaweiStatement): Credential {
         val list: MutableList<HuaweiStatement> = ArrayList(statements.size + 1)
         list.add(statement)
-        list.addAll(Arrays.asList(*statements))
+        list.addAll(statements)
         return credential(list)
     }
 
-    fun credential(statements: Collection<HuaweiStatement>?): Credential {
+    fun credential(statements: Collection<HuaweiStatement>): Credential {
         return credential(HuaweiUtils.CREDENTIAL_EXPIRE, statements)
     }
 
-    fun credential(timeout: Duration?, statements: Collection<HuaweiStatement>?): Credential {
+    fun credential(timeout: Duration, statements: Collection<HuaweiStatement>): Credential {
         val request = HuaweiIamCredentialRequest()
         request.timeout = timeout
         request.statements = statements
@@ -112,18 +109,18 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
         val sk = convert.secret
         val token = convert.securityToken
         val expire: LocalDateTime = HuaweiUtils.parse(convert.expire, properties.zone)
-        return Credential(ak!!, sk!!, token!!, expire)
+        return Credential(ak, sk, token, expire)
     }
 
     // region obs
-    fun obsBucket(region: String?, bucket: String?): HuaweiObsBucket {
+    fun obsBucket(region: String, bucket: String): HuaweiObsBucket {
         val s = HuaweiObsProperties()
         s.region = region
         s.bucket = bucket
         return obsBucket(s)
     }
 
-    fun obsBucket(region: String?, bucket: String?, actions: Collection<String?>): HuaweiObsBucket {
+    fun obsBucket(region: String, bucket: String, actions: Collection<String>): HuaweiObsBucket {
         val s = HuaweiObsProperties()
         s.region = region
         s.bucket = bucket
@@ -134,44 +131,46 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
         return obsBucket(properties, HuaweiActions.OBS_BUCKET_DEFAULT)
     }
 
-    fun obsBucket(properties: HuaweiObsProperties, actions: Collection<String?>): HuaweiObsBucket {
+    fun obsBucket(properties: HuaweiObsProperties, actions: Collection<String>): HuaweiObsBucket {
         val bucket = if (StringUtils.hasText(properties.bucket)) properties.bucket else "*"
         val statement: HuaweiStatement = HuaweiStatement.allow()
         statement.addAction(actions)
-        statement.addResource("obs:*:*:bucket:%s".formatted(bucket))
-        statement.addResource("obs:*:*:object:%s/*".formatted(bucket))
+        statement.addResource("obs:*:*:bucket:$bucket")
+        statement.addResource("obs:*:*:object:$bucket/*")
         val credential = credential(statement)
         val copy = properties.copy()
-        copy!!.useCredential(credential)
+        copy.useCredential(credential)
         return HuaweiObsBucket(copy)
     }
 
-    fun obsObject(region: String?, bucket: String?, key: String?): HuaweiObsObject {
+    fun obsObject(region: String, bucket: String, key: String): HuaweiObsObject {
         val s = HuaweiObsProperties()
         s.region = region
         s.bucket = bucket
         return obsObject(s, key)
     }
 
-    fun obsObject(region: String?, bucket: String?, key: String?, actions: Collection<String?>): HuaweiObsObject {
+    fun obsObject(region: String, bucket: String, key: String, actions: Collection<String>): HuaweiObsObject {
         val s = HuaweiObsProperties()
         s.region = region
         s.bucket = bucket
         return obsObject(s, key, actions)
     }
 
-    fun obsObject(properties: HuaweiObsProperties, key: String?): HuaweiObsObject {
+    fun obsObject(properties: HuaweiObsProperties, key: String): HuaweiObsObject {
         return obsObject(properties, key, HuaweiActions.OBS_OBJECT_DEFAULT)
     }
 
-    fun obsObject(properties: HuaweiObsProperties, key: String?, actions: Collection<String?>): HuaweiObsObject {
+    fun obsObject(properties: HuaweiObsProperties, key: String, actions: Collection<String>): HuaweiObsObject {
         val bucket = properties.bucket
         val statement: HuaweiStatement = HuaweiStatement.allow()
         statement.addAction(actions)
-        statement.addResource("obs:*:*:object:%s/%s".formatted(bucket, key))
+        statement.addResource("obs:*:*:object:$bucket/$key")
         val credential = credential(statement)
         val copy = properties.copy()
-        copy!!.useCredential(credential)
+        copy.useCredential(credential)
         return HuaweiObsObject(copy, key)
     }
+    // endregion
+
 }
