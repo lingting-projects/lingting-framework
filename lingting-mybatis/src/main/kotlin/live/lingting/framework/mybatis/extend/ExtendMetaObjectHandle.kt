@@ -1,12 +1,10 @@
 package live.lingting.framework.mybatis.extend
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler
-import org.apache.ibatis.reflection.MetaObject
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
-
+import java.util.Objects
 import java.util.function.Supplier
+import org.apache.ibatis.reflection.MetaObject
 
 class ExtendMetaObjectHandle : MetaObjectHandler {
     override fun insertFill(metaObject: MetaObject) {
@@ -34,7 +32,4 @@ class ExtendMetaObjectHandle : MetaObjectHandler {
         return this
     }
 
-    companion object {
-        private val log: Logger = LoggerFactory.getLogger(ExtendMetaObjectHandle::class.java)
-    }
 }

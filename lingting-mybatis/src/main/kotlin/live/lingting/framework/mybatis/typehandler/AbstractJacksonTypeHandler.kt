@@ -13,12 +13,12 @@ import org.apache.ibatis.type.JdbcType
  * @author lingting 2022/9/28 14:43
  */
 abstract class AbstractJacksonTypeHandler<T> : BaseTypeHandler<T>() {
-    private val log = logger()
+    protected val log = logger()
 
     protected fun parse(json: String?): T {
         try {
             if (StringUtils.hasText(json)) {
-                return toObject(json)
+                return toObject(json!!)
             }
         } catch (e: Exception) {
             log.error("json to object error! json: {}; message: {}", json, e.message)
@@ -62,7 +62,7 @@ abstract class AbstractJacksonTypeHandler<T> : BaseTypeHandler<T>() {
      * @param json 数据库存储数据
      * @return 实体类对象
      */
-    protected abstract fun toObject(json: String?): T
+    protected abstract fun toObject(json: String): T
 
     /**
      * 将实体类对象转化为数据库存储数据

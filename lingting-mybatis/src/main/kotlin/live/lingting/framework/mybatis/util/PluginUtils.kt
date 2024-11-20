@@ -13,8 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+@file:Suppress("UNCHECKED_CAST")
+
 package live.lingting.framework.mybatis.util
 
+import java.lang.reflect.Proxy
+import java.util.Collections
 import org.apache.ibatis.executor.Executor
 import org.apache.ibatis.executor.parameter.ParameterHandler
 import org.apache.ibatis.executor.statement.StatementHandler
@@ -24,7 +28,6 @@ import org.apache.ibatis.mapping.ParameterMapping
 import org.apache.ibatis.reflection.MetaObject
 import org.apache.ibatis.reflection.SystemMetaObject
 import org.apache.ibatis.session.Configuration
-import java.lang.reflect.Proxy
 
 
 /**
@@ -33,9 +36,39 @@ import java.lang.reflect.Proxy
  * @author TaoYu , hubin
  * @since 2017-06-20
  */
-class PluginUtils private constructor() {
-    init {
-        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+object PluginUtils {
+    const val DELEGATE_BOUNDSQL_SQL: String = "delegate.boundSql.sql"
+
+    /**
+     * 获得真正的处理对象,可能多层代理.
+     */
+    fun <T> realTarget(target: Any): T {
+        if (Proxy.isProxyClass(target.javaClass)) {
+            val metaObject = SystemMetaObject.forObject(target)
+            return realTarget(metaObject.getValue("h.target"))
+        }
+        return target as T
+    }
+
+    /**
+     * 给 BoundSql 设置 additionalParameters
+     *
+     * @param boundSql             BoundSql
+     * @param additionalParameters additionalParameters
+     */
+    fun setAdditionalParameter(boundSql: BoundSql, additionalParameters: Map<String?, Any?>) {
+        additionalParameters.forEach { (name: String?, value: Any?) -> boundSql.setAdditionalParameter(name, value) }
+    }
+
+    fun mpBoundSql(boundSql: BoundSql): MPBoundSql {
+        return MPBoundSql(boundSql)
+    }
+
+    fun mpStatementHandler(statementHandler: StatementHandler): MPStatementHandler {
+        var statementHandler = statementHandler
+        statementHandler = realTarget(statementHandler)
+        val `object` = SystemMetaObject.forObject(statementHandler)
+        return MPStatementHandler(SystemMetaObject.forObject(`object`.getValue("delegate")))
     }
 
     /**
@@ -75,18 +108,14 @@ class PluginUtils private constructor() {
      * [BoundSql]
      */
     class MPBoundSql internal constructor(private val delegate: BoundSql) {
-        private val boundSql: MetaObject
-
-        init {
-            this.delegate = SystemMetaObject.forObject(delegate)
-        }
+        private val boundSql = SystemMetaObject.forObject(delegate)
 
         fun sql(): String {
             return delegate.sql
         }
 
         fun sql(sql: String?) {
-            delegate.setValue("sql", sql)
+            boundSql.setValue("sql", sql)
         }
 
         fun parameterMappings(): List<ParameterMapping> {
@@ -95,7 +124,7 @@ class PluginUtils private constructor() {
         }
 
         fun parameterMappings(parameterMappings: List<ParameterMapping>) {
-            delegate.setValue("parameterMappings", Collections.unmodifiableList(parameterMappings))
+            boundSql.setValue("parameterMappings", Collections.unmodifiableList(parameterMappings))
         }
 
         fun parameterObject(): Any {
@@ -107,43 +136,8 @@ class PluginUtils private constructor() {
         }
 
         private fun <T> get(property: String): T {
-            return delegate.getValue(property) as T
+            return boundSql.getValue(property) as T
         }
     }
 
-    companion object {
-        const val DELEGATE_BOUNDSQL_SQL: String = "delegate.boundSql.sql"
-
-        /**
-         * 获得真正的处理对象,可能多层代理.
-         */
-        fun <T> realTarget(target: Any): T {
-            if (Proxy.isProxyClass(target.javaClass)) {
-                val metaObject = SystemMetaObject.forObject(target)
-                return realTarget(metaObject.getValue("h.target"))
-            }
-            return target as T
-        }
-
-        /**
-         * 给 BoundSql 设置 additionalParameters
-         *
-         * @param boundSql             BoundSql
-         * @param additionalParameters additionalParameters
-         */
-        fun setAdditionalParameter(boundSql: BoundSql, additionalParameters: Map<String?, Any?>) {
-            additionalParameters.forEach { (name: String?, value: Any?) -> boundSql.setAdditionalParameter(name, value) }
-        }
-
-        fun mpBoundSql(boundSql: BoundSql): MPBoundSql {
-            return MPBoundSql(boundSql)
-        }
-
-        fun mpStatementHandler(statementHandler: StatementHandler): MPStatementHandler {
-            var statementHandler = statementHandler
-            statementHandler = realTarget(statementHandler)
-            val `object` = SystemMetaObject.forObject(statementHandler)
-            return MPStatementHandler(SystemMetaObject.forObject(`object`.getValue("delegate")))
-        }
-    }
 }

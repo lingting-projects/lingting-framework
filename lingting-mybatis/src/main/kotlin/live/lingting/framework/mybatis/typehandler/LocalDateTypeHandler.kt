@@ -4,7 +4,6 @@ import java.sql.CallableStatement
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import live.lingting.framework.util.StringUtils
@@ -16,7 +15,7 @@ import org.slf4j.LoggerFactory
 /**
  * @author lingting 2022/8/22 9:41
  */
-class LocalDateTypeHandler : BaseTypeHandler<LocalDate?>(), AutoRegisterTypeHandler<LocalDate?> {
+class LocalDateTypeHandler : BaseTypeHandler<LocalDate>(), AutoRegisterTypeHandler<LocalDate> {
 
     override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: LocalDate?, jdbcType: JdbcType?) {
         if (parameter == null) {
@@ -56,12 +55,13 @@ class LocalDateTypeHandler : BaseTypeHandler<LocalDate?>(), AutoRegisterTypeHand
             return LocalDate.parse(`val`, FORMATTER)
         } catch (e: DateTimeParseException) {
             log.error("Unable to convert string [{}] to LocalData! using LocalDateTime.toLocalData", `val`, e)
-            val dateTime: LocalDateTime = LocalDateTimeTypeHandler.parse(`val`) ?: return null
-            return dateTime.toLocalDate()
+            val dateTime = LocalDateTimeTypeHandler.parse(`val`)
+            return dateTime?.toLocalDate()
         }
     }
 
     companion object {
+        @JvmField
         val FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         private val log: Logger = LoggerFactory.getLogger(LocalDateTypeHandler::class.java)
     }

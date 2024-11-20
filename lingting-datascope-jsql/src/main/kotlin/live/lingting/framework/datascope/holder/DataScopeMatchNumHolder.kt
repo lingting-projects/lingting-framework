@@ -33,10 +33,13 @@ object DataScopeMatchNumHolder {
      * @return int 次数
      */
     @JvmStatic
-    fun pollMatchNum(): Int {
+    fun pollMatchNum(): Int? {
         val deque = matchNumTreadLocal.get()
+        if (deque == null) {
+            return null
+        }
         val matchNum = deque.poll()
-        return matchNum.get()
+        return matchNum?.get()
     }
 
     /**

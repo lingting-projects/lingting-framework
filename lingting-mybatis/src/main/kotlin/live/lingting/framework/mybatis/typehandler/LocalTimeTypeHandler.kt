@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
 /**
  * @author lingting 2022/8/22 9:41
  */
-class LocalTimeTypeHandler : BaseTypeHandler<LocalTime?>(), AutoRegisterTypeHandler<LocalTime?> {
+class LocalTimeTypeHandler : BaseTypeHandler<LocalTime>(), AutoRegisterTypeHandler<LocalTime> {
 
     override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: LocalTime?, jdbcType: JdbcType?) {
         if (parameter == null) {
@@ -62,6 +62,7 @@ class LocalTimeTypeHandler : BaseTypeHandler<LocalTime?>(), AutoRegisterTypeHand
     }
 
     companion object {
+        @JvmField
         val FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
         private val log: Logger = LoggerFactory.getLogger(LocalTimeTypeHandler::class.java)
     }

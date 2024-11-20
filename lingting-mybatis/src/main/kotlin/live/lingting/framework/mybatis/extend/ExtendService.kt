@@ -1,15 +1,15 @@
 package live.lingting.framework.mybatis.extend
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page
+import java.io.Serializable
+import java.util.function.BooleanSupplier
+import java.util.function.Function
+import java.util.function.Predicate
 import live.lingting.framework.api.ApiResultCode
 import live.lingting.framework.api.PaginationParams
 import live.lingting.framework.exception.BizException
 import live.lingting.framework.function.ThrowingRunnable
 import live.lingting.framework.function.ThrowingSupplier
-import java.io.Serializable
-import java.util.function.BooleanSupplier
-import java.util.function.Function
-import java.util.function.Predicate
 
 /**
  * 以前继承 com.baomidou.mybatisplus.extension.service.IService 的实现类，现在继承当前类
@@ -17,6 +17,19 @@ import java.util.function.Predicate
  * @author lingting 2020/7/21 9:58
  */
 interface ExtendService<T> {
+
+    companion object {
+        /**
+         * 默认批次提交数量
+         */
+        const val DEFAULT_BATCH_SIZE: Int = 1000
+
+        /**
+         * 默认一次批量插入的数量
+         */
+        const val DEFAULT_INSERT_BATCH_SIZE: Int = 5000
+    }
+
     fun toIpage(params: PaginationParams): Page<T>
 
     /**
@@ -29,8 +42,8 @@ interface ExtendService<T> {
      * 插入（批量）
      * @param entityList 实体对象集合
      */
-    fun saveBatch(entityList: Collection<T>?): Boolean {
-        return useTransactional<Boolean>(ThrowingSupplier<Boolean> { saveBatch(entityList, DEFAULT_INSERT_BATCH_SIZE) })
+    fun saveBatch(entityList: Collection<T>): Boolean {
+        return useTransactional<Boolean>(ThrowingSupplier { saveBatch(entityList, DEFAULT_INSERT_BATCH_SIZE) })
     }
 
     /**
@@ -38,19 +51,19 @@ interface ExtendService<T> {
      * @param entityList 实体对象集合
      * @param batchSize 插入批次数量
      */
-    fun saveBatch(entityList: Collection<T>?, batchSize: Int): Boolean
+    fun saveBatch(entityList: Collection<T>, batchSize: Int): Boolean
 
     /**
      * 根据 ID 删除
      * @param id 主键ID
      */
-    fun removeById(id: Serializable?): Boolean
+    fun removeById(id: Serializable): Boolean
 
     /**
      * 删除（根据ID 批量删除）
      * @param idList 主键ID列表
      */
-    fun removeByIds(idList: Collection<Serializable?>?): Boolean
+    fun removeByIds(idList: Collection<Serializable>): Boolean
 
     /**
      * 根据 ID 选择修改
@@ -62,8 +75,8 @@ interface ExtendService<T> {
      * 根据ID 批量更新
      * @param entityList 实体对象集合
      */
-    fun updateBatchById(entityList: Collection<T>?): Boolean {
-        return useTransactional<Boolean>(ThrowingSupplier<Boolean> { updateBatchById(entityList, DEFAULT_BATCH_SIZE) })
+    fun updateBatchById(entityList: Collection<T>): Boolean {
+        return useTransactional(ThrowingSupplier { updateBatchById(entityList, DEFAULT_BATCH_SIZE) })
     }
 
     /**
@@ -71,9 +84,9 @@ interface ExtendService<T> {
      * @param entityList 实体对象集合
      * @param batchSize 更新批次数量
      */
-    fun updateBatchById(entityList: Collection<T>?, batchSize: Int): Boolean
+    fun updateBatchById(entityList: Collection<T>, batchSize: Int): Boolean
 
-    fun getExist(id: Serializable?): T {
+    fun getExist(id: Serializable): T {
         val t: T = getById(id) ?: throw BizException(ApiResultCode.GET_ERROR)
         return t
     }
@@ -82,13 +95,13 @@ interface ExtendService<T> {
      * 根据 ID 查询
      * @param id 主键ID
      */
-    fun getById(id: Serializable?): T
+    fun getById(id: Serializable): T
 
     /**
      * 查询（根据ID 批量查询）
      * @param idList 主键ID列表
      */
-    fun listByIds(idList: Collection<Serializable?>?): List<T>
+    fun listByIds(idList: Collection<Serializable>): List<T>
 
     /**
      * 查询所有
@@ -103,7 +116,11 @@ interface ExtendService<T> {
 
     // ^^^^^^ Copy From com.baomidou.mybatisplus.extension.service.IService end ^^^^^^
     fun <R> useTransactional(supplier: ThrowingSupplier<R>): R {
-        return useTransactional(supplier) { e: Throwable? -> true }
+        return useTransactional(supplier) { true }
+    }
+
+    fun useTransactional(runnable: ThrowingRunnable) {
+        return useTransactional(runnable) { true }
     }
 
     /**
@@ -111,15 +128,11 @@ interface ExtendService<T> {
      * @param runnable 在事务中运行
      * @param predicate 消费异常, 返回true表示回滚事务
      */
-    @JvmOverloads
-    fun useTransactional(runnable: ThrowingRunnable, predicate: Predicate<Throwable?> = Predicate { e: Throwable? -> true }) {
-        useTransactional<Any>(ThrowingSupplier<Any> {
-            runnable.run()
-            null
-        }, predicate)
+    fun useTransactional(runnable: ThrowingRunnable, predicate: Predicate<Throwable>) {
+        useTransactional(ThrowingSupplier { runnable.run() }, predicate)
     }
 
-    fun <R> useTransactional(supplier: ThrowingSupplier<R>, predicate: Predicate<Throwable?>): R
+    fun <R> useTransactional(supplier: ThrowingSupplier<R>, predicate: Predicate<Throwable>): R
 
     fun fallback(runnable: Runnable, fallback: Function<Exception?, RuntimeException?>) {
         fallback(BooleanSupplier {
@@ -149,40 +162,35 @@ interface ExtendService<T> {
     /**
      * 保存降级, 在保存失败时执行降级方法
      * @param t 保存的数据
-     * @param fallback 自定义降级处理
      */
+    fun saveFallback(t: T) {
+        saveFallback(t, Function { BizException(ApiResultCode.SAVE_ERROR, it) })
+    }
+
     /**
      * 保存降级, 在保存失败时执行降级方法
      * @param t 保存的数据
+     * @param fallback 自定义降级处理
      */
-    @JvmOverloads
-    fun saveFallback(t: T, fallback: Function<Exception?, RuntimeException?> = Function { e: Exception? -> BizException(ApiResultCode.SAVE_ERROR, e) }) {
+    fun saveFallback(t: T, fallback: Function<Exception?, RuntimeException?>) {
         fallback(BooleanSupplier { save(t) }, fallback)
     }
 
     /**
      * 更新降级, 在更新失败时执行降级方法
      * @param t 更新的数据
-     * @param fallback 自定义降级处理
      */
+    fun updateFallback(t: T) {
+        saveFallback(t, Function { BizException(ApiResultCode.UPDATE_ERROR, it) })
+    }
+
     /**
      * 更新降级, 在更新失败时执行降级方法
      * @param t 更新的数据
+     * @param fallback 自定义降级处理
      */
-    @JvmOverloads
-    fun updateFallback(t: T, fallback: Function<Exception?, RuntimeException?> = Function { e: Exception? -> BizException(ApiResultCode.UPDATE_ERROR, e) }) {
+    fun updateFallback(t: T, fallback: Function<Exception?, RuntimeException?>) {
         fallback(BooleanSupplier { updateById(t) }, fallback)
     }
 
-    companion object {
-        /**
-         * 默认批次提交数量
-         */
-        const val DEFAULT_BATCH_SIZE: Int = 1000
-
-        /**
-         * 默认一次批量插入的数量
-         */
-        const val DEFAULT_INSERT_BATCH_SIZE: Int = 5000
-    }
 }

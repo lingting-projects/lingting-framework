@@ -23,7 +23,10 @@ import org.apache.ibatis.plugin.Signature
  * @version 1.0
  */
 @Intercepts(Signature(type = StatementHandler::class, method = "prepare", args = [Connection::class, Int::class]))
-class DataPermissionInterceptor(private val parser: DataScopeParser, private val handler: DataPermissionHandler) : Interceptor {
+class DataPermissionInterceptor(
+    private val parser: DataScopeParser,
+    private val handler: DataPermissionHandler
+) : Interceptor {
 
     override fun intercept(invocation: Invocation): Any {
         // 第一版，测试用
@@ -31,13 +34,13 @@ class DataPermissionInterceptor(private val parser: DataScopeParser, private val
         val sh = target as StatementHandler
         val mpSh: PluginUtils.MPStatementHandler = PluginUtils.mpStatementHandler(sh)
         val ms = mpSh.mappedStatement()
-        val sct = ms!!.sqlCommandType
+        val sct = ms.sqlCommandType
         val mpBs = mpSh.mPBoundSql()
         val mappedStatementId = ms.id
 
         // 获取当前需要控制的 dataScope 集合
         val filterDataScopes = handler.filterDataScopes(mappedStatementId)
-        if (filterDataScopes == null || filterDataScopes.isEmpty()) {
+        if (filterDataScopes.isEmpty()) {
             return invocation.proceed()
         }
 
@@ -58,7 +61,7 @@ class DataPermissionInterceptor(private val parser: DataScopeParser, private val
             // 如果解析后发现当前 mappedStatementId 对应的 sql，没有任何数据权限匹配，则记录下来，后续可以直接跳过不解析
             val matchNum = pollMatchNum()
             val allDataScopes = handler.dataScopes()
-            if (allDataScopes!!.size == filterDataScopes.size && matchNum != null && matchNum == 0) {
+            if (allDataScopes.size == filterDataScopes.size && matchNum != null && matchNum == 0) {
                 MappedStatementIdsWithoutDataScope.addToWithoutSet(filterDataScopes, mappedStatementId)
             }
         } finally {

@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory
 /**
  * @author lingting 2022/8/22 9:41
  */
-class LocalDateTimeTypeHandler : BaseTypeHandler<LocalDateTime?>(), AutoRegisterTypeHandler<LocalDateTime?> {
+class LocalDateTimeTypeHandler : BaseTypeHandler<LocalDateTime>(), AutoRegisterTypeHandler<LocalDateTime> {
 
     override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: LocalDateTime?, jdbcType: JdbcType?) {
         if (parameter == null) {
@@ -31,17 +31,29 @@ class LocalDateTimeTypeHandler : BaseTypeHandler<LocalDateTime?>(), AutoRegister
 
 
     override fun getNullableResult(rs: ResultSet, columnName: String): LocalDateTime? {
-        return parse(rs.getString(columnName))
+        val source = rs.getString(columnName)
+        if (!StringUtils.hasText(source)) {
+            return null
+        }
+        return parse(source)
     }
 
 
     override fun getNullableResult(rs: ResultSet, columnIndex: Int): LocalDateTime? {
-        return parse(rs.getString(columnIndex))
+        val source = rs.getString(columnIndex)
+        if (!StringUtils.hasText(source)) {
+            return null
+        }
+        return parse(source)
     }
 
 
     override fun getNullableResult(cs: CallableStatement, columnIndex: Int): LocalDateTime? {
-        return parse(cs.getString(columnIndex))
+        val source = cs.getString(columnIndex)
+        if (!StringUtils.hasText(source)) {
+            return null
+        }
+        return parse(source)
     }
 
     fun format(localDate: LocalDateTime): String {
@@ -60,16 +72,16 @@ class LocalDateTimeTypeHandler : BaseTypeHandler<LocalDateTime?>(), AutoRegister
         private val CACHE: MutableMap<Int, DateTimeFormatter> = HashMap(16)
         private val log: Logger = LoggerFactory.getLogger(LocalDateTimeTypeHandler::class.java)
 
-        fun parse(`val`: String): LocalDateTime? {
+        fun parse(`val`: String?): LocalDateTime? {
             if (!StringUtils.hasText(`val`)) {
                 return null
             }
 
             // 微秒处理
-            if (`val`.contains(MICROSECONDS_DELIMITER)) {
+            if (`val`!!.contains(MICROSECONDS_DELIMITER)) {
                 val number = `val`.length - `val`.indexOf(MICROSECONDS_DELIMITER) - 1
 
-                val dateTimeFormatter = CACHE.computeIfAbsent(number) { k: Int? ->
+                val dateTimeFormatter = CACHE.computeIfAbsent(number) { k: Int ->
                     val builder = STR_FORMAT_NORMAL + MICROSECONDS_DELIMITER + MICROSECONDS.repeat(max(0.0, number.toDouble()).toInt())
                     DateTimeFormatter.ofPattern(builder)
                 }

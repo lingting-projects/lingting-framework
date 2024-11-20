@@ -7,6 +7,9 @@ import com.baomidou.mybatisplus.core.toolkit.ReflectionKit
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper
 import jakarta.annotation.Resource
+import java.io.Serializable
+import java.util.function.BiConsumer
+import java.util.function.Predicate
 import live.lingting.framework.api.PaginationParams
 import live.lingting.framework.function.ThrowingSupplier
 import org.apache.ibatis.binding.MapperMethod.ParamMap
@@ -14,19 +17,17 @@ import org.apache.ibatis.logging.Log
 import org.apache.ibatis.logging.LogFactory
 import org.apache.ibatis.session.SqlSession
 import org.apache.ibatis.session.SqlSessionFactory
-import java.io.Serializable
-import java.util.function.BiConsumer
-import java.util.function.Predicate
 
 /**
  * 以前继承 com.baomidou.mybatisplus.extension.service.impl.ServiceImpl 的实现类，现在继承本类
  *
  * @author lingting 2020/7/21 10:00
  */
-abstract class ExtendServiceImpl<M : ExtendMapper<T>?, T> : ExtendService<T> {
+@Suppress("UNCHECKED_CAST")
+abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
     protected val log: Log = LogFactory.getLog(javaClass)
 
-    protected var mapper: M? = null
+    var mapper: M? = null
 
     @Resource
     var sessionFactory: SqlSessionFactory? = null
@@ -57,34 +58,34 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>?, T> : ExtendService<T> {
     }
 
     override fun toIpage(params: PaginationParams): Page<T> {
-        return getMapper()!!.toIpage(params)
+        return mapper!!.toIpage(params)
     }
 
     override fun save(entity: T): Boolean {
-        return SqlHelper.retBool(getMapper()!!.insert(entity))
+        return SqlHelper.retBool(mapper!!.insert(entity))
     }
 
-    override fun saveBatch(entityList: Collection<T>?, batchSize: Int): Boolean {
+    override fun saveBatch(entityList: Collection<T>, batchSize: Int): Boolean {
         val sqlStatement = getSqlStatement(SqlMethod.INSERT_ONE)
         return executeBatch(entityList, batchSize) { sqlSession: SqlSession, entity: T -> sqlSession.insert(sqlStatement, entity) }
     }
 
-    override fun removeById(id: Serializable?): Boolean {
-        return SqlHelper.retBool(getMapper()!!.deleteById(id))
+    override fun removeById(id: Serializable): Boolean {
+        return SqlHelper.retBool(mapper!!.deleteById(id))
     }
 
-    override fun removeByIds(idList: Collection<Serializable?>?): Boolean {
+    override fun removeByIds(idList: Collection<Serializable>): Boolean {
         if (CollectionUtils.isEmpty(idList)) {
             return false
         }
-        return SqlHelper.retBool(getMapper()!!.deleteBatchIds(idList))
+        return SqlHelper.retBool(mapper!!.deleteByIds(idList))
     }
 
     override fun updateById(entity: T): Boolean {
-        return SqlHelper.retBool(getMapper()!!.updateById(entity))
+        return SqlHelper.retBool(mapper!!.updateById(entity))
     }
 
-    override fun updateBatchById(entityList: Collection<T>?, batchSize: Int): Boolean {
+    override fun updateBatchById(entityList: Collection<T>, batchSize: Int): Boolean {
         val sqlStatement = getSqlStatement(SqlMethod.UPDATE_BY_ID)
         return executeBatch(entityList, batchSize) { sqlSession: SqlSession, entity: T ->
             val param = ParamMap<T>()
@@ -93,16 +94,16 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>?, T> : ExtendService<T> {
         }
     }
 
-    override fun getById(id: Serializable?): T {
-        return getMapper()!!.selectById(id)
+    override fun getById(id: Serializable): T {
+        return mapper!!.selectById(id)
     }
 
-    override fun listByIds(idList: Collection<Serializable?>?): List<T> {
-        return getMapper()!!.selectBatchIds(idList)
+    override fun listByIds(idList: Collection<Serializable>): List<T> {
+        return mapper!!.selectBatchIds(idList)
     }
 
     override fun list(): List<T> {
-        return getMapper()!!.selectList(null)
+        return mapper!!.selectList(null)
     }
 
     /**
@@ -115,11 +116,11 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>?, T> : ExtendService<T> {
      * @return 操作结果
      * @since 3.3.1
     </E> */
-    protected fun <E> executeBatch(list: Collection<E>?, batchSize: Int, consumer: BiConsumer<SqlSession, E>?): Boolean {
+    protected fun <E> executeBatch(list: Collection<E>, batchSize: Int, consumer: BiConsumer<SqlSession, E>): Boolean {
         return useTransactional<Boolean>(ThrowingSupplier<Boolean> { SqlHelper.executeBatch(sessionFactory, this.log, list, batchSize, consumer) })
     }
 
-    override fun <R> useTransactional(supplier: ThrowingSupplier<R>, predicate: Predicate<Throwable?>): R {
+    override fun <R> useTransactional(supplier: ThrowingSupplier<R>, predicate: Predicate<Throwable>): R {
         val session = sessionFactory!!.openSession(false)
         try {
             val r = supplier.get()
@@ -136,11 +137,4 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>?, T> : ExtendService<T> {
         }
     }
 
-    fun getMapper(): M {
-        return this.mapper
-    }
-
-    fun setMapper(mapper: M) {
-        this.mapper = mapper
-    }
 }

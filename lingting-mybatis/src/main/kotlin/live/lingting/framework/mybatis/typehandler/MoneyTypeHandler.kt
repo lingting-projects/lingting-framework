@@ -14,27 +14,36 @@ import org.apache.ibatis.type.MappedTypes
  * @author lingting
  */
 @MappedTypes(Money::class)
-class MoneyTypeHandler : BaseTypeHandler<Money>(), AutoRegisterTypeHandler<Money?> {
+class MoneyTypeHandler : BaseTypeHandler<Money>(), AutoRegisterTypeHandler<Money> {
 
     override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: Money, jdbcType: JdbcType) {
         ps.setBigDecimal(i, parameter.value)
     }
 
 
-    override fun getNullableResult(rs: ResultSet, columnName: String): Money {
+    override fun getNullableResult(rs: ResultSet, columnName: String): Money? {
         val decimal = rs.getBigDecimal(columnName)
+        if (decimal == null) {
+            return null
+        }
         return Money.of(decimal)
     }
 
 
-    override fun getNullableResult(rs: ResultSet, columnIndex: Int): Money {
+    override fun getNullableResult(rs: ResultSet, columnIndex: Int): Money? {
         val decimal = rs.getBigDecimal(columnIndex)
+        if (decimal == null) {
+            return null
+        }
         return Money.of(decimal)
     }
 
 
-    override fun getNullableResult(cs: CallableStatement, columnIndex: Int): Money {
+    override fun getNullableResult(cs: CallableStatement, columnIndex: Int): Money? {
         val decimal = cs.getBigDecimal(columnIndex)
+        if (decimal == null) {
+            return null
+        }
         return Money.of(decimal)
     }
 }
