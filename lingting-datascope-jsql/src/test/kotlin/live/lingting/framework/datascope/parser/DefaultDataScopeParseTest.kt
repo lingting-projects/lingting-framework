@@ -1,5 +1,6 @@
 package live.lingting.framework.datascope.parser
 
+import java.util.TreeSet
 import live.lingting.framework.datascope.JsqlDataScope
 import live.lingting.framework.datascope.handler.DataPermissionHandler
 import live.lingting.framework.datascope.handler.DefaultDataPermissionHandler
@@ -8,7 +9,8 @@ import net.sf.jsqlparser.expression.Alias
 import net.sf.jsqlparser.expression.Expression
 import net.sf.jsqlparser.expression.LongValue
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 
@@ -403,12 +405,12 @@ internal class DefaultDataScopeParseTest {
 				WHERE ur.user_id = ?
 				and r.deleted = 0
 				""".trimIndent()
-        Assertions.assertDoesNotThrow<String> { dataScopeSqlProcessor.parserSingle(sql, dataPermissionHandler.dataScopes()!!) }
+        assertDoesNotThrow<String> { dataScopeSqlProcessor.parserSingle(sql, dataPermissionHandler.dataScopes()) }
     }
 
-    fun assertSql(sql: String?, targetSql: String?) {
+    fun assertSql(sql: String, targetSql: String) {
         val parsedSql = dataScopeSqlProcessor.parserSingle(sql, dataPermissionHandler.dataScopes()!!)
-        Assertions.assertEquals(targetSql, parsedSql)
+        assertEquals(targetSql, parsedSql)
     }
 
     internal class TenantDataScope : JsqlDataScope {
@@ -417,20 +419,20 @@ internal class DefaultDataScopeParseTest {
         override val resource: String
             get() = "tenant"
 
-        override fun includes(tableName: String?): Boolean {
+        override fun includes(tableName: String): Boolean {
             return TABLE_NAMES.contains(tableName)
         }
 
-        override fun getExpression(tableName: String?, tableAlias: Alias?): Expression? {
+        override fun getExpression(tableName: String, tableAlias: Alias?): Expression {
             val column = getAliasColumn(tableName, tableAlias, columnName)
             return EqualsTo(column, LongValue("1"))
         }
 
         companion object {
-            private val TABLE_NAMES: MutableSet<String?> = TreeSet(java.lang.String.CASE_INSENSITIVE_ORDER)
+            private val TABLE_NAMES: MutableSet<String> = TreeSet(java.lang.String.CASE_INSENSITIVE_ORDER)
 
             init {
-                TABLE_NAMES.addAll(mutableListOf<String?>("entity", "entity1", "entity2", "entity3", "t1", "t2"))
+                TABLE_NAMES.addAll(mutableListOf<String>("entity", "entity1", "entity2", "entity3", "t1", "t2"))
             }
         }
     }

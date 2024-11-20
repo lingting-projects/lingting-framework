@@ -1,5 +1,8 @@
 package live.lingting.framework.datascope.parser
 
+import java.util.Deque
+import java.util.LinkedList
+import java.util.Objects
 import java.util.function.Consumer
 import live.lingting.framework.datascope.JsqlDataScope
 import live.lingting.framework.datascope.holder.DataScopeHolder
@@ -31,29 +34,29 @@ import net.sf.jsqlparser.statement.update.Update
  * @author lingting 2024-01-19 16:01
  */
 class DefaultDataScopeParser : DataScopeParser() {
-    override fun insert(insert: Insert?, index: Int, sql: String?) {
+    override fun insert(insert: Insert, index: Int, sql: String) {
         // 不处理
     }
 
-    override fun delete(delete: Delete, index: Int, sql: String?) {
+    override fun delete(delete: Delete, index: Int, sql: String) {
         val expression = delete.where
         val table = delete.table
         val injected = injectExpression(table, expression)
         delete.where = injected
     }
 
-    override fun update(update: Update, index: Int, sql: String?) {
+    override fun update(update: Update, index: Int, sql: String) {
         val expression = update.where
         val table = update.table
         val injected = injectExpression(table, expression)
         update.where = injected
     }
 
-    override fun select(select: Select, index: Int, sql: String?) {
+    override fun select(select: Select, index: Int, sql: String) {
         processSelect(select)
         val list = select.withItemsList
         if (!CollectionUtils.isEmpty(list)) {
-            list.forEach(Consumer { select: WithItem? -> this.processSelect(select) })
+            list.forEach(Consumer { select: WithItem -> this.processSelect(select) })
         }
     }
 
@@ -88,7 +91,7 @@ class DefaultDataScopeParser : DataScopeParser() {
 
         // 追加where条件
         if (!CollectionUtils.isEmpty(tables)) {
-            val expression: Expression = injectExpression(tables, plainSelect.where)
+            val expression = injectExpression(tables, plainSelect.where)
             plainSelect.where = expression
         }
     }
@@ -135,13 +138,13 @@ class DefaultDataScopeParser : DataScopeParser() {
      * @param isDeep 是否深度处理
      * @return 查到的表
      */
-    fun processFromItem(item: FromItem, isDeep: Boolean): MutableList<Table?> {
-        val list: MutableList<Table?> = ArrayList()
+    fun processFromItem(item: FromItem, isDeep: Boolean): MutableList<Table> {
+        val list: MutableList<Table> = ArrayList()
         if (item is Table) {
             list.add(item)
         } else if (item is ParenthesedFromItem) {
             val lefts = processFromItem(item.fromItem, isDeep)
-            val tables: List<Table?> = processJoins(lefts, item.joins)
+            val tables: List<Table> = processJoins(lefts, item.joins)
             list.addAll(tables)
         } else if (isDeep) {
             processDeepFromItem(item)
@@ -149,15 +152,15 @@ class DefaultDataScopeParser : DataScopeParser() {
         return list
     }
 
-    fun processDeepFromItem(item: FromItem?) {
+    fun processDeepFromItem(item: FromItem) {
         if (item is Select) {
             processSelect(item)
         }
     }
 
-    fun processJoins(tables: MutableList<Table?>, joins: List<Join>): MutableList<Table?> {
+    fun processJoins(tables: MutableList<Table>, joins: List<Join>?): MutableList<Table> {
         var tables = tables
-        if (CollectionUtils.isEmpty(joins)) {
+        if (joins.isNullOrEmpty()) {
             return tables
         }
 
@@ -171,13 +174,13 @@ class DefaultDataScopeParser : DataScopeParser() {
         }
 
         // 对于 on 表达式写在最后的 join，需要记录下前面多个 on 的表名
-        val onTableDeque: Deque<List<Table>?> = LinkedList()
+        val onTableDeque: Deque<List<Table>> = LinkedList()
 
         for (join in joins) {
             val joinItem = join.rightItem
 
             // 涉及到的表
-            val joinTables: List<Table?> = processFromItem(joinItem, false)
+            val joinTables: List<Table> = processFromItem(joinItem, false)
             // 没有关联表, 深度处理该项
             if (joinTables.isEmpty()) {
                 processDeepFromItem(joinItem)
@@ -201,7 +204,7 @@ class DefaultDataScopeParser : DataScopeParser() {
                     onTables = if (mainTable == null) {
                         listOf<Table>(joinTable)
                     } else {
-                        Arrays.asList(mainTable, joinTable)
+                        listOf(mainTable, joinTable)
                     }
                     mainTable = null
                 }
@@ -215,10 +218,10 @@ class DefaultDataScopeParser : DataScopeParser() {
                 val originOnExpressions = join.onExpressions
                 // 正常 join on 表达式只有一个，立刻处理
                 if (originOnExpressions.size == 1 && onTables != null) {
-                    val onExpressions: MutableList<Expression?> = LinkedList()
+                    val onExpressions: MutableList<Expression> = LinkedList()
                     val injected = injectExpression(onTables, originOnExpressions.iterator().next())
-                    onExpressions.add(injected)
-                    join.setOnExpressions(onExpressions)
+                    onExpressions.add(injected!!)
+                    join.onExpressions = onExpressions
                     leftTable = joinTable
                     continue
                 }
@@ -226,17 +229,17 @@ class DefaultDataScopeParser : DataScopeParser() {
                 onTableDeque.push(onTables)
                 // 尾缀多个 on 表达式的时候统一处理
                 if (originOnExpressions.size > 1) {
-                    val onExpressions: MutableCollection<Expression?> = LinkedList()
+                    val onExpressions: MutableCollection<Expression> = LinkedList()
                     for (originOnExpression in originOnExpressions) {
                         val currentTableList = onTableDeque.poll()!!
                         if (CollectionUtils.isEmpty(currentTableList)) {
                             onExpressions.add(originOnExpression)
                         } else {
                             val injected = injectExpression(currentTableList, originOnExpression)
-                            onExpressions.add(injected)
+                            onExpressions.add(injected!!)
                         }
                     }
-                    join.setOnExpressions(onExpressions)
+                    join.onExpressions = onExpressions
                 }
                 leftTable = joinTable
             }
@@ -244,21 +247,21 @@ class DefaultDataScopeParser : DataScopeParser() {
         return tables
     }
 
-    fun injectExpression(table: Table, expression: Expression?): Expression {
-        return injectExpression(listOf(table), expression)!!
+    fun injectExpression(table: Table, expression: Expression): Expression? {
+        return injectExpression(listOf(table), expression)
     }
 
     fun injectExpression(tables: List<Table>, expression: Expression?): Expression? {
-        val list: MutableList<Expression?> = ArrayList(tables.size)
+        val list: MutableList<Expression> = ArrayList(tables.size)
         // 生成数据权限条件
         for (table in tables) {
             // 获取表名
             val tableName: String = SqlParseUtils.getTableName(table.name)
 
             // 进行 dataScope 的表名匹配
-            val matchDataScopes: List<JsqlDataScope?> = DataScopeHolder.peek()
+            val matchDataScopes: List<JsqlDataScope> = DataScopeHolder.peek()
                 .stream()
-                .filter { x: JsqlDataScope? -> x!!.includes(tableName) }
+                .filter { it.includes(tableName) }
                 .toList()
 
             // 存在匹配成功的
@@ -267,10 +270,10 @@ class DefaultDataScopeParser : DataScopeParser() {
                 DataScopeMatchNumHolder.incrementMatchNumIfPresent()
                 // 获取到数据权限过滤的表达式
                 matchDataScopes.stream()
-                    .map { x: JsqlDataScope? -> x!!.getExpression(tableName, table.alias) }
-                    .filter { obj: Expression? -> Objects.nonNull(obj) }
-                    .reduce { leftExpression: Expression?, rightExpression: Expression? -> AndExpression(leftExpression, rightExpression) }
-                    .ifPresent { e: Expression? -> list.add(e) }
+                    .map { it.getExpression(tableName, table.alias) }
+                    .filter { Objects.nonNull(it) }
+                    .reduce { leftExpression, rightExpression -> AndExpression(leftExpression, rightExpression) }
+                    .ifPresent { e: Expression -> list.add(e) }
             }
         }
 

@@ -18,14 +18,14 @@ import net.sf.jsqlparser.statement.update.Update
 abstract class DataScopeParser {
     protected val log = logger()
 
-    fun parser(sql: String?, scopes: List<JsqlDataScope>, isMulti: Boolean): String {
+    fun parser(sql: String, scopes: List<JsqlDataScope>, isMulti: Boolean): String {
         try {
             DataScopeHolder.push(scopes)
             val statements = parser(sql, isMulti)
 
             val builder = StringBuilder()
 
-            for (i in statements!!.indices) {
+            for (i in statements.indices) {
                 if (i > 0) {
                     builder.append(";")
                 }
@@ -41,15 +41,15 @@ abstract class DataScopeParser {
         }
     }
 
-    fun parserSingle(sql: String?, scopes: List<JsqlDataScope>): String {
+    fun parserSingle(sql: String, scopes: List<JsqlDataScope>): String {
         return parser(sql, scopes, false)
     }
 
-    fun parserMulti(sql: String?, scopes: List<JsqlDataScope>): String {
+    fun parserMulti(sql: String, scopes: List<JsqlDataScope>): String {
         return parser(sql, scopes, true)
     }
 
-    protected fun parser(sql: String?, isMulti: Boolean): Statements? {
+    protected fun parser(sql: String, isMulti: Boolean): Statements {
         try {
             if (isMulti) {
                 return CCJSqlParserUtil.parseStatements(sql)
@@ -69,7 +69,7 @@ abstract class DataScopeParser {
      * @param statement JsqlParser Statement
      * @return sql
      */
-    protected fun parser(statement: Statement, index: Int, sql: String?): String {
+    protected fun parser(statement: Statement, index: Int, sql: String): String {
         var sql = sql
         if (log.isDebugEnabled) {
             log.debug("SQL to parse, SQL: {}", sql)
@@ -93,28 +93,28 @@ abstract class DataScopeParser {
     /**
      * 新增
      */
-    protected open fun insert(insert: Insert?, index: Int, sql: String?) {
+    protected open fun insert(insert: Insert, index: Int, sql: String) {
         throw UnsupportedOperationException()
     }
 
     /**
      * 删除
      */
-    protected open fun delete(delete: Delete, index: Int, sql: String?) {
+    protected open fun delete(delete: Delete, index: Int, sql: String) {
         throw UnsupportedOperationException()
     }
 
     /**
      * 更新
      */
-    protected open fun update(update: Update, index: Int, sql: String?) {
+    protected open fun update(update: Update, index: Int, sql: String) {
         throw UnsupportedOperationException()
     }
 
     /**
      * 查询
      */
-    protected open fun select(select: Select, index: Int, sql: String?) {
+    protected open fun select(select: Select, index: Int, sql: String) {
         throw UnsupportedOperationException()
     }
 }

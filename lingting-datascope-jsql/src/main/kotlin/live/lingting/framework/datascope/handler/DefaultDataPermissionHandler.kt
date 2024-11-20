@@ -11,13 +11,13 @@ import live.lingting.framework.datascope.holder.MappedStatementIdsWithoutDataSco
  * @author Hccake 2021/1/27
  * @version 1.0
  */
-class DefaultDataPermissionHandler(private val dataScopes: List<JsqlDataScope>?) : DataPermissionHandler {
+class DefaultDataPermissionHandler(private val dataScopes: List<JsqlDataScope>) : DataPermissionHandler {
     /**
      * 系统配置的所有的数据范围
      *
      * @return 数据范围集合
      */
-    override fun dataScopes(): List<JsqlDataScope>? {
+    override fun dataScopes(): List<JsqlDataScope> {
         return dataScopes
     }
 
@@ -27,12 +27,12 @@ class DefaultDataPermissionHandler(private val dataScopes: List<JsqlDataScope>?)
      * @param mappedStatementId Mapper方法ID
      * @return 数据范围集合
      */
-    override fun filterDataScopes(mappedStatementId: String?): List<JsqlDataScope>? {
-        if (this.dataScopes == null || dataScopes.isEmpty()) {
+    override fun filterDataScopes(mappedStatementId: String): List<JsqlDataScope> {
+        if (dataScopes.isEmpty()) {
             return ArrayList()
         }
         // 获取权限规则
-        val dataPermissionRule: DataPermissionRule = DataPermissionRuleHolder.peek()
+        val dataPermissionRule = DataPermissionRuleHolder.peek()
         return filterDataScopes(dataPermissionRule)
     }
 
@@ -58,7 +58,7 @@ class DefaultDataPermissionHandler(private val dataScopes: List<JsqlDataScope>?)
      * @param dataPermissionRule 数据权限规则
      * @return List<DataScope>
     </DataScope> */
-    protected fun filterDataScopes(dataPermissionRule: DataPermissionRule?): List<JsqlDataScope>? {
+    protected fun filterDataScopes(dataPermissionRule: DataPermissionRule?): List<JsqlDataScope> {
         if (dataPermissionRule == null) {
             return dataScopes
         }
@@ -68,15 +68,15 @@ class DefaultDataPermissionHandler(private val dataScopes: List<JsqlDataScope>?)
         }
 
         // 当指定了只包含的资源时，只对该资源的DataScope
-        if (dataPermissionRule.includeResources().size > 0) {
-            val a: Set<String?> = HashSet(Arrays.asList(*dataPermissionRule.includeResources()))
-            return dataScopes!!.stream().filter { x: JsqlDataScope -> a.contains(x.resource) }.toList()
+        val includeResources = dataPermissionRule.includeResources()
+        if (includeResources.isNotEmpty()) {
+            return dataScopes.stream().filter { includeResources.contains(it.resource) }.toList()
         }
 
         // 当未指定只包含的资源，且指定了排除的资源时，则排除此部分资源的 DataScope
-        if (dataPermissionRule.excludeResources().size > 0) {
-            val a: Set<String?> = HashSet(Arrays.asList(*dataPermissionRule.excludeResources()))
-            return dataScopes!!.stream().filter { x: JsqlDataScope -> !a.contains(x.resource) }.toList()
+        val excludeResources = dataPermissionRule.excludeResources()
+        if (excludeResources.isNotEmpty()) {
+            return dataScopes.stream().filter { excludeResources.contains(it.resource) }.toList()
         }
 
         return dataScopes

@@ -13,14 +13,14 @@ interface DataPermissionHandler {
      * 系统配置的所有的数据范围
      * @return 数据范围集合
      */
-    fun dataScopes(): List<JsqlDataScope>?
+    fun dataScopes(): List<JsqlDataScope>
 
     /**
      * 根据权限注解过滤后的数据范围集合
      * @param mappedStatementId Mapper方法ID
      * @return 数据范围集合
      */
-    fun filterDataScopes(mappedStatementId: String?): List<JsqlDataScope>?
+    fun filterDataScopes(mappedStatementId: String): List<JsqlDataScope>
 
     /**
      * 是否忽略权限控制，用于及早的忽略控制，例如管理员直接放行，而不必等到DataScope中再进行过滤处理，提升效率

@@ -1,7 +1,7 @@
 package live.lingting.framework.datascope.holder
 
-import live.lingting.framework.datascope.JsqlDataScope
 import java.util.concurrent.ConcurrentHashMap
+import live.lingting.framework.datascope.JsqlDataScope
 
 /**
  * 该类用于存储，不需数据权限处理的 mappedStatementId 集合
@@ -30,7 +30,7 @@ class MappedStatementIdsWithoutDataScope private constructor() {
                 val dataScopeClass: Class<out JsqlDataScope> = dataScope.javaClass
                 val set = WITHOUT_MAPPED_STATEMENT_ID_MAP.computeIfAbsent(
                     dataScopeClass
-                ) { key: Class<out JsqlDataScope>? -> HashSet() }
+                ) { key: Class<out JsqlDataScope> -> HashSet() }
                 set.add(mappedStatementId)
             }
         }
@@ -47,7 +47,7 @@ class MappedStatementIdsWithoutDataScope private constructor() {
                 val dataScopeClass: Class<out JsqlDataScope> = dataScope.javaClass
                 val set = WITHOUT_MAPPED_STATEMENT_ID_MAP.computeIfAbsent(
                     dataScopeClass
-                ) { key: Class<out JsqlDataScope>? -> HashSet() }
+                ) { key: Class<out JsqlDataScope> -> HashSet() }
                 if (!set.contains(mappedStatementId)) {
                     return false
                 }

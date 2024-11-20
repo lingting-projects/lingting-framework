@@ -11,9 +11,9 @@ import live.lingting.framework.datascope.annotation.DataPermission
 class DataPermissionRule {
     private var ignore = false
 
-    private var includeResources = arrayOfNulls<String>(0)
+    private var includeResources = arrayOf<String>()
 
-    private var excludeResources = arrayOfNulls<String>(0)
+    private var excludeResources = arrayOf<String>()
 
     constructor()
 
@@ -21,7 +21,7 @@ class DataPermissionRule {
         this.ignore = ignore
     }
 
-    constructor(ignore: Boolean, includeResources: Array<String?>, excludeResources: Array<String?>) {
+    constructor(ignore: Boolean, includeResources: Array<String>, excludeResources: Array<String>) {
         this.ignore = ignore
         this.includeResources = includeResources
         this.excludeResources = excludeResources
@@ -47,7 +47,7 @@ class DataPermissionRule {
      *
      * @return 资源类型数组
      */
-    fun includeResources(): Array<String?> {
+    fun includeResources(): Array<String> {
         return includeResources
     }
 
@@ -57,7 +57,7 @@ class DataPermissionRule {
      *
      * @return 资源类型数组
      */
-    fun excludeResources(): Array<String?> {
+    fun excludeResources(): Array<String> {
         return excludeResources
     }
 
@@ -66,12 +66,12 @@ class DataPermissionRule {
         return this
     }
 
-    fun setIncludeResources(includeResources: Array<String?>): DataPermissionRule {
+    fun setIncludeResources(includeResources: Array<String>): DataPermissionRule {
         this.includeResources = includeResources
         return this
     }
 
-    fun setExcludeResources(excludeResources: Array<String?>): DataPermissionRule {
+    fun setExcludeResources(excludeResources: Array<String>): DataPermissionRule {
         this.excludeResources = excludeResources
         return this
     }

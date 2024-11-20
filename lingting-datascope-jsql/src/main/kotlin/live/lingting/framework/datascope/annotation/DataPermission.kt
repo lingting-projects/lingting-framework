@@ -6,9 +6,9 @@ package live.lingting.framework.datascope.annotation
  * @author Hccake 2020/9/27
  * @version 1.0
  */
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER, AnnotationTarget.PROPERTY_SETTER)
-@Retention(AnnotationRetention.RUNTIME)
 @MustBeDocumented
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER, AnnotationTarget.PROPERTY_SETTER)
 annotation class DataPermission(
     /**
      * 当前类或方法是否忽略数据权限
