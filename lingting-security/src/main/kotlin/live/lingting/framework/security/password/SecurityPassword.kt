@@ -13,20 +13,20 @@ interface SecurityPassword {
     /**
      * 依据前端加密方式, 明文转密文
      */
-    fun encodeFront(plaintext: String?): String?
+    fun encodeFront(plaintext: String?): String
 
     /**
      * 解析收到的前端密文
      */
-    fun decodeFront(ciphertext: String?): String?
+    fun decodeFront(ciphertext: String?): String
 
     /**
      * 密码明文转数据库存储的密文
      */
-    fun encode(plaintext: String?): String?
+    fun encode(plaintext: String): String
 
     /**
      * 明文和密文是否匹配
      */
-    fun match(plaintext: String?, ciphertext: String?): Boolean
+    fun match(plaintext: String, ciphertext: String): Boolean
 }

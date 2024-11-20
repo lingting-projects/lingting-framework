@@ -1,6 +1,8 @@
 package live.lingting.framework.convert
 
 import com.google.protobuf.ByteString
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 import live.lingting.framework.jackson.JacksonUtils
 import live.lingting.framework.protobuf.SecurityGrpcAuthorization
 import live.lingting.framework.security.convert.SecurityConvert
@@ -8,8 +10,6 @@ import live.lingting.framework.security.domain.AuthorizationVO
 import live.lingting.framework.security.domain.SecurityScopeAttributes
 import live.lingting.framework.util.CollectionUtils
 import live.lingting.framework.util.StringUtils
-import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
 
 /**
  * @author lingting 2023-12-18 16:04
@@ -46,8 +46,8 @@ open class SecurityGrpcConvert : SecurityConvert {
         vo.avatar = authorizationVO.avatar
         vo.nickname = authorizationVO.nickname
         vo.enabled = authorizationVO.isEnabled
-        vo.setRoles(HashSet<E>(authorizationVO.rolesList))
-        vo.setPermissions(HashSet<E>(authorizationVO.permissionsList))
+        vo.roles = authorizationVO.rolesList.toSet()
+        vo.permissions = authorizationVO.permissionsList.toSet()
         vo.attributes = ofBytes(authorizationVO.attributes)
         return vo
     }

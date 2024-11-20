@@ -21,6 +21,7 @@ import live.lingting.framework.jackson.sensitive.SensitiveModule
 /**
  * @author lingting 2021/6/9 14:28
  */
+@Suppress("UNCHECKED_CAST")
 object JacksonUtils {
     @JvmField
     var mapper: ObjectMapper = defaultConfig(ObjectMapper())

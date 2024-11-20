@@ -1,58 +1,46 @@
 package live.lingting.framework.security.domain
 
-import live.lingting.framework.util.StringUtils
-
+import java.util.Optional
 import java.util.function.Function
 import java.util.function.Predicate
+import live.lingting.framework.util.StringUtils
 
 /**
  * @author lingting 2023-03-29 20:25
  */
 open class SecurityScope {
-    @JvmField
-    var token: String? = null
+    var token: String = ""
 
-    @JvmField
-    var userId: String? = null
-
-    @JvmField
     var tenantId: String? = null
 
-    @JvmField
-    var username: String? = null
+    var userId: String? = null
 
-    @JvmField
-    var password: String? = null
+    var username: String = ""
 
-    @JvmField
-    var avatar: String? = null
+    var password: String = ""
 
-    @JvmField
-    var nickname: String? = null
+    var avatar: String = ""
+
+    var nickname: String = ""
 
     /**
      * 是否启用
      */
-    @JvmField
-    var enabled: Boolean? = null
+    var enabled: Boolean = false
 
     /**
      * 过期时间的时间戳
      */
-    @JvmField
-    var expireTime: Long? = null
+    var expireTime: Long = 0
 
-    @JvmField
-    var roles: Set<String>? = null
+    var roles: Set<String> = emptySet()
 
-    @JvmField
-    var permissions: Set<String>? = null
+    var permissions: Set<String> = emptySet()
 
-    @JvmField
-    var attributes: SecurityScopeAttributes? = null
+    var attributes: SecurityScopeAttributes = SecurityScopeAttributes()
 
     fun enabled(): Boolean {
-        return java.lang.Boolean.TRUE == enabled
+        return enabled == true
     }
 
     val isLogin: Boolean
@@ -62,33 +50,51 @@ open class SecurityScope {
         get() {
             val tokenAvailable = StringUtils.hasText(token)
             val userAvailable = StringUtils.hasText(userId)
-            val enableAvailable = enabled != null
-            return tokenAvailable && userAvailable && enableAvailable
+            return tokenAvailable && userAvailable
         }
 
     fun attribute(key: String): Any? {
-        return if (attributes == null) null else attributes!!.find(key)
+        return attributes.find(key)
     }
 
-    fun <T> attribute(key: String, func: Function<Optional<Any?>?, T>): T {
-        return func.apply(Optional.ofNullable(attribute(key)))
+    fun <T> attribute(key: String, func: Function<Optional<Any>, T>): T {
+        val any = attribute(key)
+        val optional = Optional.ofNullable(any)
+        return func.apply(optional)
     }
 
-    fun <T> attribute(key: String, defaultValue: T, func: Function<Any?, T>): T {
-        return attribute(key, defaultValue, { obj: Optional<Any?> -> obj.isEmpty }, func)
+    fun <T> attribute(key: String, defaultValue: T, func: Function<Any, T>): T {
+        return attribute(key, defaultValue, { obj: Optional<Any> -> obj.isEmpty }, func)
     }
 
     /**
      * @param usingDefault 如果返回true表示使用默认值
      */
     fun <T> attribute(
-        key: String, defaultValue: T, usingDefault: Predicate<Optional<Any?>>,
-        func: Function<Any?, T>
+        key: String, defaultValue: T, usingDefault: Predicate<Optional<Any>>,
+        func: Function<Any, T>
     ): T {
-        val optional: Optional<Any?> = Optional.ofNullable(attribute(key))
+        val optional: Optional<Any> = Optional.ofNullable(attribute(key))
         if (usingDefault.test(optional)) {
             return defaultValue
         }
         return func.apply(optional)
+    }
+
+    fun from(scope: SecurityScope) {
+        this.token = scope.token
+        this.tenantId = scope.tenantId
+        this.userId = scope.userId
+        this.username = scope.username
+        this.password = scope.password
+        this.avatar = scope.avatar
+        this.nickname = scope.nickname
+        this.enabled = scope.enabled
+        this.expireTime = scope.expireTime
+        this.roles = scope.roles.toSet()
+        this.permissions = scope.permissions.toSet()
+        this.attributes = SecurityScopeAttributes().apply {
+            putAll(scope.attributes)
+        }
     }
 }

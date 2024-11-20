@@ -6,26 +6,22 @@ import live.lingting.framework.thread.StackThreadLocal
 /**
  * @author lingting 2023-12-18 16:39
  */
-class SecurityGrpcRemoteContent private constructor() {
-    init {
-        throw UnsupportedOperationException("This is a utility class and cannot be instantiated")
+object SecurityGrpcRemoteContent {
+    val THREAD_LOCAL: StackThreadLocal<SecurityToken?> = StackThreadLocal()
+
+    @JvmStatic
+    fun get(): SecurityToken? {
+        return THREAD_LOCAL.get()
     }
 
-    companion object {
-        val THREAD_LOCAL: StackThreadLocal<SecurityToken?> = StackThreadLocal()
-
-        fun get(): SecurityToken? {
-            return THREAD_LOCAL.get()
-        }
-
-        @JvmStatic
-        fun put(value: SecurityToken?) {
-            THREAD_LOCAL.put(value)
-        }
-
-        @JvmStatic
-        fun pop() {
-            THREAD_LOCAL.pop()
-        }
+    @JvmStatic
+    fun put(value: SecurityToken?) {
+        THREAD_LOCAL.put(value)
     }
+
+    @JvmStatic
+    fun pop() {
+        THREAD_LOCAL.pop()
+    }
+
 }

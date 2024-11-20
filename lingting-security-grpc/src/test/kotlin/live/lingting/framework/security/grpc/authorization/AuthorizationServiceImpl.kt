@@ -1,7 +1,6 @@
 package live.lingting.framework.security.grpc.authorization
 
 import java.time.LocalDateTime
-import java.util.List
 import live.lingting.framework.security.authorize.SecurityAuthorizationService
 import live.lingting.framework.security.domain.SecurityScope
 import live.lingting.framework.security.domain.SecurityScopeAttributes
@@ -24,13 +23,13 @@ class AuthorizationServiceImpl(private val store: SecurityStore) : SecurityAutho
         scope.tenantId = username
         scope.userId = username
         scope.username = username
-        scope.password = password
+        scope.password = password!!
         scope.avatar = ""
         scope.nickname = username
         scope.enabled = true
         scope.expireTime = expireTime()
-        scope.setRoles(HashSet<E>(List.of<E>(username)))
-        scope.setPermissions(HashSet<E>(List.of<E>(username)))
+        scope.roles = setOf(username)
+        scope.permissions = setOf(username)
         val attributes = SecurityScopeAttributes()
         attributes["expand"] = "true"
         attributes["tag"] = MdcUtils.traceId()

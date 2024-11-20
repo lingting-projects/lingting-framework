@@ -1,12 +1,10 @@
 package live.lingting.framework.resource
 
-import com.google.protobuf.Empty
 import io.grpc.ManagedChannel
 import live.lingting.framework.Sequence
 import live.lingting.framework.context.ContextComponent
 import live.lingting.framework.convert.SecurityGrpcConvert
 import live.lingting.framework.exception.SecurityGrpcThrowing
-import live.lingting.framework.interceptor.SecurityGrpcRemoteContent
 import live.lingting.framework.protobuf.SecurityGrpcAuthorization
 import live.lingting.framework.protobuf.SecurityGrpcAuthorizationServiceGrpc
 import live.lingting.framework.protobuf.SecurityGrpcAuthorizationServiceGrpc.SecurityGrpcAuthorizationServiceBlockingStub
@@ -23,12 +21,15 @@ class SecurityTokenGrpcRemoteResolver(protected val channel: ManagedChannel, pro
 
     protected fun resolveByRemote(token: SecurityToken?): SecurityGrpcAuthorization.AuthorizationVO {
         try {
-            SecurityGrpcRemoteContent.put(token)
-            return blocking.resolve(Empty.getDefaultInstance())
+            val request = SecurityGrpcAuthorization.TokenPO.newBuilder()
+                .setRaw(token?.raw)
+                .setType(token?.type)
+                .setValue(token?.token)
+                .buildPartial()
+            return blocking.resolve(request)
         } catch (e: Exception) {
             throw SecurityGrpcThrowing.convert(e)
         } finally {
-            SecurityGrpcRemoteContent.pop()
         }
     }
 

@@ -1,7 +1,7 @@
 package live.lingting.framework.security.store
 
-import live.lingting.framework.security.domain.SecurityScope
 import java.util.concurrent.ConcurrentHashMap
+import live.lingting.framework.security.domain.SecurityScope
 
 /**
  * @author lingting 2023-06-15 16:07
@@ -23,7 +23,7 @@ class SecurityMemoryStore : SecurityStore {
 
     override fun get(token: String?): SecurityScope? {
         val scope = map[token]
-        if (scope != null && scope.expireTime != null && System.currentTimeMillis() >= scope.expireTime) {
+        if (scope != null && System.currentTimeMillis() >= scope.expireTime) {
             map.remove(token)
             return null
         }

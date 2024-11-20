@@ -4,36 +4,41 @@ package live.lingting.framework.security.domain
  * @author lingting 2023-03-30 13:54
  */
 open class AuthorizationVO {
-    @JvmField
-    var token: String? = null
+    var token: String = ""
 
-    @JvmField
-    var tenantId: String? = null
+    var tenantId: String = ""
 
-    @JvmField
-    var userId: String? = null
+    var userId: String = ""
 
-    @JvmField
-    var username: String? = null
+    var username: String = ""
 
-    @JvmField
-    var avatar: String? = null
+    var avatar: String = ""
 
-    @JvmField
-    var nickname: String? = null
+    var nickname: String = ""
 
     /**
      * 是否启用
      */
-    @JvmField
-    var enabled: Boolean? = null
+    var enabled: Boolean = false
 
-    @JvmField
-    var roles: Set<String>? = null
+    var roles: Set<String> = emptySet()
 
-    @JvmField
-    var permissions: Set<String>? = null
+    var permissions: Set<String> = emptySet()
 
-    @JvmField
-    var attributes: SecurityScopeAttributes? = null
+    var attributes: SecurityScopeAttributes = SecurityScopeAttributes()
+
+    fun from(vo: AuthorizationVO) {
+        this.token = vo.token
+        this.tenantId = vo.tenantId
+        this.userId = vo.userId
+        this.username = vo.username
+        this.avatar = vo.avatar
+        this.nickname = vo.nickname
+        this.enabled = vo.enabled
+        this.roles = vo.roles.toSet()
+        this.permissions = vo.permissions.toSet()
+        this.attributes = SecurityScopeAttributes().apply {
+            putAll(vo.attributes)
+        }
+    }
 }

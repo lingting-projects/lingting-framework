@@ -18,6 +18,7 @@ class SecurityDefaultResourceServiceImpl(resolvers: List<SecurityTokenResolver>)
     }
 
     override fun resolve(token: SecurityToken): SecurityScope? {
-        return resolvers.stream().filter { r: SecurityTokenResolver -> r.isSupport(token) }.findFirst().map { r: SecurityTokenResolver -> r.resolver(token) }.orElse(null)
+        return resolvers.find { it.isSupport(token) }?.resolver(token)
     }
+
 }

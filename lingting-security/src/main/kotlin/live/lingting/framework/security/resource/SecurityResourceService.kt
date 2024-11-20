@@ -9,9 +9,10 @@ import live.lingting.framework.security.domain.SecurityToken
  * @author lingting 2023-03-29 21:19
  */
 interface SecurityResourceService {
+
     fun resolve(token: SecurityToken): SecurityScope?
 
-    fun putScope(scope: SecurityScope) {
+    fun putScope(scope: SecurityScope?) {
         SecurityHolder.put(scope)
     }
 

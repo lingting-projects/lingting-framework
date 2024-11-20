@@ -20,8 +20,9 @@ val ideaLanguageLevel = IdeaLanguageLevel(javaVersion)
 plugins {
     id("idea")
     id("signing")
-    alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.publish)
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.ksp)
 }
 
 idea {
@@ -105,6 +106,7 @@ configure(javaProjects) {
 
     apply {
         plugin(catalogLibs.plugins.kotlin.jvm.get().pluginId)
+        plugin(catalogLibs.plugins.kotlin.ksp.get().pluginId)
     }
 
     dependencies {
@@ -114,6 +116,7 @@ configure(javaProjects) {
         implementation(catalogLibs.bundles.implementation)
 
         annotationProcessor(catalogLibs.bundles.annotation)
+        ksp(catalogLibs.bundles.ksp)
         compileOnly(catalogLibs.bundles.compile)
         testImplementation(catalogLibs.bundles.test)
     }
@@ -137,6 +140,7 @@ configure(javaProjects) {
     }
 
     tasks.withType<Test> {
+        enabled = gradle.startParameter.taskNames.contains("test")
         useJUnitPlatform()
         testLogging {
             showStandardStreams = true

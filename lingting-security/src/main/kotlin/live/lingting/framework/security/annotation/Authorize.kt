@@ -7,10 +7,10 @@ import java.lang.annotation.Inherited
  *
  * @author lingting 2023-03-29 20:38
  */
-@Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER, AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.RUNTIME)
 @Inherited
 @MustBeDocumented
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER, AnnotationTarget.PROPERTY_SETTER, AnnotationTarget.CLASS)
 annotation class Authorize(
     /**
      * 是否允许匿名, 为true时, 登录和未登录均允许访问. 优先级最高

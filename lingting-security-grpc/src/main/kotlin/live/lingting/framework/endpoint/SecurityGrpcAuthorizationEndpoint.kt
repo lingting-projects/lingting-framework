@@ -40,14 +40,20 @@ class SecurityGrpcAuthorizationEndpoint
         onNext(scope, observer)
     }
 
-    override fun refresh(request: Empty, observer: StreamObserver<SecurityGrpcAuthorization.AuthorizationVO>) {
-        val scope = service.refresh(token()) ?: throw AuthorizationException("Authorization has expired!")
+    override fun refresh(request: SecurityGrpcAuthorization.TokenPO, observer: StreamObserver<SecurityGrpcAuthorization.AuthorizationVO>) {
+        val token = token()
+        val scope = service.refresh(token) ?: throw AuthorizationException("Authorization has expired!")
         store.update(scope)
         onNext(scope, observer)
     }
 
-    override fun resolve(request: Empty, observer: StreamObserver<SecurityGrpcAuthorization.AuthorizationVO>) {
-        val scope = scope()
+    @Authorize(anyone = true)
+    override fun resolve(request: SecurityGrpcAuthorization.TokenPO, observer: StreamObserver<SecurityGrpcAuthorization.AuthorizationVO>) {
+        val value = request.value
+        val scope = store.get(value)
+        if (scope == null || !scope.isLogin || !scope.enabled()) {
+            throw AuthorizationException("Token is invalid!")
+        }
         onNext(scope, observer)
     }
 

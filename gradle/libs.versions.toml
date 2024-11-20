@@ -11,11 +11,9 @@ polaris = "1.15.9"
 javax = "1.3.2"
 springBoot = "3.3.3"
 formatter = "0.0.41"
-mapstruct = "1.5.5.Final"
-lombok = "1.18.34"
-lombokMapstructBinding = "0.2.0"
 publish = "0.29.0"
-kotlin = "2.0.20"
+kotlin = "2.0.21"
+kotlin-ksp = "2.0.21-1.0.28"
 kotlin-coroutines = "1.9.0"
 
 [libraries]
@@ -28,10 +26,6 @@ grpc-dependencies = { group = "io.grpc", name = "grpc-bom", version.ref = "grpc"
 grpc-protobuf-plugin = { group = "com.google.protobuf", name = "protobuf-gradle-plugin", version.ref = "grpcProtobuf" }
 grpc-protoc = { group = "com.google.protobuf", name = "protoc", version.ref = "grpcProtoc" }
 javax-annotation = { group = "javax.annotation", name = "javax.annotation-api", version.ref = "javax" }
-mapstruct = { group = "org.mapstruct", name = "mapstruct", version.ref = "mapstruct" }
-lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
-mapstruct-processor = { group = "org.mapstruct", name = "mapstruct-processor", version.ref = "mapstruct" }
-lombok-mapstruct = { group = "org.projectlombok", name = "lombok-mapstruct-binding", version.ref = "lombokMapstructBinding" }
 mybatis = { group = "org.mybatis", name = "mybatis", version.ref = "mybatis" }
 mybatis-plus-annotation = { group = "com.baomidou", name = "mybatis-plus-annotation", version.ref = "mybatisPlus" }
 mybatis-plus-extension = { group = "com.baomidou", name = "mybatis-plus-extension", version.ref = "mybatisPlus" }
@@ -50,9 +44,10 @@ kotlin-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coro
 
 [bundles]
 dependencies = ["spring-boot-dependencies", "grpc-dependencies"]
-annotation = ["mapstruct-processor", "lombok", "lombok-mapstruct"]
-implementation = ["mapstruct", "slf4j", "kotlin-reflect", "kotlin-stdlib", "kotlin-coroutines-core"]
-compile = ["lombok"]
+annotation = []
+ksp = []
+implementation = ["slf4j", "kotlin-reflect", "kotlin-stdlib", "kotlin-coroutines-core"]
+compile = []
 test = ["awaitility", "junit", "logback"]
 elasticsearch = ["elasticsearch", "elasticsearch-client"]
 mybatis = ["mybatis", "mybatis-plus-annotation", "mybatis-plus-extension", "mybatis-plus-core"]
@@ -61,4 +56,5 @@ mybatis = ["mybatis", "mybatis-plus-annotation", "mybatis-plus-extension", "myba
 publish = { id = "com.vanniktech.maven.publish", version.ref = "publish" }
 javaformat = { id = "io.spring.javaformat", version.ref = "formatter" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "kotlin-ksp" }
 grpc = { id = "com.google.protobuf", version.ref = "grpcProtobuf" }

@@ -1,7 +1,6 @@
 package live.lingting.framework.security.grpc
 
 import com.google.protobuf.Empty
-import io.grpc.Channel
 import io.grpc.ClientInterceptor
 import io.grpc.ManagedChannel
 import io.grpc.StatusRuntimeException
@@ -26,7 +25,7 @@ import live.lingting.framework.protobuf.SecurityGrpcAuthorization
 import live.lingting.framework.protobuf.SecurityGrpcAuthorizationServiceGrpc
 import live.lingting.framework.protobuf.SecurityGrpcAuthorizationServiceGrpc.SecurityGrpcAuthorizationServiceBlockingStub
 import live.lingting.framework.security.authorize.SecurityAuthorize
-import live.lingting.framework.security.domain.SecurityToken.ofDelimiter
+import live.lingting.framework.security.domain.SecurityToken
 import live.lingting.framework.security.grpc.authorization.AuthorizationServiceImpl
 import live.lingting.framework.security.grpc.authorization.Password
 import live.lingting.framework.security.resolver.SecurityTokenDefaultResolver
@@ -35,7 +34,9 @@ import live.lingting.framework.security.resource.SecurityDefaultResourceServiceI
 import live.lingting.framework.security.store.SecurityMemoryStore
 import live.lingting.framework.util.ValueUtils
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrowsExactly
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -87,53 +88,62 @@ internal class SecurityGrpcTest {
 
         val clientProperties = GrpcClientProperties()
         clientProperties.isUsePlaintext = true
-        val clientInterceptors: MutableList<ClientInterceptor?> = ArrayList()
+        val clientInterceptors: MutableList<ClientInterceptor> = ArrayList()
         clientInterceptors.add(GrpcClientTraceIdInterceptor(clientProperties))
         clientInterceptors.add(SecurityGrpcRemoteResourceClientInterceptor(properties))
         val provide = GrpcClientProvide(clientProperties, clientInterceptors)
 
         channel = provide.channel("127.0.0.1", server!!.port())
-        blocking = provide.blocking(channel) { channel: Channel? -> SecurityGrpcAuthorizationServiceGrpc.newBlockingStub(channel) }
+        blocking = provide.blocking(channel!!) { channel -> SecurityGrpcAuthorizationServiceGrpc.newBlockingStub(channel) }
     }
 
     @AfterEach
     fun after() {
-        server!!.onApplicationStop()
-        channel!!.shutdownNow()
+        server?.onApplicationStop()
+        channel?.shutdownNow()
     }
 
     @Test
     fun test() {
         // 登录
-        val grpcAdmin = blocking
-            .password(
-                SecurityGrpcAuthorization.AuthorizationPasswordPO.newBuilder()
-                    .setUsername("admin")
-                    .setPassword("")
-                    .build()
-            )
+        val grpcAdmin = blocking!!.password(
+            SecurityGrpcAuthorization.AuthorizationPasswordPO.newBuilder()
+                .setUsername("admin")
+                .setPassword("")
+                .build()
+        )
         val admin = convert!!.voExpand(convert!!.toJava(grpcAdmin))
-        Assertions.assertEquals("admin", admin.userId)
-        Assertions.assertTrue(admin.isExpand)
+        assertEquals("admin", admin.userId)
+        assertTrue(admin.isExpand)
         // 无token解析
-        Assertions.assertThrowsExactly(StatusRuntimeException::class.java) { blocking!!.resolve(Empty.getDefaultInstance()) }
+        assertThrowsExactly(StatusRuntimeException::class.java) { blocking!!.resolve(SecurityGrpcAuthorization.TokenPO.newBuilder().buildPartial()) }
         // token解析
-        put(ofDelimiter(admin.token!!, " "))
+        put(SecurityToken.ofDelimiter(admin.token, " "))
         try {
-            val resolveGrpcAdmin = blocking!!.resolve(Empty.getDefaultInstance())
+            val resolveGrpcAdmin = blocking!!.resolve(
+                SecurityGrpcAuthorization.TokenPO.newBuilder()
+                    .setValue(admin.token)
+                    .buildPartial()
+            )
             val resolveAdmin = convert!!.voExpand(convert!!.toJava(resolveGrpcAdmin))
 
-            Assertions.assertEquals(admin.username, resolveAdmin.username)
-            Assertions.assertEquals(admin.attributes!!["tag"], resolveAdmin.attributes!!["tag"])
+            assertEquals(admin.username, resolveAdmin.username)
+            assertEquals(admin.attributes["tag"], resolveAdmin.attributes["tag"])
 
             val logoutGrpcAdmin = blocking!!.logout(Empty.getDefaultInstance())
             val logoutAdmin = convert!!.voExpand(convert!!.toJava(logoutGrpcAdmin))
 
-            Assertions.assertEquals(admin.username, logoutAdmin.username)
-            Assertions.assertEquals(admin.attributes!!["tag"], logoutAdmin.attributes!!["tag"])
+            assertEquals(admin.username, logoutAdmin.username)
+            assertEquals(admin.attributes["tag"], logoutAdmin.attributes["tag"])
 
             // 退出登录解析
-            Assertions.assertThrowsExactly(StatusRuntimeException::class.java) { blocking!!.resolve(Empty.getDefaultInstance()) }
+            assertThrowsExactly(StatusRuntimeException::class.java) {
+                blocking!!.resolve(
+                    SecurityGrpcAuthorization.TokenPO.newBuilder()
+                        .setValue(admin.token)
+                        .buildPartial()
+                )
+            }
         } finally {
             pop()
         }

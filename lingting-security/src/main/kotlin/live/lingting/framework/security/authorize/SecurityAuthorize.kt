@@ -16,13 +16,16 @@ import live.lingting.framework.util.CollectionUtils
  */
 class SecurityAuthorize(@JvmField val order: Int) {
     fun findAuthorize(cls: Class<*>?, method: Method?): Authorize? {
+        if (cls == null) {
+            return null
+        }
         if (method != null) {
             val authorize = AnnotationUtils.findAnnotation(method, Authorize::class.java)
             if (authorize != null) {
                 return authorize
             }
         }
-        return AnnotationUtils.findAnnotation(cls!!, Authorize::class.java)
+        return AnnotationUtils.findAnnotation(cls, Authorize::class.java)
     }
 
 
@@ -34,7 +37,6 @@ class SecurityAuthorize(@JvmField val order: Int) {
     /**
      * 校验当前权限数据是否满足指定注解的要求
      */
-
     fun valid(authorize: Authorize?) {
         val allowAnyone = authorize != null && authorize.anyone
         val allowDisabled = authorize != null && !authorize.onlyEnabled
@@ -49,7 +51,7 @@ class SecurityAuthorize(@JvmField val order: Int) {
 
         // 不允许未启用用户访问, 校验是否启用
         if (!allowDisabled) {
-            valid { obj: SecurityScope? -> obj!!.enabled() }
+            valid { obj -> obj?.enabled() == true }
         }
 
         // 进行配置校验
@@ -63,30 +65,30 @@ class SecurityAuthorize(@JvmField val order: Int) {
 
     protected fun validHas(authorize: Authorize) {
         // 要求所有角色
-        valid { scope: SecurityScope? -> equals(scope.getRoles(), authorize.hasRole) }
+        valid { scope -> equals(scope?.roles, authorize.hasRole) }
         // 要求任一角色
-        valid { scope: SecurityScope? -> contains(scope.getRoles(), authorize.hasAnyRole) }
+        valid { scope -> contains(scope?.roles, authorize.hasAnyRole) }
         // 要求所有权限
-        valid { scope: SecurityScope? -> equals(scope.getPermissions(), authorize.hasPermissions) }
+        valid { scope -> equals(scope?.permissions, authorize.hasPermissions) }
         // 要求任一权限
-        valid { scope: SecurityScope? -> contains(scope.getPermissions(), authorize.hasAnyPermissions) }
+        valid { scope -> contains(scope?.permissions, authorize.hasAnyPermissions) }
     }
 
     protected fun validNot(authorize: Authorize) {
         // @formatter:off
 		// 要求未拥有所有角色
-        valid{scope: SecurityScope? -> ArrayUtils.isEmpty(authorize.notRole) || !equals(scope.getRoles(), authorize.notRole)}
+        valid{scope -> ArrayUtils.isEmpty(authorize.notRole) || !equals(scope?.roles, authorize.notRole)}
         		// 要求未拥有任一角色
-        valid{scope: SecurityScope? -> ArrayUtils.isEmpty(authorize.notAnyRole) || !contains(scope.getRoles(), authorize.notAnyRole)}
+        valid{scope -> ArrayUtils.isEmpty(authorize.notAnyRole) || !contains(scope?.roles, authorize.notAnyRole)}
         		// 要求未拥有所有权限
-        valid{scope: SecurityScope? -> ArrayUtils.isEmpty(authorize.notPermissions) || !equals(scope.getPermissions(), authorize.notPermissions)}
+        valid{scope -> ArrayUtils.isEmpty(authorize.notPermissions) || !equals(scope?.permissions, authorize.notPermissions)}
         		// 要求未拥有任一权限
-        valid{scope: SecurityScope? -> ArrayUtils.isEmpty(authorize.notAnyPermissions) || !contains(scope.getPermissions(), authorize.notAnyPermissions)}
+        valid{scope -> ArrayUtils.isEmpty(authorize.notAnyPermissions) || !contains(scope?.permissions, authorize.notAnyPermissions)}
     		// @formatter:on
     }
 
     protected fun validLogin() {
-        valid { scope: SecurityScope? ->
+        valid { scope ->
             if (scope == null || !scope.isLogin) {
                 // 未登录让前端登录
                 throw AuthorizationException()
@@ -95,7 +97,7 @@ class SecurityAuthorize(@JvmField val order: Int) {
         }
     }
 
-    protected fun contains(havaArray: Collection<String?>, needArray: Array<String>): Boolean {
+    protected fun contains(havaArray: Collection<String>?, needArray: Array<String>?): Boolean {
         // 需要为空. true
         if (ArrayUtils.isEmpty(needArray)) {
             return true
@@ -105,16 +107,16 @@ class SecurityAuthorize(@JvmField val order: Int) {
             return false
         }
 
-        for (need in needArray) {
+        for (need in needArray!!) {
             // 任一存在则true
-            if (havaArray.contains(need)) {
+            if (havaArray!!.contains(need)) {
                 return true
             }
         }
         return false
     }
 
-    protected fun equals(havaArray: Collection<String?>, needArray: Array<String>): Boolean {
+    protected fun equals(havaArray: Collection<String>?, needArray: Array<String>?): Boolean {
         // 需要为空. true
         if (ArrayUtils.isEmpty(needArray)) {
             return true
@@ -124,9 +126,9 @@ class SecurityAuthorize(@JvmField val order: Int) {
             return false
         }
 
-        for (need in needArray) {
+        for (need in needArray!!) {
             // 任一不存在则false
-            if (!havaArray.contains(need)) {
+            if (!havaArray!!.contains(need)) {
                 return false
             }
         }
@@ -134,7 +136,7 @@ class SecurityAuthorize(@JvmField val order: Int) {
     }
 
     protected fun valid(predicate: Predicate<SecurityScope?>) {
-        val scope: SecurityScope = SecurityHolder.scope()
+        val scope = SecurityHolder.scope()
         val flag = predicate.test(scope)
         if (!flag) {
             throw PermissionsException()

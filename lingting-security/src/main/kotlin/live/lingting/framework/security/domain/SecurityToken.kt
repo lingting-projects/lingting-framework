@@ -5,16 +5,15 @@ import live.lingting.framework.util.StringUtils
 /**
  * @author lingting 2023-04-28 12:38
  */
-class SecurityToken private constructor(val type: String?, val token: String?, @JvmField val raw: String?) {
-    val isAvailable: Boolean
-        /**
-         * token是否有效
-         */
-        get() = StringUtils.hasText(token)
+class SecurityToken private constructor(val type: String, val token: String, val raw: String) {
+    /**
+     * token是否有效
+     */
+    val isAvailable: Boolean = StringUtils.hasText(token)
 
     companion object {
         @JvmField
-        val EMPTY: SecurityToken = of(null, null, null)
+        val EMPTY: SecurityToken = of("", "", "")
 
         @JvmStatic
         fun ofDelimiter(raw: String, delimiter: String): SecurityToken {
@@ -26,10 +25,11 @@ class SecurityToken private constructor(val type: String?, val token: String?, @
             if (split.size > 1) {
                 return of(split[0], split[1], raw)
             }
-            return of(null, split[0], raw)
+            return of("", split[0], raw)
         }
 
-        fun of(type: String?, token: String?, raw: String?): SecurityToken {
+        @JvmStatic
+        fun of(type: String, token: String, raw: String): SecurityToken {
             return SecurityToken(type, token, raw)
         }
     }

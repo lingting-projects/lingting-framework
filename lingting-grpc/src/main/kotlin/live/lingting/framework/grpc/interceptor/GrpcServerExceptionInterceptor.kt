@@ -13,7 +13,10 @@ import live.lingting.framework.grpc.properties.GrpcServerProperties
 /**
  * @author lingting 2024-03-27 10:05
  */
-class GrpcServerExceptionInterceptor(private val properties: GrpcServerProperties, private val processor: GrpcExceptionProcessor) : ServerInterceptor, Sequence {
+class GrpcServerExceptionInterceptor(
+    val properties: GrpcServerProperties,
+    val processor: GrpcExceptionProcessor
+) : ServerInterceptor, Sequence {
     override fun <S, R> interceptCall(
         call: ServerCall<S, R>, headers: Metadata,
         next: ServerCallHandler<S, R>

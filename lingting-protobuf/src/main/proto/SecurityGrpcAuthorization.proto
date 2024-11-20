@@ -23,14 +23,20 @@ message AuthorizationPasswordPO {
   string password = 2;
 }
 
+message TokenPO{
+  string raw = 1;
+  string type = 2;
+  string value = 3;
+}
+
 service SecurityGrpcAuthorizationService {
 
   rpc logout(google.protobuf.Empty) returns (AuthorizationVO) {};
 
   rpc password(AuthorizationPasswordPO) returns (AuthorizationVO) {};
 
-  rpc refresh(google.protobuf.Empty) returns (AuthorizationVO) {};
+  rpc refresh(TokenPO) returns (AuthorizationVO) {};
 
-  rpc resolve(google.protobuf.Empty) returns (AuthorizationVO) {};
+  rpc resolve(TokenPO) returns (AuthorizationVO) {};
 
 }

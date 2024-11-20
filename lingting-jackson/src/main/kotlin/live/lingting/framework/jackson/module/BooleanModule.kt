@@ -13,6 +13,7 @@ import live.lingting.framework.util.BooleanUtils
 /**
  * @author lingting 2023-04-18 15:22
  */
+@Suppress("UNCHECKED_CAST")
 class BooleanModule : SimpleModule() {
 
     init {
