@@ -13,28 +13,19 @@ class DingTalkMarkDownMessage : AbstractDingTalkMessage() {
      * 标题
      */
     var title: String? = null
-        private set
 
     /**
      * 内容
      */
-    var text: MarkdownBuilder? = null
-        private set
+    var markdown: MarkdownBuilder? = null
 
-    override val type: MessageTypeEnum
-        get() = MessageTypeEnum.MARKDOWN
+
+    override val type: MessageTypeEnum = MessageTypeEnum.MARKDOWN
 
     override fun put(params: DingTalkParams): DingTalkParams {
-        return params.setMarkdown(Markdown().setTitle(title).setText(text!!.build()))
+        val mk = Markdown(title, markdown?.build())
+        params.markdown = mk
+        return params
     }
 
-    fun setTitle(title: String?): DingTalkMarkDownMessage {
-        this.title = title
-        return this
-    }
-
-    fun setText(text: MarkdownBuilder?): DingTalkMarkDownMessage {
-        this.text = text
-        return this
-    }
 }

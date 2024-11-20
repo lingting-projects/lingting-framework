@@ -30,7 +30,7 @@ class DingTalkBalancedSender {
         return queue.poll()
     }
 
-    fun send(message: DingTalkMessage): DingTalkResponse? {
+    fun send(message: DingTalkMessage): DingTalkResponse {
         val sender = sender()
         try {
             return sender.sendMessage(message)
@@ -43,7 +43,7 @@ class DingTalkBalancedSender {
         while (true) {
             try {
                 val response = send(message)
-                if (response!!.isSuccess) {
+                if (response.isSuccess) {
                     return
                 }
                 log.error("钉钉消息发送失败! code: {}; message: {}", response.code, response.message)

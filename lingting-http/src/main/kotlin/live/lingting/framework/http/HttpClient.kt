@@ -213,6 +213,11 @@ abstract class HttpClient {
         var defaultMaxBytes: Long = 1048576
 
         @JvmStatic
+        fun builder() = default()
+
+        fun default() = java()
+
+        @JvmStatic
         fun java(): JavaHttpClient.Builder {
             return JavaHttpClient.Builder()
         }

@@ -8,5 +8,5 @@ interface DingTalkMessage {
      * 生成钉钉消息发送参数
      * @return 钉钉文档要求的 jsonString
      */
-    fun generate(): String?
+    fun generate(): String
 }

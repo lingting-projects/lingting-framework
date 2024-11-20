@@ -1,11 +1,13 @@
 package live.lingting.framework.dingtalk.enums
 
+import com.fasterxml.jackson.annotation.JsonValue
+
 /**
  * 钉钉消息类型
  *
  * @author lingting 2020/6/10 21:29
  */
-enum class MessageTypeEnum(val `val`: String, val desc: String) {
+enum class MessageTypeEnum(@JsonValue val value: String, val desc: String) {
     /**
      * 消息值 消息说明
      */

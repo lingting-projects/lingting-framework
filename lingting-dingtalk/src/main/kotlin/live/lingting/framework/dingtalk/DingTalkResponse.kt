@@ -1,5 +1,6 @@
 package live.lingting.framework.dingtalk
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import live.lingting.framework.jackson.JacksonUtils
 
@@ -11,60 +12,39 @@ import live.lingting.framework.jackson.JacksonUtils
 class DingTalkResponse {
     @JsonProperty("errcode")
     var code: Long? = null
-        private set
 
     /**
      * 值为ok表示无异常
      */
     @JsonProperty("errmsg")
     var message: String? = null
-        private set
 
     /**
      * 钉钉返回信息
      */
-    var response: String? = null
-        private set
+    var response: String = ""
 
     /**
      * 是否发送成功
      */
     var isSuccess: Boolean = false
-        private set
 
     override fun toString(): String {
-        return response!!
-    }
-
-    @JsonProperty("errcode")
-    fun setCode(code: Long?): DingTalkResponse {
-        this.code = code
-        return this
-    }
-
-    @JsonProperty("errmsg")
-    fun setMessage(message: String?): DingTalkResponse {
-        this.message = message
-        return this
-    }
-
-    fun setResponse(response: String?): DingTalkResponse {
-        this.response = response
-        return this
-    }
-
-    fun setSuccess(success: Boolean): DingTalkResponse {
-        this.isSuccess = success
-        return this
+        return response
     }
 
     companion object {
         const val SUCCESS_CODE: Long = 0L
 
+        @JsonCreator
+        @JvmStatic
         fun of(res: String?): DingTalkResponse {
-            val value = JacksonUtils.toObj(res!!, DingTalkResponse::class.java)
-            value.setResponse(res)
-            value.setSuccess(SUCCESS_CODE == value.code)
+            if (res == null) {
+                return DingTalkResponse()
+            }
+            val value = JacksonUtils.toObj(res, DingTalkResponse::class.java)
+            value.response = res
+            value.isSuccess = SUCCESS_CODE == value.code
             return value
         }
     }

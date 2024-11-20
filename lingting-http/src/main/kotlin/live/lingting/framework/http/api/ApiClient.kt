@@ -18,7 +18,7 @@ abstract class ApiClient<R : ApiRequest> protected constructor(@JvmField protect
     val log = logger()
 
     @JvmField
-    var client: HttpClient = defaultClient
+    var client: HttpClient = CLIENT
 
 
     protected open fun customize(request: R) {
@@ -81,7 +81,7 @@ abstract class ApiClient<R : ApiRequest> protected constructor(@JvmField protect
 
     companion object {
         @JvmField
-        var defaultClient: HttpClient = HttpClient.okhttp()
+        var CLIENT: HttpClient = HttpClient.builder()
             .disableSsl()
             .timeout(Duration.ofSeconds(15), Duration.ofSeconds(30))
             .build()

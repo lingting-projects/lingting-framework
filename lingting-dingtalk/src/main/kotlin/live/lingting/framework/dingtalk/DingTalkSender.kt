@@ -2,14 +2,12 @@ package live.lingting.framework.dingtalk
 
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.time.Duration
 import java.util.function.Supplier
 import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.dingtalk.message.DingTalkMessage
-import live.lingting.framework.http.HttpClient
-import live.lingting.framework.http.HttpClient.okhttp
-import live.lingting.framework.http.HttpRequest.builder
+import live.lingting.framework.http.HttpRequest
 import live.lingting.framework.http.HttpUrlBuilder
+import live.lingting.framework.http.api.ApiClient
 import live.lingting.framework.util.StringUtils
 
 /**
@@ -23,17 +21,19 @@ class DingTalkSender(
      */
     @JvmField val url: String
 ) {
+    var client = ApiClient.CLIENT
+
     /**
      * 密钥
      */
     var secret: String? = null
-        protected set
+        private set
+
 
     var mac: Mac? = null
-        protected set
+        private set
 
     var currentTimeMillisSupplier: Supplier<Long> = Supplier { System.currentTimeMillis() }
-        private set
 
     /**
      * 发送消息 根据参数值判断使用哪种发送方式
@@ -63,10 +63,10 @@ class DingTalkSender(
     /**
      * 设置密钥
      */
-    fun setSecret(secret: String?): DingTalkSender {
+    fun useSecret(secret: String): DingTalkSender {
         if (StringUtils.hasText(secret)) {
             this.secret = secret
-            this.mac = Mac.hmacBuilder().sha256().secret(secret!!).build()
+            this.mac = Mac.hmacBuilder().sha256().secret(secret).build()
         } else {
             this.secret = null
             this.mac = null
@@ -80,13 +80,10 @@ class DingTalkSender(
      * @param timestamp 当前时间戳
      */
     fun secret(timestamp: Long): String {
-        val source = """
-             $timestamp
-             $secret
-             """.trimIndent()
+        val source = "$timestamp\n$secret"
         val base64 = mac!!.calculateBase64(source)
         val sign = URLEncoder.encode(base64, StandardCharsets.UTF_8)
-        return "%s&timestamp=%d&sign=%s".formatted(url, timestamp, sign)
+        return "$url&timestamp=$timestamp&sign=$sign"
     }
 
     /**
@@ -103,25 +100,15 @@ class DingTalkSender(
         val requestUrl = if (isSecret) secret(timestamp) else url
 
         val urlBuilder = HttpUrlBuilder.from(requestUrl)
-        val builder = builder()
+        val builder = HttpRequest.builder()
             .post()
             .url(urlBuilder)
             .header("Content-Type", "application/json")
-            .body(message!!)
+            .body(message)
 
         val request = builder.build()
-        val json = CLIENT.request(request, String::class.java)
+        val json = client.request(request, String::class.java)
         return DingTalkResponse.of(json)
     }
 
-    fun setCurrentTimeMillisSupplier(currentTimeMillisSupplier: Supplier<Long>): DingTalkSender {
-        this.currentTimeMillisSupplier = currentTimeMillisSupplier
-        return this
-    }
-
-    companion object {
-        protected val CLIENT: HttpClient = okhttp()
-            .timeout(Duration.ofSeconds(10), Duration.ofSeconds(10))
-            .build()
-    }
 }

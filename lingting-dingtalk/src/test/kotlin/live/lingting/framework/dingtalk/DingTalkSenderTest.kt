@@ -2,7 +2,7 @@ package live.lingting.framework.dingtalk
 
 import live.lingting.framework.dingtalk.message.DingTalkTextMessage
 import live.lingting.framework.util.StringUtils
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty
@@ -25,7 +25,7 @@ internal class DingTalkSenderTest {
 
     @BeforeEach
     fun before() {
-        sender = DingTalkSender(webhook).setSecret(secret)
+        sender = DingTalkSender(webhook).useSecret(secret)
     }
 
     @Test
@@ -33,8 +33,8 @@ internal class DingTalkSenderTest {
         assertTrue(StringUtils.hasText(sender!!.url))
         assertTrue(StringUtils.hasText(sender!!.secret))
         val message = DingTalkTextMessage()
-        message.setContent("测试机器人消息通知")
+        message.content = "测试机器人消息通知"
         val response = sender!!.sendMessage(message)
-        Assertions.assertTrue(response.isSuccess)
+        assertTrue(response.isSuccess)
     }
 }

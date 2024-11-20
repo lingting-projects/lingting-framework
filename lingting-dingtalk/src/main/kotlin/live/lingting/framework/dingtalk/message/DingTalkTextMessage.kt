@@ -11,17 +11,14 @@ class DingTalkTextMessage : AbstractDingTalkMessage() {
      * 消息内容
      */
     var content: String? = null
-        private set
 
-    override val type: MessageTypeEnum
-        get() = MessageTypeEnum.TEXT
+
+    override val type: MessageTypeEnum = MessageTypeEnum.TEXT
 
     override fun put(params: DingTalkParams): DingTalkParams {
-        return params.setText(DingTalkParams.Text().setContent(content))
+        val text = DingTalkParams.Text(content)
+        params.text = text
+        return params
     }
 
-    fun setContent(content: String?): DingTalkTextMessage {
-        this.content = content
-        return this
-    }
 }

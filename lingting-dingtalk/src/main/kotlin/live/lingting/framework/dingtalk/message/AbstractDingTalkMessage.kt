@@ -45,10 +45,13 @@ abstract class AbstractDingTalkMessage : DingTalkMessage {
      */
     abstract fun put(params: DingTalkParams): DingTalkParams
 
-    override fun generate(): String? {
+    override fun generate(): String {
         val params = put(
-            DingTalkParams().setType(type.getVal())
-                .setAt(DingTalkParams.At().setAtAll(atAll).setAtMobiles(atPhones))
+            DingTalkParams().apply {
+                this.type = this@AbstractDingTalkMessage.type.value
+                if (atAll) this.atAll()
+                if (atPhones.isNotEmpty()) this.atPhones(atPhones)
+            }
         )
         return params.json()
     }
