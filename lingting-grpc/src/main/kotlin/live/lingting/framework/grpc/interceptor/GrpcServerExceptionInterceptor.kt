@@ -13,15 +13,15 @@ import live.lingting.framework.grpc.properties.GrpcServerProperties
 /**
  * @author lingting 2024-03-27 10:05
  */
-class GrpcServerExceptionInterceptor(private val properties: GrpcServerProperties?, private val processor: GrpcExceptionProcessor?) : ServerInterceptor, Sequence {
+class GrpcServerExceptionInterceptor(private val properties: GrpcServerProperties, private val processor: GrpcExceptionProcessor) : ServerInterceptor, Sequence {
     override fun <S, R> interceptCall(
-        call: ServerCall<S?, R?>, headers: Metadata?,
-        next: ServerCallHandler<S?, R?>
-    ): ServerCall.Listener<S?> {
-        var listener: ServerCall.Listener<S?>
+        call: ServerCall<S, R>, headers: Metadata,
+        next: ServerCallHandler<S, R>
+    ): ServerCall.Listener<S> {
+        var listener: ServerCall.Listener<S>
         try {
             val nextCall = next.startCall(call, headers)
-            listener = object : SimpleForwardingServerCallListener<S?>(nextCall) {
+            listener = object : SimpleForwardingServerCallListener<S>(nextCall) {
                 override fun onHalfClose() {
                     try {
                         super.onHalfClose()
@@ -32,18 +32,17 @@ class GrpcServerExceptionInterceptor(private val properties: GrpcServerPropertie
             }
         } catch (e: Exception) {
             process(e, call, headers)
-            listener = object : ServerCall.Listener<S?>() {
+            listener = object : ServerCall.Listener<S>() {
             }
         }
         return listener
     }
 
-    override val sequence: Int
-        get() = properties.getExceptionHandlerOrder()
+    override val sequence: Int = properties.exceptionHandlerOrder
 
-    fun process(e: Exception, call: ServerCall<*, *>, headers: Metadata?) {
-        val invoke = processor!!.find(e)
-        val `object` = invoke!!.invoke(e, call, headers)
+    fun process(e: Exception, call: ServerCall<*, *>, headers: Metadata) {
+        val invoke = processor.find(e)
+        val `object` = invoke.invoke(e, call, headers)
         if (`object` is Status) {
             call.close(`object`, headers)
         }

@@ -1,7 +1,7 @@
 package live.lingting.framework.grpc.properties
 
-import live.lingting.framework.util.MdcUtils
 import java.time.Duration
+import live.lingting.framework.util.MdcUtils
 
 /**
  * @author lingting 2023-04-06 15:18
@@ -9,9 +9,9 @@ import java.time.Duration
 class GrpcClientProperties {
     var host: String? = null
 
-    var port: Int? = 80
+    var port: Int = 80
 
-    var traceIdKey: String? = MdcUtils.TRACE_ID
+    var traceIdKey: String = MdcUtils.TRACE_ID
 
     var traceOrder: Int = Int.MIN_VALUE + 100
 
@@ -26,7 +26,7 @@ class GrpcClientProperties {
 
     var isEnableKeepAlive: Boolean = true
 
-    var keepAliveTime: Duration? = Duration.ofMinutes(30)
+    var keepAliveTime: Duration = Duration.ofMinutes(30)
 
-    var keepAliveTimeout: Duration? = Duration.ofSeconds(2)
+    var keepAliveTimeout: Duration = Duration.ofSeconds(2)
 }

@@ -90,8 +90,8 @@ interface Sequence {
         }
 
         @JvmStatic
-        fun <T> asc(collection: Collection<T>): List<T> {
-            return collection.stream().sorted(INSTANCE_ASC).toList()
+        fun <T> asc(collection: Collection<T>): MutableList<T> {
+            return collection.sortedWith(INSTANCE_ASC).toMutableList()
         }
 
         @JvmStatic
@@ -100,8 +100,8 @@ interface Sequence {
         }
 
         @JvmStatic
-        fun <T> desc(collection: Collection<T>): List<T> {
-            return collection.stream().sorted(INSTANCE_DESC).toList()
+        fun <T> desc(collection: Collection<T>): MutableList<T> {
+            return collection.sortedWith(INSTANCE_DESC).toMutableList()
         }
 
         @JvmField

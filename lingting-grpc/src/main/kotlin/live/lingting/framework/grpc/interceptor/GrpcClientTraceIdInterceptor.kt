@@ -15,30 +15,28 @@ import live.lingting.framework.util.StringUtils
 /**
  * @author lingting 2023-04-13 13:23
  */
-class GrpcClientTraceIdInterceptor(properties: GrpcClientProperties) : ClientInterceptor, Sequence {
-    private val properties: GrpcClientProperties? = properties
+class GrpcClientTraceIdInterceptor(private val properties: GrpcClientProperties) : ClientInterceptor, Sequence {
 
-    private val traceIdKey: Metadata.Key<String?> = Metadata.Key.of(properties.traceIdKey, Metadata.ASCII_STRING_MARSHALLER)
+    private val traceIdKey: Metadata.Key<String> = Metadata.Key.of(properties.traceIdKey, Metadata.ASCII_STRING_MARSHALLER)
 
     /**
      * 获取当前上下文的traceId
      */
     protected fun traceId(): String? {
-        return MdcUtils.getTraceId()
+        return MdcUtils.traceId
     }
 
-    override fun <S, R> interceptCall(method: MethodDescriptor<S?, R?>?, callOptions: CallOptions?, next: Channel?): ClientCall<S?, R?> {
+    override fun <S, R> interceptCall(method: MethodDescriptor<S, R>, callOptions: CallOptions, next: Channel): ClientCall<S, R> {
         val traceId = traceId()
 
-        return object : ForwardingClientOnCall<S?, R?>(method, callOptions, next!!) {
-            override fun onStartBefore(responseListener: Listener<R?>?, headers: Metadata?) {
+        return object : ForwardingClientOnCall<S, R>(method, callOptions, next) {
+            override fun onStartBefore(responseListener: Listener<R>, headers: Metadata) {
                 if (StringUtils.hasText(traceId)) {
-                    headers!!.put(traceIdKey, traceId)
+                    headers.put(traceIdKey, traceId)
                 }
             }
         }
     }
 
-    override val sequence: Int
-        get() = properties.getTraceOrder()
+    override val sequence: Int = properties.traceOrder
 }

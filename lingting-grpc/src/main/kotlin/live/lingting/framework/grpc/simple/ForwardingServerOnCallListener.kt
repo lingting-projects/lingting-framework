@@ -8,23 +8,21 @@ import io.grpc.ServerCallHandler
 /**
  * @author lingting 2023-12-18 19:10
  */
-open class ForwardingServerOnCallListener<S, R> protected constructor(call: ServerCall<S?, R?>?, headers: Metadata?, next: ServerCallHandler<S?, R?>) : ForwardingServerCallListener<S?>() {
-    private var delegate: ServerCall.Listener<S?>? = null
-
-    init {
+open class ForwardingServerOnCallListener<S, R> protected constructor(call: ServerCall<S, R>, headers: Metadata, next: ServerCallHandler<S, R>) : ForwardingServerCallListener<S>() {
+    val delegate: ServerCall.Listener<S> by lazy {
         try {
-            this.delegate = next.startCall(call, headers)
+            next.startCall(call, headers)
         } catch (e: Exception) {
             onFinally()
             throw e
         }
     }
 
-    override fun delegate(): ServerCall.Listener<S?>? {
+    override fun delegate(): ServerCall.Listener<S> {
         return delegate
     }
 
-    override fun onMessage(message: S?) {
+    override fun onMessage(message: S) {
         onMessageBefore(message)
         super.onMessage(message)
         onMessageAfter(message)
@@ -57,11 +55,11 @@ open class ForwardingServerOnCallListener<S, R> protected constructor(call: Serv
         onReadyAfter()
     }
 
-    fun onMessageBefore(message: S?) {
+    fun onMessageBefore(message: S) {
         //
     }
 
-    fun onMessageAfter(message: S?) {
+    fun onMessageAfter(message: S) {
         //
     }
 

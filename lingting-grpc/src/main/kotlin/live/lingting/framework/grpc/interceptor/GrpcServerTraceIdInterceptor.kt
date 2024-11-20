@@ -14,29 +14,28 @@ import live.lingting.framework.util.StringUtils
  *
  * @author lingting 2023-04-13 13:23
  */
-class GrpcServerTraceIdInterceptor(properties: GrpcServerProperties) : ServerInterceptor, Sequence {
-    private val properties: GrpcServerProperties? = properties
+class GrpcServerTraceIdInterceptor(private val properties: GrpcServerProperties) : ServerInterceptor, Sequence {
 
-    private val traceIdKey: Metadata.Key<String?> = Metadata.Key.of(properties.traceIdKey, Metadata.ASCII_STRING_MARSHALLER)
+    private val traceIdKey: Metadata.Key<String> = Metadata.Key.of(properties.traceIdKey, Metadata.ASCII_STRING_MARSHALLER)
 
     /**
      * 从请求中获取traceId, 如果没有返回生成的traceId
      */
-    protected fun traceId(headers: Metadata): String? {
+    protected fun traceId(headers: Metadata): String {
         var traceId: String? = null
         if (headers.containsKey(traceIdKey)) {
             traceId = headers.get(traceIdKey)
         }
         if (StringUtils.hasText(traceId)) {
-            return traceId
+            return traceId!!
         }
         return MdcUtils.traceId()
     }
 
     override fun <S, R> interceptCall(
-        call: ServerCall<S?, R?>?, headers: Metadata,
-        next: ServerCallHandler<S?, R?>
-    ): ServerCall.Listener<S?>? {
+        call: ServerCall<S, R>, headers: Metadata,
+        next: ServerCallHandler<S, R>
+    ): ServerCall.Listener<S> {
         val traceId = traceId(headers)
         MdcUtils.fillTraceId(traceId)
         try {
@@ -48,6 +47,6 @@ class GrpcServerTraceIdInterceptor(properties: GrpcServerProperties) : ServerInt
         }
     }
 
-    override val sequence: Int
-        get() = properties.getTraceOrder()
+    override val sequence: Int = properties.traceOrder
+
 }

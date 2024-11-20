@@ -10,19 +10,23 @@ import java.lang.reflect.Method
 /**
  * @author lingting 2024-03-27 09:40
  */
-open class GrpcExceptionInvoke(private val instance: GrpcExceptionInstance?, private val method: Method?, private val handler: GrpcExceptionHandler?) {
-    protected fun args(e: Exception, call: ServerCall<*, *>, metadata: Metadata?): Array<Any?> {
-        val count = method!!.parameterCount
-        if (count < 1) {
+open class GrpcExceptionInvoke(
+    private val instance: GrpcExceptionInstance?,
+    private val method: Method?,
+    private val handler: GrpcExceptionHandler?
+) {
+    protected open fun args(e: Exception, call: ServerCall<*, *>, metadata: Metadata?): Array<Any?> {
+        val count = method?.parameterCount
+        if (count == null || count < 1) {
             return arrayOfNulls(0)
         }
         val args = arrayOfNulls<Any>(count)
         val parameters = method.parameters
 
         for (i in 0 until count) {
-            val parameter = parameters!![i]
-            val type = parameter!!.type
-            if (type!!.isAssignableFrom(e.javaClass)) {
+            val parameter = parameters[i]
+            val type = parameter.type
+            if (type.isAssignableFrom(e.javaClass)) {
                 args[i] = e
             } else if (type.isAssignableFrom(Metadata::class.java)) {
                 args[i] = metadata
@@ -41,8 +45,11 @@ open class GrpcExceptionInvoke(private val instance: GrpcExceptionInstance?, pri
     }
 
     open fun isSupport(cls: Class<*>): Boolean {
-        for (a in handler!!.value) {
-            if (a.isAssignableFrom(cls)) {
+        if (handler == null) {
+            return false
+        }
+        for (a in handler.value) {
+            if (a.java.isAssignableFrom(cls)) {
                 return true
             }
         }
@@ -50,7 +57,7 @@ open class GrpcExceptionInvoke(private val instance: GrpcExceptionInstance?, pri
     }
 
 
-    open fun invoke(e: Exception, call: ServerCall<*, *>, metadata: Metadata?): Any? {
+    open fun invoke(e: Exception, call: ServerCall<*, *>, metadata: Metadata): Any? {
         val args = args(e, call, metadata)
         return method!!.invoke(instance, *args)
     }
