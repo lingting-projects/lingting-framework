@@ -11,7 +11,6 @@ import live.lingting.framework.ali.sts.AliStsCredentialResponse
 import live.lingting.framework.ali.sts.AliStsRequest
 import live.lingting.framework.aws.policy.Credential
 import live.lingting.framework.aws.policy.Statement
-import live.lingting.framework.aws.policy.Statement.allow
 import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.HttpUrlBuilder
@@ -26,7 +25,14 @@ import live.lingting.framework.value.multi.StringMultiValue
 /**
  * @author lingting 2024-09-14 11:52
  */
-class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsRequest?>(properties) {
+class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsRequest>(properties) {
+
+    companion object {
+        const val ALGORITHM: String = "ACS3-HMAC-SHA256"
+
+        const val HEADER_PREFIX: String = "x-acs"
+    }
+
     override fun customize(request: AliStsRequest, headers: HttpHeaders) {
         val name = request.name()
         val version = request.version()
@@ -37,12 +43,12 @@ class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsReque
         headers.put("x-acs-signature-nonce", nonce)
 
         if (StringUtils.hasText(token)) {
-            headers.put("x-acs-security-token", token)
+            headers.put("x-acs-security-token", token!!)
         }
     }
 
     override fun checkout(request: AliStsRequest, response: HttpResponse): HttpResponse {
-        if (!response.is2xx()) {
+        if (!response.is2xx) {
             val string = response.string()
             log.error("AliSts call error! uri: {}; code: {}; body:\n{}", response.uri(), response.code(), string)
             throw AliStsException("request error! code: " + response.code())
@@ -50,10 +56,9 @@ class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsReque
         return response
     }
 
-
     override fun customize(
-        request: AliStsRequest, headers: HttpHeaders, requestBody: BodySource?,
-        params: StringMultiValue?
+        request: AliStsRequest, headers: HttpHeaders, requestBody: BodySource,
+        params: StringMultiValue
     ) {
         val now = LocalDateTime.now()
         val date: String = AliUtils.format(now, DatePattern.FORMATTER_ISO_8601)
@@ -62,17 +67,17 @@ class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsReque
         val method = request.method().name
         val path = request.path()
         val uri = if (StringUtils.hasText(path)) path else "/"
-        val query = HttpUrlBuilder.buildQuery(params!!)
-        val body = requestBody?.string() ?: ""
+        val query = HttpUrlBuilder.buildQuery(params)
+        val body = requestBody.string()
         val bodySha = DigestUtils.sha256Hex(body)
 
         headers.put("x-acs-content-sha256", bodySha)
 
         val headerBuilder = StringBuilder()
         val signHeaderBuilder = StringBuilder()
-        headers.forEachSorted(BiConsumer<String, Collection<String?>> { k: String, vs: Collection<String?> ->
-            if (!k.startsWith(HEADER_PREFIX) && !ArrayUtils.containsIgnoreCase(AliClient.HEADER_INCLUDE, k)) {
-                return@forEachSorted
+        headers.forEachSorted(BiConsumer { k: String, vs: Collection<String> ->
+            if (!k.startsWith(HEADER_PREFIX) && !ArrayUtils.containsIgnoreCase(HEADER_INCLUDE, k)) {
+                return@BiConsumer
             }
             for (v in vs) {
                 headerBuilder.append(k).append(":").append(v).append("\n")
@@ -85,25 +90,13 @@ class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsReque
         val header = headerBuilder.toString()
         val signHeader = signHeaderBuilder.toString()
 
-        val requestString = """
-            $method
-            $uri
-            $query
-            $header
-            $signHeader
-            $bodySha
-            """.trimIndent()
+        val requestString = "$method\n$uri\n$query\n$header\n$signHeader\n$bodySha"
         val requestSha = DigestUtils.sha256Hex(requestString)
 
-        val source = """
-            $ALGORITHM
-            $requestSha
-            """.trimIndent()
-        val sourceHmacSha = Mac.hmacBuilder().sha256().secret(sk!!).build().calculateHex(source)
+        val source = "$ALGORITHM\n$requestSha"
+        val sourceHmacSha = Mac.hmacBuilder().sha256().secret(sk).build().calculateHex(source)
 
-        val authorization = (ALGORITHM + " Credential=" + ak + ",SignedHeaders=" + signHeader + ",Signature="
-                + sourceHmacSha)
-
+        val authorization = ("$ALGORITHM Credential=$ak,SignedHeaders=$signHeader,Signature=$sourceHmacSha")
         headers.authorization(authorization)
     }
 
@@ -111,18 +104,18 @@ class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsReque
         return credential(setOf(statement))
     }
 
-    fun credential(statement: Statement, vararg statements: Statement?): Credential {
+    fun credential(statement: Statement, vararg statements: Statement): Credential {
         val list: MutableList<Statement> = ArrayList(statements.size + 1)
         list.add(statement)
-        list.addAll(Arrays.asList(*statements))
+        list.addAll(statements)
         return credential(list)
     }
 
-    fun credential(statements: Collection<Statement>?): Credential {
+    fun credential(statements: Collection<Statement>): Credential {
         return credential(AliUtils.CREDENTIAL_EXPIRE, statements)
     }
 
-    fun credential(timeout: Duration, statements: Collection<Statement>?): Credential {
+    fun credential(timeout: Duration, statements: Collection<Statement>): Credential {
         val request = AliStsCredentialRequest()
         request.timeout = timeout.toSeconds()
         request.statements = statements
@@ -134,18 +127,18 @@ class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsReque
         val sk = convert.accessKeySecret
         val token = convert.securityToken
         val expire: LocalDateTime = AliUtils.parse(convert.expire)
-        return Credential(ak!!, sk!!, token!!, expire)
+        return Credential(ak, sk, token, expire)
     }
 
     // region oss
-    fun ossBucket(region: String?, bucket: String?): AliOssBucket {
+    fun ossBucket(region: String, bucket: String): AliOssBucket {
         val s = AliOssProperties()
         s.region = region
         s.bucket = bucket
         return ossBucket(s)
     }
 
-    fun ossBucket(region: String?, bucket: String?, actions: Collection<String?>): AliOssBucket {
+    fun ossBucket(region: String, bucket: String, actions: Collection<String>): AliOssBucket {
         val s = AliOssProperties()
         s.region = region
         s.bucket = bucket
@@ -156,50 +149,45 @@ class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsReque
         return ossBucket(properties, AliActions.OSS_BUCKET_DEFAULT)
     }
 
-    fun ossBucket(properties: AliOssProperties, actions: Collection<String?>): AliOssBucket {
+    fun ossBucket(properties: AliOssProperties, actions: Collection<String>): AliOssBucket {
         val bucket = if (StringUtils.hasText(properties.bucket)) properties.bucket else "*"
-        val statement = allow()
+        val statement = Statement.allow()
         statement.addAction(actions)
-        statement.addResource("acs:oss:*:*:%s".formatted(bucket))
-        statement.addResource("acs:oss:*:*:%s/*".formatted(bucket))
+        statement.addResource("acs:oss:*:*:$bucket")
+        statement.addResource("acs:oss:*:*:$bucket/*")
         val credential = credential(statement)
         val copy = properties.copy()
         copy.useCredential(credential)
         return AliOssBucket(copy)
     }
 
-    fun ossObject(region: String?, bucket: String?, key: String?): AliOssObject {
+    fun ossObject(region: String, bucket: String, key: String): AliOssObject {
         val s = AliOssProperties()
         s.region = region
         s.bucket = bucket
         return ossObject(s, key)
     }
 
-    fun ossObject(region: String?, bucket: String?, key: String?, actions: Collection<String?>): AliOssObject {
+    fun ossObject(region: String, bucket: String, key: String, actions: Collection<String>): AliOssObject {
         val s = AliOssProperties()
         s.region = region
         s.bucket = bucket
         return ossObject(s, key, actions)
     }
 
-    fun ossObject(properties: AliOssProperties, key: String?): AliOssObject {
+    fun ossObject(properties: AliOssProperties, key: String): AliOssObject {
         return ossObject(properties, key, AliActions.OSS_OBJECT_DEFAULT)
     }
 
-    fun ossObject(properties: AliOssProperties, key: String?, actions: Collection<String?>): AliOssObject {
+    fun ossObject(properties: AliOssProperties, key: String, actions: Collection<String>): AliOssObject {
         val bucket = properties.bucket
-        val statement = allow()
+        val statement = Statement.allow()
         statement.addAction(actions)
-        statement.addResource("acs:oss:*:*:%s/%s".formatted(bucket, key))
+        statement.addResource("acs:oss:*:*:$bucket/$key")
         val credential = credential(statement)
         val copy = properties.copy()
         copy.useCredential(credential)
         return AliOssObject(copy, key)
     } // endregion
 
-    companion object {
-        const val ALGORITHM: String = "ACS3-HMAC-SHA256"
-
-        const val HEADER_PREFIX: String = "x-acs"
-    }
 }

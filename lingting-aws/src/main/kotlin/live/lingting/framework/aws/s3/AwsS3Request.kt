@@ -7,12 +7,12 @@ import live.lingting.framework.http.api.ApiRequest
  * @author lingting 2024-09-19 15:03
  */
 abstract class AwsS3Request : ApiRequest() {
-    var key: String? = null
+    var key: String = ""
 
     var acl: Acl? = null
 
     override fun path(): String {
-        return key!!
+        return key
     }
 
     fun setAclIfAbsent(acl: Acl) {

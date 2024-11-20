@@ -4,13 +4,11 @@ package live.lingting.framework.ali.properties
  * @author lingting 2024-09-14 11:53
  */
 class AliStsProperties : AliProperties() {
-    @JvmField
-    var roleArn: String? = null
+    var roleArn: String = ""
 
-    @JvmField
-    var roleSessionName: String? = null
+    var roleSessionName: String = ""
 
     init {
-        setPrefix("sts")
+        prefix = "sts"
     }
 }

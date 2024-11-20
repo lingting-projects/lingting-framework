@@ -1,10 +1,10 @@
 package live.lingting.framework.ali.sts
 
+import java.util.Map
 import live.lingting.framework.aws.policy.Statement
 import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.body.MemoryBody
 import live.lingting.framework.jackson.JacksonUtils
-import java.util.Map
 
 /**
  * @author lingting 2024-09-14 13:45
@@ -15,11 +15,11 @@ class AliStsCredentialRequest : AliStsRequest() {
      */
     var timeout: Long = 0
 
-    var statements: Collection<Statement>? = null
+    var statements: Collection<Statement> = emptyList()
 
-    var roleArn: String? = null
+    var roleArn: String = ""
 
-    var roleSessionName: String? = null
+    var roleSessionName: String = ""
 
     override fun name(): String {
         return "AssumeRole"
@@ -33,10 +33,10 @@ class AliStsCredentialRequest : AliStsRequest() {
         return ""
     }
 
-    override fun body(): BodySource? {
+    override fun body(): BodySource {
         val policy = Map.of(
             "Version", "1", "Statement",
-            statements!!.stream().map { obj: Statement -> obj.map() }.toList()
+            statements.stream().map { obj: Statement -> obj.map() }.toList()
         )
         val map = Map.of(
             "RoleArn", roleArn, "RoleSessionName", roleSessionName, "DurationSeconds",

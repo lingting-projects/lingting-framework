@@ -8,23 +8,20 @@ import live.lingting.framework.aws.s3.AwsS3Properties
 open class AliProperties {
     var scheme: String = "https"
 
-    var prefix: String? = null
+    var prefix: String = ""
 
-    @JvmField
-    var region: String? = null
+    var region: String = ""
 
     var endpoint: String = "aliyuncs.com"
 
-    @JvmField
-    var ak: String? = null
+    var ak: String = ""
 
-    @JvmField
-    var sk: String? = null
+    var sk: String = ""
 
-    var token: String? = null
+    var token: String? = ""
 
     open fun host(): String {
-        return "%s://%s.%s.%s".formatted(scheme, prefix, region, endpoint)
+        return "$scheme://$prefix.$region.$endpoint"
     }
 
     open fun s3(): AwsS3Properties {

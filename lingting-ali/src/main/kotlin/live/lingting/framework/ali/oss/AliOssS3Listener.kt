@@ -13,7 +13,7 @@ import live.lingting.framework.util.StringUtils
  * @author lingting 2024/11/5 14:53
  */
 class AliOssS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
-    override fun onFailed(request: AwsS3Request?, response: HttpResponse) {
+    override fun onFailed(request: AwsS3Request, response: HttpResponse) {
         val headers = response.headers()
         val ec = headers.first(AliUtils.HEADER_EC, "")
 

@@ -6,37 +6,32 @@ import com.fasterxml.jackson.annotation.JsonProperty
  * @author lingting 2024-09-14 13:50
  */
 class AliStsCredentialResponse : AliStsResponse() {
-    @set:JsonProperty("Credentials")
     @JsonProperty("Credentials")
-    var credentials: Credentials? = null
+    var credentials: Credentials = Credentials()
 
-    val accessKeyId: String?
-        get() = credentials!!.accessKeyId
+    val accessKeyId: String
+        get() = credentials.accessKeyId
 
-    val accessKeySecret: String?
-        get() = credentials!!.accessKeySecret
+    val accessKeySecret: String
+        get() = credentials.accessKeySecret
 
-    val securityToken: String?
-        get() = credentials!!.securityToken
+    val securityToken: String
+        get() = credentials.securityToken
 
-    val expire: String?
-        get() = credentials!!.expiration
+    val expire: String
+        get() = credentials.expiration
 
     class Credentials {
-        @set:JsonProperty("AccessKeyId")
         @JsonProperty("AccessKeyId")
-        var accessKeyId: String? = null
+        var accessKeyId: String = ""
 
-        @set:JsonProperty("AccessKeySecret")
         @JsonProperty("AccessKeySecret")
-        var accessKeySecret: String? = null
+        var accessKeySecret: String = ""
 
-        @set:JsonProperty("SecurityToken")
         @JsonProperty("SecurityToken")
-        var securityToken: String? = null
+        var securityToken: String = ""
 
-        @set:JsonProperty("Expiration")
         @JsonProperty("Expiration")
-        var expiration: String? = null
+        var expiration: String = ""
     }
 }

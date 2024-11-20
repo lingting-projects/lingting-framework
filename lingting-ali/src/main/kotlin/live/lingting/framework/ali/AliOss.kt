@@ -8,11 +8,11 @@ import live.lingting.framework.kt.logger
 /**
  * @author lingting 2024-09-19 22:05
  */
-abstract class AliOss<C : AwsS3Client?> protected constructor(protected val client: C) : AwsS3Delegation<C> {
+abstract class AliOss<C : AwsS3Client> protected constructor(protected val client: C) : AwsS3Delegation<C> {
     protected val log = logger()
 
     init {
-        client!!.listener = AliOssS3Listener(client)
+        client.listener = AliOssS3Listener(client)
     }
 
     override fun delegation(): C {

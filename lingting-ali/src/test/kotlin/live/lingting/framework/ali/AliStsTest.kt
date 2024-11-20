@@ -3,7 +3,9 @@ package live.lingting.framework.ali
 import live.lingting.framework.aws.policy.Credential
 import live.lingting.framework.aws.policy.Statement
 import live.lingting.framework.util.StringUtils
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty
@@ -25,11 +27,11 @@ internal class AliStsTest {
         val statement = Statement(true)
         statement.addAction("obs:*")
         statement.addResource("obs:*:*:bucket:*")
-        val credential = Assertions.assertDoesNotThrow<Credential> { sts!!.credential(statement) }
-        Assertions.assertNotNull(credential)
+        val credential = assertDoesNotThrow<Credential> { sts!!.credential(statement) }
+        assertNotNull(credential)
         assertTrue(StringUtils.hasText(credential.ak))
         assertTrue(StringUtils.hasText(credential.sk))
         assertTrue(StringUtils.hasText(credential.token))
-        Assertions.assertNotNull(credential.expire)
+        assertNotNull(credential.expire)
     }
 }

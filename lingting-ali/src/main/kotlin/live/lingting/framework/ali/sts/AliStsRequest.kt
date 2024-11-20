@@ -18,12 +18,12 @@ abstract class AliStsRequest : AliRequest() {
     abstract fun version(): String
 
 
-    fun nonce(): String? {
-        return nonceValue.compute { v: String? ->
-            if (StringUtils.hasText(v)) {
-                return@compute v
+    fun nonce(): String {
+        return nonceValue.compute {
+            if (StringUtils.hasText(it)) {
+                return@compute it
             }
             snowflake.nextStr()
-        }
+        }!!
     }
 }
