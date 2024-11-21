@@ -16,6 +16,18 @@ interface HttpHeaders : MultiValue<String, String, MutableCollection<String>> {
         return first(HttpUtils.HEADER_HOST)
     }
 
+    fun origin(): String? {
+        return first(HttpUtils.HEADER_ORIGIN)
+    }
+
+    fun language(): String? {
+        return first(HttpUtils.HEADER_ACCEPT_LANGUAGE)
+    }
+
+    fun ua(): String? {
+        return first(HttpUtils.HEADER_USER_AGENT)
+    }
+
     fun authorization(): String? {
         return first(HttpUtils.HEADER_AUTHORIZATION)
     }
@@ -34,6 +46,7 @@ interface HttpHeaders : MultiValue<String, String, MutableCollection<String>> {
     }
 
     // endregion
+
     // region set
     fun host(host: String): HttpHeaders {
         put(HttpUtils.HEADER_HOST, host)
@@ -75,10 +88,12 @@ interface HttpHeaders : MultiValue<String, String, MutableCollection<String>> {
             return CollectionHttpHeaders()
         }
 
+        @JvmStatic
         fun of(value: MultiValue<String, String, out Collection<String>>): HttpHeaders {
             return of(value.map())
         }
 
+        @JvmStatic
         fun of(map: Map<String, Collection<String>>): HttpHeaders {
             val empty = empty()
             empty.addAll(map)

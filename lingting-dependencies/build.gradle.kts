@@ -9,7 +9,7 @@ for (catalog in versionCatalogs) {
             continue
         }
         val provider = optional.get()
-        if (alias.contains("Dependencies")) {
+        if (alias.contains("dependencies")) {
             bomList.add(provider)
         } else {
             apiList.add(provider)

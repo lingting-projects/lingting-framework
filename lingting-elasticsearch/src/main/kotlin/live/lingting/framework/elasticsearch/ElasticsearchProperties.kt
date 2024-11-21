@@ -48,11 +48,11 @@ class ElasticsearchProperties {
         /**
          * 滚动索引保留超时时间
          */
-        var timeout: Duration? = null
+        var timeout: Duration = Duration.ofMinutes(15)
 
         /**
          * 滚动查询时每次查询数量
          */
-        var size: Long? = null
+        var size: Long = 10
     }
 }

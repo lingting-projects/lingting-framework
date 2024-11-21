@@ -16,12 +16,12 @@ class SecurityToken private constructor(val type: String, val token: String, val
         val EMPTY: SecurityToken = of("", "", "")
 
         @JvmStatic
-        fun ofDelimiter(raw: String, delimiter: String): SecurityToken {
+        fun ofDelimiter(raw: String?, delimiter: String): SecurityToken {
             if (!StringUtils.hasText(raw)) {
                 return EMPTY
             }
 
-            val split = raw.split(delimiter.toRegex(), limit = 2).toTypedArray()
+            val split = raw!!.split(delimiter.toRegex(), limit = 2).toTypedArray()
             if (split.size > 1) {
                 return of(split[0], split[1], raw)
             }

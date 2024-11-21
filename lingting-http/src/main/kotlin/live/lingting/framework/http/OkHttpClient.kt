@@ -1,12 +1,8 @@
 package live.lingting.framework.http
 
 import java.io.IOException
-import java.net.ProxySelector
-import java.time.Duration
 import java.util.function.Consumer
 import java.util.function.Supplier
-import javax.net.SocketFactory
-import javax.net.ssl.HostnameVerifier
 import live.lingting.framework.function.ThrowingFunction
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.http.okhttp.OkHttpCookie

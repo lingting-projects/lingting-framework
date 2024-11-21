@@ -61,7 +61,7 @@ class ElasticsearchApi<T>(
     val handler: ElasticsearchDataPermissionHandler,
     val client: ElasticsearchClient
 ) {
-    val retryProperties: ElasticsearchProperties.Retry = properties.retry
+    val retryProperties = properties.retry
 
     val scrollSize: Long
 
@@ -73,23 +73,14 @@ class ElasticsearchApi<T>(
     ) : this(ElasticsearchUtils.index(cls), cls, idFunc, properties, handler, client)
 
     init {
-        var currentScrollSize: Long? = null
-        var currentScrollTime: Time? = null
-
         val scroll = properties.scroll
-        currentScrollSize = scroll.size
-        if (scroll.timeout != null) {
-            currentScrollTime = Time.of { t -> t.time("${scroll.timeout!!.toSeconds()}%ds") }
-        }
-
-        this.scrollSize = currentScrollSize!!
-        this.scrollTime = currentScrollTime
+        this.scrollSize = scroll.size
+        this.scrollTime = Time.of { t -> t.time("${scroll.timeout.toSeconds()}%ds") }
     }
 
     fun documentId(t: T): String {
         return idFunc.apply(t)
     }
-
 
     fun retry(runnable: ThrowingRunnable) {
         retry<Any>(ThrowingSupplier<Any> {

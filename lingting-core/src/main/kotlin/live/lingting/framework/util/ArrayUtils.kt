@@ -33,8 +33,8 @@ object ArrayUtils {
     }
 
     @JvmStatic
-    fun <T> isEmpty(array: Array<T>): Boolean {
-        return array.isEmpty()
+    fun <T> isEmpty(array: Array<T>?): Boolean {
+        return array.isNullOrEmpty()
     }
 
     @JvmStatic
@@ -65,9 +65,6 @@ object ArrayUtils {
         return indexOf(array, `val`) { s, t ->
             if (s == t) {
                 return@indexOf true
-            }
-            if (s == null || t == null) {
-                return@indexOf false
             }
             s.equals(t, ignoreCase = true)
         } > NOT_FOUNT

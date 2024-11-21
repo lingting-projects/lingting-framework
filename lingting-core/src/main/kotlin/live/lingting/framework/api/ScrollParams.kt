@@ -8,6 +8,6 @@ data class ScrollParams<T>(
     var cursor: T?,
 ) {
 
-    constructor() : this(0, null)
+    constructor() : this(10, null)
 
 }

@@ -4,12 +4,9 @@ import java.io.InputStream
 import java.net.Authenticator
 import java.net.CookieManager
 import java.net.CookiePolicy
-import java.net.ProxySelector
 import java.net.http.HttpRequest.BodyPublisher
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers
-import java.time.Duration
-import java.util.concurrent.ExecutorService
 import java.util.function.Consumer
 import java.util.function.Supplier
 import live.lingting.framework.http.body.MemoryBody

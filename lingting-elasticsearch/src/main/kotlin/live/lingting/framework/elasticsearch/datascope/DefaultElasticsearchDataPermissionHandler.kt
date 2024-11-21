@@ -8,14 +8,11 @@ import java.util.Collections
  */
 open class DefaultElasticsearchDataPermissionHandler(protected val scopes: List<ElasticsearchDataScope>) : ElasticsearchDataPermissionHandler {
     override fun dataScopes(): List<ElasticsearchDataScope> {
-        return if (scopes == null) emptyList<ElasticsearchDataScope>() else Collections.unmodifiableList(scopes)
+        return Collections.unmodifiableList(scopes)
     }
 
     override fun filterDataScopes(index: String): List<ElasticsearchDataScope> {
-        if (scopes == null) {
-            return emptyList<ElasticsearchDataScope>()
-        }
-        return dataScopes().stream().filter { scope -> scope.includes(index) }.toList()
+        return dataScopes().filter { scope -> scope.includes(index) }
     }
 
     override fun ignorePermissionControl(index: String): Boolean {

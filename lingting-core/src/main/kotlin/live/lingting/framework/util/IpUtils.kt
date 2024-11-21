@@ -3,6 +3,7 @@ package live.lingting.framework.util
 import jakarta.servlet.http.HttpServletRequest
 import java.net.InetAddress
 import java.util.function.Predicate
+import live.lingting.framework.http.header.HttpHeaders
 
 /**
  * @author psh 2022-04-21 16:55
@@ -21,7 +22,7 @@ object IpUtils {
 
     const val IPV4_LENGTH_MAX: Int = 16
 
-    private val HEADERS: MutableList<String> = ArrayList(16)
+    val HEADERS: MutableList<String> = ArrayList(16)
 
     init {
         HEADERS.add("X-Forwarded-For")
@@ -35,17 +36,31 @@ object IpUtils {
 
     @JvmStatic
     fun getFirstIp(request: HttpServletRequest): String {
-        var ip: String
+        var ip: String = getFirstIp { request.getHeader(it) }
+        if (StringUtils.hasText(ip)) {
+            return ip
+        }
+        return handlerIp(request.remoteAddr ?: "")
+    }
+
+    @JvmStatic
+    fun getFirstIp(headers: HttpHeaders): String {
+        return getFirstIp { headers.first(it) }
+    }
+
+    @JvmStatic
+    fun getFirstIp(function: (String) -> String?): String {
+        var ip: String? = null
 
         for (header in HEADERS) {
+            val str = function(header) ?: ""
             // 处理IP
-            ip = handlerIp(request.getHeader(header))
+            ip = handlerIp(str)
             if (StringUtils.hasText(ip)) {
                 return ip
             }
         }
-
-        return handlerIp(request.remoteAddr)
+        return ip ?: ""
     }
 
     /**
