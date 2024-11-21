@@ -105,7 +105,7 @@ object StringUtils {
      * 驼峰字符串转下划线字符串
      *
      *
-     * eg: HumpToUnderscore -> hump_to_underscore
+     * eg-> hump_to_underscore
      *
      */
     @JvmStatic
@@ -133,7 +133,7 @@ object StringUtils {
      * 下划线字符串转驼峰字符串
      *
      *
-     * eg: HumpToUnderscore -> hump_to_underscore
+     * eg-> hump_to_underscore
      *
      */
     @JvmStatic

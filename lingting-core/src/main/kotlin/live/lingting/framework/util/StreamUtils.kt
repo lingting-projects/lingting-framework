@@ -77,7 +77,7 @@ object StreamUtils {
      */
     @JvmStatic
     fun read(`in`: InputStream, size: Int, consumer: ThrowingBiConsumerE<ByteArray, Int, IOException>) {
-        readByFlag(`in`, size) { bytes: ByteArray, length: Int ->
+        readByFlag(`in`, size) { bytes, length ->
             consumer.accept(bytes, length)
             true
         }
@@ -90,7 +90,7 @@ object StreamUtils {
 
     @JvmStatic
     fun readCopy(`in`: InputStream, size: Int, consumer: ThrowingConsumerE<ByteArray, IOException>) {
-        read(`in`, size) { bytes: ByteArray, length: Int ->
+        read(`in`, size) { bytes, length ->
             val copy: ByteArray = bytes.copyOf(length)
             consumer.accept(copy)
         }
@@ -106,7 +106,7 @@ object StreamUtils {
     @JvmStatic
     @JvmOverloads
     fun write(`in`: InputStream, out: OutputStream, size: Int = readSize) {
-        read(`in`, size) { bytes: ByteArray, len: Int -> out.write(bytes, 0, len!!) }
+        read(`in`, size) { bytes, len -> out.write(bytes, 0, len!!) }
     }
 
     @JvmStatic
@@ -117,7 +117,7 @@ object StreamUtils {
     @JvmStatic
     fun write(`in`: InputStream, out: OutputStream, size: Int, length: Long) {
         val atomic = AtomicLong(0)
-        readByFlag(`in`, size) { bytes: ByteArray, len: Int ->
+        readByFlag(`in`, size) { bytes, len ->
             // 计算剩余字节长度
             val remainLength = length - atomic.get()
             // 计算本次写入的字节长度, 不能大于剩余字节长度
@@ -228,7 +228,7 @@ object StreamUtils {
      */
     @JvmStatic
     fun readLine(`in`: InputStream, charset: Charset, size: Int, consumer: BiConsumer<Int, String>) {
-        readLine(`in`, size) { index: Int, bytes: ByteArray ->
+        readLine(`in`, size) { index, bytes ->
             val string = String(bytes, charset)
             val clean: String = StringUtils.cleanBom(string)
             consumer.accept(index, clean)
@@ -257,7 +257,7 @@ object StreamUtils {
      */
     @JvmStatic
     fun readLine(`in`: InputStream, size: Int, consumer: BiConsumer<Int, ByteArray>) {
-        val doConsumer = BiConsumer<Int, List<Byte>> { index: Int, list: List<Byte> ->
+        val doConsumer = BiConsumer<Int, List<Byte>> { index, list ->
             val bytes: ByteArray = ByteUtils.trimEndLine(list)
             consumer.accept(index, bytes)
         }
@@ -265,7 +265,7 @@ object StreamUtils {
         val list: MutableList<Byte> = ArrayList()
         val atomic = AtomicInteger(0)
 
-        read(`in`, size) { bytes: ByteArray, length: Int ->
+        read(`in`, size) { bytes, length ->
             for (i in 0 until length) {
                 val b = bytes[i]
                 list.add(b)

@@ -35,7 +35,7 @@ class HuaweiObsSing(
 
     fun canonicalizedHeaders(): String {
         val builder = StringBuilder()
-        headers.keys().stream().filter { k: String -> k.startsWith(HuaweiObs.HEADER_PREFIX) }.sorted().forEach { k: String ->
+        headers.keys().stream().filter { k -> k.startsWith(HuaweiObs.HEADER_PREFIX) }.sorted().forEach { k ->
             val vs = headers.get(k)
             if (vs.isEmpty()) {
                 return@forEach

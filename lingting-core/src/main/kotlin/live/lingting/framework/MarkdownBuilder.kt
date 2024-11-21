@@ -244,7 +244,7 @@ class MarkdownBuilder {
     fun build(): String {
         lineBreak()
         val res = StringBuilder()
-        content.forEach { line: String? -> res.append(line).append(" \n") }
+        content.forEach { line -> res.append(line).append(" \n") }
         return res.toString()
     }
 

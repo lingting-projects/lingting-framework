@@ -36,7 +36,7 @@ class AliStsCredentialRequest : AliStsRequest() {
     override fun body(): BodySource {
         val policy = Map.of(
             "Version", "1", "Statement",
-            statements.stream().map { obj: Statement -> obj.map() }.toList()
+            statements.stream().map { obj -> obj.map() }.toList()
         )
         val map = Map.of(
             "RoleArn", roleArn, "RoleSessionName", roleSessionName, "DurationSeconds",

@@ -70,7 +70,7 @@ internal class HuaweiObsTest {
         val obsBucket = iam!!.obsBucket(properties!!)
         val items: List<AwsS3MultipartItem> = obsBucket.multipartList()
         if (!isEmpty(items)) {
-            items.forEach(Consumer { item: AwsS3MultipartItem ->
+            items.forEach(Consumer { item ->
                 val k = item.key
                 val v = item.uploadId
                 val obsObject = obsBucket.use(k)

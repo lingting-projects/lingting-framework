@@ -93,7 +93,7 @@ object ClassUtils {
         require(!CollectionUtils.isEmpty(loaders)) { "ClassLoaders can not be empty!" }
         val absent = CACHE_CLASS_PRESENT.computeIfAbsent(
             className
-        ) { k: String -> ConcurrentHashMap(loaders.size) }
+        ) { k -> ConcurrentHashMap(loaders.size) }
 
         for (loader in loaders) {
             val flag = absent.computeIfAbsent(loader) {
@@ -120,7 +120,7 @@ object ClassUtils {
 
     @JvmStatic
     fun <T> scan(basePack: String, cls: Class<*>?): Set<Class<T>> {
-        return scan(basePack, { tClass: Class<T> -> cls == null || cls.isAssignableFrom(tClass) }, { s: String, e: Exception -> })
+        return scan(basePack, { tClass -> cls == null || cls.isAssignableFrom(tClass) }, { s, e -> })
     }
 
     /**

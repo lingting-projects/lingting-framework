@@ -81,18 +81,18 @@ interface MultiValue<K, V, C : Collection<V>> {
     fun each(consumer: BiConsumer<K, V>)
 
     fun forEachSorted(consumer: BiConsumer<K, C>) {
-        keys().stream().sorted().forEach { key: K -> consumer.accept(key, get(key)) }
+        keys().stream().sorted().forEach { key -> consumer.accept(key, get(key)) }
     }
 
     fun forEachSorted(consumer: BiConsumer<K, C>, comparator: Comparator<K>) {
-        keys().stream().sorted(comparator).forEach { key: K -> consumer.accept(key, get(key)) }
+        keys().stream().sorted(comparator).forEach { key -> consumer.accept(key, get(key)) }
     }
 
     fun eachSorted(consumer: BiConsumer<K, V>) {
-        forEachSorted { k: K, c: C -> c.forEach { v: V -> consumer.accept(k, v) } }
+        forEachSorted { k, c -> c.forEach { v -> consumer.accept(k, v) } }
     }
 
     fun eachSorted(consumer: BiConsumer<K, V>, comparator: Comparator<K>) {
-        forEachSorted({ k: K, c: C -> c.forEach { v: V -> consumer.accept(k, v) } }, comparator)
+        forEachSorted({ k, c -> c.forEach { v -> consumer.accept(k, v) } }, comparator)
     } // endregion
 }

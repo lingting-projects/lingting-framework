@@ -64,7 +64,7 @@ open class SecurityScope {
     }
 
     fun <T> attribute(key: String, defaultValue: T, func: Function<Any, T>): T {
-        return attribute(key, defaultValue, { obj: Optional<Any> -> obj.isEmpty }, func)
+        return attribute(key, defaultValue, { obj -> obj.isEmpty }, func)
     }
 
     /**

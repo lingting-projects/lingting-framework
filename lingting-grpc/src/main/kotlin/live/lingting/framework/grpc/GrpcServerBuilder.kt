@@ -56,7 +56,7 @@ class GrpcServerBuilder {
 
     @JvmOverloads
     fun build(operator: UnaryOperator<ServerBuilder<*>> = UnaryOperator { builder: ServerBuilder<*> -> builder }): GrpcServer {
-        return build(IntFunction { forPort: Int ->
+        return build(IntFunction { forPort ->
             val builder = ServerBuilder.forPort(forPort)
             operator.apply(builder)
         })

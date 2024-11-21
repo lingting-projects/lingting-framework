@@ -29,11 +29,11 @@ class SimpleRetryFunction(
      */
     protected val delay: Duration?
 ) : RetryFunction {
-    override fun allowRetry(retryCount: Int, e: Throwable?): Boolean {
+    override fun allowRetry(retryCount: Int, e: Throwable): Boolean {
         return retryCount < maxRetryCount && e !is InterruptedException
     }
 
-    override fun getDelay(retryCount: Int, e: Throwable?): Duration? {
+    override fun getDelay(retryCount: Int, e: Throwable): Duration? {
         return delay
     }
 }

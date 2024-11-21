@@ -27,7 +27,7 @@ object ValueUtils {
 
     @JvmStatic
     fun awaitTrue(timeout: Duration?, supplier: Supplier<Boolean>) {
-        Await.builder<Boolean>(supplier, Predicate<Boolean> { obj: Boolean -> java.lang.Boolean.TRUE.equals(obj) }).timeout(timeout).executor(executor).await()
+        Await.builder<Boolean>(supplier, Predicate<Boolean> { obj -> java.lang.Boolean.TRUE.equals(obj) }).timeout(timeout).executor(executor).await()
     }
 
     @JvmStatic
@@ -37,7 +37,7 @@ object ValueUtils {
 
     @JvmStatic
     fun awaitFalse(timeout: Duration?, supplier: Supplier<Boolean>) {
-        Await.builder<Boolean>(supplier, Predicate<Boolean> { obj: Boolean -> java.lang.Boolean.FALSE.equals(obj) }).timeout(timeout).executor(executor).await()
+        Await.builder<Boolean>(supplier, Predicate<Boolean> { obj -> java.lang.Boolean.FALSE.equals(obj) }).timeout(timeout).executor(executor).await()
     }
 
     /**

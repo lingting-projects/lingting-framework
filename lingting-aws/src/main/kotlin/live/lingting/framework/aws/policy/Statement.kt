@@ -1,7 +1,5 @@
 package live.lingting.framework.aws.policy
 
-import java.util.Arrays
-
 
 /**
  * @author lingting 2024-09-12 20:31
@@ -30,7 +28,7 @@ open class Statement(val isAllow: Boolean) {
     }
 
     fun addResource(vararg resources: String) {
-        addResource(Arrays.asList(*resources))
+        addResource(resources.toList())
     }
 
     fun addResource(resources: Collection<String>) {

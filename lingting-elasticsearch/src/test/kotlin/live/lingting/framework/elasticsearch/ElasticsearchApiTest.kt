@@ -4,9 +4,9 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient
 import co.elastic.clients.elasticsearch._types.query_dsl.Query
 import co.elastic.clients.json.JsonpMapper
 import co.elastic.clients.transport.ElasticsearchTransport
+import live.lingting.framework.elasticsearch.ElasticsearchProvider.api
 import live.lingting.framework.elasticsearch.ElasticsearchProvider.client
 import live.lingting.framework.elasticsearch.ElasticsearchProvider.jacksonMapper
-import live.lingting.framework.elasticsearch.ElasticsearchProvider.restClient
 import live.lingting.framework.elasticsearch.ElasticsearchProvider.transport
 import live.lingting.framework.elasticsearch.composer.QueryComposer
 import live.lingting.framework.elasticsearch.datascope.DefaultElasticsearchDataPermissionHandler
@@ -36,20 +36,20 @@ internal class ElasticsearchApiTest {
 
     @BeforeEach
     fun before() {
-        restClient = restClient(host)
+        restClient = ElasticsearchProvider.restClient(host)
         jsonpMapper = jacksonMapper()
-        transport = transport(restClient, jsonpMapper)
-        client = client(transport)
+        transport = transport(restClient!!, jsonpMapper!!)
+        client = client(transport!!)
 
         val scope: ElasticsearchDataScope = object : ElasticsearchDataScope {
             override val resource: String
                 get() = "null"
 
-            override fun includes(index: String?): Boolean {
+            override fun includes(index: String): Boolean {
                 return true
             }
 
-            override fun invoke(index: String?): Query? {
+            override fun invoke(index: String): Query {
                 return QueryComposer.term("space.name", "default")
             }
         }
@@ -57,11 +57,11 @@ internal class ElasticsearchApiTest {
         val handler: DefaultElasticsearchDataPermissionHandler = object : DefaultElasticsearchDataPermissionHandler(
             listOf(scope)
         ) {
-            override fun ignorePermissionControl(index: String?): Boolean {
+            override fun ignorePermissionControl(index: String): Boolean {
                 return !allowDefault
             }
         }
-        api = api(".kibana_8.12.2_001", Entity::class.java, { obj: Entity -> obj.id }, ElasticsearchProperties(), handler, client)
+        api = api(".kibana_8.12.2_001", Entity::class.java, { obj -> obj.id!! }, ElasticsearchProperties(), handler, client!!)
     }
 
 

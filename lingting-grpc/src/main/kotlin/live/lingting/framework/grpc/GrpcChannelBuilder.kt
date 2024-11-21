@@ -66,7 +66,7 @@ class GrpcChannelBuilder(protected val provide: GrpcClientProvide) {
 
     @JvmOverloads
     fun build(operator: UnaryOperator<ManagedChannelBuilder<*>> = UnaryOperator { builder: ManagedChannelBuilder<*> -> builder }): ManagedChannel {
-        return build(Function { forTarget: String ->
+        return build(Function { forTarget ->
             val builder = ManagedChannelBuilder.forTarget(forTarget)
             operator.apply(builder)
         })

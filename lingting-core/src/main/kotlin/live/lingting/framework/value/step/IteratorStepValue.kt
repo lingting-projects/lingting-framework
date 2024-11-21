@@ -28,7 +28,7 @@ open class IteratorStepValue<T> protected constructor(
     }
 
     override fun doNext(): T {
-        return map.computeIfAbsent(increasing()) { i: BigInteger -> iterator.next() }
+        return map.computeIfAbsent(increasing()) { i -> iterator.next() }
     }
 
     override fun doCalculate(index: BigInteger): T {

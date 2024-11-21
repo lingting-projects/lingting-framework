@@ -60,7 +60,7 @@ abstract class MultipartTask<I : MultipartTask<I>> protected constructor(val mul
     }
 
     fun tasksFailed(): List<PartTask> {
-        return tasks.stream().filter { obj: PartTask -> obj.isFailed }.toList()
+        return tasks.stream().filter { obj -> obj.isFailed }.toList()
     }
 
 
@@ -79,7 +79,7 @@ abstract class MultipartTask<I : MultipartTask<I>> protected constructor(val mul
             val cn = AtomicInteger()
             val sn = AtomicInteger()
             val fn = AtomicInteger()
-            tasks.stream().filter { obj: PartTask -> obj.isCompleted }.forEach { t: PartTask ->
+            tasks.stream().filter { obj -> obj.isCompleted }.forEach { t ->
                 cn.addAndGet(1)
                 if (t.isSuccessful) {
                     sn.addAndGet(1)

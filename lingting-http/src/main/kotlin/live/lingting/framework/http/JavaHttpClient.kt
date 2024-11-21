@@ -68,10 +68,10 @@ class JavaHttpClient(protected val client: java.net.http.HttpClient) : HttpClien
                 builder.sslContext(context)
             }
 
-            nonNull(connectTimeout, Consumer { duration: Duration -> builder.connectTimeout(duration) })
-            nonNull(proxySelector, Consumer { proxySelector: ProxySelector -> builder.proxy(proxySelector) })
-            nonNull(executor, Consumer { executor: ExecutorService -> builder.executor(executor) })
-            nonNull(authenticator, Consumer { authenticator: Authenticator -> builder.authenticator(authenticator) })
+            nonNull(connectTimeout, Consumer { duration -> builder.connectTimeout(duration) })
+            nonNull(proxySelector, Consumer { proxySelector -> builder.proxy(proxySelector) })
+            nonNull(executor, Consumer { executor -> builder.executor(executor) })
+            nonNull(authenticator, Consumer { authenticator -> builder.authenticator(authenticator) })
 
             builder.followRedirects(if (redirects) java.net.http.HttpClient.Redirect.ALWAYS else java.net.http.HttpClient.Redirect.NEVER)
 
@@ -106,7 +106,7 @@ class JavaHttpClient(protected val client: java.net.http.HttpClient) : HttpClien
             val builder = java.net.http.HttpRequest.newBuilder().uri(uri)
             val publisher = convert(method, body)
             builder.method(method.name, publisher)
-            headers.each { k: String, v: String ->
+            headers.each { k, v ->
                 if (HEADERS_DISABLED.contains(k)) {
                     return@each
                 }

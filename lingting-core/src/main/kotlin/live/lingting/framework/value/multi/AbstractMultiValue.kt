@@ -30,7 +30,7 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
             throw UnsupportedOperationException()
         }
         key = convert(key)
-        return map.computeIfAbsent(key) { k: K -> supplier.get() }
+        return map.computeIfAbsent(key) { k -> supplier.get() }
     }
 
     override fun ifAbsent(key: K) {
@@ -64,7 +64,7 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
             throw UnsupportedOperationException()
         }
         val c = absent(key)
-        values.forEach(Consumer<V> { e: V -> c.add(e) })
+        values.forEach(Consumer<V> { e -> c.add(e) })
     }
 
     override fun addAll(map: Map<K, Collection<V>>) {
@@ -78,7 +78,7 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
         if (!allowModify) {
             throw UnsupportedOperationException()
         }
-        value.forEach((BiConsumer { key: K, values: C -> this.addAll(key, values) }))
+        value.forEach((BiConsumer { key, values -> this.addAll(key, values) }))
     }
 
     override fun put(key: K, value: V) {
@@ -94,7 +94,7 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
             throw UnsupportedOperationException()
         }
         val c = supplier.get()
-        values.forEach(Consumer<V> { e: V -> c.add(e) })
+        values.forEach(Consumer<V> { e -> c.add(e) })
         key = convert(key)
         map.put(key, c)
     }
@@ -110,7 +110,7 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
         if (!allowModify) {
             throw UnsupportedOperationException()
         }
-        value.forEach((BiConsumer { key: K, values: C -> this.putAll(key, values) }))
+        value.forEach((BiConsumer { key, values -> this.putAll(key, values) }))
     }
 
     override fun replace(oldKey: K, newKey: K) {
@@ -124,7 +124,7 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
     }
 
     protected fun from(value: MultiValue<K, V, out Collection<V>>) {
-        from(value) { vs: Collection<V> ->
+        from(value) { vs ->
             val c = supplier.get()
             c.addAll(vs)
             c
@@ -132,7 +132,7 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
     }
 
     protected fun <S : Collection<V>> from(value: MultiValue<K, V, S>, function: Function<S, C>) {
-        value.forEach((BiConsumer { k: K, vs: S ->
+        value.forEach((BiConsumer { k, vs ->
             val rk = convert(k)
             val rv = function.apply(vs)
             map.put(rk, rv)
@@ -237,6 +237,6 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
     }
 
     override fun each(consumer: BiConsumer<K, V>) {
-        forEach { k: K, c: C -> c.forEach { v: V -> consumer.accept(k, v) } }
+        forEach { k, c -> c.forEach { v -> consumer.accept(k, v) } }
     } // endregion
 }

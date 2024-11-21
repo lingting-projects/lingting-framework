@@ -7,4 +7,4 @@ import java.util.function.Function
 /**
  * @author lingting 2024-06-19 10:13
  */
-interface TermOperator : Function<TermQuery.Builder?, ObjectBuilder<TermQuery?>?>
+fun interface TermOperator : Function<TermQuery.Builder, ObjectBuilder<TermQuery>>

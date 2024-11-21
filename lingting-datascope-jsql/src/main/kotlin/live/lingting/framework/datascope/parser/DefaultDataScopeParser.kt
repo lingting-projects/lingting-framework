@@ -56,7 +56,7 @@ class DefaultDataScopeParser : DataScopeParser() {
         processSelect(select)
         val list = select.withItemsList
         if (!CollectionUtils.isEmpty(list)) {
-            list.forEach(Consumer { select: WithItem -> this.processSelect(select) })
+            list.forEach(Consumer { select -> this.processSelect(select) })
         }
     }
 
@@ -273,7 +273,7 @@ class DefaultDataScopeParser : DataScopeParser() {
                     .map { it.getExpression(tableName, table.alias) }
                     .filter { Objects.nonNull(it) }
                     .reduce { leftExpression, rightExpression -> AndExpression(leftExpression, rightExpression) }
-                    .ifPresent { e: Expression -> list.add(e) }
+                    .ifPresent { e -> list.add(e) }
             }
         }
 

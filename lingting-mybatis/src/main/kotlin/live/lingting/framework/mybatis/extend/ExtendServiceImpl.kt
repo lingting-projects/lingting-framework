@@ -67,7 +67,7 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
 
     override fun saveBatch(entityList: Collection<T>, batchSize: Int): Boolean {
         val sqlStatement = getSqlStatement(SqlMethod.INSERT_ONE)
-        return executeBatch(entityList, batchSize) { sqlSession: SqlSession, entity: T -> sqlSession.insert(sqlStatement, entity) }
+        return executeBatch(entityList, batchSize) { sqlSession, entity -> sqlSession.insert(sqlStatement, entity) }
     }
 
     override fun removeById(id: Serializable): Boolean {
@@ -87,7 +87,7 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
 
     override fun updateBatchById(entityList: Collection<T>, batchSize: Int): Boolean {
         val sqlStatement = getSqlStatement(SqlMethod.UPDATE_BY_ID)
-        return executeBatch(entityList, batchSize) { sqlSession: SqlSession, entity: T ->
+        return executeBatch(entityList, batchSize) { sqlSession, entity ->
             val param = ParamMap<T>()
             param[Constants.ENTITY] = entity
             sqlSession.update(sqlStatement, param)

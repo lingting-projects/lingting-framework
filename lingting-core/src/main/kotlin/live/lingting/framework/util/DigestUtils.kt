@@ -25,7 +25,7 @@ object DigestUtils {
     @JvmOverloads
     fun md5(input: InputStream, size: Int = StreamUtils.readSize): ByteArray {
         val digest = MessageDigest.getInstance("MD5")
-        StreamUtils.read(input, size, ThrowingBiConsumerE<ByteArray, Int, IOException> { buffer: ByteArray, len: Int -> digest.update(buffer, 0, len!!) })
+        StreamUtils.read(input, size, ThrowingBiConsumerE<ByteArray, Int, IOException> { buffer, len -> digest.update(buffer, 0, len!!) })
         return digest.digest()
     }
 
@@ -62,7 +62,7 @@ object DigestUtils {
     @JvmOverloads
     fun sha1(input: InputStream, size: Int = StreamUtils.readSize): ByteArray {
         val digest = MessageDigest.getInstance("SHA-1")
-        StreamUtils.read(input, size, ThrowingBiConsumerE<ByteArray, Int, IOException> { buffer: ByteArray, len: Int -> digest.update(buffer, 0, len!!) })
+        StreamUtils.read(input, size, ThrowingBiConsumerE<ByteArray, Int, IOException> { buffer, len -> digest.update(buffer, 0, len!!) })
         return digest.digest()
     }
 
@@ -99,7 +99,7 @@ object DigestUtils {
     @JvmOverloads
     fun sha256(input: InputStream, size: Int = StreamUtils.readSize): ByteArray {
         val digest = MessageDigest.getInstance("SHA-256")
-        StreamUtils.read(input, size, ThrowingBiConsumerE<ByteArray, Int, IOException> { buffer: ByteArray, len: Int -> digest.update(buffer, 0, len!!) })
+        StreamUtils.read(input, size, ThrowingBiConsumerE<ByteArray, Int, IOException> { buffer, len -> digest.update(buffer, 0, len!!) })
         return digest.digest()
     }
 

@@ -35,7 +35,7 @@ internal class MultiValueTest {
         assertEquals(1, value.first(1))
         assertTrue(value.remove(1, 1))
         assertFalse(value.remove(2, 1))
-        assertTrue(value.remove(2).isEmpty())
+        assertTrue(value.remove(2)!!.isEmpty())
         val unmodifiable = value.unmodifiable()
         assertUnmodifiable(unmodifiable)
     }

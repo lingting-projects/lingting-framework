@@ -40,7 +40,7 @@ class ScriptBuilder<T> {
         return this
     }
 
-    fun append(script: String, field: String, value: Any?): ScriptBuilder<T> {
+    fun <R> append(script: String, field: String, value: R): ScriptBuilder<T> {
         if (value != null) {
             params[field] = JsonData.of(value)
         }
@@ -52,12 +52,12 @@ class ScriptBuilder<T> {
         return set(field, value)
     }
 
-    fun set(field: String, value: Any?): ScriptBuilder<T> {
+    fun <R> set(field: String, value: R): ScriptBuilder<T> {
         val script = if (value == null) genSetNull(field) else genSetParams(field)
         return append(script, field, value)
     }
 
-    fun setIfAbsent(field: String, value: Any?): ScriptBuilder<T> {
+    fun setIfAbsent(field: String, value: Any): ScriptBuilder<T> {
         if (value != null) {
             val script = genSetIfAbsent(field)
             return append(script, field, value)
@@ -75,22 +75,24 @@ class ScriptBuilder<T> {
     }
 
     // endregion
+
     // region script number
     @JvmOverloads
-    fun increasing(field: String, value: Number? = 1): ScriptBuilder<T> {
+    fun increasing(field: String, value: Number = 1): ScriptBuilder<T> {
         return append(genSymbol(field, "+="), field, value)
     }
 
     @JvmOverloads
-    fun decrease(field: String, value: Number? = 1): ScriptBuilder<T> {
+    fun decrease(field: String, value: Number = 1): ScriptBuilder<T> {
         return append(genSymbol(field, "-="), field, value)
     }
 
     // endregion
+
     // region build
     fun build(): Script {
         val source = sourceBuilder.toString()
-        return Script.of { s: Script.Builder -> s.lang(lang).source(source).params(HashMap(params)) }
+        return Script.of { s -> s.lang(lang).source(source).params(HashMap(params)) }
     } // endregion
 
     companion object {
@@ -105,44 +107,51 @@ class ScriptBuilder<T> {
             return ScriptBuilder()
         }
 
+        @JvmStatic
         fun fillEnd(source: String): String {
             if (!source.endsWith(";")) {
-                return "%s;".formatted(source)
+                return "$source;"
             }
             return source
         }
 
-        fun genSourceField(field: String?): String {
-            return "%s.%s".formatted(PREFIX_SOURCE, field)
-        }
-
-        fun genParamsField(field: String?): String {
-            return "%s.%s".formatted(PREFIX_PARAMS, field)
-        }
-
-        @JvmOverloads
-        fun genSymbol(field: String?, symbol: String?, value: String? = genParamsField(field)): String {
-            return "%s %s %s".formatted(genSourceField(field), symbol, value)
-        }
-
-        fun genIf(condition: String?, script: String): String {
-            return "if(%s){%s}".formatted(condition, fillEnd(script))
+        @JvmStatic
+        fun genSourceField(field: String): String {
+            return "$PREFIX_SOURCE.$field"
         }
 
         @JvmStatic
-        fun genSetNull(field: String?): String {
+        fun genParamsField(field: String): String {
+            return "$PREFIX_PARAMS.$field"
+        }
+
+        @JvmOverloads
+        @JvmStatic
+        fun genSymbol(field: String, symbol: String, value: String = genParamsField(field)): String {
+            val text = genSourceField(field)
+            return "$text $symbol $value"
+        }
+
+        @JvmStatic
+        fun genIf(condition: String, script: String): String {
+            val end = fillEnd(script)
+            return "if($condition){$end}"
+        }
+
+        @JvmStatic
+        fun genSetNull(field: String): String {
             return genSymbol(field, "=", "null")
         }
 
         @JvmStatic
-        fun genSetParams(field: String?): String {
+        fun genSetParams(field: String): String {
             return genSymbol(field, "=", genParamsField(field))
         }
 
         @JvmStatic
-        fun genSetIfAbsent(field: String?): String {
+        fun genSetIfAbsent(field: String): String {
             val sourceField = genSourceField(field)
-            val condition = "%s==null || %s==''".formatted(sourceField, sourceField)
+            val condition = "$sourceField==null || $sourceField==''"
             val script = genSetParams(field)
             return genIf(condition, script)
         }

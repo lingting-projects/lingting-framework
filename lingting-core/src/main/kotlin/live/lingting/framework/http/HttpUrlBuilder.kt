@@ -134,7 +134,7 @@ class HttpUrlBuilder {
     }
 
     fun addParams(params: MultiValue<String, *, *>): HttpUrlBuilder {
-        params.forEach { name: Any?, value: Any? -> addParam(name!!.toString(), value) }
+        params.forEach { name, value -> addParam(name!!.toString(), value) }
         return this
     }
 

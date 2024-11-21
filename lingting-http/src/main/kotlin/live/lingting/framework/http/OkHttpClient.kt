@@ -146,19 +146,19 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
         fun build(supplier: Supplier<okhttp3.OkHttpClient.Builder>): OkHttpClient {
             val builder = supplier.get()
             builder.followRedirects(redirects).followSslRedirects(redirects)
-            nonNull(socketFactory, Consumer { socketFactory: SocketFactory -> builder.socketFactory(socketFactory) })
-            nonNull(hostnameVerifier, Consumer { hostnameVerifier: HostnameVerifier -> builder.hostnameVerifier(hostnameVerifier) })
+            nonNull(socketFactory, Consumer { socketFactory -> builder.socketFactory(socketFactory) })
+            nonNull(hostnameVerifier, Consumer { hostnameVerifier -> builder.hostnameVerifier(hostnameVerifier) })
 
             if (sslContext != null && trustManager != null) {
                 builder.sslSocketFactory(sslContext!!.socketFactory, trustManager!!)
             }
 
-            nonNull(callTimeout, Consumer { duration: Duration -> builder.callTimeout(duration) })
-            nonNull(connectTimeout, Consumer { duration: Duration -> builder.connectTimeout(duration) })
-            nonNull(readTimeout, Consumer { duration: Duration -> builder.readTimeout(duration) })
-            nonNull(writeTimeout, Consumer { duration: Duration -> builder.writeTimeout(duration) })
-            nonNull(proxySelector, Consumer { proxySelector: ProxySelector -> builder.proxySelector(proxySelector) })
-            nonNull(authenticator, Consumer { authenticator: Authenticator -> builder.authenticator(authenticator) })
+            nonNull(callTimeout, Consumer { duration -> builder.callTimeout(duration) })
+            nonNull(connectTimeout, Consumer { duration -> builder.connectTimeout(duration) })
+            nonNull(readTimeout, Consumer { duration -> builder.readTimeout(duration) })
+            nonNull(writeTimeout, Consumer { duration -> builder.writeTimeout(duration) })
+            nonNull(proxySelector, Consumer { proxySelector -> builder.proxySelector(proxySelector) })
+            nonNull(authenticator, Consumer { authenticator -> builder.authenticator(authenticator) })
 
             if (cookie != null) {
                 builder.cookieJar(OkHttpCookie(cookie!!))
@@ -168,7 +168,7 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
                 dispatcher = Dispatcher(executor!!)
             }
 
-            nonNull(dispatcher, Consumer { dispatcher: Dispatcher -> builder.dispatcher(dispatcher) })
+            nonNull(dispatcher, Consumer { dispatcher -> builder.dispatcher(dispatcher) })
 
             val client: okhttp3.OkHttpClient = builder.build()
             return OkHttpClient(client)
@@ -188,7 +188,7 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
 
             val builder = Request.Builder()
             // 请求头
-            headers.each { k: String, v: String ->
+            headers.each { k, v ->
                 if (HEADERS_DISABLED.contains(k)) {
                     return@each
                 }

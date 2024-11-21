@@ -63,7 +63,7 @@ class SecurityGrpcResourceServerInterceptor(
         try {
             return service.resolve(token)
         } catch (ex: Exception) {
-            SecurityGrpcThrowing.throwing(ex, Consumer { e: Exception -> log.error("resolve token error! token: {}", token, e) })
+            SecurityGrpcThrowing.throwing(ex, Consumer { e -> log.error("resolve token error! token: {}", token, e) })
             return null
         }
     }

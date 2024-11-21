@@ -67,7 +67,7 @@ class Multipart(
     }
 
     fun clear() {
-        cache.keys.forEach(Consumer { index: Long -> this.clear(index) })
+        cache.keys.forEach(Consumer { index -> this.clear(index) })
     }
 
     fun clear(part: Part) {

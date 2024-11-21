@@ -81,7 +81,7 @@ class LocalDateTimeTypeHandler : BaseTypeHandler<LocalDateTime>(), AutoRegisterT
             if (`val`!!.contains(MICROSECONDS_DELIMITER)) {
                 val number = `val`.length - `val`.indexOf(MICROSECONDS_DELIMITER) - 1
 
-                val dateTimeFormatter = CACHE.computeIfAbsent(number) { k: Int ->
+                val dateTimeFormatter = CACHE.computeIfAbsent(number) { k ->
                     val builder = STR_FORMAT_NORMAL + MICROSECONDS_DELIMITER + MICROSECONDS.repeat(max(0.0, number.toDouble()).toInt())
                     DateTimeFormatter.ofPattern(builder)
                 }

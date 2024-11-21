@@ -35,7 +35,7 @@ class FileJsonValue<T> : AbstractFileValue<T> {
     }
 
     override fun ofClass(json: String, cls: Class<T>): T? {
-        return of(json, ThrowingFunction<String, T> { s: String -> mapper.readValue(s, cls) })
+        return of(json, ThrowingFunction<String, T> { s -> mapper.readValue(s, cls) })
     }
 
     override fun toString(t: T): String {
@@ -43,7 +43,7 @@ class FileJsonValue<T> : AbstractFileValue<T> {
     }
 
     fun optional(reference: TypeReference<T>): Optional<T> {
-        return optional(ThrowingFunction<String, T> { json: String -> of(json, ThrowingFunction<String, T> { s: String -> mapper.readValue(s, reference) }) })
+        return optional(ThrowingFunction<String, T> { json -> of(json, ThrowingFunction<String, T> { s -> mapper.readValue(s, reference) }) })
     }
 
 

@@ -66,7 +66,7 @@ abstract class AbstractFileValue<T> {
     }
 
     fun optional(cls: Class<T>): Optional<T> {
-        return optional(ThrowingFunction { str: String -> ofClass(str, cls) })
+        return optional(ThrowingFunction { str -> ofClass(str, cls) })
     }
 
     fun set(t: T) {

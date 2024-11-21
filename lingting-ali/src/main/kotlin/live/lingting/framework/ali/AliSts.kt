@@ -75,7 +75,7 @@ class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsReque
 
         val headerBuilder = StringBuilder()
         val signHeaderBuilder = StringBuilder()
-        headers.forEachSorted(BiConsumer { k: String, vs: Collection<String> ->
+        headers.forEachSorted(BiConsumer { k, vs ->
             if (!k.startsWith(HEADER_PREFIX) && !ArrayUtils.containsIgnoreCase(HEADER_INCLUDE, k)) {
                 return@BiConsumer
             }

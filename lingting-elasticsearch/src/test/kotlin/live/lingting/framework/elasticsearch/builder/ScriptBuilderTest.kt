@@ -1,10 +1,6 @@
 package live.lingting.framework.elasticsearch.builder
 
-import live.lingting.framework.elasticsearch.builder.ScriptBuilder.builder
-import live.lingting.framework.elasticsearch.builder.ScriptBuilder.genSetIfAbsent
-import live.lingting.framework.elasticsearch.builder.ScriptBuilder.genSetNull
-import live.lingting.framework.elasticsearch.builder.ScriptBuilder.genSetParams
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 /**
@@ -14,15 +10,15 @@ internal class ScriptBuilderTest {
     @Test
     fun test() {
         val field = "userId"
-        Assertions.assertEquals("ctx._source.userId = null", genSetNull(field))
-        Assertions.assertEquals("ctx._source.userId = params.userId", genSetParams(field))
-        Assertions.assertEquals(
+        assertEquals("ctx._source.userId = null", ScriptBuilder.genSetNull(field))
+        assertEquals("ctx._source.userId = params.userId", ScriptBuilder.genSetParams(field))
+        assertEquals(
             "if(ctx._source.userId==null || ctx._source.userId==''){ctx._source.userId = params.userId;}",
-            genSetIfAbsent(field)
+            ScriptBuilder.genSetIfAbsent(field)
         )
-        Assertions.assertEquals(
+        assertEquals(
             "ctx._source.userId -= params.userId;",
-            builder<Any>().decrease("userId").build().source()
+            ScriptBuilder.builder<Any>().decrease("userId").build().source()
         )
     }
 }

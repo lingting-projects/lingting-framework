@@ -8,7 +8,13 @@ import live.lingting.framework.retry.RetryFunction
 /**
  * @author lingting 2023-12-19 14:19
  */
-class ElasticsearchRetry<T>(retry: ElasticsearchProperties.Retry, supplier: ThrowingSupplier<T>) : Retry<T>(supplier, ElasticsearchRetryFunction(retry)) {
+class ElasticsearchRetry<T>(
+    retry: ElasticsearchProperties.Retry,
+    supplier: ThrowingSupplier<T>
+) : Retry<T>(
+    supplier,
+    ElasticsearchRetryFunction(retry)
+) {
     class ElasticsearchRetryFunction(val retry: ElasticsearchProperties.Retry) : RetryFunction {
         var versionConflictCount: Int = 0
             protected set
@@ -16,7 +22,7 @@ class ElasticsearchRetry<T>(retry: ElasticsearchProperties.Retry, supplier: Thro
         var count: Int = 0
             protected set
 
-        override fun allowRetry(retryCount: Int, e: Exception?): Boolean {
+        override fun allowRetry(retryCount: Int, e: Throwable): Boolean {
             if (!retry.isEnabled) {
                 return false
             }
@@ -47,9 +53,9 @@ class ElasticsearchRetry<T>(retry: ElasticsearchProperties.Retry, supplier: Thro
             return true
         }
 
-        override fun getDelay(retryCount: Int, e: Exception?): Duration? {
+        override fun getDelay(retryCount: Int, e: Throwable): Duration {
             if (ElasticsearchUtils.isVersionConflictException(e) && retry.versionConflictDelay != null) {
-                return retry.versionConflictDelay
+                return retry.versionConflictDelay!!
             }
             return retry.delay
         }

@@ -39,7 +39,7 @@ object ArrayUtils {
 
     @JvmStatic
     fun <T> indexOf(array: Array<T>, `val`: T): Int {
-        return indexOf(array, `val`) { a: T, b: T -> Objects.equals(a, b) }
+        return indexOf(array, `val`) { a, b -> Objects.equals(a, b) }
     }
 
     @JvmStatic
@@ -62,7 +62,7 @@ object ArrayUtils {
 
     @JvmStatic
     fun containsIgnoreCase(array: Array<String>, `val`: String): Boolean {
-        return indexOf(array, `val`) { s: String?, t: String? ->
+        return indexOf(array, `val`) { s, t ->
             if (s == t) {
                 return@indexOf true
             }

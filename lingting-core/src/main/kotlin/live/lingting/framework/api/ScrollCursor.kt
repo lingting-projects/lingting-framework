@@ -8,7 +8,7 @@ import live.lingting.framework.value.CursorValue
  * @author lingting 2023-12-29 11:32
  */
 class ScrollCursor<T, S>(
-    private var scroll: ThrowingFunction<S?, ScrollResult<T, S?>>,
+    private var scroll: ThrowingFunction<S, ScrollResult<T, S>>,
     private var scrollId: S?,
     private var data: List<T>,
 ) : CursorValue<T>() {

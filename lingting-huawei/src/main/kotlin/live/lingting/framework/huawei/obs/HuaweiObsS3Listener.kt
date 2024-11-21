@@ -27,7 +27,7 @@ class HuaweiObsS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
         val date: String = HuaweiUtils.format(now)
         headers.put(HuaweiUtils.HEADER_DATE, date)
 
-        headers.keys().forEach(Consumer<String> { name: String ->
+        headers.keys().forEach(Consumer<String> { name ->
             if (name.startsWith(AwsS3Utils.HEADER_PREFIX)) {
                 val newName = name.replace(AwsS3Utils.HEADER_PREFIX, HuaweiObs.HEADER_PREFIX)
                 headers.replace(name, newName)

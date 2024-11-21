@@ -11,7 +11,6 @@ import co.elastic.clients.elasticsearch._types.aggregations.Aggregation
 import co.elastic.clients.elasticsearch._types.query_dsl.Query
 import co.elastic.clients.elasticsearch.core.BulkRequest
 import co.elastic.clients.elasticsearch.core.BulkResponse
-import co.elastic.clients.elasticsearch.core.ClearScrollRequest
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest
 import co.elastic.clients.elasticsearch.core.GetRequest
 import co.elastic.clients.elasticsearch.core.ScrollRequest
@@ -20,14 +19,15 @@ import co.elastic.clients.elasticsearch.core.SearchResponse
 import co.elastic.clients.elasticsearch.core.UpdateByQueryRequest
 import co.elastic.clients.elasticsearch.core.UpdateRequest
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation
-import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem
 import co.elastic.clients.elasticsearch.core.bulk.CreateOperation
 import co.elastic.clients.elasticsearch.core.search.Hit
 import co.elastic.clients.elasticsearch.core.search.HitsMetadata
-import co.elastic.clients.elasticsearch.core.search.TotalHits
 import co.elastic.clients.elasticsearch.core.search.TrackHits
 import co.elastic.clients.util.ObjectBuilder
 import java.io.IOException
+import java.util.Arrays
+import java.util.Objects
+import java.util.Optional
 import java.util.function.BiConsumer
 import java.util.function.Consumer
 import java.util.function.Function
@@ -41,7 +41,6 @@ import live.lingting.framework.api.ScrollResult
 import live.lingting.framework.elasticsearch.builder.QueryBuilder
 import live.lingting.framework.elasticsearch.composer.SortComposer
 import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataPermissionHandler
-import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataScope
 import live.lingting.framework.function.ThrowingFunction
 import live.lingting.framework.function.ThrowingRunnable
 import live.lingting.framework.function.ThrowingSupplier
@@ -55,37 +54,39 @@ import org.slf4j.LoggerFactory
  * @author lingting 2024-03-06 16:41
  */
 class ElasticsearchApi<T>(
-    val index: String, val cls: Class<T>, val idFunc: Function<T, String?>, properties: ElasticsearchProperties,
-    val handler: ElasticsearchDataPermissionHandler?, val client: ElasticsearchClient
+    val index: String,
+    val cls: Class<T>,
+    val idFunc: Function<T, String>,
+    val properties: ElasticsearchProperties,
+    val handler: ElasticsearchDataPermissionHandler,
+    val client: ElasticsearchClient
 ) {
-    val retryProperties: ElasticsearchProperties.Retry? = properties.getRetry()
+    val retryProperties: ElasticsearchProperties.Retry = properties.retry
 
-    val scrollSize: Long?
+    val scrollSize: Long
 
     val scrollTime: Time?
 
     constructor(
-        cls: Class<T>, idFunc: Function<T, String?>, properties: ElasticsearchProperties,
-        handler: ElasticsearchDataPermissionHandler?, client: ElasticsearchClient
+        cls: Class<T>, idFunc: Function<T, String>, properties: ElasticsearchProperties,
+        handler: ElasticsearchDataPermissionHandler, client: ElasticsearchClient
     ) : this(ElasticsearchUtils.index(cls), cls, idFunc, properties, handler, client)
 
     init {
         var currentScrollSize: Long? = null
         var currentScrollTime: Time? = null
 
-        val scroll = properties.getScroll()
-        if (scroll != null) {
-            currentScrollSize = scroll.size
-            if (scroll.timeout != null) {
-                currentScrollTime = Time.of { t: Time.Builder -> t.time("%ds".formatted(scroll.timeout.toSeconds())) }
-            }
+        val scroll = properties.scroll
+        currentScrollSize = scroll.size
+        if (scroll.timeout != null) {
+            currentScrollTime = Time.of { t -> t.time("${scroll.timeout!!.toSeconds()}%ds") }
         }
 
-        this.scrollSize = currentScrollSize
+        this.scrollSize = currentScrollSize!!
         this.scrollTime = currentScrollTime
     }
 
-    fun documentId(t: T): String? {
+    fun documentId(t: T): String {
         return idFunc.apply(t)
     }
 
@@ -98,7 +99,7 @@ class ElasticsearchApi<T>(
     }
 
 
-    fun <R> retry(supplier: ThrowingSupplier<R>): R? {
+    fun <R> retry(supplier: ThrowingSupplier<R>): R {
         if (retryProperties == null || !retryProperties.isEnabled) {
             return supplier.get()
         }
@@ -107,65 +108,65 @@ class ElasticsearchApi<T>(
         return retry.get()
     }
 
-    fun merge(vararg arrays: Query): Query? {
+    fun merge(vararg arrays: Query): Query {
         val builder: QueryBuilder<T> = QueryBuilder.builder<T>()
-        Arrays.stream(arrays).filter { obj: Query? -> Objects.nonNull(obj) }.forEach { queries: Query? -> builder.addMust(queries) }
+        Arrays.stream(arrays).filter { obj -> Objects.nonNull(obj) }.forEach { queries -> builder.addMust(queries) }
         return merge(builder)
     }
 
-    fun merge(builder: QueryBuilder<T>): Query? {
+    fun merge(builder: QueryBuilder<T>): Query {
         if (handler != null && !handler.ignorePermissionControl(index)) {
-            handler.filterDataScopes(index).forEach(Consumer { scope: ElasticsearchDataScope? -> builder.addMust(scope!!.invoke(index)) })
+            handler.filterDataScopes(index).forEach(Consumer { scope -> builder.addMust(scope.invoke(index)) })
         }
 
         return builder.build()
     }
 
 
-    fun get(id: String?): T? {
-        val request = GetRequest.of { gr: GetRequest.Builder -> gr.index(index).id(id) }
-        return client.get(request, cls).source()
+    fun get(id: String): T {
+        val request = GetRequest.of { gr -> gr.index(index).id(id) }
+        return client.get(request, cls).source()!!
     }
 
 
-    fun getByQuery(vararg queries: Query?): T? {
+    fun getByQuery(vararg queries: Query): T? {
         return getByQuery(QueryBuilder.builder<T>(*queries))
     }
 
 
     fun getByQuery(queries: QueryBuilder<T>): T? {
-        return getByQuery({ builder: SearchRequest.Builder -> builder }, queries)
+        return getByQuery({ builder -> builder }, queries)
     }
 
 
     fun getByQuery(operator: UnaryOperator<SearchRequest.Builder>, queries: QueryBuilder<T>): T? {
-        return search({ builder: SearchRequest.Builder -> operator.apply(builder).size(1) }, queries).hits()
+        return search({ builder -> operator.apply(builder).size(1) }, queries).hits()
             .stream()
             .findFirst()
-            .map { obj: Hit<T> -> obj.source() }
+            .map { obj -> obj.source() }
             .orElse(null)
     }
 
 
-    fun count(vararg queries: Query?): Long {
+    fun count(vararg queries: Query): Long {
         return count(QueryBuilder.builder<T>(*queries))
     }
 
 
     fun count(queries: QueryBuilder<T>): Long {
-        val metadata = search({ builder: SearchRequest.Builder -> builder.size(0) }, queries)
+        val metadata = search({ builder -> builder.size(0) }, queries)
         val hits = metadata.total()
         return hits?.value() ?: 0
     }
 
 
-    fun search(vararg queries: Query?): HitsMetadata<T> {
+    fun search(vararg queries: Query): HitsMetadata<T> {
         return search(QueryBuilder.builder<T>(*queries))
     }
 
 
     fun search(queries: QueryBuilder<T>): HitsMetadata<T> {
-        return search({ builder: SearchRequest.Builder -> builder }, queries)
+        return search({ builder -> builder }, queries)
     }
 
 
@@ -174,7 +175,7 @@ class ElasticsearchApi<T>(
 
         val builder = operator.apply(
             SearchRequest.Builder() // 返回匹配的所有文档数量
-                .trackTotalHits(TrackHits.of { th: TrackHits.Builder -> th.enabled(true) })
+                .trackTotalHits(TrackHits.of { th -> th.enabled(true) })
 
         )
         builder.index(index)
@@ -184,45 +185,45 @@ class ElasticsearchApi<T>(
         return searchResponse.hits()
     }
 
-    fun ofLimitSort(sorts: Collection<PaginationParams.Sort?>): List<SortOptions> {
+    fun ofLimitSort(sorts: Collection<PaginationParams.Sort>): List<SortOptions> {
         if (CollectionUtils.isEmpty(sorts)) {
             return ArrayList()
         }
-        return sorts.stream().map<SortOptions> { sort: PaginationParams.Sort? ->
-            val field = StringUtils.underscoreToHump(sort!!.field)
+        return sorts.stream().map<SortOptions> { sort ->
+            val field = StringUtils.underscoreToHump(sort.field)
             SortComposer.sort(field, sort.desc)
         }.toList()
     }
 
 
-    fun page(params: PaginationParams, queries: QueryBuilder<T>): PaginationResult<T?> {
+    fun page(params: PaginationParams, queries: QueryBuilder<T>): PaginationResult<T> {
         val sorts = ofLimitSort(params.sorts)
 
         val from = params.start().toInt()
         val size = params.size.toInt()
 
-        val hitsMetadata = search({ builder: SearchRequest.Builder -> builder.size(size).from(from).sort(sorts) }, queries)
+        val hitsMetadata = search({ builder -> builder.size(size).from(from).sort(sorts) }, queries)
 
-        val list = hitsMetadata.hits().stream().map { obj: Hit<T> -> obj.source() }.toList()
-        val total = Optional.ofNullable(hitsMetadata.total()).map { obj: TotalHits -> obj.value() }.orElse(0L)
+        val list = hitsMetadata.hits().mapNotNull { obj -> obj.source() }
+        val total = Optional.ofNullable(hitsMetadata.total()).map { obj -> obj.value() }.orElse(0L)
 
-        return PaginationResult(total, list)
+        return PaginationResult<T>(total, list)
     }
 
 
     fun aggs(
-        consumer: BiConsumer<String?, Aggregate?>, aggregationMap: Map<String?, Aggregation?>?,
+        consumer: BiConsumer<String, Aggregate>, aggregationMap: Map<String, Aggregation>,
         queries: QueryBuilder<T>
     ) {
-        aggs({ builder: SearchRequest.Builder -> builder }, consumer, aggregationMap, queries)
+        aggs({ builder -> builder }, consumer, aggregationMap, queries)
     }
 
 
     fun aggs(
-        operator: UnaryOperator<SearchRequest.Builder>, consumer: BiConsumer<String?, Aggregate?>,
-        aggregationMap: Map<String?, Aggregation?>?, queries: QueryBuilder<T>
+        operator: UnaryOperator<SearchRequest.Builder>, consumer: BiConsumer<String, Aggregate>,
+        aggregationMap: Map<String, Aggregation>, queries: QueryBuilder<T>
     ) {
-        aggs(operator, { response: SearchResponse<T> ->
+        aggs(operator, { response ->
             val aggregations = response.aggregations()
             val entries: Set<Map.Entry<String, Aggregate>> = aggregations.entries
             for ((key, aggregate) in entries) {
@@ -234,13 +235,13 @@ class ElasticsearchApi<T>(
 
     fun aggs(
         operator: UnaryOperator<SearchRequest.Builder>, consumer: Consumer<SearchResponse<T>>,
-        aggregationMap: Map<String?, Aggregation?>?, queries: QueryBuilder<T>
+        aggregationMap: Map<String, Aggregation>, queries: QueryBuilder<T>
     ) {
         val query = merge(queries)
 
         val builder = operator.apply(
             SearchRequest.Builder() // 返回匹配的所有文档数量
-                .trackTotalHits(TrackHits.of { th: TrackHits.Builder -> th.enabled(true) })
+                .trackTotalHits(TrackHits.of { th -> th.enabled(true) })
 
         )
         builder.size(0)
@@ -253,39 +254,39 @@ class ElasticsearchApi<T>(
     }
 
 
-    fun update(documentId: String?, scriptOperator: Function<Script.Builder?, ObjectBuilder<Script?>>): Boolean {
+    fun update(documentId: String, scriptOperator: Function<Script.Builder, ObjectBuilder<Script>>): Boolean {
         return update(documentId, scriptOperator.apply(Script.Builder()).build())
     }
 
 
-    fun update(documentId: String?, script: Script?): Boolean {
-        return update({ builder: UpdateRequest.Builder<T, T?> -> builder }, documentId, script)
+    fun update(documentId: String, script: Script): Boolean {
+        return update({ builder: UpdateRequest.Builder<T, T> -> builder }, documentId, script)
     }
 
 
-    fun update(operator: UnaryOperator<UpdateRequest.Builder<T, T?>>, documentId: String?, script: Script?): Boolean {
-        return update({ builder: UpdateRequest.Builder<T, T?> -> operator.apply(builder).script(script) }, documentId)
+    fun update(operator: UnaryOperator<UpdateRequest.Builder<T, T>>, documentId: String, script: Script): Boolean {
+        return update({ builder: UpdateRequest.Builder<T, T> -> operator.apply(builder).script(script) }, documentId)
     }
 
 
     fun update(t: T): Boolean {
-        return update({ builder: UpdateRequest.Builder<T, T?> -> builder.doc(t) }, documentId(t))
+        return update({ builder: UpdateRequest.Builder<T, T> -> builder.doc(t) }, documentId(t))
     }
 
 
     fun upsert(doc: T): Boolean {
-        return update({ builder: UpdateRequest.Builder<T, T?> -> builder.doc(doc).docAsUpsert(true) }, documentId(doc))
+        return update({ builder: UpdateRequest.Builder<T, T> -> builder.doc(doc).docAsUpsert(true) }, documentId(doc))
     }
 
 
-    fun upsert(doc: T, script: Script?): Boolean {
-        return update({ builder: UpdateRequest.Builder<T, T?> -> builder.doc(doc).script(script) }, documentId(doc))
+    fun upsert(doc: T, script: Script): Boolean {
+        return update({ builder: UpdateRequest.Builder<T, T> -> builder.doc(doc).script(script) }, documentId(doc))
     }
 
 
-    fun update(operator: UnaryOperator<UpdateRequest.Builder<T, T?>>, documentId: String?): Boolean {
+    fun update(operator: UnaryOperator<UpdateRequest.Builder<T, T>>, documentId: String): Boolean {
         val builder = operator.apply(
-            UpdateRequest.Builder<T, T?>() // 刷新策略
+            UpdateRequest.Builder<T, T>() // 刷新策略
                 .refresh(Refresh.WaitFor) // 版本冲突时自动重试次数
                 .retryOnConflict(5)
         )
@@ -298,26 +299,26 @@ class ElasticsearchApi<T>(
     }
 
 
-    fun updateByQuery(script: Script?, vararg queries: Query?): Boolean {
+    fun updateByQuery(script: Script, vararg queries: Query): Boolean {
         return updateByQuery(script, QueryBuilder.builder<T>(*queries))
     }
 
 
     fun updateByQuery(
-        scriptOperator: Function<Script.Builder?, ObjectBuilder<Script?>>,
+        scriptOperator: Function<Script.Builder, ObjectBuilder<Script>>,
         queries: QueryBuilder<T>
     ): Boolean {
         return updateByQuery(scriptOperator.apply(Script.Builder()).build(), queries)
     }
 
 
-    fun updateByQuery(script: Script?, queries: QueryBuilder<T>): Boolean {
-        return updateByQuery({ builder: UpdateByQueryRequest.Builder -> builder }, script, queries)
+    fun updateByQuery(script: Script, queries: QueryBuilder<T>): Boolean {
+        return updateByQuery({ builder -> builder }, script, queries)
     }
 
 
     fun updateByQuery(
-        operator: UnaryOperator<UpdateByQueryRequest.Builder>, script: Script?,
+        operator: UnaryOperator<UpdateByQueryRequest.Builder>, script: Script,
         queries: QueryBuilder<T>
     ): Boolean {
         val query = merge(queries)
@@ -339,12 +340,12 @@ class ElasticsearchApi<T>(
     }
 
 
-    fun bulk(operations: List<BulkOperation>?): BulkResponse {
-        return bulk({ builder: BulkRequest.Builder -> builder }, operations)
+    fun bulk(operations: List<BulkOperation>): BulkResponse {
+        return bulk({ builder -> builder }, operations)
     }
 
 
-    fun bulk(operator: UnaryOperator<BulkRequest.Builder>, operations: List<BulkOperation>?): BulkResponse {
+    fun bulk(operator: UnaryOperator<BulkRequest.Builder>, operations: List<BulkOperation>): BulkResponse {
         val builder = operator.apply(BulkRequest.Builder().refresh(Refresh.WaitFor))
         builder.index(index)
         builder.operations(operations)
@@ -358,31 +359,31 @@ class ElasticsearchApi<T>(
 
 
     fun saveBatch(collection: Collection<T>) {
-        saveBatch({ builder: BulkRequest.Builder -> builder }, collection)
+        saveBatch({ builder -> builder }, collection)
     }
 
 
     fun saveBatch(operator: UnaryOperator<BulkRequest.Builder>, collection: Collection<T>) {
-        batch<T>(operator, collection, Function { t: T ->
+        batch<T>(operator, collection, Function { t ->
             val documentId = documentId(t)
             val ob = BulkOperation.Builder()
-            ob.create { create: CreateOperation.Builder<Any?> -> create.id(documentId).document(t) }
+            ob.create { create: CreateOperation.Builder<Any> -> create.id(documentId).document(t) }
             ob.build()
         })
     }
 
 
     fun <E> batch(collection: Collection<E>, function: Function<E, BulkOperation>): BulkResponse {
-        return batch<E>(UnaryOperator { builder: BulkRequest.Builder -> builder }, collection, function)
+        return batch<E>(UnaryOperator { builder -> builder }, collection, function)
     }
 
 
     fun <E> batch(
-        operator: UnaryOperator<BulkRequest.Builder>, collection: Collection<E?>,
-        function: Function<E?, BulkOperation>
+        operator: UnaryOperator<BulkRequest.Builder>, collection: Collection<E>,
+        function: Function<E, BulkOperation>
     ): BulkResponse {
         if (CollectionUtils.isEmpty(collection)) {
-            return BulkResponse.of { br: BulkResponse.Builder -> br.errors(false).items(emptyList()).ingestTook(0L).took(0) }
+            return BulkResponse.of { br -> br.errors(false).items(emptyList()).ingestTook(0L).took(0) }
         }
 
         val operations: MutableList<BulkOperation> = ArrayList()
@@ -391,9 +392,9 @@ class ElasticsearchApi<T>(
             operations.add(function.apply(e))
         }
 
-        val response = bulk({ builder: BulkRequest.Builder -> operator.apply(builder.refresh(Refresh.WaitFor)) }, operations)
+        val response = bulk({ builder -> operator.apply(builder.refresh(Refresh.WaitFor)) }, operations)
         if (response.errors()) {
-            val collect = response.items().stream().filter { item: BulkResponseItem -> item.error() != null }.toList()
+            val collect = response.items().stream().filter { item -> item.error() != null }.toList()
             val allError = collect.size == collection.size
             for (i in (if (allError) 1 else 0) until collect.size) {
                 val error = collect[i].error()
@@ -409,13 +410,13 @@ class ElasticsearchApi<T>(
     }
 
 
-    fun deleteByQuery(vararg queries: Query?): Boolean {
+    fun deleteByQuery(vararg queries: Query): Boolean {
         return deleteByQuery(QueryBuilder.builder<T>(*queries))
     }
 
 
     fun deleteByQuery(queries: QueryBuilder<T>): Boolean {
-        return deleteByQuery({ builder: DeleteByQueryRequest.Builder -> builder }, queries)
+        return deleteByQuery({ builder -> builder }, queries)
     }
 
 
@@ -432,26 +433,26 @@ class ElasticsearchApi<T>(
     }
 
 
-    fun list(vararg queries: Query?): List<T?> {
+    fun list(vararg queries: Query): List<T> {
         return list(QueryBuilder.builder<T>(*queries))
     }
 
 
-    fun list(queries: QueryBuilder<T>): List<T?> {
-        return list({ builder: SearchRequest.Builder -> builder }, queries)
+    fun list(queries: QueryBuilder<T>): List<T> {
+        return list({ builder -> builder }, queries)
     }
 
 
-    fun list(operator: UnaryOperator<SearchRequest.Builder>, vararg queries: Query?): List<T?> {
+    fun list(operator: UnaryOperator<SearchRequest.Builder>, vararg queries: Query): List<T> {
         return list(operator, QueryBuilder.builder<T>(*queries))
     }
 
 
-    fun list(operator: UnaryOperator<SearchRequest.Builder>, queries: QueryBuilder<T>): List<T?> {
-        val list: MutableList<T?> = ArrayList()
+    fun list(operator: UnaryOperator<SearchRequest.Builder>, queries: QueryBuilder<T>): List<T> {
+        val list: MutableList<T> = ArrayList()
 
-        val params = ScrollParams<String?>(scrollSize!!, null)
-        var records: List<T?>
+        val params = ScrollParams<String>(scrollSize, null)
+        var records: List<T>
 
         do {
             val result = scroll(operator, params, queries)
@@ -467,18 +468,18 @@ class ElasticsearchApi<T>(
     }
 
 
-    fun scroll(params: ScrollParams<String?>, vararg queries: Query?): ScrollResult<T, String> {
+    fun scroll(params: ScrollParams<String>, vararg queries: Query): ScrollResult<T, String> {
         return scroll(params, QueryBuilder.builder<T>(*queries))
     }
 
 
-    fun scroll(params: ScrollParams<String?>, queries: QueryBuilder<T>): ScrollResult<T, String> {
-        return scroll({ builder: SearchRequest.Builder -> builder }, params, queries)
+    fun scroll(params: ScrollParams<String>, queries: QueryBuilder<T>): ScrollResult<T, String> {
+        return scroll({ builder -> builder }, params, queries)
     }
 
 
     fun scroll(
-        operator: UnaryOperator<SearchRequest.Builder>, params: ScrollParams<String?>,
+        operator: UnaryOperator<SearchRequest.Builder>, params: ScrollParams<String>,
         queries: QueryBuilder<T>
     ): ScrollResult<T, String> {
         var scrollId: String? = null
@@ -487,21 +488,21 @@ class ElasticsearchApi<T>(
         }
         // 非首次滚动查询, 直接使用 scrollId
         if (StringUtils.hasText(scrollId)) {
-            return scroll({ builder: ScrollRequest.Builder -> builder.scroll(scrollTime) }, scrollId)
+            return scroll({ builder -> builder.scroll(scrollTime) }, scrollId)
         }
 
         val query = merge(queries)
         val builder = operator.apply(
             SearchRequest.Builder().scroll(scrollTime) // 返回匹配的所有文档数量
-                .trackTotalHits(TrackHits.of { th: TrackHits.Builder -> th.enabled(true) })
+                .trackTotalHits(TrackHits.of { th -> th.enabled(true) })
         ).index(index).query(query)
 
         if (params.size != null) {
-            builder.size(params.size.intValue())
+            builder.size(params.size.toInt())
         }
 
         val search = client.search(builder.build(), cls)
-        val collect = search.hits().hits().stream().map { obj: Hit<T> -> obj.source() }.filter { obj: T? -> Objects.nonNull(obj) }.toList()
+        val collect = search.hits().hits().mapNotNull() { obj: Hit<T> -> obj.source() }
 
         val nextScrollId = search.scrollId()
 
@@ -510,7 +511,7 @@ class ElasticsearchApi<T>(
             clearScroll(nextScrollId)
         }
 
-        return ScrollResult.of(collect, nextScrollId)
+        return ScrollResult.of<T, String>(collect, nextScrollId)
     }
 
 
@@ -518,14 +519,14 @@ class ElasticsearchApi<T>(
         val builder = operator.apply(ScrollRequest.Builder()).scrollId(scrollId)
 
         val response = client.scroll(builder.build(), cls)
-        val collect = response.hits().hits().stream().map { obj: Hit<T> -> obj.source() }.toList()
+        val collect = response.hits().hits().mapNotNull() { obj: Hit<T> -> obj.source() }
         val nextScrollId = response.scrollId()
 
         if (CollectionUtils.isEmpty(collect)) {
             clearScroll(nextScrollId)
             return ScrollResult.empty()
         }
-        return ScrollResult.of(collect, nextScrollId)!!
+        return ScrollResult.of(collect, nextScrollId)
     }
 
 
@@ -533,29 +534,29 @@ class ElasticsearchApi<T>(
         if (!StringUtils.hasText(scrollId)) {
             return
         }
-        client.clearScroll { scr: ClearScrollRequest.Builder -> scr.scrollId(scrollId) }
+        client.clearScroll { scr -> scr.scrollId(scrollId) }
     }
 
-    fun pageCursor(params: PaginationParams, vararg queries: Query?): LimitCursor<T> {
+    fun pageCursor(params: PaginationParams, vararg queries: Query): LimitCursor<T> {
         return pageCursor(params, QueryBuilder.builder<T>(*queries))
     }
 
     fun pageCursor(params: PaginationParams, queries: QueryBuilder<T>): LimitCursor<T> {
-        return LimitCursor(ThrowingFunction<Long, PaginationResult<T>> { page: Long? ->
-            params.page = page!!
+        return LimitCursor(ThrowingFunction<Long, PaginationResult<T>> { page ->
+            params.page = page
             page(params, queries)
         })
     }
 
 
-    fun scrollCursor(params: ScrollParams<String?>, vararg queries: Query?): ScrollCursor<T, String> {
+    fun scrollCursor(params: ScrollParams<String>, vararg queries: Query): ScrollCursor<T, String> {
         return scrollCursor(params, QueryBuilder.builder<T>(*queries))
     }
 
 
-    fun scrollCursor(params: ScrollParams<String?>, queries: QueryBuilder<T>): ScrollCursor<T, String> {
+    fun scrollCursor(params: ScrollParams<String>, queries: QueryBuilder<T>): ScrollCursor<T, String> {
         val scroll = scroll(params, queries)
-        return ScrollCursor(ThrowingFunction<String, ScrollResult<T, String>> { scrollId: String? ->
+        return ScrollCursor(ThrowingFunction { scrollId ->
             params.cursor = scrollId
             scroll(params, queries)
         }, scroll.cursor, scroll.records)

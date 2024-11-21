@@ -13,7 +13,7 @@ data class ScrollResult<T, C>(
 
     companion object {
         @JvmStatic
-        fun <T, C> of(collection: List<T>, cursor: C): ScrollResult<T, C> {
+        fun <T, C> of(collection: List<T>, cursor: C?): ScrollResult<T, C> {
             return ScrollResult(collection, cursor, collection.size.toLong())
         }
 

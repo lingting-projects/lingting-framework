@@ -31,7 +31,7 @@ object ThreadPool {
             TimeUnit.SECONDS,  // 等待任务存放队列 - 队列最大值
             // 这样配置. 当积压任务数量为 队列最大值 时. 会创建新线程来执行任务. 直到线程总数达到 最大线程数
             LinkedBlockingQueue(queue),  // 新线程创建工厂 - LinkedBlockingQueue 不支持线程优先级. 所以直接新增线程就可以了
-            { runnable: Runnable -> Thread(null, runnable) },  // 拒绝策略 - 在主线程继续执行.
+            { runnable -> Thread(null, runnable) },  // 拒绝策略 - 在主线程继续执行.
             CallerRunsPolicy()
         )
     }

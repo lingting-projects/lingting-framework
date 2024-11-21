@@ -54,7 +54,7 @@ class WaitValue<T> {
     }
 
     fun notNull(): T {
-        return wait { obj: T -> Objects.nonNull(obj) }
+        return wait { obj -> Objects.nonNull(obj) }
     }
 
     fun notEmpty(): T {

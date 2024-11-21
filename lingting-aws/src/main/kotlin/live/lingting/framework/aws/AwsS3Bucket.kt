@@ -30,13 +30,13 @@ class AwsS3Bucket(properties: AwsS3Properties) : AwsS3Client(properties), AwsS3B
         consumer?.accept(request)
         request.params.add("uploads")
         val response = call(request)
-        return response.convert<List<AwsS3MultipartItem>> { xml: String ->
+        return response.convert<List<AwsS3MultipartItem>> { xml ->
             val list: MutableList<AwsS3MultipartItem> = ArrayList()
             try {
                 val node = JacksonUtils.xmlToNode(xml)
                 val tree = node["Upload"] ?: return@convert list
                 if (tree.isArray && !tree.isEmpty) {
-                    tree.forEach(Consumer { it: JsonNode ->
+                    tree.forEach(Consumer { it ->
                         val key = it["Key"].asText()
                         val uploadId = it["UploadId"].asText()
                         list.add(AwsS3MultipartItem(key, uploadId))

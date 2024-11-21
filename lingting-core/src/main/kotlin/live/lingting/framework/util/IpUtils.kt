@@ -2,7 +2,6 @@ package live.lingting.framework.util
 
 import jakarta.servlet.http.HttpServletRequest
 import java.net.InetAddress
-import java.util.Arrays
 import java.util.function.Predicate
 
 /**
@@ -119,17 +118,17 @@ object IpUtils {
 
     @JvmStatic
     fun isIp(raw: String): Boolean {
-        return isIp(raw) { i: InetAddress -> true }
+        return isIp(raw) { i -> true }
     }
 
     @JvmStatic
     fun isIpv4(raw: String): Boolean {
-        return isIp(raw) { address: InetAddress -> address.address.size == 4 }
+        return isIp(raw) { address -> address.address.size == 4 }
     }
 
     @JvmStatic
     fun isIpv6(raw: String): Boolean {
-        return isIp(raw) { address: InetAddress -> address.address.size == 16 }
+        return isIp(raw) { address -> address.address.size == 16 }
     }
 
     @JvmStatic
@@ -146,7 +145,8 @@ object IpUtils {
             val `val` = request.getHeader(header)
             if (StringUtils.hasText(`val`) && !UNKNOWN.equals(`val`, ignoreCase = true)) {
                 if (`val`.contains(MULTI_IP_SPLIT)) {
-                    list.addAll(Arrays.asList<String>(*`val`.split(MULTI_IP_SPLIT.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()))
+                    val split = `val`.split(MULTI_IP_SPLIT)
+                    list.addAll(split)
                 } else {
                     list.add(`val`)
                 }

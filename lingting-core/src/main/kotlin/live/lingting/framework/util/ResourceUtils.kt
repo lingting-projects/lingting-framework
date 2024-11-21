@@ -61,7 +61,7 @@ object ResourceUtils {
      */
     @JvmStatic
     @JvmOverloads
-    fun scan(name: String, predicate: Predicate<Resource> = Predicate { resource: Resource -> true }): Collection<Resource> {
+    fun scan(name: String, predicate: Predicate<Resource> = Predicate { resource -> true }): Collection<Resource> {
         val loader = currentClassLoader()
         return scan(loader, name, predicate)
     }
@@ -90,7 +90,7 @@ object ResourceUtils {
                 return
             }
             Files.walk(dir.toPath()).use { walk ->
-                walk.forEach { path: Path -> fill(result, ThrowingSupplier { Resource.of(protocol, path.toFile()) }, predicate) }
+                walk.forEach { path -> fill(result, ThrowingSupplier { Resource.of(protocol, path.toFile()) }, predicate) }
             }
             return
         }

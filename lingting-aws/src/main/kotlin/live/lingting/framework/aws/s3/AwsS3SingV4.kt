@@ -73,7 +73,7 @@ class AwsS3SingV4(
                     builder.append(name).append("=").append("&")
                     return@forEachSorted
                 }
-                vs.stream().sorted().forEach { v: String ->
+                vs.stream().sorted().forEach { v ->
                     val value: String = AwsS3Utils.encode(v)
                     builder.append(name).append("=").append(value).append("&")
                 }
@@ -94,7 +94,7 @@ class AwsS3SingV4(
     fun canonicalHeaders(): String {
         val builder = StringBuilder()
 
-        headersForEach { k: String, vs: Collection<String> ->
+        headersForEach { k, vs ->
             for (v in vs) {
                 builder.append(k).append(":").append(v.trim()).append("\n")
             }
@@ -106,7 +106,7 @@ class AwsS3SingV4(
     fun signedHeaders(): String {
         val builder = StringBuilder()
 
-        headersForEach { k: String, vs: Collection<String> -> builder.append(k).append(";") }
+        headersForEach { k, vs -> builder.append(k).append(";") }
 
         return deleteLast(builder).toString()
     }

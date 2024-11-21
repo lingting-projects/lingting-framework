@@ -44,10 +44,10 @@ class OkHttpCookie(private val store: CookieStore) : CookieJar {
 
     override fun loadForRequest(httpUrl: HttpUrl): List<Cookie> {
         val cookies = store[httpUrl.toUri()]
-        return cookies.stream().map { cookie: HttpCookie -> this.of(cookie) }.toList()
+        return cookies.stream().map { cookie -> this.of(cookie) }.toList()
     }
 
     override fun saveFromResponse(httpUrl: HttpUrl, list: List<Cookie>) {
-        list.forEach(Consumer { cookie: Cookie -> store.add(httpUrl.toUri(), to(cookie)) })
+        list.forEach(Consumer { cookie -> store.add(httpUrl.toUri(), to(cookie)) })
     }
 }

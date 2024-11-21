@@ -82,7 +82,7 @@ class RModule : SimpleModule() {
         fun getDefinition(field: String): BeanPropertyDefinition? {
             return beanDesc.findProperties()
                 .stream()
-                .filter { definition: BeanPropertyDefinition -> definition.name == field }
+                .filter { definition -> definition.name == field }
                 .findFirst()
                 .orElse(null)
         }
