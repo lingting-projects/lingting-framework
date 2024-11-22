@@ -1,5 +1,6 @@
 package live.lingting.framework.time
 
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 
 /**
@@ -66,6 +67,11 @@ class StopWatch {
     fun timeMillis(): Long {
         val duration = timeNanos()
         return TimeUnit.NANOSECONDS.toMillis(duration)
+    }
+
+    fun duration(): Duration {
+        val nanos = timeNanos()
+        return Duration.ofNanos(nanos)
     }
 
 }

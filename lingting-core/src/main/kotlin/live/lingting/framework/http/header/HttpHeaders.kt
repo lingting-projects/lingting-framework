@@ -83,9 +83,11 @@ interface HttpHeaders : MultiValue<String, String, MutableCollection<String>> {
     } // endregion
 
     companion object {
+
         @JvmStatic
-        fun empty(): HttpHeaders {
-            return CollectionHttpHeaders()
+        @JvmOverloads
+        fun empty(allowModify: Boolean = true): HttpHeaders {
+            return CollectionHttpHeaders(allowModify)
         }
 
         @JvmStatic
