@@ -4,6 +4,7 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 *.kt~
+local.properties
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

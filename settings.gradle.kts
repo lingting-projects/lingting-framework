@@ -5,6 +5,6 @@ plugins {
 rootProject.name = "lingting-framework"
 
 // 遍历rootDir, 获取符合条件的文件夹名称,  使用代码 include 所有文件夹
-rootDir.listFiles()?.filter { it.isDirectory && it.name.startsWith("lingting-") }?.forEach {
+rootDir.listFiles().filterNotNull().filter { it.isDirectory && it.name.startsWith("lingting-") }.forEach {
     include(it.name)
 }

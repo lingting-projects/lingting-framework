@@ -130,7 +130,10 @@ configure(javaProjects) {
     configure<KotlinJvmProjectExtension> {
         jvmToolchain(javaVersion.majorVersion.toInt())
         compilerOptions {
-            freeCompilerArgs.add("-Xjvm-default=all")
+            freeCompilerArgs.addAll(
+                "-Xjvm-default=all",
+                "-Xjsr305=strict",
+            )
         }
     }
 
@@ -150,6 +153,7 @@ configure(javaProjects) {
     tasks.withType<JavaCompile> {
         options.encoding = encoding
         options.compilerArgs.add("-parameters")
+        options.setIncremental(true)
     }
 
     tasks.withType<Javadoc> {
