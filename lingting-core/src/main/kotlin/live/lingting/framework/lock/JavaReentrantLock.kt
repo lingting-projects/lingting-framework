@@ -3,12 +3,12 @@ package live.lingting.framework.lock
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.Condition
 import java.util.concurrent.locks.ReentrantLock
-import java.util.function.Supplier
 
 /**
  * @author lingting 2023-04-22 10:55
  */
-class JavaReentrantLock {
+class JavaReentrantLock : LocalLock {
+
     /**
      * 锁
      */
@@ -19,109 +19,32 @@ class JavaReentrantLock {
      */
     val defaultCondition: Condition = lock.newCondition()
 
-    fun newCondition(): Condition {
-        return lock.newCondition()
-    }
-
-    fun lock() {
+    override fun lock() {
         lock.lock()
     }
 
-
-    fun lockInterruptibly() {
+    override fun lockInterruptibly() {
         lock.lockInterruptibly()
     }
 
-
-    fun lockTry(timeout: Long = 1, unit: TimeUnit = TimeUnit.MILLISECONDS): Boolean {
-        return lock.tryLock(timeout, unit)
+    override fun tryLock(): Boolean {
+        return lock.tryLock()
     }
 
-    fun run(runnable: Runnable) {
-        lock()
-        try {
-            runnable.run()
-        } finally {
-            unlock()
-        }
+    override fun tryLock(time: Long, unit: TimeUnit): Boolean {
+        return lock.tryLock(time, unit)
     }
 
-
-    fun runByInterruptibly(runnable: LockRunnable) {
-        lockInterruptibly()
-        try {
-            runnable.run()
-        } finally {
-            unlock()
-        }
-    }
-
-
-    fun runByTry(runnable: LockRunnable) {
-        if (lockTry()) {
-            try {
-                runnable.run()
-            } finally {
-                unlock()
-            }
-        }
-    }
-
-
-    fun runByTry(runnable: LockRunnable, timeout: Long, unit: TimeUnit) {
-        if (lockTry(timeout, unit)) {
-            try {
-                runnable.run()
-            } finally {
-                unlock()
-            }
-        }
-    }
-
-    fun <R> get(runnable: Supplier<R>): R {
-        val reentrantLock = lock
-        reentrantLock.lock()
-        try {
-            return runnable.get()
-        } finally {
-            reentrantLock.unlock()
-        }
-    }
-
-
-    fun <R> getByInterruptibly(runnable: LockSupplier<R>): R {
-        val reentrantLock = lock
-        reentrantLock.lockInterruptibly()
-        try {
-            return runnable.get()
-        } finally {
-            reentrantLock.unlock()
-        }
-    }
-
-    fun unlock() {
+    override fun unlock() {
         lock.unlock()
     }
 
-
-    fun signal() {
-        runByInterruptibly { defaultCondition.signal() }
+    override fun newCondition(): Condition {
+        return lock.newCondition()
     }
 
-
-    fun signalAll() {
-        runByInterruptibly { defaultCondition.signalAll() }
+    override fun defaultCondition(): Condition {
+        return defaultCondition
     }
 
-
-    fun await() {
-        runByInterruptibly { defaultCondition.await() }
-    }
-
-    /**
-     * @return 是否被唤醒
-     */
-    fun await(time: Long, timeUnit: TimeUnit): Boolean {
-        return getByInterruptibly { defaultCondition.await(time, timeUnit) }
-    }
 }
