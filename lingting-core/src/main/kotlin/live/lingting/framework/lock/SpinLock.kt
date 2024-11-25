@@ -4,20 +4,24 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.Condition
 import java.util.concurrent.locks.Lock
-import live.lingting.framework.kt.milliseconds
 
 /**
  * @author lingting 2024/11/25 19:26
  */
 class SpinLock @JvmOverloads constructor(
     val lock: Lock,
-    val sleep: Duration = 300.milliseconds,
+    val sleep: Duration = defaultSleep,
 ) : ExpandLock {
 
     companion object {
+
+        @JvmField
+        var defaultSleep = AbstractLock.defaultSleep
+
         @JvmStatic
         @JvmOverloads
-        fun java(sleep: Duration = 300.milliseconds) = SpinLock(JavaReentrantLock(), sleep)
+        fun java(sleep: Duration = defaultSleep) = SpinLock(JavaReentrantLock(), sleep)
+
     }
 
     override fun lock() {
