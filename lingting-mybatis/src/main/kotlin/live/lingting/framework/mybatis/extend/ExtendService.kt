@@ -53,6 +53,12 @@ interface ExtendService<T> {
      */
     fun saveBatch(entityList: Collection<T>, batchSize: Int): Boolean
 
+    fun saveIgnore(t: T)
+
+    fun saveIgnoreBatch(collection: Collection<T>)
+
+    fun saveIgnoreBatch(collection: Collection<T>, batchSize: Int)
+
     /**
      * 根据 ID 删除
      * @param id 主键ID

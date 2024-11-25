@@ -12,6 +12,7 @@ import java.util.function.BiConsumer
 import java.util.function.Predicate
 import live.lingting.framework.api.PaginationParams
 import live.lingting.framework.function.ThrowingSupplier
+import live.lingting.framework.mybatis.extend.ExtendService.Companion.DEFAULT_INSERT_BATCH_SIZE
 import org.apache.ibatis.binding.MapperMethod.ParamMap
 import org.apache.ibatis.logging.Log
 import org.apache.ibatis.logging.LogFactory
@@ -58,7 +59,7 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
     }
 
     override fun toIpage(params: PaginationParams): Page<T> {
-        return mapper!!.toIpage(params)
+        return mapper!!.toIPage(params)
     }
 
     override fun save(entity: T): Boolean {
@@ -68,6 +69,22 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
     override fun saveBatch(entityList: Collection<T>, batchSize: Int): Boolean {
         val sqlStatement = getSqlStatement(SqlMethod.INSERT_ONE)
         return executeBatch(entityList, batchSize) { sqlSession, entity -> sqlSession.insert(sqlStatement, entity) }
+    }
+
+    override fun saveIgnore(t: T) {
+        mapper!!.insertIgnore(t)
+    }
+
+    override fun saveIgnoreBatch(collection: Collection<T>) {
+        saveIgnoreBatch(collection, DEFAULT_INSERT_BATCH_SIZE)
+    }
+
+    override fun saveIgnoreBatch(collection: Collection<T>, batchSize: Int) {
+
+        executeBatch(collection, batchSize) { session, e ->
+            val m = session.getMapper(mapperClass)
+            m.insertIgnore(e)
+        }
     }
 
     override fun removeById(id: Serializable): Boolean {

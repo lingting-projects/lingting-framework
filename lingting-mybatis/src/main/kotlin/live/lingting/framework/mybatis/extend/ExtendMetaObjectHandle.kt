@@ -7,6 +7,7 @@ import java.util.function.Supplier
 import org.apache.ibatis.reflection.MetaObject
 
 class ExtendMetaObjectHandle : MetaObjectHandler {
+
     override fun insertFill(metaObject: MetaObject) {
         // 逻辑删除标识
         strictInsertFill(metaObject, "deleted", Long::class.java, 0L)
