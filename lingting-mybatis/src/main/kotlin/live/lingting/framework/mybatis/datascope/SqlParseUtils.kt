@@ -1,4 +1,4 @@
-package live.lingting.framework.datascope.util
+package live.lingting.framework.mybatis.datascope
 
 import net.sf.jsqlparser.expression.Alias
 import net.sf.jsqlparser.schema.Column

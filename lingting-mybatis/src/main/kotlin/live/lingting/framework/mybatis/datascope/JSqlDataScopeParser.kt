@@ -1,8 +1,6 @@
-package live.lingting.framework.datascope.parser
+package live.lingting.framework.mybatis.datascope
 
-import live.lingting.framework.datascope.JsqlDataScope
 import live.lingting.framework.datascope.exception.DataScopeException
-import live.lingting.framework.datascope.holder.DataScopeHolder
 import live.lingting.framework.kt.logger
 import net.sf.jsqlparser.parser.CCJSqlParserUtil
 import net.sf.jsqlparser.statement.Statement
@@ -13,55 +11,38 @@ import net.sf.jsqlparser.statement.select.Select
 import net.sf.jsqlparser.statement.update.Update
 
 /**
- * @author lingting 2024-01-19 15:48
+ * @author lingting 2024/11/25 14:19
  */
-abstract class DataScopeParser {
+abstract class JSqlDataScopeParser(protected val scopes: List<JSqlDataScope>) {
+
     protected val log = logger()
+    protected val matchScopes = mutableSetOf<JSqlDataScope>()
 
-    fun parser(sql: String, scopes: List<JsqlDataScope>, isMulti: Boolean): String {
+    fun parser(sql: String, isMulti: Boolean): DataScopeParserResult {
         try {
-            DataScopeHolder.push(scopes)
-            val statements = parser(sql, isMulti)
-
-            val builder = StringBuilder()
-
-            for (i in statements.indices) {
-                if (i > 0) {
-                    builder.append(";")
-                }
-
-                val statement = statements[0]
-                val parser = parser(statement, i, sql)
-                builder.append(parser)
-            }
-
-            return builder.toString()
-        } finally {
-            DataScopeHolder.poll()
-        }
-    }
-
-    fun parserSingle(sql: String, scopes: List<JsqlDataScope>): String {
-        return parser(sql, scopes, false)
-    }
-
-    fun parserMulti(sql: String, scopes: List<JsqlDataScope>): String {
-        return parser(sql, scopes, true)
-    }
-
-    protected fun parser(sql: String, isMulti: Boolean): Statements {
-        try {
-            if (isMulti) {
-                return CCJSqlParserUtil.parseStatements(sql)
+            val statements = if (isMulti) {
+                CCJSqlParserUtil.parseStatements(sql)
             } else {
                 val statement = CCJSqlParserUtil.parse(sql)
                 val statements = Statements()
                 statements.add(statement)
-                return statements
+                statements
             }
+
+            val sql = statements.mapIndexed { i, s -> parser(s, i, sql) }.joinToString(";")
+            return DataScopeParserResult(matchScopes.size, sql)
+
         } catch (e: Exception) {
             throw DataScopeException("sql parse exception!", e)
         }
+    }
+
+    fun parserSingle(sql: String): DataScopeParserResult {
+        return parser(sql, false)
+    }
+
+    fun parserMulti(sql: String): DataScopeParserResult {
+        return parser(sql, true)
     }
 
     /**
@@ -118,3 +99,8 @@ abstract class DataScopeParser {
         throw UnsupportedOperationException()
     }
 }
+
+data class DataScopeParserResult(
+    val matchNumber: Int,
+    val sql: String,
+)

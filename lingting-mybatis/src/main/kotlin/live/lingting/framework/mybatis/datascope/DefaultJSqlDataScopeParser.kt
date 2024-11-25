@@ -1,13 +1,8 @@
-package live.lingting.framework.datascope.parser
+package live.lingting.framework.mybatis.datascope
 
 import java.util.Deque
 import java.util.LinkedList
-import java.util.Objects
 import java.util.function.Consumer
-import live.lingting.framework.datascope.JsqlDataScope
-import live.lingting.framework.datascope.holder.DataScopeHolder
-import live.lingting.framework.datascope.holder.DataScopeMatchNumHolder
-import live.lingting.framework.datascope.util.SqlParseUtils
 import live.lingting.framework.util.CollectionUtils
 import net.sf.jsqlparser.expression.BinaryExpression
 import net.sf.jsqlparser.expression.Expression
@@ -27,13 +22,13 @@ import net.sf.jsqlparser.statement.select.ParenthesedSelect
 import net.sf.jsqlparser.statement.select.PlainSelect
 import net.sf.jsqlparser.statement.select.Select
 import net.sf.jsqlparser.statement.select.SelectItem
-import net.sf.jsqlparser.statement.select.WithItem
 import net.sf.jsqlparser.statement.update.Update
 
 /**
- * @author lingting 2024-01-19 16:01
+ * @author lingting 2024/11/25 14:40
  */
-class DefaultDataScopeParser : DataScopeParser() {
+class DefaultJSqlDataScopeParser(scopes: List<JSqlDataScope>) : JSqlDataScopeParser(scopes) {
+
     override fun insert(insert: Insert, index: Int, sql: String) {
         // 不处理
     }
@@ -259,21 +254,19 @@ class DefaultDataScopeParser : DataScopeParser() {
             val tableName: String = SqlParseUtils.getTableName(table.name)
 
             // 进行 dataScope 的表名匹配
-            val matchDataScopes: List<JsqlDataScope> = DataScopeHolder.peek()
-                .stream()
-                .filter { it.includes(tableName) }
-                .toList()
+            val matchDataScopes = scopes.filter { it.includes(tableName) }
 
             // 存在匹配成功的
             if (!CollectionUtils.isEmpty(matchDataScopes)) {
                 // 计数
-                DataScopeMatchNumHolder.incrementMatchNumIfPresent()
+                matchScopes.addAll(matchDataScopes)
+                // 参数构建
+                val params = JSqlDataScopeParams(tableName, table.alias)
                 // 获取到数据权限过滤的表达式
-                matchDataScopes.stream()
-                    .map { it.getExpression(tableName, table.alias) }
-                    .filter { Objects.nonNull(it) }
-                    .reduce { leftExpression, rightExpression -> AndExpression(leftExpression, rightExpression) }
-                    .ifPresent { e -> list.add(e) }
+                matchDataScopes.map { it.handler(params) }
+                    .filterNotNull()
+                    .reduceOrNull { leftExpression, rightExpression -> AndExpression(leftExpression, rightExpression) }
+                    ?.let { list.add(it) }
             }
         }
 
@@ -294,5 +287,12 @@ class DefaultDataScopeParser : DataScopeParser() {
         val left = if (expression is OrExpression) Parenthesis(expression) else expression
 
         return AndExpression(left, inject)
+    }
+}
+
+class DefaultJSqlDataScopeParserFactory : JSqlDataScopeParserFactory() {
+
+    override fun create(scopes: List<JSqlDataScope>): JSqlDataScopeParser {
+        return DefaultJSqlDataScopeParser(scopes)
     }
 }

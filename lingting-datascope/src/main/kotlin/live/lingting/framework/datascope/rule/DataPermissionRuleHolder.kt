@@ -1,10 +1,9 @@
-package live.lingting.framework.datascope.holder
+package live.lingting.framework.datascope.rule
 
 import java.util.ArrayDeque
 import java.util.Deque
 import java.util.function.Supplier
 import live.lingting.framework.datascope.annotation.DataPermission
-import live.lingting.framework.datascope.handler.DataPermissionRule
 
 /**
  * 数据权限规则的持有者，使用栈存储调用链中的数据权限规则
@@ -18,7 +17,7 @@ object DataPermissionRuleHolder {
     /**
      * 使用栈存储 DataPermissionRule，便于在方法嵌套调用时使用不同的数据权限控制。
      */
-    private val DATA_PERMISSION_RULES: ThreadLocal<Deque<DataPermissionRule>> = ThreadLocal
+    private val LOCAL: ThreadLocal<Deque<DataPermissionRule>> = ThreadLocal
         .withInitial(Supplier { ArrayDeque() })
 
     /**
@@ -28,7 +27,7 @@ object DataPermissionRuleHolder {
      */
     @JvmStatic
     fun peek(): DataPermissionRule? {
-        val deque = DATA_PERMISSION_RULES.get()
+        val deque = LOCAL.get()
         return deque.peek()
     }
 
@@ -39,10 +38,10 @@ object DataPermissionRuleHolder {
      */
     @JvmStatic
     fun push(rule: DataPermissionRule): DataPermissionRule {
-        var deque = DATA_PERMISSION_RULES.get()
+        var deque = LOCAL.get()
         if (deque == null) {
             deque = ArrayDeque()
-            DATA_PERMISSION_RULES.set(deque)
+            LOCAL.set(deque)
         }
         deque.push(rule)
         return rule
@@ -53,7 +52,7 @@ object DataPermissionRuleHolder {
      */
     @JvmStatic
     fun poll() {
-        val deque = DATA_PERMISSION_RULES.get()
+        val deque = LOCAL.get()
         if (deque == null) {
             return
         }
@@ -69,6 +68,6 @@ object DataPermissionRuleHolder {
      */
     @JvmStatic
     fun clear() {
-        DATA_PERMISSION_RULES.remove()
+        LOCAL.remove()
     }
 }

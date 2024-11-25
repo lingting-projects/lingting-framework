@@ -1,12 +1,9 @@
 package live.lingting.framework.mybatis.datascope
 
 import java.sql.Connection
-import live.lingting.framework.datascope.handler.DataPermissionHandler
-import live.lingting.framework.datascope.holder.DataScopeMatchNumHolder.initMatchNum
-import live.lingting.framework.datascope.holder.DataScopeMatchNumHolder.pollMatchNum
-import live.lingting.framework.datascope.holder.DataScopeMatchNumHolder.removeIfEmpty
-import live.lingting.framework.datascope.holder.MappedStatementIdsWithoutDataScope
-import live.lingting.framework.datascope.parser.DataScopeParser
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArraySet
+import kotlin.reflect.KClass
 import live.lingting.framework.mybatis.util.PluginUtils
 import org.apache.ibatis.executor.statement.StatementHandler
 import org.apache.ibatis.mapping.SqlCommandType
@@ -19,17 +16,31 @@ import org.apache.ibatis.plugin.Signature
 /**
  * 数据权限拦截器
  *
- * @author Hccake 2020/9/28
- * @version 1.0
  */
 @Intercepts(Signature(type = StatementHandler::class, method = "prepare", args = [Connection::class, Int::class]))
 class DataPermissionInterceptor(
-    private val parser: DataScopeParser,
-    private val handler: DataPermissionHandler
+    val factory: JSqlDataScopeParserFactory,
+    val scopes: List<JSqlDataScope>,
 ) : Interceptor {
 
+    companion object {
+        /**
+         * <p>k: 数据权限类型</p>
+         * <p>v: mybatis 的 mappedStatementId</p>
+         */
+        private val IGNORE_CACHE = ConcurrentHashMap<KClass<out JSqlDataScope>, CopyOnWriteArraySet<String>>()
+
+        @JvmStatic
+        fun ignoreAdd(clazz: KClass<out JSqlDataScope>, mappedStatementId: String) {
+            IGNORE_CACHE.computeIfAbsent(clazz) { CopyOnWriteArraySet() }.add(mappedStatementId)
+        }
+
+        @JvmStatic
+        fun ignoreContains(clazz: KClass<out JSqlDataScope>, mappedStatementId: String) = IGNORE_CACHE[clazz]?.contains(mappedStatementId) == true
+
+    }
+
     override fun intercept(invocation: Invocation): Any {
-        // 第一版，测试用
         val target = invocation.target
         val sh = target as StatementHandler
         val mpSh: PluginUtils.MPStatementHandler = PluginUtils.mpStatementHandler(sh)
@@ -38,36 +49,39 @@ class DataPermissionInterceptor(
         val mpBs = mpSh.mPBoundSql()
         val mappedStatementId = ms.id
 
-        // 获取当前需要控制的 dataScope 集合
-        val filterDataScopes = handler.filterDataScopes(mappedStatementId)
-        if (filterDataScopes.isEmpty()) {
+        // 过滤数据权限
+        val filter = scopes.filter {
+            // 数据权限声明忽略
+            if (it.ignore()) {
+                return@filter false
+            }
+            // 没有数据权限匹配当前方法
+            if (ignoreContains(it::class, mappedStatementId)) {
+                return@filter false
+            }
+            true
+        }
+
+        if (filter.isEmpty()) {
             return invocation.proceed()
         }
 
-        // 根据用户权限判断是否需要拦截，例如管理员可以查看所有，则直接放行
-        if (handler.ignorePermissionControl(filterDataScopes, mappedStatementId)) {
-            return invocation.proceed()
-        }
+        val parser = factory.get(filter)
 
-        // 创建 matchNumTreadLocal
-        initMatchNum()
-        try {
-            // 根据 DataScopes 进行数据权限的 sql 处理
-            if (sct == SqlCommandType.SELECT) {
-                mpBs.sql(parser.parserSingle(mpBs.sql(), filterDataScopes))
-            } else if (sct == SqlCommandType.INSERT || sct == SqlCommandType.UPDATE || sct == SqlCommandType.DELETE) {
-                mpBs.sql(parser.parserMulti(mpBs.sql(), filterDataScopes))
-            }
-            // 如果解析后发现当前 mappedStatementId 对应的 sql，没有任何数据权限匹配，则记录下来，后续可以直接跳过不解析
-            val matchNum = pollMatchNum()
-            val allDataScopes = handler.dataScopes()
-            if (allDataScopes.size == filterDataScopes.size && matchNum != null && matchNum == 0) {
-                MappedStatementIdsWithoutDataScope.addToWithoutSet(filterDataScopes, mappedStatementId)
-            }
-        } finally {
-            removeIfEmpty()
+        // 根据 DataScopes 进行数据权限的 sql 处理
+        val result = if (sct == SqlCommandType.SELECT) {
+            parser.parserSingle(mpBs.sql())
+        } else if (sct == SqlCommandType.INSERT || sct == SqlCommandType.UPDATE || sct == SqlCommandType.DELETE) {
+            parser.parserMulti(mpBs.sql())
+        } else {
+            null
         }
-
+        // 如果sql没有任何数据权限匹配, 则下一次直接跳过
+        if (result == null || result.matchNumber < 1) {
+            filter.forEach { ignoreAdd(it::class, mappedStatementId) }
+        } else {
+            mpBs.sql(result.sql)
+        }
         // 执行 sql
         return invocation.proceed()
     }

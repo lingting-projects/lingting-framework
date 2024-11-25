@@ -1,11 +1,7 @@
-package live.lingting.framework.datascope.parser
+package live.lingting.framework.mybatis.datascope
 
 import java.util.TreeSet
-import live.lingting.framework.datascope.JsqlDataScope
-import live.lingting.framework.datascope.handler.DataPermissionHandler
-import live.lingting.framework.datascope.handler.DefaultDataPermissionHandler
-import live.lingting.framework.datascope.util.SqlParseUtils.getAliasColumn
-import net.sf.jsqlparser.expression.Alias
+import live.lingting.framework.mybatis.datascope.SqlParseUtils.getAliasColumn
 import net.sf.jsqlparser.expression.Expression
 import net.sf.jsqlparser.expression.LongValue
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo
@@ -17,14 +13,22 @@ import org.junit.jupiter.api.Test
 /**
  * @author lingting 2024-01-30 10:43
  */
-internal class DefaultDataScopeParseTest {
-    var tenantDataScope: JsqlDataScope = TenantDataScope()
+class DefaultDataScopeParseTest {
 
-    var dataPermissionHandler: DataPermissionHandler = DefaultDataPermissionHandler(
-        listOf(tenantDataScope)
-    )
+    companion object {
+        private val TABLE_NAMES: MutableSet<String> = TreeSet(java.lang.String.CASE_INSENSITIVE_ORDER)
 
-    var dataScopeSqlProcessor: DataScopeParser = DefaultDataScopeParser()
+        init {
+            TABLE_NAMES.addAll(mutableListOf<String>("entity", "entity1", "entity2", "entity3", "t1", "t2"))
+        }
+    }
+
+    var tenantDataScope: JSqlDataScope = TenantDataScope()
+    var scopes: List<JSqlDataScope> = listOf(tenantDataScope)
+
+    val factory = DefaultJSqlDataScopeParserFactory()
+
+    val parser = factory.get(scopes)
 
     @Test
     fun delete() {
@@ -405,15 +409,15 @@ internal class DefaultDataScopeParseTest {
 				WHERE ur.user_id = ?
 				and r.deleted = 0
 				""".trimIndent()
-        assertDoesNotThrow<String> { dataScopeSqlProcessor.parserSingle(sql, dataPermissionHandler.dataScopes()) }
+        assertDoesNotThrow { parser.parserSingle(sql) }
     }
 
     fun assertSql(sql: String, targetSql: String) {
-        val parsedSql = dataScopeSqlProcessor.parserSingle(sql, dataPermissionHandler.dataScopes()!!)
+        val parsedSql = parser.parserSingle(sql)
         assertEquals(targetSql, parsedSql)
     }
 
-    internal class TenantDataScope : JsqlDataScope {
+    class TenantDataScope : JSqlDataScope {
         val columnName: String = "tenant_id"
 
         override val resource: String
@@ -423,17 +427,12 @@ internal class DefaultDataScopeParseTest {
             return TABLE_NAMES.contains(tableName)
         }
 
-        override fun getExpression(tableName: String, tableAlias: Alias?): Expression {
+        override fun handler(p: JSqlDataScopeParams): Expression? {
+            val tableName = p.name
+            val tableAlias = p.alias
             val column = getAliasColumn(tableName, tableAlias, columnName)
             return EqualsTo(column, LongValue("1"))
         }
 
-        companion object {
-            private val TABLE_NAMES: MutableSet<String> = TreeSet(java.lang.String.CASE_INSENSITIVE_ORDER)
-
-            init {
-                TABLE_NAMES.addAll(mutableListOf<String>("entity", "entity1", "entity2", "entity3", "t1", "t2"))
-            }
-        }
     }
 }
