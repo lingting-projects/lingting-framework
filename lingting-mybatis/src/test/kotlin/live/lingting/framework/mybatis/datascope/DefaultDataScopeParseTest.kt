@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test
 class DefaultDataScopeParseTest {
 
     companion object {
-        private val TABLE_NAMES: MutableSet<String> = TreeSet(java.lang.String.CASE_INSENSITIVE_ORDER)
+        val TABLE_NAMES: MutableSet<String> = TreeSet(java.lang.String.CASE_INSENSITIVE_ORDER)
 
         init {
             TABLE_NAMES.addAll(mutableListOf<String>("entity", "entity1", "entity2", "entity3", "t1", "t2"))
@@ -414,25 +414,26 @@ class DefaultDataScopeParseTest {
 
     fun assertSql(sql: String, targetSql: String) {
         val parsedSql = parser.parserSingle(sql)
-        assertEquals(targetSql, parsedSql)
+        assertEquals(targetSql, parsedSql.sql)
     }
 
-    class TenantDataScope : JSqlDataScope {
-        val columnName: String = "tenant_id"
+}
 
-        override val resource: String
-            get() = "tenant"
+class TenantDataScope : JSqlDataScope {
+    val columnName: String = "tenant_id"
 
-        override fun includes(tableName: String): Boolean {
-            return TABLE_NAMES.contains(tableName)
-        }
+    override val resource: String
+        get() = "tenant"
 
-        override fun handler(p: JSqlDataScopeParams): Expression? {
-            val tableName = p.name
-            val tableAlias = p.alias
-            val column = getAliasColumn(tableName, tableAlias, columnName)
-            return EqualsTo(column, LongValue("1"))
-        }
-
+    override fun includes(tableName: String): Boolean {
+        return DefaultDataScopeParseTest.TABLE_NAMES.contains(tableName)
     }
+
+    override fun handler(p: JSqlDataScopeParams): Expression? {
+        val tableName = p.name
+        val tableAlias = p.alias
+        val column = getAliasColumn(tableName, tableAlias, columnName)
+        return EqualsTo(column, LongValue("1"))
+    }
+
 }

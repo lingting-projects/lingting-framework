@@ -14,5 +14,5 @@ data class JSqlDataScopeParams(
     /**
      * 别名
      */
-    val alias: Alias,
+    val alias: Alias?,
 )
