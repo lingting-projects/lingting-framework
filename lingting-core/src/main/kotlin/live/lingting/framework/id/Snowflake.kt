@@ -6,7 +6,7 @@ import kotlin.math.max
 /**
  * @author lingting 2024-04-18 20:23
  */
-class Snowflake(params: SnowflakeParams, workerId: Long, datacenterId: Long) {
+open class Snowflake(params: SnowflakeParams, workerId: Long, datacenterId: Long) {
     /**
      * 雪花算法的开始时间戳（自定义）
      */
