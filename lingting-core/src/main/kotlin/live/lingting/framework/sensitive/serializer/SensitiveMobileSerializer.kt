@@ -6,15 +6,8 @@ import live.lingting.framework.sensitive.SensitiveUtils
 
 /**
  * 手机号格式脱敏
- *
- *
  * +8617612349876
- *
- *
- *
  * +86*****76
- *
- *
  * @author lingting 2024-05-21 10:20
  */
 object SensitiveMobileSerializer : SensitiveSerializer {

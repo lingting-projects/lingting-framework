@@ -5,7 +5,6 @@ import java.math.BigInteger
 
 /**
  * 位运算
- *
  * @author lingting 2023-11-24 11:48
  */
 object NumberUtils {
@@ -41,11 +40,7 @@ object NumberUtils {
 
     /**
      * 指定数字是否为 2 的整数次幂
-     *
-     *
      * 对于大数, 仅支持正整数
-     *
-     *
      * @return true 表示是2的整数次幂
      */
     @JvmStatic

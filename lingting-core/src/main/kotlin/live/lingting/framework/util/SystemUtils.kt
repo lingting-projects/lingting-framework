@@ -12,7 +12,6 @@ object SystemUtils {
 
     /**
      * 当前系统是否为Windows系统, 参考以下系统API
-     *
      * @return boolean
      * @see sun.awt.OSInfo.getOSType
      */

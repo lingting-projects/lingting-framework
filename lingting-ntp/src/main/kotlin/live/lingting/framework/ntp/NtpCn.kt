@@ -12,7 +12,6 @@ import org.slf4j.Logger
 
 /**
  * 中国 ntp 类
- *
  * @author lingting 2023/2/1 14:10
  */
 object NtpCn {

@@ -15,11 +15,7 @@ object ByteUtils {
 
     /**
      * 两个字节是否表示行尾
-     *
-     *
      * 字节1在字节2前面
-     *
-     *
      * @param byte1 字节1
      * @param byte2 字节2
      * @return true 行尾
@@ -31,7 +27,6 @@ object ByteUtils {
 
     /**
      * 字节是否表示行尾
-     *
      * @param byte1 字节1
      * @return true 行尾
      */
@@ -42,7 +37,6 @@ object ByteUtils {
 
     /**
      * 此数据是否为完整的一行数据(以换行符结尾)
-     *
      * @param bytes 字节
      * @return true 一整行
      */
@@ -66,7 +60,6 @@ object ByteUtils {
 
     /**
      * 此数据是否为完整的一行数据(以换行符结尾)
-     *
      * @param bytes 字节
      * @return true 一整行
      */
@@ -90,7 +83,6 @@ object ByteUtils {
 
     /**
      * 移除行数据中的行尾符合
-     *
      * @param list 数据
      * @return 移除后的数据, 如果没有则是原数据
      */

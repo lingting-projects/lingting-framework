@@ -22,7 +22,6 @@ import live.lingting.framework.time.DatePattern
 
 /**
  * 自定义java8新增时间类型的序列化
- *
  * @author Hccake
  */
 class JavaTimeModule : SimpleModule() {

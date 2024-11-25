@@ -15,7 +15,6 @@ import org.apache.ibatis.plugin.Signature
 
 /**
  * 数据权限拦截器
- *
  */
 @Intercepts(Signature(type = StatementHandler::class, method = "prepare", args = [Connection::class, Int::class]))
 class DataPermissionInterceptor(

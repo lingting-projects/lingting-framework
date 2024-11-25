@@ -5,7 +5,6 @@ import kotlin.math.max
 
 /**
  * 生成 markdown 文本
- *
  * @author lingting 2020/6/10 22:43
  */
 class MarkdownBuilder {
@@ -190,7 +189,6 @@ class MarkdownBuilder {
 
     /**
      * 生成 i 级标题
-     *
      * @author lingting 2020-06-10 22:55:39
      */
     protected fun title(i: Int, content: Any?): MarkdownBuilder {

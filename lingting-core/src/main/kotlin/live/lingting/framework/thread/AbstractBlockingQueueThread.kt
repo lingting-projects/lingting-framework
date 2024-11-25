@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit
 
 /**
  * 抽象的线程类，主要用于汇聚详情数据 做一些基础的处理后 进行批量插入
- *
  * @author lingting
  */
 abstract class AbstractBlockingQueueThread<T> : AbstractQueueThread<T>() {

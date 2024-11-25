@@ -31,10 +31,7 @@ class ElasticsearchProperties {
 
         /**
          * 触发版本冲突时重试次数, 小于0表示无限重试
-         *
-         *
          * 此重试独立计数, 不论是否达到 [Retry.getMaxRetry] 均会按照此配置进行重试
-         *
          */
         var versionConflictMaxRetry: Int = 50
 

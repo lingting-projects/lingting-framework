@@ -11,7 +11,6 @@ import live.lingting.framework.util.StringUtils
 
 /**
  * 在服务器端，按照拦截器注册的顺序从后到前执行，先执行后面的拦截器，再执行前面的拦截器。
- *
  * @author lingting 2023-04-13 13:23
  */
 class GrpcServerTraceIdInterceptor(private val properties: GrpcServerProperties) : ServerInterceptor, Sequence {

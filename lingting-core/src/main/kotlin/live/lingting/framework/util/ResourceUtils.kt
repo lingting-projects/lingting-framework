@@ -6,7 +6,6 @@ import java.net.JarURLConnection
 import java.net.URI
 import java.net.URL
 import java.nio.file.Files
-import java.nio.file.Path
 import java.util.Arrays
 import java.util.Collections
 import java.util.function.Predicate
@@ -54,7 +53,6 @@ object ResourceUtils {
 
     /**
      * 扫描资源
-     *
      * @param name      名称
      * @param predicate 是否返回该资源
      * @return 所有满足条件的资源对象

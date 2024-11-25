@@ -125,7 +125,6 @@ class AwsS3Object(properties: AwsS3Properties, override val key: String) : AwsS3
 
     /**
      * 上传分片
-     *
      * @return 合并用的 etag
      */
     override fun multipartUpload(uploadId: String, part: Part, `in`: InputStream): String {
@@ -139,7 +138,6 @@ class AwsS3Object(properties: AwsS3Properties, override val key: String) : AwsS3
 
     /**
      * 合并分片
-     *
      * @param map key: part. value: etag
      */
     override fun multipartMerge(uploadId: String, map: Map<Part, String>) {

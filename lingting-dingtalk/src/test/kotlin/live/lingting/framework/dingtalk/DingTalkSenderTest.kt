@@ -8,11 +8,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty
 
 /**
- *
- *
  * idea: 设置 build -> build -> gradle -> run test 为 idea. 然后配置在 vm options 里面
- *
- *
  * @author lingting 2024-01-29 20:12
  */
 @EnabledIfSystemProperty(named = "framework.dingtalk.test", matches = "true")

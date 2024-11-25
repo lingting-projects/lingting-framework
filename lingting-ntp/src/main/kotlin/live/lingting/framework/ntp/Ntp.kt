@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit
 
 /**
  * ntp 校时服务
- *
  * @author lingting 2022/11/18 13:40
  */
 class Ntp(val host: String, val diff: Long) {

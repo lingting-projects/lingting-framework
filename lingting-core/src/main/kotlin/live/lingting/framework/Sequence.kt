@@ -9,7 +9,6 @@ import org.springframework.core.annotation.Order
 
 /**
  * 排序用
- *
  * @author lingting 2024-01-30 11:15
  */
 interface Sequence {

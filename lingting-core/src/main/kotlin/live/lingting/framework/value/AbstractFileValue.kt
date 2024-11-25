@@ -33,7 +33,6 @@ abstract class AbstractFileValue<T> {
 
     /**
      * 文件名处理, 用于调整后缀
-     *
      * @return 返回真实的文件名
      */
     abstract fun fillFilename(filename: Any): String

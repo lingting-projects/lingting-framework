@@ -5,7 +5,6 @@ import live.lingting.framework.dingtalk.enums.MessageTypeEnum
 
 /**
  * 钉钉消息基础类
- *
  * @author lingting 2020/6/10 21:28
  */
 abstract class AbstractDingTalkMessage : DingTalkMessage {

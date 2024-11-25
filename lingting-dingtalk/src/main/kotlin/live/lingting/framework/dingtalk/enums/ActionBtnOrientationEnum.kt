@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonValue
 
 /**
  * 跳转 ActionCard 类型 消息的按钮排列方式
- *
  * @author lingting 2020/6/10 23:44
  */
 enum class ActionBtnOrientationEnum(

@@ -106,13 +106,11 @@ class Async constructor(
 
     /**
      * 等待结束
-     *
      * @param duration       超时时间
      * @param forceInterrupt 是否强制中断已超时的任务
      */
     /**
      * 等待结束, 执行时间超过超时时间的任务强行中断
-     *
      * @param duration 超时时间
      */
 

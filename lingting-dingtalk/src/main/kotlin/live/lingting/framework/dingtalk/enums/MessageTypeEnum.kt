@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonValue
 
 /**
  * 钉钉消息类型
- *
  * @author lingting 2020/6/10 21:29
  */
 enum class MessageTypeEnum(@JsonValue val value: String, val desc: String) {

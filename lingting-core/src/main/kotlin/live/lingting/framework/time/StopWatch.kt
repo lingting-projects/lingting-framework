@@ -5,11 +5,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * 参考 org.springframework.util.StopWatch
- *
- *
  * 线程不安全
- *
- *
  * @author lingting 2023-02-15 16:47
  */
 class StopWatch {
@@ -51,14 +47,8 @@ class StopWatch {
 
     /**
      * 获取执行时长
-     *
-     *
      * 如果已开始, 则是开始时间到当前时长
-     *
-     *
-     *
      * 如果已结束, 则是上一次统计时长
-     *
      */
     fun timeNanos(): Long {
         return durationNanos ?: if (startTimeNanos == null) 0 else System.nanoTime() - startTimeNanos!!

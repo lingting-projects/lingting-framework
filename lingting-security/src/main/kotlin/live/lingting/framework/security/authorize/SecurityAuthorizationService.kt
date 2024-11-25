@@ -4,7 +4,6 @@ import live.lingting.framework.security.domain.SecurityScope
 
 /**
  * 授权服务用
- *
  * @author lingting 2023-03-29 21:20
  */
 interface SecurityAuthorizationService {

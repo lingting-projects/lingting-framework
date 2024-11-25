@@ -32,7 +32,6 @@ import org.apache.ibatis.session.Configuration
 
 /**
  * 插件工具类
- *
  * @author TaoYu , hubin
  * @since 2017-06-20
  */
@@ -52,7 +51,6 @@ object PluginUtils {
 
     /**
      * 给 BoundSql 设置 additionalParameters
-     *
      * @param boundSql             BoundSql
      * @param additionalParameters additionalParameters
      */

@@ -17,18 +17,9 @@ class MoneyConfig(
     val decimalType: RoundingMode,
     /**
      * 分位间隔数量, 如果值非大于0则不进行分位处理
-     *
-     *
      * 2: 百分位
-     *
-     *
-     *
      * 3: 千分位
-     *
-     *
-     *
      * 4: 万分位
-     *
      */
     val quantileLimit: Int?,
     /**
@@ -45,7 +36,6 @@ class MoneyConfig(
 
         /**
          * 小数位数量是否有效
-         *
          * @return true 有效, 需要进行小数位处理
          */
         @JvmStatic
@@ -55,7 +45,6 @@ class MoneyConfig(
 
         /**
          * 分位配置是否有效
-         *
          * @return true 表示有效, 需要进行分位控制
          */
         @JvmStatic

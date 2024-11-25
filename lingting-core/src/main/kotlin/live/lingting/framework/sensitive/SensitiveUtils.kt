@@ -16,7 +16,6 @@ object SensitiveUtils {
 
     /**
      * 脱敏字符串序列化
-     *
      * @param raw          原始字符串
      * @param prefixLength 结果前缀长度
      * @param suffixLength 结果后缀长度

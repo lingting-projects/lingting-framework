@@ -6,7 +6,6 @@ package live.lingting.framework.mybatis.typehandler
 abstract class AbstractSetTypeHandler<T> : AbstractJacksonTypeHandler<Set<T>>() {
     /**
      * 取出数据转化异常时 使用
-     *
      * @return 实体类对象
      */
     override fun defaultValue(): Set<T> {
@@ -15,7 +14,6 @@ abstract class AbstractSetTypeHandler<T> : AbstractJacksonTypeHandler<Set<T>>() 
 
     /**
      * 存储数据异常时 使用
-     *
      * @return 存储数据
      */
     override fun defaultJson(): String {

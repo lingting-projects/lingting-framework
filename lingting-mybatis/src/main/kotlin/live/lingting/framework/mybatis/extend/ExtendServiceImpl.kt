@@ -21,7 +21,6 @@ import org.apache.ibatis.session.SqlSessionFactory
 
 /**
  * 以前继承 com.baomidou.mybatisplus.extension.service.impl.ServiceImpl 的实现类，现在继承本类
- *
  * @author lingting 2020/7/21 10:00
  */
 @Suppress("UNCHECKED_CAST")
@@ -49,7 +48,6 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
 
     /**
      * 获取mapperStatementId
-     *
      * @param sqlMethod 方法名
      * @return 命名id
      * @since 3.4.0
@@ -125,7 +123,6 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
 
     /**
      * 执行批量操作
-     *
      * @param list      数据集合
      * @param batchSize 批量大小
      * @param consumer  执行方法

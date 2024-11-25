@@ -19,7 +19,6 @@ class Credential(
 
     /**
      * 计算指定时间到过期时间还需要花费的时间.
-     *
      * @return 如果小于等于0 表示 已经过期
      */
     fun between(now: LocalDateTime): Duration {

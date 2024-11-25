@@ -98,7 +98,6 @@ class Command protected constructor(init: String, enter: String, exit: String, c
 
     /**
      * 写入并执行一行指令
-     *
      * @param str 单行指令
      */
 
@@ -109,19 +108,10 @@ class Command protected constructor(init: String, enter: String, exit: String, c
 
     /**
      * 获取执行结果, 并退出
-     *
-     *
      * 注意: 如果套娃了多个通道, 则需要手动退出套娃的通道
-     *
-     *
-     *
      * 例如: eg: exec("ssh ssh.lingting.live").exec("ssh ssh.lingting.live").exec("ssh
      * ssh.lingting.live")
-     *
-     *
-     *
      * 需要: eg: exit().exit().exit()
-     *
      */
 
     fun waitFor(): CommandResult {
@@ -133,15 +123,8 @@ class Command protected constructor(init: String, enter: String, exit: String, c
      * 等待命令执行完成
      * <h3>如果 process 是通过 [Runtime.exec]方法构建的, 那么[Process.waitFor]方法可能会导致线程卡死,
      * 具体原因如下</h3>
-     *
-     *
      * 终端缓冲区大小有限, 在缓冲区被写满之后, 会子线程会挂起,等待缓冲区内容被读, 然后才继续写. 如果此时主线程也在waitFor()等待子线程结束, 就卡死了
-     *
-     *
-     *
      * 即便是先读取返回结果在调用此方法也可能会导致卡死. 比如: 先读取标准输出流, 还没读完, 缓冲区被错误输出流写满了.
-     *
-     *
      * @param millis 等待时间, 单位: 毫秒
      * @return live.lingting.tools.system.CommandResult
      */
@@ -170,7 +153,6 @@ class Command protected constructor(init: String, enter: String, exit: String, c
 
     /**
      * 清空历史记录
-     *
      * @return 返回被清除的数据
      */
     fun cleanHistory(): List<String> {
@@ -194,7 +176,6 @@ class Command protected constructor(init: String, enter: String, exit: String, c
         /**
          * 获取命令操作实例. 此实例默认使用系统字符集, 如果发现部分带非英文字符和特殊符号命令执行异常, 建议使用
          * [Command.of] 自定义对应的字符集
-         *
          * @param init 初始命令
          */
         @JvmStatic

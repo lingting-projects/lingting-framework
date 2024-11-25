@@ -8,11 +8,7 @@ import live.lingting.framework.util.FileUtils
 
 /**
  * 克隆输入流, 可直接读取, 也可以克隆出一个新流然后读取
- *
- *
  * 当直接读取时, 所有行为和文件流一致
- *
- *
  * @author lingting 2024-01-09 15:41
  */
 class FileCloneInputStream constructor(source: File, size: Long = Files.size(source.toPath())) : CloneInputStream(source, size) {

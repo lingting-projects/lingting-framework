@@ -27,7 +27,6 @@ object StreamUtils {
 
     /**
      * 读取流, 如果 function 返回 false 则结束读取
-     *
      * @param function 消费读取到的数据, byte[] 数据, 读取长度. 返回false 则结束读取
      */
     @JvmStatic
@@ -69,7 +68,6 @@ object StreamUtils {
 
     /**
      * 读取流
-     *
      * @param in       流
      * @param size     缓冲区大小
      * @param consumer 消费读取到的数据, byte[] 数据, 读取长度
@@ -147,7 +145,6 @@ object StreamUtils {
 
     /**
      * 从流中读取 int
-     *
      * @author lingting 2021-07-22 14:54
      */
     @JvmStatic
@@ -182,11 +179,7 @@ object StreamUtils {
 
     /**
      * 克隆文件流
-     *
-     *
      * 注意: 在使用后及时关闭复制流
-     *
-     *
      * @param stream 源流
      * @return 返回指定数量的从源流复制出来的只读流
      * @author lingting 2021-04-16 16:18
@@ -207,7 +200,6 @@ object StreamUtils {
 
     /**
      * 读取流, 当读取完一行数据时, 消费该数据
-     *
      * @param in       流
      * @param charset  字符集
      * @param consumer 行数据消费, int: 行索引
@@ -220,7 +212,6 @@ object StreamUtils {
 
     /**
      * 读取流, 当读取完一行数据时, 消费该数据
-     *
      * @param in       流
      * @param charset  字符集
      * @param consumer 行数据消费, int: 行索引
@@ -237,7 +228,6 @@ object StreamUtils {
 
     /**
      * 读取流, 当读取完一行数据时, 消费该数据
-     *
      * @param in       流
      * @param consumer 行数据消费, int: 行索引
      * @throws IOException 异常
@@ -249,7 +239,6 @@ object StreamUtils {
 
     /**
      * 读取流, 当读取完一行数据时, 消费该数据
-     *
      * @param in       流
      * @param size     一次读取数据大小
      * @param consumer 行数据消费, int: 行索引

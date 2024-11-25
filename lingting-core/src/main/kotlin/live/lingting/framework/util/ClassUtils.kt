@@ -70,7 +70,6 @@ object ClassUtils {
 
     /**
      * 判断class是否可以被加载, 使用系统类加载器和当前工具类加载器
-     *
      * @param className 类名
      * @return true
      */
@@ -83,7 +82,6 @@ object ClassUtils {
 
     /**
      * 确定class是否可以被加载
-     *
      * @param className    完整类名
      * @param classLoaders 类加载
      */
@@ -125,7 +123,6 @@ object ClassUtils {
 
     /**
      * 扫描指定包下, 所有继承指定类的class
-     *
      * @param basePack 指定包 eg: live.lingting.framework.item
      * @param filter   过滤指定类
      * @param error    获取类时发生异常处理
@@ -161,7 +158,6 @@ object ClassUtils {
 
     /**
      * 把指定对象的所有字段和对应的值组成Map
-     *
      * @param o 需要转化的对象
      * @return java.util.Map<java.lang.String></java.lang.String>, java.lang.Object>
      */
@@ -172,7 +168,6 @@ object ClassUtils {
 
     /**
      * 把指定对象的所有字段和对应的值组成Map
-     *
      * @param o      需要转化的对象
      * @param filter 过滤不存入Map的字段, 返回false表示不存入Map
      * @param toKey  设置存入Map的key
@@ -206,7 +201,6 @@ object ClassUtils {
 
     /**
      * 获取所有字段, 不改变可读性
-     *
      * @param cls 指定类
      * @return java.lang.reflect.Field[]
      */
@@ -263,19 +257,9 @@ object ClassUtils {
 
     /**
      * 扫描所有字段以及对应字段的值
-     *
-     *
      * 优先取指定字段的 get 方法, 仅会获取其中的无参方法
-     *
-     *
-     *
      * 如果是 boolean 类型, 尝试取 is 方法
-     *
-     *
-     *
      * 否则直接取字段 - 不会尝试修改可读性, 如果可读性有问题, 请主动get 然后修改
-     *
-     *
      * @return live.lingting.framework.domain.ClassField 可用于获取字段值的数组
      */
     @JvmStatic
@@ -312,7 +296,6 @@ object ClassUtils {
 
     /**
      * 获取指定类中的指定字段名的字段
-     *
      * @param name 字段名
      * @param cls       指定类
      * @return live.lingting.framework.domain.ClassField 字段
@@ -357,7 +340,6 @@ object ClassUtils {
 
     /**
      * 设置可访问对象的可访问权限为 true
-     *
      * @param object 可访问的对象
      * @param <T>    类型
      * @return 返回设置后的对象
@@ -372,7 +354,6 @@ object ClassUtils {
 
     /**
      * 方法名转字段名
-     *
      * @param methodName 方法名
      * @return java.lang.String 字段名
      */

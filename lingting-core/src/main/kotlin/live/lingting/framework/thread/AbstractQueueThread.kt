@@ -7,7 +7,6 @@ import live.lingting.framework.util.CollectionUtils
 
 /**
  * 顶级队列线程类
- *
  * @author lingting 2021/3/2 15:07
  */
 abstract class AbstractQueueThread<E> : AbstractThreadContextComponent() {
@@ -20,11 +19,8 @@ abstract class AbstractQueueThread<E> : AbstractThreadContextComponent() {
 
     /**
      * 用于子类自定义等待时长
-     *
-     *
      * 不要和 [.getPollTimeout]值相差过大, 否则会导致等待时间不是预期的值, 而是
      * [.getPollTimeout]的值
-     *
      * @return 返回时长，单位毫秒
      */
     open val batchTimeout: Duration = BATCH_TIMEOUT

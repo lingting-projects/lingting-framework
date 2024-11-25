@@ -12,7 +12,6 @@ import live.lingting.framework.util.StringUtils
 
 /**
  * 订单消息发送
- *
  * @author lingting 2020/6/10 21:25
  */
 class DingTalkSender(
@@ -76,7 +75,6 @@ class DingTalkSender(
 
     /**
      * 获取签名后的请求路径
-     *
      * @param timestamp 当前时间戳
      */
     fun secret(timestamp: Long): String {
@@ -88,7 +86,6 @@ class DingTalkSender(
 
     /**
      * 发起消息请求
-     *
      * @param dingTalkMessage 消息内容
      * @param isSecret        是否签名 true 签名
      * @return java.lang.String

@@ -20,10 +20,7 @@ abstract class DownloadBuilder<B : DownloadBuilder<B>> protected constructor(
 
     /**
      * 文件大小, 用于多线程下载时进行分片. 单位: bytes
-     *
-     *
      * 设置为null或者小于1时调用size方法解析
-     *
      */
     var size: Long? = null
 
@@ -85,7 +82,6 @@ abstract class DownloadBuilder<B : DownloadBuilder<B>> protected constructor(
 
     /**
      * 将原值进行安全判断, 如果不满足则设置为默认值
-     *
      * @param t 原值
      * @param d 默认值
      * @return 结果

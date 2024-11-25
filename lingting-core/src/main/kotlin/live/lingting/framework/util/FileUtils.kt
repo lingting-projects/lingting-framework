@@ -23,7 +23,6 @@ object FileUtils {
 
     /**
      * 扫描指定路径下所有文件
-     *
      * @param path      指定路径
      * @param recursive 是否递归
      * @return java.util.List<java.lang.String>
@@ -61,7 +60,6 @@ object FileUtils {
 
     /**
      * 创建指定文件夹, 已存在时不会重新创建
-     *
      * @param dir 文件夹.
      */
     @JvmStatic
@@ -78,7 +76,6 @@ object FileUtils {
 
     /**
      * 创建指定文件, 已存在时不会重新创建
-     *
      * @param file 文件.
      */
     @JvmStatic
@@ -113,7 +110,6 @@ object FileUtils {
 
     /**
      * 创建临时文件
-     *
      * @param suffix 文件特征
      * @param dir    文件存放位置
      * @return 临时文件对象
@@ -150,7 +146,6 @@ object FileUtils {
 
     /**
      * 复制文件
-     *
      * @param source   源文件
      * @param target   目标文件
      * @param override 如果目标文件已存在是否覆盖
@@ -220,7 +215,6 @@ object FileUtils {
 
     /**
      * 获取文件扩展名
-     *
      * @return java.lang.String eg: java
      */
     @JvmStatic

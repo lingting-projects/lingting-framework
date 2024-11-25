@@ -19,18 +19,9 @@ class Money private constructor(
     val decimalType: RoundingMode,
     /**
      * 分位间隔数量, 如果值非大于0则不进行分位处理
-     *
-     *
      * 2: 百分位
-     *
-     *
-     *
      * 3: 千分位
-     *
-     *
-     *
      * 4: 万分位
-     *
      */
     val quantileLimit: Int?,
     /**
@@ -45,7 +36,6 @@ class Money private constructor(
     // region 金额变动操作
     /**
      * 切换金额
-     *
      * @param value 值
      * @return this
      */
@@ -55,7 +45,6 @@ class Money private constructor(
 
     /**
      * 增加
-     *
      * @param money 金额
      * @return 增加指定金额后的新金额
      */
@@ -65,7 +54,6 @@ class Money private constructor(
 
     /**
      * 增加
-     *
      * @param money 金额
      * @return 增加指定金额后的新金额
      */
@@ -75,7 +63,6 @@ class Money private constructor(
 
     /**
      * 增加
-     *
      * @param money 金额
      * @return 增加指定金额后的新金额
      */
@@ -85,7 +72,6 @@ class Money private constructor(
 
     /**
      * 增加
-     *
      * @param money 金额
      * @return 增加指定金额后的新金额
      */
@@ -95,7 +81,6 @@ class Money private constructor(
 
     /**
      * 减少
-     *
      * @param money 金额
      * @return 减少指定金额后的新金额
      */
@@ -105,7 +90,6 @@ class Money private constructor(
 
     /**
      * 减少
-     *
      * @param money 金额
      * @return 减少指定金额后的新金额
      */
@@ -115,7 +99,6 @@ class Money private constructor(
 
     /**
      * 减少
-     *
      * @param money 金额
      * @return 减少指定金额后的新金额
      */
@@ -125,7 +108,6 @@ class Money private constructor(
 
     /**
      * 减少
-     *
      * @param money 金额
      * @return 减少指定金额后的新金额
      */
@@ -135,7 +117,6 @@ class Money private constructor(
 
     /**
      * 乘以
-     *
      * @param money 金额
      * @return 乘以指定金额后的新金额
      */
@@ -145,7 +126,6 @@ class Money private constructor(
 
     /**
      * 乘以
-     *
      * @param money 金额
      * @return 乘以指定金额后的新金额
      */
@@ -155,7 +135,6 @@ class Money private constructor(
 
     /**
      * 乘以
-     *
      * @param money 金额
      * @return 乘以指定金额后的新金额
      */
@@ -165,7 +144,6 @@ class Money private constructor(
 
     /**
      * 乘以
-     *
      * @param money 金额
      * @return 乘以指定金额后的新金额
      */
@@ -175,7 +153,6 @@ class Money private constructor(
 
     /**
      * 除以
-     *
      * @param money 金额
      * @return 除以指定金额后的新金额
      */
@@ -185,7 +162,6 @@ class Money private constructor(
 
     /**
      * 除以
-     *
      * @param money 金额
      * @return 除以指定金额后的新金额
      */
@@ -195,7 +171,6 @@ class Money private constructor(
 
     /**
      * 除以
-     *
      * @param money 金额
      * @return 除以指定金额后的新金额
      */
@@ -205,7 +180,6 @@ class Money private constructor(
 
     /**
      * 除以
-     *
      * @param money 金额
      * @return 除以指定金额后的新金额
      */
@@ -226,7 +200,6 @@ class Money private constructor(
     val isZero: Boolean
         /**
          * 是否为0
-         *
          * @return boolean
          */
         get() = value.compareTo(BigDecimal.ZERO) == 0
@@ -234,14 +207,12 @@ class Money private constructor(
     val isNegative: Boolean
         /**
          * 是否为负数
-         *
          * @return boolean
          */
         get() = value.compareTo(BigDecimal.ZERO) < 0
 
     /**
      * 大于
-     *
      * @param money 金额
      * @return boolean true 表示大于目标金额
      */
@@ -251,7 +222,6 @@ class Money private constructor(
 
     /**
      * 大于
-     *
      * @param money 金额
      * @return boolean true 表示大于目标金额
      */
@@ -261,7 +231,6 @@ class Money private constructor(
 
     /**
      * 大于等于
-     *
      * @param money 金额
      * @return boolean true 表示大于等于目标金额
      */
@@ -271,7 +240,6 @@ class Money private constructor(
 
     /**
      * 大于等于
-     *
      * @param money 金额
      * @return boolean true 表示大于等于目标金额
      */
@@ -281,7 +249,6 @@ class Money private constructor(
 
     /**
      * 等于
-     *
      * @param money 金额
      * @return boolean true 表示等于目标金额
      */
@@ -291,7 +258,6 @@ class Money private constructor(
 
     /**
      * 等于
-     *
      * @param money 金额
      * @return boolean true 表示等于目标金额
      */
@@ -301,7 +267,6 @@ class Money private constructor(
 
     /**
      * 小于
-     *
      * @param money 金额
      * @return boolean true 表示小于目标金额
      */
@@ -311,7 +276,6 @@ class Money private constructor(
 
     /**
      * 小于
-     *
      * @param money 金额
      * @return boolean true 表示小于目标金额
      */
@@ -321,7 +285,6 @@ class Money private constructor(
 
     /**
      * 小于等于
-     *
      * @param money 金额
      * @return boolean true 表示小于等于目标金额
      */
@@ -331,7 +294,6 @@ class Money private constructor(
 
     /**
      * 小于等于
-     *
      * @param money 金额
      * @return boolean true 表示小于等于目标金额
      */
@@ -351,11 +313,7 @@ class Money private constructor(
 
     /**
      * 转化为指定配置对应的值.
-     *
-     *
      * 存在分位配置则加入嵌入分位
-     *
-     *
      * @return java.lang.String 字符串值
      */
     fun toPlainString(): String {
@@ -394,7 +352,6 @@ class Money private constructor(
 
     /**
      * 返回数据的值
-     *
      * @return java.lang.String
      */
     override fun toString(): String {
@@ -433,7 +390,6 @@ class Money private constructor(
 
         /**
          * 通过指定金额值和上下文的配置进行构建
-         *
          * @param value 金额值
          * @return 金额实例
          */
@@ -444,7 +400,6 @@ class Money private constructor(
 
         /**
          * 通过指定金额值和上下文的配置进行构建
-         *
          * @param value 金额值
          * @return 金额实例
          */
@@ -455,7 +410,6 @@ class Money private constructor(
 
         /**
          * 通过指定金额值和上下文的配置进行构建
-         *
          * @param value 金额值
          * @return 金额实例
          */
@@ -466,7 +420,6 @@ class Money private constructor(
 
         /**
          * 通过指定金额值和上下文的配置进行构建
-         *
          * @param value 金额值
          * @return 金额实例
          */
@@ -483,7 +436,6 @@ class Money private constructor(
 
         /**
          * 通过指定金额值和金额配置进行校验
-         *
          * @param value  金额值
          * @param config 金额配置
          * @return 金额实例
@@ -495,11 +447,7 @@ class Money private constructor(
 
         /**
          * 通过金额值和具体配置进行构建
-         *
-         *
          * 会进行参数校验
-         *
-         *
          * @param value         金额值
          * @param decimalLimit  小数位限制数量
          * @param decimalType   小数位处理方案
@@ -528,11 +476,7 @@ class Money private constructor(
 
         /**
          * 内部用 - 通过金额值和具体配置进行构建
-         *
-         *
          * 不进行参数校验
-         *
-         *
          * @param value         金额值
          * @param decimalLimit  小数位限制数量
          * @param decimalType   小数位处理方案

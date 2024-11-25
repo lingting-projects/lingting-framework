@@ -19,7 +19,7 @@ class Multipart(
      */
     val id: String,
     /**
-     *
+     * 分片原始内容
      */
     val source: File?,
     /**
@@ -91,7 +91,6 @@ class Multipart(
 
         /**
          * 计算对应大小和每个分片大小需要构造多少个分片
-         *
          * @param size     总大小
          * @param partSize 每个分片大小
          */

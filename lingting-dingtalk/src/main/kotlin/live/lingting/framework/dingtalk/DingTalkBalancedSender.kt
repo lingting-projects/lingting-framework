@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory
 
 /**
  * 订单负载均衡消息发送
- *
  * @author lingting 2020/6/10 21:25
  */
 class DingTalkBalancedSender {

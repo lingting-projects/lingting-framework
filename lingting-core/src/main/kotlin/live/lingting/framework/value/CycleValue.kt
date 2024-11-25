@@ -4,7 +4,6 @@ import java.math.BigInteger
 
 /**
  * 循环数据
- *
  * @author lingting 2023-12-19 16:01
  */
 interface CycleValue<T> {

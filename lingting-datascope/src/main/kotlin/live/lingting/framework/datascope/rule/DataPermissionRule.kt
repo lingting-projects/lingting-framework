@@ -5,7 +5,6 @@ import live.lingting.framework.datascope.annotation.DataPermission
 
 /**
  * 数据权限的规则抽象类
- *
  * @author hccake
  * @since 0.7.0
  */

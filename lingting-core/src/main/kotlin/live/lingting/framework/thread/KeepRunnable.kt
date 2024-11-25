@@ -7,7 +7,6 @@ import org.slf4j.MDC
 
 /**
  * 保留状态的可运行代码
- *
  * @author lingting 2024-04-28 17:25
  */
 abstract class KeepRunnable protected constructor(protected val name: String, protected val mdc: Map<String, String>) : Runnable {

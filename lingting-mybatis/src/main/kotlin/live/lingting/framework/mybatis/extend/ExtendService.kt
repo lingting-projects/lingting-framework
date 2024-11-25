@@ -13,7 +13,6 @@ import live.lingting.framework.function.ThrowingSupplier
 
 /**
  * 以前继承 com.baomidou.mybatisplus.extension.service.IService 的实现类，现在继承当前类
- *
  * @author lingting 2020/7/21 9:58
  */
 interface ExtendService<T> {

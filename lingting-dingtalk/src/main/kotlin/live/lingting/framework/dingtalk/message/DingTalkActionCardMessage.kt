@@ -8,7 +8,6 @@ import live.lingting.framework.dingtalk.enums.MessageTypeEnum
 
 /**
  * 跳转 ActionCard类型
- *
  * @author lingting 2020/6/10 23:39
  */
 class DingTalkActionCardMessage : AbstractDingTalkMessage() {

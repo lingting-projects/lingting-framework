@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory
 abstract class AbstractListTypeHandler<T> : AbstractJacksonTypeHandler<List<T>>() {
     /**
      * 取出数据转化异常时 使用
-     *
      * @return 实体类对象
      */
     override fun defaultValue(): List<T> {
@@ -18,7 +17,6 @@ abstract class AbstractListTypeHandler<T> : AbstractJacksonTypeHandler<List<T>>(
 
     /**
      * 存储数据异常时 使用
-     *
      * @return 存储数据
      */
     override fun defaultJson(): String {

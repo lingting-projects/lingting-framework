@@ -10,7 +10,6 @@ import org.apache.ibatis.type.MappedTypes
 
 /**
  * mybatis 全局类型处理器
- *
  * @author lingting
  */
 @MappedTypes(Money::class)

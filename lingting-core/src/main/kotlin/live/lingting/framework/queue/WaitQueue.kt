@@ -5,7 +5,6 @@ import java.util.concurrent.TimeUnit
 
 /**
  * 等待队列
- *
  * @author lingting 2023/1/29 10:52
  */
 class WaitQueue<V> constructor(private val queue: LinkedBlockingQueue<V> = LinkedBlockingQueue()) {

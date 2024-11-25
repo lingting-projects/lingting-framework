@@ -20,22 +20,10 @@ object AnnotationUtils {
 
     /**
      * 按照以下顺序寻找注解. 深度优先
-     *
-     *
      * 1. 自身
-     *
-     *
-     *
      * 2. 自身注解内使用的注解
-     *
-     *
-     *
      * 3. 自身父级上的注解(依次寻找)
-     *
-     *
-     *
      * 4. 自身所实现的接口类上的注解(依次寻找)
-     *
      */
     @JvmStatic
     fun <A : Annotation> findAnnotation(cls: Class<*>, aClass: Class<A>): A? {
@@ -70,14 +58,8 @@ object AnnotationUtils {
 
     /**
      * 按照以下顺序寻找注解. 深度优先
-     *
-     *
      * 1. 自身
-     *
-     *
-     *
      * 2. 自身注解内使用的注解
-     *
      */
     @JvmStatic
     fun <A : Annotation, E : AnnotatedElement> findAnnotation(element: E, aClass: Class<A>): A? {

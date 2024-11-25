@@ -9,19 +9,9 @@ import live.lingting.framework.util.ClassUtils.toFiledName
 
 /**
  * 用于获取指定字段的值
- *
- *
  * 优先取指定字段的 get 方法
- *
- *
- *
  * 如果是 boolean 类型, 尝试取 is 方法
- *
- *
- *
  * 否则直接取字段 - 不会尝试修改可读性, 如果可读性有问题, 请主动get 然后修改
- *
- *
  * @author lingting 2022/12/6 13:04
  */
 
@@ -116,10 +106,7 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
 
     /**
      * 将方法转化为可见的
-     *
-     *
      * 未声明可能会调用异常. [相关回答](https://stackoverflow.com/a/71296829/19334734)
-     *
      */
     fun visible(): ClassField {
         return visibleSet().visibleGet()

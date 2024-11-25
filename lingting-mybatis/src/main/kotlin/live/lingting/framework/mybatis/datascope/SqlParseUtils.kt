@@ -6,7 +6,6 @@ import net.sf.jsqlparser.schema.Table
 
 /**
  * SQL 解析工具类
- *
  * @author hccake
  */
 object SqlParseUtils {
@@ -14,7 +13,6 @@ object SqlParseUtils {
 
     /**
      * 兼容 mysql 转义表名 `t_xxx`
-     *
      * @param tableName 表名
      * @return 去除转移字符后的表名
      */
@@ -29,7 +27,6 @@ object SqlParseUtils {
 
     /**
      * 根据当前表是否有别名，动态对字段名前添加表别名 eg. 表名： table_1 as t 原始字段：column1 返回： t.column1
-     *
      * @param table      表信息
      * @param columnName 字段名
      * @return 原始字段名，或者添加了表别名的字段名
@@ -41,7 +38,6 @@ object SqlParseUtils {
 
     /**
      * 根据当前表是否有别名，动态对字段名前添加表别名 eg. 表名： table_1 as t 原始字段：column1 返回： t.column1
-     *
      * @param tableName  表名
      * @param tableAlias 别别名
      * @param columnName 字段名

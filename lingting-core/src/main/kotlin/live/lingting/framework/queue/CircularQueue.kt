@@ -5,7 +5,6 @@ import live.lingting.framework.util.CollectionUtils
 
 /**
  * 循环队列
- *
  * @author lingting 2023-05-30 10:25
  */
 class CircularQueue<T> {

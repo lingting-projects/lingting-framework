@@ -21,7 +21,6 @@ object StringUtils {
 
     /**
      * 指定字符串是否存在可见字符
-     *
      * @param str 字符串
      * @return boolean
      */
@@ -103,10 +102,7 @@ object StringUtils {
 
     /**
      * 驼峰字符串转下划线字符串
-     *
-     *
      * eg-> hump_to_underscore
-     *
      */
     @JvmStatic
     fun humpToUnderscore(str: String): String {
@@ -131,10 +127,7 @@ object StringUtils {
 
     /**
      * 下划线字符串转驼峰字符串
-     *
-     *
      * eg-> hump_to_underscore
-     *
      */
     @JvmStatic
     fun underscoreToHump(str: String): String {
@@ -208,7 +201,6 @@ object StringUtils {
 
     /**
      * 往前缀追加 指定数量的指定字符
-     *
      * @param prefix 前缀
      * @param count  数量
      * @param str    指定字符

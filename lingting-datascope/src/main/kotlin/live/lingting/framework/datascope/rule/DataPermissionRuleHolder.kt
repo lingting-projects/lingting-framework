@@ -7,10 +7,7 @@ import live.lingting.framework.datascope.annotation.DataPermission
 
 /**
  * 数据权限规则的持有者，使用栈存储调用链中的数据权限规则
- *
- *
  * 区别于[DataPermission] [DataPermissionRule] 是编程式数据权限控制的使用，优先级高于注解
- *
  * @author hccake
  */
 object DataPermissionRuleHolder {
@@ -22,7 +19,6 @@ object DataPermissionRuleHolder {
 
     /**
      * 获取当前的 DataPermissionRule 注解
-     *
      * @return DataPermissionRule
      */
     @JvmStatic
@@ -33,7 +29,6 @@ object DataPermissionRuleHolder {
 
     /**
      * 入栈一个 DataPermissionRule 注解
-     *
      * @return DataPermissionRule
      */
     @JvmStatic

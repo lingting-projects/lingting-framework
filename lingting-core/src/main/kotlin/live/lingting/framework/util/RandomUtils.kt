@@ -32,7 +32,6 @@ object RandomUtils {
 
     /**
      * 随机数
-     *
      * @param max 最大值 - 不包括该值
      * @return int
      */
@@ -43,7 +42,6 @@ object RandomUtils {
 
     /**
      * 随机数
-     *
      * @param min 最小值 - 包括该值
      * @param max 最大值 - 不包括该值
      * @return int
@@ -55,7 +53,6 @@ object RandomUtils {
 
     /**
      * 从指定字符串中随机生成字符串
-     *
      * @param base 根字符
      * @param len  长度
      * @return java.lang.String

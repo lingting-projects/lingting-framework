@@ -15,7 +15,6 @@ object ArrayUtils {
 
     /**
      * 数组是否为空
-     *
      * @param obj 对象
      * @return true表示为空, 如果对象不为数组, 返回false
      */
@@ -132,7 +131,6 @@ object ArrayUtils {
 
     /**
      * 截取数组
-     *
      * @param array 数组
      * @param start 左闭
      * @param end   右开

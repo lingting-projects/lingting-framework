@@ -5,7 +5,6 @@ import live.lingting.framework.security.domain.SecurityToken
 
 /**
  * 资源服务用
- *
  * @author lingting 2023-03-29 21:19
  */
 interface SecurityResourceService {

@@ -6,7 +6,6 @@ import live.lingting.framework.jackson.JacksonUtils
 
 /**
  * 钉钉返回信息
- *
  * @author lingting 2020/6/11 0:23
  */
 class DingTalkResponse {

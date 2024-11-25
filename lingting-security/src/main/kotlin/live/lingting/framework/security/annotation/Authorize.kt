@@ -4,7 +4,6 @@ import java.lang.annotation.Inherited
 
 /**
  * 鉴权, 默认为登录且用户可用 即可访问. 串行, 任一属性要求不通过即不允许
- *
  * @author lingting 2023-03-29 20:38
  */
 @Inherited

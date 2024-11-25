@@ -73,7 +73,6 @@ object CollectionUtils {
 
     /**
      * 提取集合中指定数量的元素,
-     *
      * @param number 提取元素数量, 不足则有多少提取多少
      */
     @JvmStatic
@@ -95,7 +94,6 @@ object CollectionUtils {
 
     /**
      * 分割为多个小list, 每个list最多拥有 size个元素
-     *
      * @param collection 原始数据
      * @param size       单个list最多元素数量
      * @return java.util.List<java.util.List></java.util.List> < D>>
