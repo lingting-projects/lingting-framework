@@ -34,7 +34,7 @@ data class TryResult<T>(
 interface ExpandLock : Lock {
 
     fun tryLock(duration: Duration): Boolean {
-        return tryLock(duration.toNanos(), TimeUnit.NANOSECONDS)
+        return tryLock(duration.toMillis(), TimeUnit.MILLISECONDS)
     }
 
     fun run(runnable: Runnable) {
@@ -102,8 +102,9 @@ interface ExpandLock : Lock {
     }
 
     fun <R> getByTry(duration: Duration, runnable: LockSupplier<R>): TryResult<R> {
-        return getByTry(duration.toNanos(), TimeUnit.NANOSECONDS, runnable)
+        return getByTry(duration.toMillis(), TimeUnit.MILLISECONDS, runnable)
     }
+
 }
 
 interface LocalLock : ExpandLock {
@@ -133,7 +134,7 @@ interface LocalLock : ExpandLock {
      * @return 返回true表示在等待过程中被唤醒
      */
     fun await(duration: Duration): Boolean {
-        return await(duration.toNanos(), TimeUnit.NANOSECONDS)
+        return await(duration.toMillis(), TimeUnit.MILLISECONDS)
     }
 
     /**
