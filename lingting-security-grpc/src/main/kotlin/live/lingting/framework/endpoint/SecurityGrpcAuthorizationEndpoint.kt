@@ -5,30 +5,22 @@ import io.grpc.stub.StreamObserver
 import live.lingting.framework.convert.SecurityGrpcConvert
 import live.lingting.framework.protobuf.SecurityGrpcAuthorization
 import live.lingting.framework.protobuf.SecurityGrpcAuthorizationServiceGrpc.SecurityGrpcAuthorizationServiceImplBase
+import live.lingting.framework.security.SecurityEndpointService
 import live.lingting.framework.security.annotation.Authorize
-import live.lingting.framework.security.authorize.SecurityAuthorizationService
 import live.lingting.framework.security.domain.AuthorizationVO
-import live.lingting.framework.security.domain.SecurityScope
-import live.lingting.framework.security.domain.SecurityToken
-import live.lingting.framework.security.exception.AuthorizationException
-import live.lingting.framework.security.password.SecurityPassword
-import live.lingting.framework.security.resource.SecurityHolder.authorization
-import live.lingting.framework.security.resource.SecurityHolder.scope
-import live.lingting.framework.security.store.SecurityStore
+import live.lingting.framework.security.po.EndpointPasswordPO
+import live.lingting.framework.security.po.EndpointTokenPO
 
 /**
  * @author lingting 2023-12-18 15:31
  */
 class SecurityGrpcAuthorizationEndpoint(
-    private val service: SecurityAuthorizationService,
-    private val store: SecurityStore,
-    private val securityPassword: SecurityPassword,
-    private val convert: SecurityGrpcConvert
+    val service: SecurityEndpointService,
+    val convert: SecurityGrpcConvert,
 ) : SecurityGrpcAuthorizationServiceImplBase() {
     override fun logout(request: Empty, observer: StreamObserver<SecurityGrpcAuthorization.AuthorizationVO>) {
-        val scope = scope()
-        store.deleted(scope!!)
-        onNext(scope, observer)
+        val logout = service.logout()
+        onNext(logout, observer)
     }
 
     @Authorize(anyone = true)
@@ -36,43 +28,33 @@ class SecurityGrpcAuthorizationEndpoint(
         po: SecurityGrpcAuthorization.AuthorizationPasswordPO,
         observer: StreamObserver<SecurityGrpcAuthorization.AuthorizationVO>
     ) {
-        val username = po.username
-        val rawPassword = po.password
-        val password = securityPassword.decodeFront(rawPassword)
-        val rawScope = service.validAndBuildScope(username, password) ?: throw AuthorizationException("Username or password is incorrect!")
-        val scope = convert.scopeExpand(rawScope)
-        store.save(scope)
-        onNext(scope, observer)
+        val p = EndpointPasswordPO().apply {
+            username = po.username
+            password = po.password
+        }
+        val vo = service.password(p)
+        onNext(vo, observer)
     }
 
-    fun token(request: SecurityGrpcAuthorization.TokenPO): SecurityToken {
-        return if (request.value.isNullOrBlank()) {
-            val authorization = authorization()
-            convert.toToken(authorization)
-        } else {
-            convert.toToken(request)
-        }
-    }
 
     override fun refresh(request: SecurityGrpcAuthorization.TokenPO, observer: StreamObserver<SecurityGrpcAuthorization.AuthorizationVO>) {
-        val token = token(request)
-        val scope = service.refresh(token) ?: throw AuthorizationException("Token has expired!")
-        store.update(scope)
-        onNext(scope, observer)
+        val p = EndpointTokenPO().apply {
+            raw = request.raw
+            type = request.type
+            value = request.value
+        }
+        val vo = service.refresh(p)
+        onNext(vo, observer)
     }
 
     @Authorize(anyone = true)
     override fun resolve(request: SecurityGrpcAuthorization.TokenPO, observer: StreamObserver<SecurityGrpcAuthorization.AuthorizationVO>) {
-        val token = token(request)
-        val scope = store.get(token)
-        if (scope == null || !scope.isLogin || !scope.enabled()) {
-            throw AuthorizationException("Token is invalid!")
+        val p = EndpointTokenPO().apply {
+            raw = request.raw
+            type = request.type
+            value = request.value
         }
-        onNext(scope, observer)
-    }
-
-    fun onNext(scope: SecurityScope?, observer: StreamObserver<SecurityGrpcAuthorization.AuthorizationVO>) {
-        val vo = convert.scopeToVo(scope)
+        val vo = service.resolve(p)
         onNext(vo, observer)
     }
 
@@ -81,4 +63,5 @@ class SecurityGrpcAuthorizationEndpoint(
         observer.onNext(authorizationVO)
         observer.onCompleted()
     }
+
 }

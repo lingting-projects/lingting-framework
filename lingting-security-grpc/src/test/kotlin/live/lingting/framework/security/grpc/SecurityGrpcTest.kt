@@ -23,6 +23,7 @@ import live.lingting.framework.properties.SecurityGrpcProperties
 import live.lingting.framework.protobuf.SecurityGrpcAuthorization
 import live.lingting.framework.protobuf.SecurityGrpcAuthorizationServiceGrpc
 import live.lingting.framework.protobuf.SecurityGrpcAuthorizationServiceGrpc.SecurityGrpcAuthorizationServiceBlockingStub
+import live.lingting.framework.security.SecurityEndpointService
 import live.lingting.framework.security.authorize.SecurityAuthorize
 import live.lingting.framework.security.domain.SecurityToken
 import live.lingting.framework.security.grpc.authorization.AuthorizationServiceImpl
@@ -58,10 +59,12 @@ internal class SecurityGrpcTest {
         val password = Password()
         convert = SecurityGrpcExpandConvert()
 
-        val endpoint = SecurityGrpcAuthorizationEndpoint(
+        val service = SecurityEndpointService(
             authorizationService, store,
             password, convert!!
         )
+
+        val endpoint = SecurityGrpcAuthorizationEndpoint(service, convert!!)
         val serverProperties = GrpcServerProperties()
         val properties = SecurityGrpcProperties()
         val resolvers: MutableList<SecurityTokenResolver> = ArrayList()
