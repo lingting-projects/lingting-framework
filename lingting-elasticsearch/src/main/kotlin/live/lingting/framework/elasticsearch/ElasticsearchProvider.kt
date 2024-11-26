@@ -6,8 +6,6 @@ import co.elastic.clients.json.jackson.JacksonJsonpMapper
 import co.elastic.clients.transport.ElasticsearchTransport
 import co.elastic.clients.transport.rest_client.RestClientTransport
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.util.function.Function
-import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataPermissionHandler
 import live.lingting.framework.jackson.JacksonUtils
 import org.apache.http.HttpHost
 import org.elasticsearch.client.RestClient
@@ -16,6 +14,7 @@ import org.elasticsearch.client.RestClient
  * @author lingting 2024-03-06 20:00
  */
 object ElasticsearchProvider {
+
     @JvmStatic
     fun restClient(vararg hosts: String): RestClient {
         val map = hosts.mapNotNull() { HttpHost.create(it) }
@@ -52,24 +51,6 @@ object ElasticsearchProvider {
     @JvmStatic
     fun client(transport: ElasticsearchTransport): ElasticsearchClient {
         return ElasticsearchClient(transport)
-    }
-
-    @JvmStatic
-    fun <T> api(
-        cls: Class<T>, idFunc: Function<T, String>,
-        properties: ElasticsearchProperties, handler: ElasticsearchDataPermissionHandler,
-        client: ElasticsearchClient
-    ): ElasticsearchApi<T> {
-        return ElasticsearchApi(cls, idFunc, properties, handler, client)
-    }
-
-    @JvmStatic
-    fun <T> api(
-        index: String, cls: Class<T>, idFunc: Function<T, String>,
-        properties: ElasticsearchProperties, handler: ElasticsearchDataPermissionHandler,
-        client: ElasticsearchClient
-    ): ElasticsearchApi<T> {
-        return ElasticsearchApi(index, cls, idFunc, properties, handler, client)
     }
 
 }

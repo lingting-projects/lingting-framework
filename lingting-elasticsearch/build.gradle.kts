@@ -8,4 +8,5 @@ dependencies {
     implementation(project(":lingting-jackson"))
 
     compileOnly(project(":lingting-datascope"))
+    testImplementation(project(":lingting-datascope"))
 }

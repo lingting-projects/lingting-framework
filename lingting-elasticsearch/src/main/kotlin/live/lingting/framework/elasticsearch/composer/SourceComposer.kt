@@ -1,7 +1,7 @@
 package live.lingting.framework.elasticsearch.composer
 
 import co.elastic.clients.elasticsearch.core.search.SourceConfig
-import live.lingting.framework.elasticsearch.ElasticsearchFunction
+import live.lingting.framework.elasticsearch.EFunction
 import live.lingting.framework.elasticsearch.ElasticsearchUtils
 
 
@@ -17,8 +17,8 @@ object SourceComposer {
     @SafeVarargs
     @JvmStatic
     fun <E> includes(
-        function: ElasticsearchFunction<E, *>,
-        vararg functions: ElasticsearchFunction<E, *>
+        function: EFunction<E, *>,
+        vararg functions: EFunction<E, *>
     ): SourceConfig {
         val value: String = ElasticsearchUtils.fieldName(function)
         val values = functions.map { ElasticsearchUtils.fieldName(it) }

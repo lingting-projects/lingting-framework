@@ -34,6 +34,10 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
      * @param a 注解类型
      * @return boolean true 表示拥有
      */
+    fun <T : Annotation> hasAnnotation(a: Class<T>): Boolean {
+        return getAnnotation(a) != null
+    }
+
     fun <T : Annotation> getAnnotation(a: Class<T>): T? {
         // 字段上找
         var annotation = getAnnotation(field, a)

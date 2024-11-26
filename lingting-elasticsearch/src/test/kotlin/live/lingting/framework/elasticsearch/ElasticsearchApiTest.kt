@@ -4,15 +4,16 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient
 import co.elastic.clients.elasticsearch._types.query_dsl.Query
 import co.elastic.clients.json.JsonpMapper
 import co.elastic.clients.transport.ElasticsearchTransport
-import live.lingting.framework.elasticsearch.ElasticsearchProvider.api
 import live.lingting.framework.elasticsearch.ElasticsearchProvider.client
 import live.lingting.framework.elasticsearch.ElasticsearchProvider.jacksonMapper
 import live.lingting.framework.elasticsearch.ElasticsearchProvider.transport
+import live.lingting.framework.elasticsearch.annotation.Index
 import live.lingting.framework.elasticsearch.composer.QueryComposer
-import live.lingting.framework.elasticsearch.datascope.DefaultElasticsearchDataPermissionHandler
+import live.lingting.framework.elasticsearch.datascope.DataPermissionInterceptor
 import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataScope
+import live.lingting.framework.elasticsearch.polymerize.PolymerizeFactory
 import org.elasticsearch.client.RestClient
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -41,41 +42,31 @@ internal class ElasticsearchApiTest {
         transport = transport(restClient!!, jsonpMapper!!)
         client = client(transport!!)
 
-        val scope: ElasticsearchDataScope = object : ElasticsearchDataScope {
-            override val resource: String
-                get() = "null"
+        val scope = object : ElasticsearchDataScope {
+            override val resource: String = "null"
+            override fun includes(p: String): Boolean = true
 
-            override fun includes(index: String): Boolean {
-                return true
-            }
-
-            override fun invoke(index: String): Query {
-                return QueryComposer.term("space.name", "default")
-            }
+            override fun handler(p: IndexInfo): Query? = if (allowDefault) QueryComposer.term("space.name", "default") else null
         }
+        val scopes = listOf(scope)
+        val interceptors = listOf(DataPermissionInterceptor(scopes))
 
-        val handler: DefaultElasticsearchDataPermissionHandler = object : DefaultElasticsearchDataPermissionHandler(
-            listOf(scope)
-        ) {
-            override fun ignorePermissionControl(index: String): Boolean {
-                return !allowDefault
-            }
-        }
-        api = api(".kibana_8.12.2_001", Entity::class.java, { obj -> obj.id!! }, ElasticsearchProperties(), handler, client!!)
+        api = ElasticsearchApi(Entity::class.java, PolymerizeFactory(), { it.id!! }, ElasticsearchProperties(), interceptors, client!!)
     }
 
 
     @Test
     fun test() {
         val list = api!!.list()
-        Assertions.assertFalse(list.isEmpty())
+        assertFalse(list.isEmpty())
         allowDefault = true
         val byQuery = api!!.getByQuery()
-        Assertions.assertNotNull(byQuery)
-        Assertions.assertEquals("Default", byQuery!!.space!!["name"])
+        assertNotNull(byQuery)
+        assertEquals("Default", byQuery!!.space!!["name"])
     }
 
-    internal class Entity {
+    @Index(index = ".kibana_8.12.2_001")
+    class Entity {
         var id: String? = null
 
         var space: Map<String, Any>? = null

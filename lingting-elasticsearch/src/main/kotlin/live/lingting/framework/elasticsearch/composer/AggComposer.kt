@@ -1,9 +1,8 @@
 package live.lingting.framework.elasticsearch.composer
 
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregation
-import co.elastic.clients.elasticsearch._types.aggregations.TermsAggregation
 import java.util.function.UnaryOperator
-import live.lingting.framework.elasticsearch.ElasticsearchFunction
+import live.lingting.framework.elasticsearch.EFunction
 import live.lingting.framework.elasticsearch.ElasticsearchUtils
 
 /**
@@ -11,12 +10,12 @@ import live.lingting.framework.elasticsearch.ElasticsearchUtils
  */
 object AggComposer {
     @JvmStatic
-    fun <E> terms(function: ElasticsearchFunction<E, *>): Aggregation {
+    fun <E> terms(function: EFunction<E, *>): Aggregation {
         return terms(ElasticsearchUtils.fieldName(function))
     }
 
     @JvmStatic
-    fun <E> terms(function: ElasticsearchFunction<E, *>, size: Int): Aggregation {
+    fun <E> terms(function: EFunction<E, *>, size: Int): Aggregation {
         return terms(ElasticsearchUtils.fieldName(function), size)
     }
 
@@ -38,7 +37,7 @@ object AggComposer {
     }
 
     fun <E> terms(
-        function: ElasticsearchFunction<E, *>,
+        function: EFunction<E, *>,
         operator: UnaryOperator<Aggregation.Builder.ContainerBuilder>
     ): Aggregation {
         return terms(function, null, operator)
@@ -46,7 +45,7 @@ object AggComposer {
 
     @JvmStatic
     fun <E> terms(
-        function: ElasticsearchFunction<E, *>, size: Int?,
+        function: EFunction<E, *>, size: Int?,
         operator: UnaryOperator<Aggregation.Builder.ContainerBuilder>
     ): Aggregation {
         val field = ElasticsearchUtils.fieldName(function)

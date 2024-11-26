@@ -7,7 +7,7 @@ import co.elastic.clients.json.JsonData
 import co.elastic.clients.util.ObjectBuilder
 import java.util.Objects
 import java.util.function.Function
-import live.lingting.framework.elasticsearch.ElasticsearchFunction
+import live.lingting.framework.elasticsearch.EFunction
 import live.lingting.framework.elasticsearch.ElasticsearchUtils
 import live.lingting.framework.elasticsearch.function.TermOperator
 import live.lingting.framework.util.CollectionUtils
@@ -159,18 +159,18 @@ object QueryComposer {
     // endregion
     // region lambda
     @JvmStatic
-    fun <T> term(func: ElasticsearchFunction<*, T>, obj: T): Query {
+    fun <T> term(func: EFunction<*, T>, obj: T): Query {
         return term(func, obj) { it }
     }
 
     @JvmStatic
-    fun <T> term(func: ElasticsearchFunction<*, T>, obj: T, operator: TermOperator): Query {
+    fun <T> term(func: EFunction<*, T>, obj: T, operator: TermOperator): Query {
         val field: String = ElasticsearchUtils.fieldName(func)
         return term(field, obj, operator)
     }
 
     @JvmStatic
-    fun <T> terms(func: ElasticsearchFunction<*, T>, objects: Collection<T>): Query {
+    fun <T> terms(func: EFunction<*, T>, objects: Collection<T>): Query {
         val field: String = ElasticsearchUtils.fieldName(func)
         return terms<T>(field, objects)
     }
@@ -179,7 +179,7 @@ object QueryComposer {
      * 小于
      */
     @JvmStatic
-    fun <T> lt(func: ElasticsearchFunction<*, T>, obj: T): Query {
+    fun <T> lt(func: EFunction<*, T>, obj: T): Query {
         val field: String = ElasticsearchUtils.fieldName(func)
         return lt(field, obj)
     }
@@ -188,7 +188,7 @@ object QueryComposer {
      * 小于等于
      */
     @JvmStatic
-    fun <T> le(func: ElasticsearchFunction<*, T>, obj: T): Query {
+    fun <T> le(func: EFunction<*, T>, obj: T): Query {
         val field: String = ElasticsearchUtils.fieldName(func)
         return le(field, obj)
     }
@@ -197,7 +197,7 @@ object QueryComposer {
      * 大于
      */
     @JvmStatic
-    fun <T> gt(func: ElasticsearchFunction<*, T>, obj: T): Query {
+    fun <T> gt(func: EFunction<*, T>, obj: T): Query {
         val field: String = ElasticsearchUtils.fieldName(func)
         return gt(field, obj)
     }
@@ -206,7 +206,7 @@ object QueryComposer {
      * 大于等于
      */
     @JvmStatic
-    fun <T> ge(func: ElasticsearchFunction<*, T>, obj: T): Query {
+    fun <T> ge(func: EFunction<*, T>, obj: T): Query {
         val field: String = ElasticsearchUtils.fieldName(func)
         return ge(field, obj)
     }
@@ -215,19 +215,19 @@ object QueryComposer {
      * 大于等于 start 小于等于 end
      */
     @JvmStatic
-    fun <T> between(func: ElasticsearchFunction<*, T>, start: T, end: T): Query {
+    fun <T> between(func: EFunction<*, T>, start: T, end: T): Query {
         val field: String = ElasticsearchUtils.fieldName(func)
         return between(field, start, end)
     }
 
     @JvmStatic
-    fun <T> wildcardAll(func: ElasticsearchFunction<*, T>, obj: T): Query {
+    fun <T> wildcardAll(func: EFunction<*, T>, obj: T): Query {
         val field: String = ElasticsearchUtils.fieldName(func)
         return wildcardAll(field, obj)
     }
 
     @JvmStatic
-    fun <T> wildcard(func: ElasticsearchFunction<*, T>, obj: T): Query {
+    fun <T> wildcard(func: EFunction<*, T>, obj: T): Query {
         val field: String = ElasticsearchUtils.fieldName(func)
         return wildcard(field, obj)
     } // endregion

@@ -8,7 +8,7 @@ import live.lingting.framework.retry.RetryFunction
 /**
  * @author lingting 2023-12-19 14:19
  */
-class ElasticsearchRetry<T>(
+open class ElasticsearchRetry<T>(
     retry: ElasticsearchProperties.Retry,
     supplier: ThrowingSupplier<T>
 ) : Retry<T>(

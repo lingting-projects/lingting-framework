@@ -2,7 +2,7 @@ package live.lingting.framework.elasticsearch.builder
 
 import co.elastic.clients.elasticsearch._types.Script
 import co.elastic.clients.json.JsonData
-import live.lingting.framework.elasticsearch.ElasticsearchFunction
+import live.lingting.framework.elasticsearch.EFunction
 import live.lingting.framework.elasticsearch.ElasticsearchUtils
 import live.lingting.framework.util.StringUtils
 
@@ -17,7 +17,7 @@ class ScriptBuilder<T> {
     private var lang = "painless"
 
     // region params
-    fun <R> put(func: ElasticsearchFunction<T, R>, value: R): ScriptBuilder<T> {
+    fun <R> put(func: EFunction<T, R>, value: R): ScriptBuilder<T> {
         val field: String = ElasticsearchUtils.fieldName(func)
         return put(field, value)
     }
@@ -47,7 +47,7 @@ class ScriptBuilder<T> {
         return append(script)
     }
 
-    fun <R> set(func: ElasticsearchFunction<T, R>, value: R): ScriptBuilder<T> {
+    fun <R> set(func: EFunction<T, R>, value: R): ScriptBuilder<T> {
         val field: String = ElasticsearchUtils.fieldName(func)
         return set(field, value)
     }

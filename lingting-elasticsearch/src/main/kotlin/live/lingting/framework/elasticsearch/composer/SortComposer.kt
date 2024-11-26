@@ -2,7 +2,7 @@ package live.lingting.framework.elasticsearch.composer
 
 import co.elastic.clients.elasticsearch._types.SortOptions
 import co.elastic.clients.elasticsearch._types.SortOrder
-import live.lingting.framework.elasticsearch.ElasticsearchFunction
+import live.lingting.framework.elasticsearch.EFunction
 import live.lingting.framework.elasticsearch.ElasticsearchUtils
 
 /**
@@ -30,23 +30,23 @@ object SortComposer {
     }
 
     @JvmStatic
-    fun <E, T> sort(func: ElasticsearchFunction<E, T>, desc: Boolean): SortOptions {
+    fun <E, T> sort(func: EFunction<E, T>, desc: Boolean): SortOptions {
         return sort(func, if (java.lang.Boolean.TRUE == desc) SortOrder.Desc else SortOrder.Asc)
     }
 
     @JvmStatic
-    fun <E, T> sort(func: ElasticsearchFunction<E, T>, order: SortOrder): SortOptions {
+    fun <E, T> sort(func: EFunction<E, T>, order: SortOrder): SortOptions {
         val field: String = ElasticsearchUtils.fieldName(func)
         return SortOptions.of { so -> so.field { fs -> fs.field(field).order(order) } }
     }
 
     @JvmStatic
-    fun <E, T> desc(func: ElasticsearchFunction<E, T>): SortOptions {
+    fun <E, T> desc(func: EFunction<E, T>): SortOptions {
         return sort(func, SortOrder.Desc)
     }
 
     @JvmStatic
-    fun <E, T> asc(func: ElasticsearchFunction<E, T>): SortOptions {
+    fun <E, T> asc(func: EFunction<E, T>): SortOptions {
         return sort(func, SortOrder.Asc)
     }
 }

@@ -6,6 +6,12 @@ import java.time.Duration
  * @author lingting 2024-03-06 16:43
  */
 class ElasticsearchProperties {
+
+    /**
+     * 索引设置
+     */
+    var index: Index = Index()
+
     /**
      * 重试配置
      */
@@ -15,6 +21,18 @@ class ElasticsearchProperties {
      * 滚动查询配置
      */
     var scroll: Scroll = Scroll()
+
+    class Index {
+        /**
+         * 索引前缀
+         */
+        var prefix = ""
+
+        /**
+         * 索引各部分分隔符. 用于 前缀, 聚合后缀 拼接分隔. 仅在存在前/后缀时拼接
+         */
+        var separate = "_"
+    }
 
     class Retry {
         var isEnabled: Boolean = false

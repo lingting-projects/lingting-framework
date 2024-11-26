@@ -5,7 +5,7 @@ import co.elastic.clients.json.JsonData
 import java.lang.invoke.SerializedLambda
 import java.lang.reflect.Field
 import java.util.concurrent.ConcurrentHashMap
-import live.lingting.framework.elasticsearch.annotation.Document
+import live.lingting.framework.elasticsearch.annotation.Index
 import live.lingting.framework.util.AnnotationUtils
 import live.lingting.framework.util.ClassUtils
 import live.lingting.framework.util.StringUtils
@@ -18,11 +18,11 @@ import org.slf4j.LoggerFactory
  */
 @Suppress("UNCHECKED_CAST")
 object ElasticsearchUtils {
-    private val EF_LAMBDA_CACHE: MutableMap<Class<out ElasticsearchFunction<*, *>>, SerializedLambda?> = ConcurrentHashMap()
+    private val EF_LAMBDA_CACHE: MutableMap<Class<out EFunction<*, *>>, SerializedLambda?> = ConcurrentHashMap()
 
-    private val CLS_LAMBDA_CACHE: MutableMap<Class<out ElasticsearchFunction<*, *>>, Class<*>?> = ConcurrentHashMap()
+    private val CLS_LAMBDA_CACHE: MutableMap<Class<out EFunction<*, *>>, Class<*>?> = ConcurrentHashMap()
 
-    private val FIELD_LAMBDA_CACHE: MutableMap<Class<out ElasticsearchFunction<*, *>>, Field?> = ConcurrentHashMap()
+    private val FIELD_LAMBDA_CACHE: MutableMap<Class<out EFunction<*, *>>, Field?> = ConcurrentHashMap()
 
     private val log: Logger = LoggerFactory.getLogger(ElasticsearchUtils::class.java)
 
@@ -34,7 +34,7 @@ object ElasticsearchUtils {
 
     @JvmStatic
     fun index(cls: Class<*>): String {
-        val document = AnnotationUtils.findAnnotation(cls, Document::class.java)
+        val document = AnnotationUtils.findAnnotation(cls, Index::class.java)
         // 使用注解指定的
         if (document != null && StringUtils.hasText(document.index)) {
             return document.index
@@ -45,16 +45,16 @@ object ElasticsearchUtils {
     }
 
     @JvmStatic
-    fun <T, R> resolveByReflection(function: ElasticsearchFunction<T, R>): SerializedLambda {
-        val fClass: Class<out ElasticsearchFunction<*, *>> = function.javaClass
+    fun <T, R> resolveByReflection(function: EFunction<T, R>): SerializedLambda {
+        val fClass: Class<out EFunction<*, *>> = function.javaClass
         val method = fClass.getDeclaredMethod("writeReplace")
         method.isAccessible = true
         return method.invoke(function) as SerializedLambda
     }
 
     @JvmStatic
-    fun <T, R> resolve(function: ElasticsearchFunction<T, R>): SerializedLambda? {
-        val fClass: Class<out ElasticsearchFunction<*, *>> = function.javaClass
+    fun <T, R> resolve(function: EFunction<T, R>): SerializedLambda? {
+        val fClass: Class<out EFunction<*, *>> = function.javaClass
         return EF_LAMBDA_CACHE.computeIfAbsent(fClass) { k ->
             try {
                 return@computeIfAbsent resolveByReflection<T, R>(function)
@@ -66,8 +66,8 @@ object ElasticsearchUtils {
     }
 
     @JvmStatic
-    fun <T, R> resolveClass(function: ElasticsearchFunction<T, R>): Class<T>? {
-        val fClass: Class<out ElasticsearchFunction<*, *>> = function.javaClass
+    fun <T, R> resolveClass(function: EFunction<T, R>): Class<T>? {
+        val fClass: Class<out EFunction<*, *>> = function.javaClass
         return CLS_LAMBDA_CACHE.computeIfAbsent(fClass) { k ->
             try {
                 val lambda = resolve(function)
@@ -85,8 +85,8 @@ object ElasticsearchUtils {
     }
 
     @JvmStatic
-    fun <T, R> resolveField(function: ElasticsearchFunction<T, R>): Field? {
-        val fClass: Class<out ElasticsearchFunction<*, *>> = function.javaClass
+    fun <T, R> resolveField(function: EFunction<T, R>): Field? {
+        val fClass: Class<out EFunction<*, *>> = function.javaClass
         return FIELD_LAMBDA_CACHE.computeIfAbsent(fClass) { k ->
             try {
                 val lambda = resolve(function)
@@ -146,7 +146,7 @@ object ElasticsearchUtils {
     }
 
     @JvmStatic
-    fun fieldName(func: ElasticsearchFunction<*, *>): String {
+    fun fieldName(func: EFunction<*, *>): String {
         val field = resolveField(func)
         return field?.name ?: ""
     }

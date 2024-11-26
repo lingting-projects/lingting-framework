@@ -19,7 +19,11 @@ import co.elastic.clients.elasticsearch.core.SearchResponse
 import co.elastic.clients.elasticsearch.core.UpdateByQueryRequest
 import co.elastic.clients.elasticsearch.core.UpdateRequest
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation
+import co.elastic.clients.elasticsearch.core.bulk.BulkOperationBase
 import co.elastic.clients.elasticsearch.core.bulk.CreateOperation
+import co.elastic.clients.elasticsearch.core.bulk.DeleteOperation
+import co.elastic.clients.elasticsearch.core.bulk.IndexOperation
+import co.elastic.clients.elasticsearch.core.bulk.UpdateOperation
 import co.elastic.clients.elasticsearch.core.search.Hit
 import co.elastic.clients.elasticsearch.core.search.HitsMetadata
 import co.elastic.clients.elasticsearch.core.search.TrackHits
@@ -40,7 +44,8 @@ import live.lingting.framework.api.ScrollParams
 import live.lingting.framework.api.ScrollResult
 import live.lingting.framework.elasticsearch.builder.QueryBuilder
 import live.lingting.framework.elasticsearch.composer.SortComposer
-import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataPermissionHandler
+import live.lingting.framework.elasticsearch.interceptor.Interceptor
+import live.lingting.framework.elasticsearch.polymerize.PolymerizeFactory
 import live.lingting.framework.function.ThrowingFunction
 import live.lingting.framework.function.ThrowingRunnable
 import live.lingting.framework.function.ThrowingSupplier
@@ -54,11 +59,11 @@ import org.slf4j.LoggerFactory
  * @author lingting 2024-03-06 16:41
  */
 class ElasticsearchApi<T>(
-    val index: String,
+    val info: IndexInfo,
     val cls: Class<T>,
-    val idFunc: Function<T, String>,
+    val getDocumentId: Function<T, String>,
     val properties: ElasticsearchProperties,
-    val handler: ElasticsearchDataPermissionHandler,
+    val interceptors: List<Interceptor>,
     val client: ElasticsearchClient
 ) {
     val retryProperties = properties.retry
@@ -68,9 +73,9 @@ class ElasticsearchApi<T>(
     val scrollTime: Time?
 
     constructor(
-        cls: Class<T>, idFunc: Function<T, String>, properties: ElasticsearchProperties,
-        handler: ElasticsearchDataPermissionHandler, client: ElasticsearchClient
-    ) : this(ElasticsearchUtils.index(cls), cls, idFunc, properties, handler, client)
+        cls: Class<T>, polymerizeFactory: PolymerizeFactory, getDocumentId: Function<T, String>, properties: ElasticsearchProperties,
+        interceptors: List<Interceptor>, client: ElasticsearchClient
+    ) : this(IndexInfo.create(properties, cls, polymerizeFactory), cls, getDocumentId, properties, interceptors, client)
 
     init {
         val scroll = properties.scroll
@@ -79,7 +84,7 @@ class ElasticsearchApi<T>(
     }
 
     fun documentId(t: T): String {
-        return idFunc.apply(t)
+        return getDocumentId.apply(t)
     }
 
     fun retry(runnable: ThrowingRunnable) {
@@ -89,9 +94,8 @@ class ElasticsearchApi<T>(
         })
     }
 
-
     fun <R> retry(supplier: ThrowingSupplier<R>): R {
-        if (retryProperties == null || !retryProperties.isEnabled) {
+        if (!retryProperties.isEnabled) {
             return supplier.get()
         }
 
@@ -106,8 +110,8 @@ class ElasticsearchApi<T>(
     }
 
     fun merge(builder: QueryBuilder<T>): Query {
-        if (handler != null && !handler.ignorePermissionControl(index)) {
-            handler.filterDataScopes(index).forEach(Consumer { scope -> builder.addMust(scope.invoke(index)) })
+        interceptors.forEach {
+            it.intercept(info, builder)
         }
 
         return builder.build()
@@ -115,7 +119,7 @@ class ElasticsearchApi<T>(
 
 
     fun get(id: String): T {
-        val request = GetRequest.of { gr -> gr.index(index).id(id) }
+        val request = GetRequest.of { gr -> gr.index(info.index()).id(id) }
         return client.get(request, cls).source()!!
     }
 
@@ -169,7 +173,7 @@ class ElasticsearchApi<T>(
                 .trackTotalHits(TrackHits.of { th -> th.enabled(true) })
 
         )
-        builder.index(index)
+        builder.index(info.index())
         builder.query(query)
 
         val searchResponse = client.search(builder.build(), cls)
@@ -236,7 +240,7 @@ class ElasticsearchApi<T>(
 
         )
         builder.size(0)
-        builder.index(index)
+        builder.index(info.index())
         builder.query(query)
         builder.aggregations(aggregationMap)
 
@@ -282,7 +286,7 @@ class ElasticsearchApi<T>(
                 .retryOnConflict(5)
         )
 
-        builder.index(index).id(documentId)
+        builder.index(info.index()).id(documentId)
 
         val response = client.update(builder.build(), cls)
         val result = response.result()
@@ -318,7 +322,7 @@ class ElasticsearchApi<T>(
             UpdateByQueryRequest.Builder() // 刷新策略
                 .refresh(false)
         )
-        builder.index(index).query(query).script(script)
+        builder.index(info.index()).query(query).script(script)
 
         val response = client.updateByQuery(builder.build())
         val total = response.total()
@@ -326,33 +330,55 @@ class ElasticsearchApi<T>(
     }
 
 
-    fun bulk(vararg operations: BulkOperation): BulkResponse {
-        return bulk(Arrays.stream(operations).toList())
+    fun bulk(vararg collection: T, convert: Function<T, BulkOperationBase.AbstractBuilder<*>>): BulkResponse {
+        return bulk(collection.toList(), convert)
     }
 
+    fun bulk(collection: List<T>, convert: Function<T, BulkOperationBase.AbstractBuilder<*>>): BulkResponse {
+        return bulk({ builder -> builder }, collection, convert)
+    }
+
+    fun bulk(operator: UnaryOperator<BulkRequest.Builder>, collection: Collection<T>, convert: Function<T, BulkOperationBase.AbstractBuilder<*>>): BulkResponse {
+        val operations = collection.map {
+            val builder = BulkOperation.Builder()
+            val index = info.index(it)
+            val apply = convert.apply(it)
+            apply.index(index)
+            when (apply) {
+                is UpdateOperation.Builder<*, *> -> builder.update(apply.build())
+                is CreateOperation.Builder<*> -> builder.create(apply.build())
+                is DeleteOperation.Builder -> builder.delete(apply.build())
+                else -> builder.index((apply as IndexOperation.Builder<*>).build())
+            }.build()
+        }
+        return bulk(operator, operations)
+    }
+
+    fun bulk(vararg operations: BulkOperation): BulkResponse {
+        return bulk(operations.toList())
+    }
 
     fun bulk(operations: List<BulkOperation>): BulkResponse {
         return bulk({ builder -> builder }, operations)
     }
 
-
     fun bulk(operator: UnaryOperator<BulkRequest.Builder>, operations: List<BulkOperation>): BulkResponse {
         val builder = operator.apply(BulkRequest.Builder().refresh(Refresh.WaitFor))
-        builder.index(index)
+        // 仅在单索引模式下指定默认的索引. 多索引需要构建的时候手动指定
+        if (!info.hasMulti) {
+            builder.index(info.index)
+        }
         builder.operations(operations)
         return client.bulk(builder.build())
     }
 
-
     fun save(t: T) {
-        saveBatch(setOf(t))
+        saveBatch(listOf(t))
     }
-
 
     fun saveBatch(collection: Collection<T>) {
         saveBatch({ builder -> builder }, collection)
     }
-
 
     fun saveBatch(operator: UnaryOperator<BulkRequest.Builder>, collection: Collection<T>) {
         batch<T>(operator, collection, Function { t ->
@@ -362,7 +388,6 @@ class ElasticsearchApi<T>(
             ob.build()
         })
     }
-
 
     fun <E> batch(collection: Collection<E>, function: Function<E, BulkOperation>): BulkResponse {
         return batch<E>(UnaryOperator { builder -> builder }, collection, function)
@@ -415,7 +440,7 @@ class ElasticsearchApi<T>(
         val query = merge(queries)
 
         val builder = operator.apply(DeleteByQueryRequest.Builder().refresh(false))
-        builder.index(index)
+        builder.index(info.index())
         builder.query(query)
 
         val response = client.deleteByQuery(builder.build())
@@ -486,7 +511,7 @@ class ElasticsearchApi<T>(
         val builder = operator.apply(
             SearchRequest.Builder().scroll(scrollTime) // 返回匹配的所有文档数量
                 .trackTotalHits(TrackHits.of { th -> th.enabled(true) })
-        ).index(index).query(query)
+        ).index(info.index()).query(query)
 
         if (params.size != null) {
             builder.size(params.size.toInt())

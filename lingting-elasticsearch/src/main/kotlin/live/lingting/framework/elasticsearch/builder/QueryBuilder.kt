@@ -4,7 +4,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery
 import co.elastic.clients.elasticsearch._types.query_dsl.Query
 import java.util.Objects
 import java.util.function.Supplier
-import live.lingting.framework.elasticsearch.ElasticsearchFunction
+import live.lingting.framework.elasticsearch.EFunction
 import live.lingting.framework.elasticsearch.composer.QueryComposer
 import live.lingting.framework.elasticsearch.function.TermOperator
 import live.lingting.framework.util.CollectionUtils
@@ -13,12 +13,12 @@ import live.lingting.framework.util.ValueUtils.isPresent
 /**
  * @author lingting 2024-06-17 17:06
  */
-class QueryBuilder<E> {
-    private val must: MutableList<Query> = ArrayList()
+open class QueryBuilder<E> {
+    protected val must: MutableList<Query> = ArrayList()
 
-    private val mustNot: MutableList<Query> = ArrayList()
+    protected val mustNot: MutableList<Query> = ArrayList()
 
-    private val should: MutableList<Query> = ArrayList()
+    protected val should: MutableList<Query> = ArrayList()
 
     // region basic
     fun merge(builder: QueryBuilder<*>): QueryBuilder<E> {
@@ -75,6 +75,7 @@ class QueryBuilder<E> {
     }
 
     // endregion
+
     // region composer
     fun <T> term(field: String, obj: T): QueryBuilder<E> {
         return addMust(QueryComposer.term<T>(field, obj))
@@ -163,62 +164,63 @@ class QueryBuilder<E> {
         return addMust(QueryComposer.not(queries))
     }
 
-    fun <T> term(func: ElasticsearchFunction<E, T>, obj: T): QueryBuilder<E> {
+    fun <T> term(func: EFunction<E, T>, obj: T): QueryBuilder<E> {
         return addMust(QueryComposer.term<T>(func, obj))
     }
 
-    fun <T> term(func: ElasticsearchFunction<E, T>, obj: T, operator: TermOperator): QueryBuilder<E> {
+    fun <T> term(func: EFunction<E, T>, obj: T, operator: TermOperator): QueryBuilder<E> {
         return addMust(QueryComposer.term<T>(func, obj, operator))
     }
 
-    fun <T> terms(func: ElasticsearchFunction<E, T>, objects: Collection<T>): QueryBuilder<E> {
+    fun <T> terms(func: EFunction<E, T>, objects: Collection<T>): QueryBuilder<E> {
         return addMust(QueryComposer.terms<T>(func, objects))
     }
 
     /**
      * 小于
      */
-    fun <T> lt(func: ElasticsearchFunction<E, T>, obj: T): QueryBuilder<E> {
+    fun <T> lt(func: EFunction<E, T>, obj: T): QueryBuilder<E> {
         return addMust(QueryComposer.lt<T>(func, obj))
     }
 
     /**
      * 小于等于
      */
-    fun <T> le(func: ElasticsearchFunction<E, T>, obj: T): QueryBuilder<E> {
+    fun <T> le(func: EFunction<E, T>, obj: T): QueryBuilder<E> {
         return addMust(QueryComposer.le<T>(func, obj))
     }
 
     /**
      * 大于
      */
-    fun <T> gt(func: ElasticsearchFunction<E, T>, obj: T): QueryBuilder<E> {
+    fun <T> gt(func: EFunction<E, T>, obj: T): QueryBuilder<E> {
         return addMust(QueryComposer.gt<T>(func, obj))
     }
 
     /**
      * 大于等于
      */
-    fun <T> ge(func: ElasticsearchFunction<E, T>, obj: T): QueryBuilder<E> {
+    fun <T> ge(func: EFunction<E, T>, obj: T): QueryBuilder<E> {
         return addMust(QueryComposer.ge<T>(func, obj))
     }
 
     /**
      * 大于等于 start 小于等于 end
      */
-    fun <T> between(func: ElasticsearchFunction<E, T>, start: T, end: T): QueryBuilder<E> {
+    fun <T> between(func: EFunction<E, T>, start: T, end: T): QueryBuilder<E> {
         return addMust(QueryComposer.between<T>(func, start, end))
     }
 
-    fun <T> wildcardAll(func: ElasticsearchFunction<E, T>, obj: T): QueryBuilder<E> {
+    fun <T> wildcardAll(func: EFunction<E, T>, obj: T): QueryBuilder<E> {
         return addMust(QueryComposer.wildcardAll<T>(func, obj))
     }
 
-    fun <T> wildcard(func: ElasticsearchFunction<E, T>, obj: T): QueryBuilder<E> {
+    fun <T> wildcard(func: EFunction<E, T>, obj: T): QueryBuilder<E> {
         return addMust(QueryComposer.wildcard<T>(func, obj))
     }
 
     // endregion
+
     // region composer ifPresent
     fun <T> termIfPresent(field: String, obj: T): QueryBuilder<E> {
         return addMust(isPresent(obj)) { QueryComposer.term<T>(field, obj) }
@@ -275,60 +277,62 @@ class QueryBuilder<E> {
         return addMust(isPresent(obj)) { QueryComposer.wildcard<T>(field, obj) }
     }
 
-    fun <T> termIfPresent(func: ElasticsearchFunction<E, T>, obj: T): QueryBuilder<E> {
+    fun <T> termIfPresent(func: EFunction<E, T>, obj: T): QueryBuilder<E> {
         return addMust(isPresent(obj)) { QueryComposer.term<T>(func, obj) }
     }
 
-    fun <T> termIfPresent(func: ElasticsearchFunction<E, T>, obj: T, operator: TermOperator): QueryBuilder<E> {
+    fun <T> termIfPresent(func: EFunction<E, T>, obj: T, operator: TermOperator): QueryBuilder<E> {
         return addMust(isPresent(obj)) { QueryComposer.term<T>(func, obj, operator) }
     }
 
-    fun <T> termsIfPresent(func: ElasticsearchFunction<E, T>, objects: Collection<T>): QueryBuilder<E> {
+    fun <T> termsIfPresent(func: EFunction<E, T>, objects: Collection<T>): QueryBuilder<E> {
         return addMust(isPresent(objects)) { QueryComposer.terms<T>(func, objects) }
     }
 
     /**
      * 小于
      */
-    fun <T> ltIfPresent(func: ElasticsearchFunction<E, T>, obj: T): QueryBuilder<E> {
+    fun <T> ltIfPresent(func: EFunction<E, T>, obj: T): QueryBuilder<E> {
         return addMust(isPresent(obj)) { QueryComposer.lt<T>(func, obj) }
     }
 
     /**
      * 小于等于
      */
-    fun <T> leIfPresent(func: ElasticsearchFunction<E, T>, obj: T): QueryBuilder<E> {
+    fun <T> leIfPresent(func: EFunction<E, T>, obj: T): QueryBuilder<E> {
         return addMust(isPresent(obj)) { QueryComposer.le<T>(func, obj) }
     }
 
     /**
      * 大于
      */
-    fun <T> gtIfPresent(func: ElasticsearchFunction<E, T>, obj: T): QueryBuilder<E> {
+    fun <T> gtIfPresent(func: EFunction<E, T>, obj: T): QueryBuilder<E> {
         return addMust(isPresent(obj)) { QueryComposer.gt<T>(func, obj) }
     }
 
     /**
      * 大于等于
      */
-    fun <T> geIfPresent(func: ElasticsearchFunction<E, T>, obj: T): QueryBuilder<E> {
+    fun <T> geIfPresent(func: EFunction<E, T>, obj: T): QueryBuilder<E> {
         return addMust(isPresent(obj)) { QueryComposer.ge<T>(func, obj) }
     }
 
     /**
      * 大于等于 start 小于等于 end
      */
-    fun <T> betweenIfPresent(func: ElasticsearchFunction<E, T>, start: T, end: T): QueryBuilder<E> {
+    fun <T> betweenIfPresent(func: EFunction<E, T>, start: T, end: T): QueryBuilder<E> {
         return addMust(isPresent(start) && isPresent(end)) { QueryComposer.between<T>(func, start, end) }
     }
 
-    fun <T> wildcardAllIfPresent(func: ElasticsearchFunction<E, T>, obj: T): QueryBuilder<E> {
+    fun <T> wildcardAllIfPresent(func: EFunction<E, T>, obj: T): QueryBuilder<E> {
         return addMust(isPresent(obj)) { QueryComposer.wildcardAll<T>(func, obj) }
     }
 
-    fun <T> wildcardIfPresent(func: ElasticsearchFunction<E, T>, obj: T): QueryBuilder<E> {
+    fun <T> wildcardIfPresent(func: EFunction<E, T>, obj: T): QueryBuilder<E> {
         return addMust(isPresent(obj)) { QueryComposer.wildcard<T>(func, obj) }
     }
+
+    // endregion
 
     fun copy(): QueryBuilder<E> {
         return QueryBuilder<E>().merge(this)
@@ -356,7 +360,6 @@ class QueryBuilder<E> {
     }
 
     companion object {
-        // endregion
         fun <C> builder(): QueryBuilder<C> {
             return QueryBuilder()
         }
