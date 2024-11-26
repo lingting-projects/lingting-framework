@@ -4,6 +4,7 @@ import java.lang.annotation.Documented
 import java.lang.annotation.Retention
 import java.lang.annotation.Target
 import java.lang.reflect.AnnotatedElement
+import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -16,7 +17,6 @@ object AnnotationUtils {
 
     private val CACHE: MutableMap<AnnotatedElement, MutableMap<Class<out Annotation>, Annotation>> = ConcurrentHashMap()
 
-    private val CACHE_CLS: MutableMap<Class<*>, MutableMap<Class<out Annotation>, Annotation>> = ConcurrentHashMap()
 
     /**
      * 按照以下顺序寻找注解. 深度优先
@@ -27,7 +27,7 @@ object AnnotationUtils {
      */
     @JvmStatic
     fun <A : Annotation> findAnnotation(cls: Class<*>, aClass: Class<A>): A? {
-        val absent = CACHE_CLS.computeIfAbsent(cls) { ConcurrentHashMap() }
+        val absent = CACHE.computeIfAbsent(cls) { ConcurrentHashMap() }
             .computeIfAbsent(aClass) {
                 // 1 & 2
                 var a = findAnnotation(cls as AnnotatedElement, aClass)
@@ -53,6 +53,29 @@ object AnnotationUtils {
                 }
                 NULL
             }
+        return if (absent == NULL) null else absent as A
+    }
+
+    /**
+     * 按照以下顺序寻找注解. 深度优先
+     * 1. 自身
+     * 2. 自身注解内使用的注解
+     * 3. 自身所在的类(详见 {@see #findAnnotation(Class, Class)})
+     */
+    @JvmStatic
+    fun <A : Annotation> findAnnotation(method: Method, aClass: Class<A>): A? {
+        val absent = CACHE.computeIfAbsent(method) { ConcurrentHashMap() }.computeIfAbsent(aClass) {
+            var a = findAnnotation(method as AnnotatedElement, aClass)
+            if (a != null) {
+                return@computeIfAbsent a
+            }
+            val declaringClass = method.declaringClass
+            a = findAnnotation(declaringClass, aClass)
+            if (a != null) {
+                return@computeIfAbsent a
+            }
+            NULL
+        }
         return if (absent == NULL) null else absent as A
     }
 

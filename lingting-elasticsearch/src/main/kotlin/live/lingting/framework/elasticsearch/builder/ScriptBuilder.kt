@@ -57,7 +57,7 @@ class ScriptBuilder<T> {
         return append(script, field, value)
     }
 
-    fun setIfAbsent(field: String, value: Any): ScriptBuilder<T> {
+    fun setIfAbsent(field: String, value: Any?): ScriptBuilder<T> {
         if (value != null) {
             val script = genSetIfAbsent(field)
             return append(script, field, value)

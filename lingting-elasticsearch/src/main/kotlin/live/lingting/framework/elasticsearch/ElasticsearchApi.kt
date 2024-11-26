@@ -511,11 +511,7 @@ class ElasticsearchApi<T>(
         val builder = operator.apply(
             SearchRequest.Builder().scroll(scrollTime) // 返回匹配的所有文档数量
                 .trackTotalHits(TrackHits.of { th -> th.enabled(true) })
-        ).index(info.index()).query(query)
-
-        if (params.size != null) {
-            builder.size(params.size.toInt())
-        }
+        ).index(info.index()).query(query).size(params.size.toInt())
 
         val search = client.search(builder.build(), cls)
         val collect = search.hits().hits().mapNotNull() { obj: Hit<T> -> obj.source() }
