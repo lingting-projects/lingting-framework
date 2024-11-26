@@ -18,6 +18,27 @@ object AnnotationUtils {
     private val CACHE: MutableMap<AnnotatedElement, MutableMap<Class<out Annotation>, Annotation>> = ConcurrentHashMap()
 
     /**
+     * 不对主体使用缓存进行查询
+     */
+    private fun <A : Annotation, E : AnnotatedElement> find(element: E, aClass: Class<A>): A? {
+        // 1. 自身
+        val annotation = element.getAnnotation(aClass)
+        if (annotation != null) {
+            return annotation
+        }
+
+        // 2. 自身注解内使用的注解
+        val annotations = element.declaredAnnotations
+        for (aa in annotations) {
+            val a = findAnnotation(aa, aClass)
+            if (a != null) {
+                return a
+            }
+        }
+        return null
+    }
+
+    /**
      * 按照以下顺序寻找注解. 深度优先
      * 1. 自身
      * 2. 自身注解内使用的注解
@@ -28,8 +49,8 @@ object AnnotationUtils {
     fun <A : Annotation> findAnnotation(cls: Class<*>, aClass: Class<A>): A? {
         val absent = CACHE.computeIfAbsent(cls) { ConcurrentHashMap() }
             .computeIfAbsent(aClass) {
-                // 1 & 2
-                var a = findAnnotation(cls as AnnotatedElement, aClass)
+                // 1 & 2 - 处理自身时不针对主体进行缓存
+                var a = find(cls, aClass)
                 if (a != null) {
                     return@computeIfAbsent a
                 }
@@ -64,7 +85,8 @@ object AnnotationUtils {
     @JvmStatic
     fun <A : Annotation> findAnnotation(method: Method, aClass: Class<A>): A? {
         val absent = CACHE.computeIfAbsent(method) { ConcurrentHashMap() }.computeIfAbsent(aClass) {
-            var a = findAnnotation(method as AnnotatedElement, aClass)
+            // 处理自身时不针对主体进行缓存
+            var a = find(method, aClass)
             if (a != null) {
                 return@computeIfAbsent a
             }
@@ -85,22 +107,10 @@ object AnnotationUtils {
      */
     @JvmStatic
     fun <A : Annotation, E : AnnotatedElement> findAnnotation(element: E, aClass: Class<A>): A? {
-        val absent = CACHE.computeIfAbsent(element) { ConcurrentHashMap() }.computeIfAbsent(aClass) {
-            // 1. 自身
-            val annotation = element.getAnnotation(aClass)
-            if (annotation != null) {
-                return@computeIfAbsent annotation
-            }
-
-            // 2. 自身注解内使用的注解
-            val annotations = element.declaredAnnotations
-            for (aa in annotations) {
-                val a = findAnnotation(aa, aClass)
-                if (a != null) {
-                    return@computeIfAbsent a
-                }
-            }
-            NULL
+        val absent = CACHE.computeIfAbsent(element) {
+            ConcurrentHashMap()
+        }.computeIfAbsent(aClass) {
+            find(element, aClass) ?: NULL
         }
         return if (absent == NULL) null else absent as A
     }
