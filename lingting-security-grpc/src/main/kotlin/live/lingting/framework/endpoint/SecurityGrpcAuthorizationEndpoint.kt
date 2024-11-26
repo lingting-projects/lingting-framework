@@ -19,8 +19,12 @@ import live.lingting.framework.security.store.SecurityStore
 /**
  * @author lingting 2023-12-18 15:31
  */
-class SecurityGrpcAuthorizationEndpoint
-    (private val service: SecurityAuthorizationService, private val store: SecurityStore, private val securityPassword: SecurityPassword, private val convert: SecurityGrpcConvert) : SecurityGrpcAuthorizationServiceImplBase() {
+class SecurityGrpcAuthorizationEndpoint(
+    private val service: SecurityAuthorizationService,
+    private val store: SecurityStore,
+    private val securityPassword: SecurityPassword,
+    private val convert: SecurityGrpcConvert
+) : SecurityGrpcAuthorizationServiceImplBase() {
     override fun logout(request: Empty, observer: StreamObserver<SecurityGrpcAuthorization.AuthorizationVO>) {
         val scope = scope()
         store.deleted(scope!!)
@@ -46,7 +50,7 @@ class SecurityGrpcAuthorizationEndpoint
             val authorization = authorization()
             convert.toToken(authorization)
         } else {
-            SecurityToken.of(request.type, request.value, request.raw)
+            convert.toToken(request)
         }
     }
 

@@ -4,6 +4,7 @@ import live.lingting.framework.security.domain.AuthorizationVO
 import live.lingting.framework.security.domain.SecurityScope
 import live.lingting.framework.security.domain.SecurityScopeAttributes
 import live.lingting.framework.security.domain.SecurityToken
+import live.lingting.framework.security.po.EndpointTokenPO
 
 /**
  * @author lingting 2024-01-30 19:24
@@ -60,6 +61,18 @@ interface SecurityConvert {
 
     fun toToken(raw: String): SecurityToken {
         return SecurityToken.ofDelimiter(raw)
+    }
+
+    fun toToken(po: EndpointTokenPO): SecurityToken {
+        val raw = po.raw
+        val value = po.value
+        if (!value.isNullOrEmpty()) {
+            return SecurityToken.of(po.type ?: "", value, raw ?: "")
+        }
+        if (!raw.isNullOrBlank()) {
+            return toToken(raw)
+        }
+        return SecurityToken.EMPTY
     }
 
 }

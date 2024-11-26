@@ -8,6 +8,8 @@ import live.lingting.framework.protobuf.SecurityGrpcAuthorization
 import live.lingting.framework.security.convert.SecurityConvert
 import live.lingting.framework.security.domain.AuthorizationVO
 import live.lingting.framework.security.domain.SecurityScopeAttributes
+import live.lingting.framework.security.domain.SecurityToken
+import live.lingting.framework.security.po.EndpointTokenPO
 import live.lingting.framework.util.CollectionUtils
 import live.lingting.framework.util.StringUtils
 
@@ -78,6 +80,15 @@ open class SecurityGrpcConvert : SecurityConvert {
         }
 
         return JacksonUtils.toObj(json, SecurityScopeAttributes::class.java)
+    }
+
+    fun toToken(po: SecurityGrpcAuthorization.TokenPO): SecurityToken {
+        val p = EndpointTokenPO().apply {
+            raw = po.raw
+            type = po.type
+            value = po.value
+        }
+        return toToken(p)
     }
 
 }

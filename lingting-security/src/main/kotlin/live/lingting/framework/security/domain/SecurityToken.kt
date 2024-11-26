@@ -28,9 +28,11 @@ class SecurityToken private constructor(
             }
 
             val split = raw!!.split(delimiter.toRegex(), limit = 2).toTypedArray()
+
             if (split.size > 1) {
                 return of(split[0], split[1], raw)
             }
+
             return of("", split[0], raw)
         }
 
