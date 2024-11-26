@@ -9,21 +9,29 @@ import live.lingting.framework.Sequence
 import live.lingting.framework.exception.SecurityGrpcThrowing
 import live.lingting.framework.grpc.interceptor.AbstractServerInterceptor
 import live.lingting.framework.grpc.simple.ForwardingServerOnCallListener
+import live.lingting.framework.kt.logger
 import live.lingting.framework.security.authorize.SecurityAuthorize
+import live.lingting.framework.security.convert.SecurityConvert
 import live.lingting.framework.security.domain.SecurityScope
 import live.lingting.framework.security.domain.SecurityToken
 import live.lingting.framework.security.resource.SecurityResourceService
 import live.lingting.framework.util.StringUtils
 import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2023-12-14 16:28
  */
 class SecurityGrpcResourceServerInterceptor(
-    private val authorizationKey: Metadata.Key<String>, private val service: SecurityResourceService,
-    private val authorize: SecurityAuthorize
+    val authorizationKey: Metadata.Key<String>,
+    val service: SecurityResourceService,
+    val authorize: SecurityAuthorize,
+    val convert: SecurityConvert,
 ) : AbstractServerInterceptor(), Sequence {
+
+    companion object {
+        private val log: Logger = logger()
+    }
+
     override fun <S, R> interceptCall(
         call: ServerCall<S, R>, headers: Metadata,
         next: ServerCallHandler<S, R>
@@ -41,10 +49,6 @@ class SecurityGrpcResourceServerInterceptor(
                 service.popScope()
             }
         }
-    }
-
-    companion object {
-        private val log: Logger = LoggerFactory.getLogger(SecurityGrpcResourceServerInterceptor::class.java)
     }
 
     protected fun <S, R> validAuthority(descriptor: MethodDescriptor<S, R>) {
@@ -73,7 +77,7 @@ class SecurityGrpcResourceServerInterceptor(
         if (!StringUtils.hasText(raw)) {
             return SecurityToken.EMPTY
         }
-        return SecurityToken.ofDelimiter(raw!!, " ")
+        return convert.toToken(raw!!)
     }
 
     protected fun allowAuthority(metadata: Metadata, descriptor: MethodDescriptor<*, *>): Boolean {

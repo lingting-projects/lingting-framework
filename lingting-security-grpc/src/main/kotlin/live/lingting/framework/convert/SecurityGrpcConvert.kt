@@ -15,16 +15,17 @@ import live.lingting.framework.util.StringUtils
  * @author lingting 2023-12-18 16:04
  */
 open class SecurityGrpcConvert : SecurityConvert {
+
     fun toProtobuf(vo: AuthorizationVO): SecurityGrpcAuthorization.AuthorizationVO {
         val builder = SecurityGrpcAuthorization.AuthorizationVO
             .newBuilder()
-            .setToken(vo.authorization)
+            .setAuthorization(vo.authorization)
             .setTenantId(vo.tenantId)
             .setUserId(vo.userId)
             .setUsername(vo.username)
             .setAvatar(vo.avatar)
             .setNickname(vo.nickname)
-            .setIsEnabled(java.lang.Boolean.TRUE == vo.enabled)
+            .setEnabled(java.lang.Boolean.TRUE == vo.enabled)
 
         if (!CollectionUtils.isEmpty(vo.roles)) {
             builder.addAllRoles(vo.roles)
@@ -39,13 +40,13 @@ open class SecurityGrpcConvert : SecurityConvert {
 
     fun toJava(authorizationVO: SecurityGrpcAuthorization.AuthorizationVO): AuthorizationVO {
         val vo = AuthorizationVO()
-        vo.authorization = authorizationVO.token
+        vo.authorization = authorizationVO.authorization
         vo.tenantId = authorizationVO.tenantId
         vo.userId = authorizationVO.userId
         vo.username = authorizationVO.username
         vo.avatar = authorizationVO.avatar
         vo.nickname = authorizationVO.nickname
-        vo.enabled = authorizationVO.isEnabled
+        vo.enabled = authorizationVO.enabled
         vo.roles = authorizationVO.rolesList.toSet()
         vo.permissions = authorizationVO.permissionsList.toSet()
         vo.attributes = ofBytes(authorizationVO.attributes)
@@ -78,4 +79,5 @@ open class SecurityGrpcConvert : SecurityConvert {
 
         return JacksonUtils.toObj(json, SecurityScopeAttributes::class.java)
     }
+
 }

@@ -43,7 +43,8 @@ class SecurityGrpcAuthorizationEndpoint
 
     fun token(request: SecurityGrpcAuthorization.TokenPO): SecurityToken {
         return if (request.value.isNullOrBlank()) {
-            SecurityToken.ofDelimiter(authorization(), " ")
+            val authorization = authorization()
+            convert.toToken(authorization)
         } else {
             SecurityToken.of(request.type, request.value, request.raw)
         }

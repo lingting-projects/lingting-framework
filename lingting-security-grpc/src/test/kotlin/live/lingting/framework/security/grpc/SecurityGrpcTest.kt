@@ -4,7 +4,6 @@ import com.google.protobuf.Empty
 import io.grpc.ClientInterceptor
 import io.grpc.ManagedChannel
 import io.grpc.StatusRuntimeException
-import java.util.List
 import live.lingting.framework.endpoint.SecurityGrpcAuthorizationEndpoint
 import live.lingting.framework.exception.SecurityGrpcExceptionInstance
 import live.lingting.framework.grpc.GrpcClientProvide
@@ -70,18 +69,14 @@ internal class SecurityGrpcTest {
         val resourceService = SecurityDefaultResourceServiceImpl(resolvers)
         val authorize = SecurityAuthorize(0)
         val securityGrpcExceptionInstance = SecurityGrpcExceptionInstance()
-        val processor = GrpcExceptionProcessor(List.of(securityGrpcExceptionInstance))
+        val processor = GrpcExceptionProcessor(listOf(securityGrpcExceptionInstance))
+        val authorizationKey = properties.authorizationKey()
         server = GrpcServerBuilder().port(0)
             .properties(serverProperties)
             .service(endpoint)
             .interceptor(GrpcServerExceptionInterceptor(serverProperties, processor))
             .interceptor(GrpcServerTraceIdInterceptor(serverProperties))
-            .interceptor(
-                SecurityGrpcResourceServerInterceptor(
-                    properties.authorizationKey(), resourceService,
-                    authorize
-                )
-            )
+            .interceptor(SecurityGrpcResourceServerInterceptor(authorizationKey, resourceService, authorize, convert!!))
             .build()
         server!!.onApplicationStart()
         ValueUtils.awaitTrue { server!!.isRunning }

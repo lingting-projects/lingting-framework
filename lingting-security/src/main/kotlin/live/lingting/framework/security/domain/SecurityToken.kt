@@ -16,11 +16,13 @@ class SecurityToken private constructor(
     val isAvailable: Boolean = StringUtils.hasText(value)
 
     companion object {
+
         @JvmField
         val EMPTY: SecurityToken = of("", "", "")
 
         @JvmStatic
-        fun ofDelimiter(raw: String?, delimiter: String): SecurityToken {
+        @JvmOverloads
+        fun ofDelimiter(raw: String?, delimiter: String = " "): SecurityToken {
             if (!StringUtils.hasText(raw)) {
                 return EMPTY
             }
@@ -40,5 +42,6 @@ class SecurityToken private constructor(
                 value = value
             )
         }
+
     }
 }

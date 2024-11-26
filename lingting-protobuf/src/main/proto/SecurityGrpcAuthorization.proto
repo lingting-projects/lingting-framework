@@ -6,13 +6,13 @@ option java_package = "live.lingting.framework.protobuf";
 option java_multiple_files = false;
 
 message AuthorizationVO {
-  string token = 1;
+  string authorization = 1;
   string userId = 2;
   string tenantId = 3;
   string username = 4;
   string avatar = 5;
   string nickname = 6;
-  bool isEnabled = 8;
+  bool enabled = 8;
   repeated string roles = 9;
   repeated string permissions = 10;
   bytes attributes = 11;

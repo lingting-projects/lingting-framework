@@ -5,16 +5,25 @@ import io.grpc.ServerCall
 import io.grpc.Status
 import java.util.concurrent.ConcurrentHashMap
 import live.lingting.framework.Sequence
+import live.lingting.framework.kt.logger
 import live.lingting.framework.util.AnnotationUtils
 import live.lingting.framework.util.ArrayUtils
 import live.lingting.framework.util.ClassUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2024-03-27 09:39
  */
-open class GrpcExceptionProcessor(instances: MutableCollection<GrpcExceptionInstance>) {
+open class GrpcExceptionProcessor(instances: Collection<GrpcExceptionInstance>) {
+
+    companion object {
+        @JvmField
+        val DEFAULT: GrpcExceptionInvoke = GrpcExceptionThrowInvoke()
+
+        private val CACHE: MutableMap<Class<*>, GrpcExceptionInvoke> = ConcurrentHashMap()
+
+        private val log = logger()
+    }
+
     protected val instances = Sequence.asc(instances)
 
     protected val invokes: MutableList<GrpcExceptionInvoke> = ArrayList()
@@ -53,12 +62,4 @@ open class GrpcExceptionProcessor(instances: MutableCollection<GrpcExceptionInst
         }
     }
 
-    companion object {
-        @JvmField
-        val DEFAULT: GrpcExceptionInvoke = GrpcExceptionThrowInvoke()
-
-        private val CACHE: MutableMap<Class<*>, GrpcExceptionInvoke> = ConcurrentHashMap()
-
-        private val log: Logger? = LoggerFactory.getLogger(GrpcExceptionProcessor::class.java)
-    }
 }
