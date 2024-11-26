@@ -4,6 +4,7 @@ import java.time.LocalDateTime
 import live.lingting.framework.security.authorize.SecurityAuthorizationService
 import live.lingting.framework.security.domain.SecurityScope
 import live.lingting.framework.security.domain.SecurityScopeAttributes
+import live.lingting.framework.security.domain.SecurityToken
 import live.lingting.framework.security.exception.AuthorizationException
 import live.lingting.framework.security.store.SecurityStore
 import live.lingting.framework.util.LocalDateTimeUtils
@@ -19,7 +20,7 @@ class AuthorizationServiceImpl(private val store: SecurityStore) : SecurityAutho
             throw AuthorizationException()
         }
         val scope = SecurityScope()
-        scope.token = username
+        scope.authorization = username
         scope.tenantId = username
         scope.userId = username
         scope.username = username
@@ -41,7 +42,7 @@ class AuthorizationServiceImpl(private val store: SecurityStore) : SecurityAutho
         return LocalDateTimeUtils.toTimestamp(LocalDateTime.now().plusMonths(6))
     }
 
-    override fun refresh(token: String?): SecurityScope? {
+    override fun refresh(token: SecurityToken): SecurityScope? {
         val scope = store.get(token)
         scope!!.expireTime = expireTime()
         return scope

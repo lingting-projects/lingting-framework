@@ -41,8 +41,8 @@ object SecurityHolder {
     }
 
     @JvmStatic
-    fun token(): String {
-        return scopeOption().map { it.token }.orElse("")
+    fun authorization(): String {
+        return scopeOption().map { it.authorization }.orElse("")
     }
 
     @JvmStatic

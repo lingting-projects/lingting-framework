@@ -14,7 +14,7 @@ class SecurityTokenDefaultResolver(private val store: SecurityStore) : SecurityT
     }
 
     override fun resolver(token: SecurityToken): SecurityScope? {
-        return store.get(token.token)
+        return store.get(token)
     }
 
     override val sequence: Int = Int.MAX_VALUE

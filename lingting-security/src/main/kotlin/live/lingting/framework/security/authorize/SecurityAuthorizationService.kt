@@ -1,6 +1,7 @@
 package live.lingting.framework.security.authorize
 
 import live.lingting.framework.security.domain.SecurityScope
+import live.lingting.framework.security.domain.SecurityToken
 
 /**
  * 授权服务用
@@ -16,5 +17,5 @@ interface SecurityAuthorizationService {
     /**
      * 刷新
      */
-    fun refresh(token: String?): SecurityScope?
+    fun refresh(token: SecurityToken): SecurityScope?
 }

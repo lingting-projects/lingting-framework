@@ -18,7 +18,7 @@ open class SecurityGrpcConvert : SecurityConvert {
     fun toProtobuf(vo: AuthorizationVO): SecurityGrpcAuthorization.AuthorizationVO {
         val builder = SecurityGrpcAuthorization.AuthorizationVO
             .newBuilder()
-            .setToken(vo.token)
+            .setToken(vo.authorization)
             .setTenantId(vo.tenantId)
             .setUserId(vo.userId)
             .setUsername(vo.username)
@@ -39,7 +39,7 @@ open class SecurityGrpcConvert : SecurityConvert {
 
     fun toJava(authorizationVO: SecurityGrpcAuthorization.AuthorizationVO): AuthorizationVO {
         val vo = AuthorizationVO()
-        vo.token = authorizationVO.token
+        vo.authorization = authorizationVO.token
         vo.tenantId = authorizationVO.tenantId
         vo.userId = authorizationVO.userId
         vo.username = authorizationVO.username

@@ -9,7 +9,10 @@ import live.lingting.framework.util.StringUtils
  * @author lingting 2023-03-29 20:25
  */
 open class SecurityScope {
-    var token: String = ""
+    /**
+     * <p>Bearer token</p>
+     */
+    var authorization: String = ""
 
     var tenantId: String? = null
 
@@ -48,7 +51,7 @@ open class SecurityScope {
          * 此scope是否为已登录用户
          */
         get() {
-            val tokenAvailable = StringUtils.hasText(token)
+            val tokenAvailable = StringUtils.hasText(authorization)
             val userAvailable = StringUtils.hasText(userId)
             return tokenAvailable && userAvailable
         }
@@ -82,7 +85,7 @@ open class SecurityScope {
     }
 
     fun from(scope: SecurityScope) {
-        this.token = scope.token
+        this.authorization = scope.authorization
         this.tenantId = scope.tenantId
         this.userId = scope.userId
         this.username = scope.username

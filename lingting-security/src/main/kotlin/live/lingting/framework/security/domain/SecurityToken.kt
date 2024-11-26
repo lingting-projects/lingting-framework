@@ -5,11 +5,15 @@ import live.lingting.framework.util.StringUtils
 /**
  * @author lingting 2023-04-28 12:38
  */
-class SecurityToken private constructor(val type: String, val token: String, val raw: String) {
+class SecurityToken private constructor(
+    val raw: String,
+    val type: String,
+    val value: String,
+) {
     /**
      * token是否有效
      */
-    val isAvailable: Boolean = StringUtils.hasText(token)
+    val isAvailable: Boolean = StringUtils.hasText(value)
 
     companion object {
         @JvmField
@@ -29,8 +33,12 @@ class SecurityToken private constructor(val type: String, val token: String, val
         }
 
         @JvmStatic
-        fun of(type: String, token: String, raw: String): SecurityToken {
-            return SecurityToken(type, token, raw)
+        fun of(type: String, value: String, raw: String): SecurityToken {
+            return SecurityToken(
+                raw = raw,
+                type = type,
+                value = value
+            )
         }
     }
 }

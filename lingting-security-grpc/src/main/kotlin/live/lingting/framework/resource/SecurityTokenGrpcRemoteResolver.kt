@@ -23,7 +23,7 @@ class SecurityTokenGrpcRemoteResolver(protected val channel: ManagedChannel, pro
             val request = SecurityGrpcAuthorization.TokenPO.newBuilder()
                 .setRaw(token?.raw)
                 .setType(token?.type)
-                .setValue(token?.token)
+                .setValue(token?.value)
                 .buildPartial()
             return blocking.resolve(request)
         } catch (e: Exception) {

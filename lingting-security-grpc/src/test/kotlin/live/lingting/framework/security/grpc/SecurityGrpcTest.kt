@@ -118,11 +118,11 @@ internal class SecurityGrpcTest {
         // 无token解析
         assertThrowsExactly(StatusRuntimeException::class.java) { blocking!!.resolve(SecurityGrpcAuthorization.TokenPO.newBuilder().buildPartial()) }
         // token解析
-        put(SecurityToken.ofDelimiter(admin.token, " "))
+        put(SecurityToken.ofDelimiter(admin.authorization, " "))
         try {
             val resolveGrpcAdmin = blocking!!.resolve(
                 SecurityGrpcAuthorization.TokenPO.newBuilder()
-                    .setValue(admin.token)
+                    .setValue(admin.authorization)
                     .buildPartial()
             )
             val resolveAdmin = convert!!.voExpand(convert!!.toJava(resolveGrpcAdmin))
@@ -140,7 +140,7 @@ internal class SecurityGrpcTest {
             assertThrowsExactly(StatusRuntimeException::class.java) {
                 blocking!!.resolve(
                     SecurityGrpcAuthorization.TokenPO.newBuilder()
-                        .setValue(admin.token)
+                        .setValue(admin.authorization)
                         .buildPartial()
                 )
             }

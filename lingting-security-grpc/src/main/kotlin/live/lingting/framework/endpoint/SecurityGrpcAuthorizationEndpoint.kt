@@ -9,10 +9,11 @@ import live.lingting.framework.security.annotation.Authorize
 import live.lingting.framework.security.authorize.SecurityAuthorizationService
 import live.lingting.framework.security.domain.AuthorizationVO
 import live.lingting.framework.security.domain.SecurityScope
+import live.lingting.framework.security.domain.SecurityToken
 import live.lingting.framework.security.exception.AuthorizationException
 import live.lingting.framework.security.password.SecurityPassword
+import live.lingting.framework.security.resource.SecurityHolder.authorization
 import live.lingting.framework.security.resource.SecurityHolder.scope
-import live.lingting.framework.security.resource.SecurityHolder.token
 import live.lingting.framework.security.store.SecurityStore
 
 /**
@@ -40,29 +41,37 @@ class SecurityGrpcAuthorizationEndpoint
         onNext(scope, observer)
     }
 
+    fun token(request: SecurityGrpcAuthorization.TokenPO): SecurityToken {
+        return if (request.value.isNullOrBlank()) {
+            SecurityToken.ofDelimiter(authorization(), " ")
+        } else {
+            SecurityToken.of(request.type, request.value, request.raw)
+        }
+    }
+
     override fun refresh(request: SecurityGrpcAuthorization.TokenPO, observer: StreamObserver<SecurityGrpcAuthorization.AuthorizationVO>) {
-        val token = token()
-        val scope = service.refresh(token) ?: throw AuthorizationException("Authorization has expired!")
+        val token = token(request)
+        val scope = service.refresh(token) ?: throw AuthorizationException("Token has expired!")
         store.update(scope)
         onNext(scope, observer)
     }
 
     @Authorize(anyone = true)
     override fun resolve(request: SecurityGrpcAuthorization.TokenPO, observer: StreamObserver<SecurityGrpcAuthorization.AuthorizationVO>) {
-        val value = request.value
-        val scope = store.get(value)
+        val token = token(request)
+        val scope = store.get(token)
         if (scope == null || !scope.isLogin || !scope.enabled()) {
             throw AuthorizationException("Token is invalid!")
         }
         onNext(scope, observer)
     }
 
-    protected fun onNext(scope: SecurityScope?, observer: StreamObserver<SecurityGrpcAuthorization.AuthorizationVO>) {
+    fun onNext(scope: SecurityScope?, observer: StreamObserver<SecurityGrpcAuthorization.AuthorizationVO>) {
         val vo = convert.scopeToVo(scope)
         onNext(vo, observer)
     }
 
-    protected fun onNext(vo: AuthorizationVO, observer: StreamObserver<SecurityGrpcAuthorization.AuthorizationVO>) {
+    fun onNext(vo: AuthorizationVO, observer: StreamObserver<SecurityGrpcAuthorization.AuthorizationVO>) {
         val authorizationVO = convert.toProtobuf(vo)
         observer.onNext(authorizationVO)
         observer.onCompleted()

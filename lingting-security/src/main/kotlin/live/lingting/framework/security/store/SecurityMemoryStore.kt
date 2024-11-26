@@ -2,29 +2,31 @@ package live.lingting.framework.security.store
 
 import java.util.concurrent.ConcurrentHashMap
 import live.lingting.framework.security.domain.SecurityScope
+import live.lingting.framework.security.domain.SecurityToken
 
 /**
  * @author lingting 2023-06-15 16:07
  */
 class SecurityMemoryStore : SecurityStore {
-    private val map: MutableMap<String?, SecurityScope> = ConcurrentHashMap()
+    private val map = ConcurrentHashMap<String, SecurityScope>()
 
     override fun save(scope: SecurityScope) {
-        map[scope.token] = scope
+        map[scope.authorization] = scope
     }
 
     override fun update(scope: SecurityScope) {
-        map[scope.token] = scope
+        map[scope.authorization] = scope
     }
 
     override fun deleted(scope: SecurityScope) {
-        map.remove(scope.token)
+        map.remove(scope.authorization)
     }
 
-    override fun get(token: String?): SecurityScope? {
-        val scope = map[token]
+    override fun get(token: SecurityToken): SecurityScope? {
+        val value = token.value
+        val scope = map[value]
         if (scope != null && System.currentTimeMillis() >= scope.expireTime) {
-            map.remove(token)
+            map.remove(value)
             return null
         }
         return scope

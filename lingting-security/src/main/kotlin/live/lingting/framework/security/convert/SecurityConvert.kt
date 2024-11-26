@@ -19,7 +19,7 @@ interface SecurityConvert {
     fun scopeToVo(scope: SecurityScope?): AuthorizationVO {
         val vo = AuthorizationVO()
         if (scope != null) {
-            vo.token = scope.token
+            vo.authorization = scope.authorization
             vo.tenantId = scope.tenantId ?: ""
             vo.userId = scope.userId ?: ""
             vo.username = scope.username
@@ -38,7 +38,7 @@ interface SecurityConvert {
     fun voToScope(vo: AuthorizationVO?): SecurityScope {
         val scope = SecurityScope()
         if (vo != null) {
-            scope.token = vo.token
+            scope.authorization = vo.authorization
             scope.tenantId = vo.tenantId
             scope.userId = vo.userId
             scope.username = vo.username

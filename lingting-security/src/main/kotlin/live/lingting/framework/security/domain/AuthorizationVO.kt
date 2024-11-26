@@ -4,7 +4,7 @@ package live.lingting.framework.security.domain
  * @author lingting 2023-03-30 13:54
  */
 open class AuthorizationVO {
-    var token: String = ""
+    var authorization: String = ""
 
     var tenantId: String = ""
 
@@ -28,7 +28,7 @@ open class AuthorizationVO {
     var attributes: SecurityScopeAttributes = SecurityScopeAttributes()
 
     fun from(vo: AuthorizationVO) {
-        this.token = vo.token
+        this.authorization = vo.authorization
         this.tenantId = vo.tenantId
         this.userId = vo.userId
         this.username = vo.username
