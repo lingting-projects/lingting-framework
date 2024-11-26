@@ -13,7 +13,7 @@ object DataScopeRuleHolder {
     /**
      * 使用栈存储 DataScopeRule，便于在方法嵌套调用时使用不同的数据范围控制。
      */
-    private val LOCAL: ThreadLocal<Deque<DataScopeRule>> = ThreadLocal
+    private val LOCAL: ThreadLocal<Deque<DataScopeRule?>> = ThreadLocal
         .withInitial(Supplier { ArrayDeque() })
 
     /**
@@ -31,14 +31,13 @@ object DataScopeRuleHolder {
      * @return DataScopeRule
      */
     @JvmStatic
-    fun push(rule: DataScopeRule): DataScopeRule {
+    fun push(rule: DataScopeRule?) {
         var deque = LOCAL.get()
         if (deque == null) {
             deque = ArrayDeque()
             LOCAL.set(deque)
         }
         deque.push(rule)
-        return rule
     }
 
     /**
