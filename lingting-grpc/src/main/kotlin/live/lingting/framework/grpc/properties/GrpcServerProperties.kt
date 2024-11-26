@@ -1,6 +1,7 @@
 package live.lingting.framework.grpc.properties
 
 import java.time.Duration
+import live.lingting.framework.data.DataSize
 import live.lingting.framework.util.MdcUtils
 
 /**
@@ -9,7 +10,7 @@ import live.lingting.framework.util.MdcUtils
 class GrpcServerProperties {
     var port: Int? = null
 
-    var messageSize: Long = 524288
+    var messageSize: Long = DataSize.ofMb(1).bytes
 
     var keepAliveTime: Duration = Duration.ofMinutes(30)
 
