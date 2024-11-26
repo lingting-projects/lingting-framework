@@ -49,7 +49,6 @@ object StreamUtils {
         }
     }
 
-
     @JvmStatic
     fun read(`in`: InputStream): ByteArray {
         val out = ByteArrayOutputStream()

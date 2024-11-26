@@ -24,26 +24,21 @@ class RandomAccessOutputStream constructor(file: File = FileUtils.createTemp(".o
         this.path = file.toPath()
     }
 
-
     fun seek(pos: Long) {
         file.seek(pos)
     }
-
 
     fun size(): Long {
         return Files.size(path)
     }
 
-
     override fun write(b: ByteArray, off: Int, len: Int) {
         file.write(b, off, len)
     }
 
-
     override fun close() {
         file.close()
     }
-
 
     override fun write(b: Int) {
         file.write(b)

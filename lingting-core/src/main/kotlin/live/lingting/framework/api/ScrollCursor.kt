@@ -22,7 +22,6 @@ class ScrollCursor<T, S>(
         }
     }
 
-
     override fun nextBatchData(): List<T> {
         val result = scroll.apply(scrollId)
         scrollId = result.cursor

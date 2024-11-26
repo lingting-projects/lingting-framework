@@ -38,14 +38,12 @@ internal class CommandTest {
         }
     }
 
-
     fun testLinux(): CommandResult {
         val command = Command.of("sh", StandardCharsets.UTF_8)
         command.exec("ls")
         command.exit()
         return command.waitFor()
     }
-
 
     fun testWindows(): CommandResult {
         val command = Command.of("cmd", StandardCharsets.UTF_8)

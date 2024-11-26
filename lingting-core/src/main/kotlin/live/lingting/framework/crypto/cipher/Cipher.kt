@@ -31,7 +31,6 @@ class Cipher(
         return Cipher(algorithm, mode, padding, symbol, charset, secret, iv)
     }
 
-
     fun instance(): javax.crypto.Cipher {
         return javax.crypto.Cipher.getInstance(symbol)
     }
@@ -63,36 +62,30 @@ class Cipher(
         return cipher.doFinal(bytes)
     }
 
-
     fun encrypt(plaintext: String): ByteArray {
         val bytes: ByteArray = plaintext.toByteArray(charset)
         return encrypt(bytes)
     }
-
 
     fun encryptString(bytes: ByteArray): String {
         val encrypt = encrypt(bytes)
         return String(encrypt, charset)
     }
 
-
     fun encryptBase64(bytes: ByteArray): String {
         val encrypt = encrypt(bytes)
         return StringUtils.base64(encrypt)
     }
-
 
     fun encryptBase64(plaintext: String): String {
         val bytes: ByteArray = plaintext.toByteArray(charset)
         return encryptBase64(bytes)
     }
 
-
     fun encryptHex(bytes: ByteArray): String {
         val encrypt = encrypt(bytes)
         return StringUtils.hex(encrypt)
     }
-
 
     fun encryptHex(plaintext: String): String {
         val bytes: ByteArray = plaintext.toByteArray(charset)
@@ -107,34 +100,28 @@ class Cipher(
         return cipher.doFinal(bytes)
     }
 
-
     fun decrypt(ciphertext: String): ByteArray {
         val bytes: ByteArray = ciphertext.toByteArray(charset)
         return decrypt(bytes)
     }
-
 
     fun decryptString(bytes: ByteArray): String {
         val decrypt = decrypt(bytes)
         return String(decrypt, charset)
     }
 
-
     fun decryptBase64(bytes: ByteArray): String {
         return decryptString(bytes)
     }
-
 
     fun decryptBase64(ciphertext: String): String {
         val bytes: ByteArray = StringUtils.base64(ciphertext)
         return decryptBase64(bytes)
     }
 
-
     fun decryptHex(bytes: ByteArray): String {
         return decryptString(bytes)
     }
-
 
     fun decryptHex(ciphertext: String): String {
         val bytes: ByteArray = StringUtils.hex(ciphertext)
@@ -147,7 +134,6 @@ class Cipher(
         fun builder(): CipherBuilder {
             return CipherBuilder()
         }
-
 
         @JvmStatic
         fun aesBuilder(): CipherBuilder.AES {

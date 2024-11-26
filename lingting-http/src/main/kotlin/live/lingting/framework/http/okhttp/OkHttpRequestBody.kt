@@ -40,7 +40,6 @@ class OkHttpRequestBody(
         return source.length()
     }
 
-
     override fun writeTo(bufferedSink: BufferedSink) {
         if (source is MemoryBody) {
             bufferedSink.write(source.bytes())

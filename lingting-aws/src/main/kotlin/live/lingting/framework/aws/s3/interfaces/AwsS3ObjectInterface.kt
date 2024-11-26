@@ -26,12 +26,9 @@ interface AwsS3ObjectInterface {
 
     fun put(file: File)
 
-
     fun put(file: File, acl: Acl?)
 
-
     fun put(`in`: InputStream)
-
 
     fun put(`in`: InputStream, acl: Acl?)
 
@@ -48,9 +45,7 @@ interface AwsS3ObjectInterface {
 
     fun multipartInit(acl: Acl?): String
 
-
     fun multipart(source: InputStream): AwsS3MultipartTask
-
 
     fun multipart(source: InputStream, parSize: Long, async: Async): AwsS3MultipartTask
 

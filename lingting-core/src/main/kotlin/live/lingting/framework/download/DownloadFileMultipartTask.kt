@@ -42,7 +42,6 @@ class DownloadFileMultipartTask(
         //
     }
 
-
     override fun onPart(part: Part) {
         RandomAccessOutputStream(target).use { output ->
             output.seek(part.start)

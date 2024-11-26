@@ -4,7 +4,6 @@ import co.elastic.clients.elasticsearch.core.search.SourceConfig
 import live.lingting.framework.elasticsearch.EFunction
 import live.lingting.framework.elasticsearch.ElasticsearchUtils
 
-
 /**
  * @author lingting 2024-03-06 17:45
  */

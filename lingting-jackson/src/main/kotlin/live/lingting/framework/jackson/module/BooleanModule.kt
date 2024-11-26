@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import java.math.BigDecimal
 import live.lingting.framework.util.BooleanUtils
 
-
 /**
  * @author lingting 2023-04-18 15:22
  */

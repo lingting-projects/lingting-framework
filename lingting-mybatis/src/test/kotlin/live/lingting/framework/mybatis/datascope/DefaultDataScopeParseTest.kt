@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-
 /**
  * @author lingting 2024-01-30 10:43
  */

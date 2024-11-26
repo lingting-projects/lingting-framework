@@ -12,7 +12,6 @@ class DingTalkTextMessage : AbstractDingTalkMessage() {
      */
     var content: String? = null
 
-
     override val type: MessageTypeEnum = MessageTypeEnum.TEXT
 
     override fun put(params: DingTalkParams): DingTalkParams {

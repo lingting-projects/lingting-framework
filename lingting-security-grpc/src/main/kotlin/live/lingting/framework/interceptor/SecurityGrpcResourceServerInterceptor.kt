@@ -82,5 +82,4 @@ class SecurityGrpcResourceServerInterceptor(
 
     override val sequence: Int = authorize.order
 
-
 }

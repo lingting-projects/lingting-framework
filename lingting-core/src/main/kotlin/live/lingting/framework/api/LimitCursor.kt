@@ -9,7 +9,6 @@ import live.lingting.framework.value.CursorValue
 class LimitCursor<T>(private val limit: ThrowingFunction<Long, PaginationResult<T>>) : CursorValue<T>() {
     private var index: Long = 1
 
-
     override fun nextBatchData(): List<T> {
         val result = limit.apply(index)
         index++

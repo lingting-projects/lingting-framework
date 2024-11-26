@@ -83,7 +83,6 @@ class GrpcClientProvide(val properties: GrpcClientProperties, val interceptors: 
         }
     }
 
-
     // endregion
     fun channel(): ManagedChannel {
         return builder().build()

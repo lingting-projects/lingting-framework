@@ -4,7 +4,6 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Flow
 
-
 /**
  * @author lingting 2024-05-07 17:06
  */
@@ -31,7 +30,6 @@ abstract class FutureSubscriber<R, T> : Flow.Subscriber<T> {
     }
 
     abstract fun convert(list: List<T>?): R
-
 
     fun get(): R {
         try {

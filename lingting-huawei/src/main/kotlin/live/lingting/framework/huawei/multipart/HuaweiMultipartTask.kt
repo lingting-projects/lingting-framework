@@ -63,7 +63,6 @@ class HuaweiMultipartTask(
         obsObject.multipartCancel(uploadId)
     }
 
-
     override fun onPart(part: Part) {
         multipart.stream(part).use { `in` ->
             val etag = obsObject.multipartUpload(uploadId, part, `in`)

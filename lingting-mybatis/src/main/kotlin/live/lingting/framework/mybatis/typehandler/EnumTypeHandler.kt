@@ -23,16 +23,13 @@ class EnumTypeHandler<E : Enum<E>>(private val type: Class<E>) : BaseTypeHandler
         }
     }
 
-
     override fun getNullableResult(rs: ResultSet, columnName: String): E? {
         return of(rs.getString(columnName))
     }
 
-
     override fun getNullableResult(rs: ResultSet, columnIndex: Int): E? {
         return of(rs.getString(columnIndex))
     }
-
 
     override fun getNullableResult(cs: CallableStatement, columnIndex: Int): E? {
         return of(cs.getString(columnIndex))

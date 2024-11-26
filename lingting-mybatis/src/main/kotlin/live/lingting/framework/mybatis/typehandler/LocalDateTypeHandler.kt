@@ -27,16 +27,13 @@ class LocalDateTypeHandler : BaseTypeHandler<LocalDate>(), AutoRegisterTypeHandl
         }
     }
 
-
     override fun getNullableResult(rs: ResultSet, columnName: String): LocalDate? {
         return parse(rs.getString(columnName))
     }
 
-
     override fun getNullableResult(rs: ResultSet, columnIndex: Int): LocalDate? {
         return parse(rs.getString(columnIndex))
     }
-
 
     override fun getNullableResult(cs: CallableStatement, columnIndex: Int): LocalDate? {
         return parse(cs.getString(columnIndex))

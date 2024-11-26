@@ -41,7 +41,6 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
                 callback.onError(request, e)
             }
 
-
             override fun onResponse(call: Call, r: Response) {
                 try {
                     val response = convert(request, r)
@@ -65,13 +64,11 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
         call.enqueue(callback)
     }
 
-
     fun <T> request(request: Request, function: ThrowingFunction<Response, T?>): T? {
         request(request).use { response ->
             return function.apply(response)
         }
     }
-
 
     fun <T> request(request: Request, cls: Class<T>): T? {
         return request<T>(request, ThrowingFunction {
@@ -88,30 +85,25 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
         })
     }
 
-
     fun get(url: String): Response {
         val builder = Request.Builder().url(url).get()
         return request(builder.build())
     }
-
 
     fun <T> get(url: String, cls: Class<T>): T? {
         val builder = Request.Builder().url(url).get()
         return request<T>(builder.build(), cls)
     }
 
-
     fun get(url: HttpUrl): Response {
         val builder = Request.Builder().url(url).get()
         return request(builder.build())
     }
 
-
     fun <T> get(url: HttpUrl, cls: Class<T>): T? {
         val builder = Request.Builder().url(url).get()
         return request<T>(builder.build(), cls)
     }
-
 
     fun post(url: String, body: RequestBody): Response {
         val builder = Request.Builder().url(url).post(body)

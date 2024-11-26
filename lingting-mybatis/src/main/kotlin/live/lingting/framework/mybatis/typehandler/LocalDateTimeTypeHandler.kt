@@ -29,7 +29,6 @@ class LocalDateTimeTypeHandler : BaseTypeHandler<LocalDateTime>(), AutoRegisterT
         }
     }
 
-
     override fun getNullableResult(rs: ResultSet, columnName: String): LocalDateTime? {
         val source = rs.getString(columnName)
         if (!StringUtils.hasText(source)) {
@@ -38,7 +37,6 @@ class LocalDateTimeTypeHandler : BaseTypeHandler<LocalDateTime>(), AutoRegisterT
         return parse(source)
     }
 
-
     override fun getNullableResult(rs: ResultSet, columnIndex: Int): LocalDateTime? {
         val source = rs.getString(columnIndex)
         if (!StringUtils.hasText(source)) {
@@ -46,7 +44,6 @@ class LocalDateTimeTypeHandler : BaseTypeHandler<LocalDateTime>(), AutoRegisterT
         }
         return parse(source)
     }
-
 
     override fun getNullableResult(cs: CallableStatement, columnIndex: Int): LocalDateTime? {
         val source = cs.getString(columnIndex)

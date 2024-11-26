@@ -28,7 +28,6 @@ class DingTalkSender(
     var secret: String? = null
         private set
 
-
     var mac: Mac? = null
         private set
 

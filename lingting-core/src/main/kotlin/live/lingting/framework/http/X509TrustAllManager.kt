@@ -14,7 +14,6 @@ object X509TrustAllManager : X509TrustManager {
         //
     }
 
-
     override fun checkServerTrusted(x509Certificates: Array<X509Certificate>, authType: String) {
         //
     }

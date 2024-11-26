@@ -81,7 +81,6 @@ class WaitValue<T> {
             return WaitValue()
         }
 
-
         @JvmStatic
         fun <T> of(t: T?): WaitValue<T> {
             val of = of<T>()

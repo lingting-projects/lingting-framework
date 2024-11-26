@@ -10,7 +10,6 @@ import java.time.format.DateTimeFormatter
 import java.util.Date
 import live.lingting.framework.time.DatePattern
 
-
 /**
  * @author lingting 2022/11/28 10:12
  */
@@ -48,7 +47,6 @@ object LocalDateTimeUtils {
         return format(dateTime, DateTimeFormatter.ofPattern(formatter))
     }
 
-
     @JvmStatic
     @JvmOverloads
     fun format(dateTime: LocalDateTime, formatter: DateTimeFormatter = DatePattern.FORMATTER_YMD_HMS): String {
@@ -84,7 +82,6 @@ object LocalDateTimeUtils {
     fun format(time: LocalTime, formatter: String): String {
         return format(time, DateTimeFormatter.ofPattern(formatter))
     }
-
 
     @JvmStatic
     @JvmOverloads

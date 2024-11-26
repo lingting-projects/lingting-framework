@@ -56,7 +56,6 @@ open class GrpcExceptionInvoke(
         return false
     }
 
-
     open fun invoke(e: Exception, call: ServerCall<*, *>, metadata: Metadata): Any? {
         val args = args(e, call, metadata)
         return method!!.invoke(instance, *args)

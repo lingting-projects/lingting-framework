@@ -41,7 +41,6 @@ abstract class KeepRunnable protected constructor(protected val name: String, pr
         }
     }
 
-
     protected abstract fun process()
 
     protected open fun onFinally() {

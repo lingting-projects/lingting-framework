@@ -63,7 +63,6 @@ class RModule : SimpleModule() {
             return node.asText()
         }
 
-
         fun getData(root: TreeNode, definition: BeanPropertyDefinition, ctxt: DeserializationContext): Any? {
             val node = root[FIELD_DATA]
             if (isNull(node)) {

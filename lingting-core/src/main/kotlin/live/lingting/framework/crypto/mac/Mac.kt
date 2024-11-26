@@ -26,7 +26,6 @@ class Mac(algorithm: String, charset: Charset, secret: SecretKeySpec, iv: IvPara
         return javax.crypto.Mac.getInstance(algorithm)
     }
 
-
     fun mac(): javax.crypto.Mac {
         val mac = instance()
         if (iv == null) {
@@ -37,48 +36,40 @@ class Mac(algorithm: String, charset: Charset, secret: SecretKeySpec, iv: IvPara
         return mac
     }
 
-
     fun calculate(bytes: ByteArray): ByteArray {
         val mac = mac()
         return mac.doFinal(bytes)
     }
-
 
     fun calculate(source: String): ByteArray {
         val bytes: ByteArray = source.toByteArray(charset)
         return calculate(bytes)
     }
 
-
     fun calculateString(bytes: ByteArray): String {
         val calculate = calculate(bytes)
         return String(calculate, charset)
     }
-
 
     fun calculateString(source: String): String {
         val bytes: ByteArray = source.toByteArray(charset)
         return calculateString(bytes)
     }
 
-
     fun calculateBase64(bytes: ByteArray): String {
         val calculate = calculate(bytes)
         return StringUtils.base64(calculate)
     }
-
 
     fun calculateBase64(source: String): String {
         val bytes: ByteArray = source.toByteArray(charset)
         return calculateBase64(bytes)
     }
 
-
     fun calculateHex(bytes: ByteArray): String {
         val calculate = calculate(bytes)
         return StringUtils.hex(calculate)
     }
-
 
     fun calculateHex(source: String): String {
         val bytes: ByteArray = source.toByteArray(charset)
@@ -90,7 +81,6 @@ class Mac(algorithm: String, charset: Charset, secret: SecretKeySpec, iv: IvPara
         fun builder(): MacBuilder {
             return MacBuilder()
         }
-
 
         @JvmStatic
         fun hmacBuilder(): Hmac {

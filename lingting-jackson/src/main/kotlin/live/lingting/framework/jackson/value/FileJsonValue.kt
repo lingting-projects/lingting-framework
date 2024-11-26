@@ -26,7 +26,6 @@ class FileJsonValue<T> : AbstractFileValue<T> {
         return String.format("%s%s", filename, SUFFIX)
     }
 
-
     protected fun of(str: String, function: ThrowingFunction<String, T>): T? {
         if (StringUtils.hasText(str)) {
             return function.apply(str)
@@ -45,7 +44,6 @@ class FileJsonValue<T> : AbstractFileValue<T> {
     fun optional(reference: TypeReference<T>): Optional<T> {
         return optional(ThrowingFunction<String, T> { json -> of(json, ThrowingFunction<String, T> { s -> mapper.readValue(s, reference) }) })
     }
-
 
     fun orElseGet(supplier: Supplier<T>, reference: TypeReference<T>): T {
         return orElseGet(supplier) { optional(reference) }

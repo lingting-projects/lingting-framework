@@ -6,7 +6,6 @@ import live.lingting.framework.Sequence
 import live.lingting.framework.sensitive.serializer.SensitiveDefaultProvider
 import live.lingting.framework.util.StringUtils
 
-
 /**
  * @author lingting 2023-04-27 15:42
  */
@@ -49,12 +48,10 @@ object SensitiveUtils {
         return builder.toString()
     }
 
-
     @JvmStatic
     fun serialize(raw: String, prefixLength: Int, suffixLength: Int): String {
         return serialize(raw, MIDDLE, prefixLength, suffixLength)
     }
-
 
     @JvmStatic
     fun serialize(raw: String, prefixLength: Int, suffixLength: Int, sensitive: Sensitive?): String {
@@ -74,7 +71,6 @@ object SensitiveUtils {
         }
         return serialize(raw, prefixLength, suffixLength)
     }
-
 
     @JvmStatic
     fun findSerializer(sensitive: Sensitive): SensitiveSerializer? {

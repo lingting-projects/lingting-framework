@@ -49,7 +49,6 @@ object ThreadPool {
         return instance.executor()
     }
 
-
     @JvmStatic
     fun update(executor: ThreadPoolExecutor): PoolThreadServiceImpl {
         return instance.executor(executor)
@@ -96,7 +95,6 @@ object ThreadPool {
          * 是否可能触发拒绝策略, 仅为估算
          */
         get() = instance.isReject
-
 
     fun execute(runnable: ThrowableRunnable) {
         instance.execute(runnable)

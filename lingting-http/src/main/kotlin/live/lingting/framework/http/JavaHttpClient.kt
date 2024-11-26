@@ -20,7 +20,6 @@ class JavaHttpClient(protected val client: java.net.http.HttpClient) : HttpClien
         return client
     }
 
-
     override fun request(request: HttpRequest): HttpResponse {
         val jr = convert(request)
         val r = client.send(jr, BodyHandlers.ofInputStream())
@@ -55,7 +54,6 @@ class JavaHttpClient(protected val client: java.net.http.HttpClient) : HttpClien
         override fun infiniteTimeout(): Builder {
             return timeout(null, null, null, null)
         }
-
 
         fun build(supplier: Supplier<java.net.http.HttpClient.Builder>): JavaHttpClient {
             val builder = supplier.get()

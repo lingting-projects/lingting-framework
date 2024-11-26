@@ -3,7 +3,6 @@ package live.lingting.framework.crypto.mac
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-
 /**
  * @author lingting 2024-09-04 14:06
  */
@@ -12,14 +11,12 @@ internal class HmacTest {
 
     var secret: String = "secret"
 
-
     @Test
     fun sha1() {
         val mac = Mac.hmacBuilder().sha1().secret(secret).build()
         assertEquals("URIFXAX5RPhXVe/FzYlw4ZTp9Fs=", mac.calculateBase64(source))
         assertEquals("5112055c05f944f85755efc5cd8970e194e9f45b", mac.calculateHex(source))
     }
-
 
     @Test
     fun sha256() {

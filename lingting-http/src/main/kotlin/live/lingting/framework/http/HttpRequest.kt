@@ -200,7 +200,6 @@ class HttpRequest private constructor(
             return source.string(charset)
         }
 
-
         companion object {
             fun empty(): Body {
                 return Body(BodySource.empty(), null)

@@ -6,7 +6,6 @@ import live.lingting.framework.util.ClassUtils
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 
-
 /**
  * 排序用
  * @author lingting 2024-01-30 11:15

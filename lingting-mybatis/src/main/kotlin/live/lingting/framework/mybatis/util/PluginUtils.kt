@@ -29,7 +29,6 @@ import org.apache.ibatis.reflection.MetaObject
 import org.apache.ibatis.reflection.SystemMetaObject
 import org.apache.ibatis.session.Configuration
 
-
 /**
  * 插件工具类
  * @author TaoYu , hubin

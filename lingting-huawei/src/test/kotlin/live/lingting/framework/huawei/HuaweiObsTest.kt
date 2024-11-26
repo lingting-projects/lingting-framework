@@ -43,7 +43,6 @@ internal class HuaweiObsTest {
         properties = HuaweiBasic.obsProperties()
     }
 
-
     @Test
     fun put() {
         val snowflake = Snowflake(0, 0)
@@ -63,7 +62,6 @@ internal class HuaweiObsTest {
         assertEquals(source, string)
         obsObject.delete()
     }
-
 
     @Test
     fun multipart() {

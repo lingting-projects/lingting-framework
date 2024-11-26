@@ -37,7 +37,6 @@ internal class RModuleTest {
         Assertions.assertNull(o3.data)
     }
 
-
     internal class REntity {
         var p1: String? = null
             private set

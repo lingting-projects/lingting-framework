@@ -35,7 +35,6 @@ abstract class MultipartTask<I : MultipartTask<I>> protected constructor(val mul
     var failedNumber: Int = 0
         protected set
 
-
     var maxRetryCount: Long = 0L
 
     fun status(): MultipartTaskStatus {
@@ -62,7 +61,6 @@ abstract class MultipartTask<I : MultipartTask<I>> protected constructor(val mul
     fun tasksFailed(): List<PartTask> {
         return tasks.stream().filter { obj -> obj.isFailed }.toList()
     }
-
 
     fun await(duration: Duration? = null): I {
         if (isStarted) {
@@ -160,7 +158,6 @@ abstract class MultipartTask<I : MultipartTask<I>> protected constructor(val mul
     protected open fun onStarted() {
         //
     }
-
 
     protected abstract fun onPart(part: Part)
 

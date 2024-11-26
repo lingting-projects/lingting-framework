@@ -28,7 +28,6 @@ class SecurityAuthorize(@JvmField val order: Int) {
         return AnnotationUtils.findAnnotation(cls, Authorize::class.java)
     }
 
-
     fun valid(cls: Class<*>?, method: Method?) {
         val authorize = findAuthorize(cls, method)
         valid(authorize)

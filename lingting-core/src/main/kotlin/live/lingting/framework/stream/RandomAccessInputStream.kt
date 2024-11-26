@@ -48,11 +48,9 @@ class RandomAccessInputStream : InputStream {
 
     constructor(path: Path) : this(path.toFile())
 
-
     fun seek(pos: Long) {
         file.seek(pos)
     }
-
 
     override fun close() {
         file.close()
@@ -61,16 +59,13 @@ class RandomAccessInputStream : InputStream {
         }
     }
 
-
     override fun read(): Int {
         return file.read()
     }
 
-
     override fun read(b: ByteArray, off: Int, len: Int): Int {
         return file.read(b, off, len)
     }
-
 
     override fun reset() {
         file.seek(0)

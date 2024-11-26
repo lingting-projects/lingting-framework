@@ -17,7 +17,6 @@ object AnnotationUtils {
 
     private val CACHE: MutableMap<AnnotatedElement, MutableMap<Class<out Annotation>, Annotation>> = ConcurrentHashMap()
 
-
     /**
      * 按照以下顺序寻找注解. 深度优先
      * 1. 自身

@@ -23,16 +23,13 @@ import org.slf4j.LoggerFactory
 class NtpFactory protected constructor() {
     private val blockHosts: MutableSet<String> = HashSet()
 
-
     fun create(): Ntp? {
         return create(HOSTS)
     }
 
-
     fun create(vararg hosts: String): Ntp? {
         return create(hosts.toSet())
     }
-
 
     fun create(hosts: Collection<String>): Ntp? {
         val cycle: CycleValue<Long> = StepCycleValue(STEP_INIT)
@@ -56,7 +53,6 @@ class NtpFactory protected constructor() {
         }
         return null
     }
-
 
     fun createByFuture(cycle: CycleValue<Long>, host: String): Ntp {
         val ip = IpUtils.resolve(host)

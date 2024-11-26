@@ -47,7 +47,6 @@ open class GrpcExceptionProcessor(instances: MutableCollection<GrpcExceptionInst
             return true
         }
 
-
         override fun invoke(e: Exception, call: ServerCall<*, *>, metadata: Metadata): Any {
             log!!.error("unknown exception. target: {}", call.methodDescriptor.fullMethodName, e)
             return Status.ABORTED.withCause(e)

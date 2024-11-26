@@ -30,7 +30,6 @@ abstract class AbstractSafeBlockingQueueThread<T> : AbstractSafeQueueThread<T?>(
         return queue.size.toLong()
     }
 
-
     override fun poll(timeout: Duration): T {
         return queue.poll(timeout.toMillis(), TimeUnit.MILLISECONDS)
     }

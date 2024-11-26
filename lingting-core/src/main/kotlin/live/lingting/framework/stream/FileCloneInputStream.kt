@@ -21,11 +21,9 @@ class FileCloneInputStream constructor(source: File, size: Long = Files.size(sou
             FileUtils.createTemp(input, ".clone", TEMP_DIR)
     )
 
-
     override fun newStream(): InputStream {
         return FileInputStream(source())
     }
-
 
     override fun copy(): FileCloneInputStream {
         return FileCloneInputStream(this)

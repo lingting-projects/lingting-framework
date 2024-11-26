@@ -40,12 +40,10 @@ class MultipartBuilder {
         return this
     }
 
-
     fun source(source: InputStream): MultipartBuilder {
         this.source = source as? FileCloneInputStream ?: FileCloneInputStream(source)
         return size(this.source!!.size())
     }
-
 
     fun source(file: File): MultipartBuilder {
         return source(FileCloneInputStream(file))

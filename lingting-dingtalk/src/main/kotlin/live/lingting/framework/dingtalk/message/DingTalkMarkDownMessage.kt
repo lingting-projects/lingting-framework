@@ -19,7 +19,6 @@ class DingTalkMarkDownMessage : AbstractDingTalkMessage() {
      */
     var markdown: MarkdownBuilder? = null
 
-
     override val type: MessageTypeEnum = MessageTypeEnum.MARKDOWN
 
     override fun put(params: DingTalkParams): DingTalkParams {

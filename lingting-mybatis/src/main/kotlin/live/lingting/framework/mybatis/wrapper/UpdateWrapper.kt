@@ -4,7 +4,6 @@ import java.lang.UnsupportedOperationException
 import live.lingting.framework.util.CollectionUtils
 import live.lingting.framework.util.StringUtils
 
-
 class UpdateWrapper<T> : LambdaWrapper<T, UpdateWrapper<T>>(), com.baomidou.mybatisplus.core.conditions.update.Update<UpdateWrapper<T>, String> {
     private val sets: MutableList<String> = java.util.ArrayList<String>()
 
@@ -53,6 +52,5 @@ class UpdateWrapper<T> : LambdaWrapper<T, UpdateWrapper<T>>(), com.baomidou.myba
         super.clear()
         sets.clear()
     }
-
 
 }

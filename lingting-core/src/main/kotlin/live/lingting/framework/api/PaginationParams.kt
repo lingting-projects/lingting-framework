@@ -9,7 +9,6 @@ class PaginationParams(
     var sorts: List<Sort>,
 ) {
 
-
     constructor() : this(1, 10, emptyList())
 
     constructor(page: Long, size: Long) : this(page, size, emptyList())

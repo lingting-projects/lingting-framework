@@ -60,7 +60,6 @@ class Multipart(
         }
     }
 
-
     fun stream(part: Part): CloneInputStream {
         val file = file(part)
         return FileCloneInputStream(file)
@@ -82,7 +81,6 @@ class Multipart(
     companion object {
         @JvmField
         val TEMP_DIR: File = FileUtils.createTempDir("multipart")
-
 
         @JvmStatic
         fun builder(): MultipartBuilder {

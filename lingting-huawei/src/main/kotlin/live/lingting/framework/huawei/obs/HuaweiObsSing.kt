@@ -10,7 +10,6 @@ import live.lingting.framework.huawei.HuaweiUtils
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.value.multi.StringMultiValue
 
-
 /**
  * @author lingting 2024/11/5 11:18
  */
@@ -76,7 +75,6 @@ class HuaweiObsSing(
         return "$method\n$md5\n$type\n$date\n$canonicalizedHeaders$canonicalizedResource"
     }
 
-
     fun calculate(): String {
         val source = source()
         val mac = Mac.hmacBuilder().sha1().secret(sk).charset(HuaweiUtils.CHARSET).build()
@@ -100,9 +98,7 @@ class HuaweiObsSing(
 
         private var headers: HttpHeaders? = null
 
-
         private var params: StringMultiValue? = null
-
 
         private var ak: String? = null
 

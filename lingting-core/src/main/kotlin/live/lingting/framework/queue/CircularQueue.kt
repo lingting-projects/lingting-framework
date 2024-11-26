@@ -24,7 +24,6 @@ class CircularQueue<T> {
         return this
     }
 
-
     fun pool(): T? {
         return lock.getByInterruptibly<T?> {
             if (CollectionUtils.isEmpty(source)) {

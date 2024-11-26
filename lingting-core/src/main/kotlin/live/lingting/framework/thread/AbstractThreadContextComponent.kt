@@ -107,7 +107,6 @@ abstract class AbstractThreadContextComponent : ContextComponent {
         }
     }
 
-
     protected abstract fun doRun()
 
     /**

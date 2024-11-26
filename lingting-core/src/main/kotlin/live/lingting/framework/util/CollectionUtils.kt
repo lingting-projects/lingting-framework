@@ -2,7 +2,6 @@ package live.lingting.framework.util
 
 import java.util.Collections
 
-
 /**
  * @author lingting
  */

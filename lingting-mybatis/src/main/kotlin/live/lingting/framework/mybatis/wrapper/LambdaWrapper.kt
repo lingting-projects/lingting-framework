@@ -7,7 +7,6 @@ import java.util.function.BiPredicate
 import live.lingting.framework.util.ArrayUtils
 import live.lingting.framework.util.CollectionUtils
 
-
 abstract class LambdaWrapper<T, C : LambdaWrapper<T, C>> : AbstractWrapper<T, C>() {
 
     protected fun convertField(sf: SFunction<T, *>): String {

@@ -49,7 +49,6 @@ allprojects {
         }
     }
 
-
     mavenPublishing {
         val projectRepository = "lingting-projects/lingting-live.lingting.framework"
         val projectUrl = "https://github.com/$projectRepository"

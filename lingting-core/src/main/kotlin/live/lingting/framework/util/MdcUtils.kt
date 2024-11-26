@@ -3,7 +3,6 @@ package live.lingting.framework.util
 import java.util.UUID
 import org.slf4j.MDC
 
-
 /**
  * @author lingting 2022/12/11 20:14
  */

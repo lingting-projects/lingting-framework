@@ -29,7 +29,6 @@ abstract class AbstractLock : ExpandLock {
         throw UnsupportedOperationException()
     }
 
-
     override fun lock() {
         while (true) {
             if (tryLock()) {

@@ -27,7 +27,6 @@ class AwsS3ObjectPutRequest : AwsS3Request() {
         return HttpMethod.PUT
     }
 
-
     override fun body(): BodySource {
         return BodySource.of(stream!!)
     }

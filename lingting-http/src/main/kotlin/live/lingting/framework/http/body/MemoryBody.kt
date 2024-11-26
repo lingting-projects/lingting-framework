@@ -37,12 +37,10 @@ open class MemoryBody(val bytes: ByteArray) : BodySource() {
         return String(bytes, charset)
     }
 
-
     override fun transferTo(output: OutputStream): Long {
         output.write(bytes)
         return bytes.size.toLong()
     }
-
 
     override fun transferTo(channel: WritableByteChannel): Long {
         channel.write(ByteBuffer.wrap(bytes))

@@ -1,6 +1,5 @@
 package live.lingting.framework.value.multi
 
-
 import java.util.Collections
 import java.util.function.Supplier
 

@@ -19,7 +19,6 @@ class MoneyTypeHandler : BaseTypeHandler<Money>(), AutoRegisterTypeHandler<Money
         ps.setBigDecimal(i, parameter.value)
     }
 
-
     override fun getNullableResult(rs: ResultSet, columnName: String): Money? {
         val decimal = rs.getBigDecimal(columnName)
         if (decimal == null) {
@@ -28,7 +27,6 @@ class MoneyTypeHandler : BaseTypeHandler<Money>(), AutoRegisterTypeHandler<Money
         return Money.of(decimal)
     }
 
-
     override fun getNullableResult(rs: ResultSet, columnIndex: Int): Money? {
         val decimal = rs.getBigDecimal(columnIndex)
         if (decimal == null) {
@@ -36,7 +34,6 @@ class MoneyTypeHandler : BaseTypeHandler<Money>(), AutoRegisterTypeHandler<Money
         }
         return Money.of(decimal)
     }
-
 
     override fun getNullableResult(cs: CallableStatement, columnIndex: Int): Money? {
         val decimal = cs.getBigDecimal(columnIndex)

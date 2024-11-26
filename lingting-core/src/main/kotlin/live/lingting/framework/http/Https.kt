@@ -14,9 +14,7 @@ object Https {
 
     val SSL_DISABLED_TRUST_MANAGER: X509TrustManager = X509TrustAllManager
 
-
     val SSL_DISABLED_HOSTNAME_VERIFIER: HostnameVerifier = HostnameAllVerifier
-
 
     fun sslContext(tm: TrustManager, vararg tms: TrustManager): SSLContext {
         return sslContext("TLS", tm, tms)

@@ -109,7 +109,6 @@ object ResourceUtils {
         }
     }
 
-
     @JvmStatic
     fun fill(
         resources: MutableCollection<Resource>, supplier: ThrowingSupplier<Resource>,

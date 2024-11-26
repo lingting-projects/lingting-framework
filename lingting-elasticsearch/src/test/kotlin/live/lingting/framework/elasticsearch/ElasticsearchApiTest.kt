@@ -54,7 +54,6 @@ internal class ElasticsearchApiTest {
         api = ElasticsearchApi(Entity::class.java, PolymerizeFactory(), { it.id!! }, ElasticsearchProperties(), interceptors, client!!)
     }
 
-
     @Test
     fun test() {
         val list = api!!.list()

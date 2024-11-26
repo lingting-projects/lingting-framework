@@ -18,7 +18,6 @@ class HttpDownload(builder: HttpDownloadBuilder) : MultipartDownload<HttpDownloa
 
     protected val uri: URI = URI.create(url)
 
-
     fun write(request: HttpRequest, output: OutputStream) {
         val response = client.request(request)
 
@@ -31,14 +30,12 @@ class HttpDownload(builder: HttpDownloadBuilder) : MultipartDownload<HttpDownloa
         }
     }
 
-
     override fun size(): Long {
         val builder: HttpRequest.Builder = HttpRequest.builder().url(uri).header("Accept-Encoding", "identity")
         val response = client.request(builder.build())
         val headers = response.headers()
         return headers.contentLength()
     }
-
 
     override fun download(part: Part): InputStream {
         val builder: HttpRequest.Builder = HttpRequest.builder().get().url(uri)

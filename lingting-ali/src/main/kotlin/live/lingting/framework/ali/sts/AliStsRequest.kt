@@ -17,7 +17,6 @@ abstract class AliStsRequest : AliRequest() {
 
     abstract fun version(): String
 
-
     fun nonce(): String {
         return nonceValue.compute {
             if (StringUtils.hasText(it)) {

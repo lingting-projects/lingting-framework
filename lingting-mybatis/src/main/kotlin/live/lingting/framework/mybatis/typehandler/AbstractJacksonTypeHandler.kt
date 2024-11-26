@@ -37,21 +37,17 @@ abstract class AbstractJacksonTypeHandler<T> : BaseTypeHandler<T>() {
         return defaultJson()
     }
 
-
     override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: T, jdbcType: JdbcType) {
         ps.setString(i, resolve(parameter))
     }
-
 
     override fun getNullableResult(rs: ResultSet, columnName: String): T {
         return parse(rs.getString(columnName))
     }
 
-
     override fun getNullableResult(rs: ResultSet, columnIndex: Int): T {
         return parse(rs.getString(columnIndex))
     }
-
 
     override fun getNullableResult(cs: CallableStatement, columnIndex: Int): T {
         return parse(cs.getString(columnIndex))

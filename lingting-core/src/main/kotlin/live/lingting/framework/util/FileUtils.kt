@@ -12,7 +12,6 @@ import java.nio.file.StandardCopyOption
 import live.lingting.framework.kt.logger
 import org.slf4j.Logger
 
-
 /**
  * @author lingting
  */
@@ -185,7 +184,6 @@ object FileUtils {
             return false
         }
     }
-
 
     /**
      * 依据系统文件路径分隔符解析

@@ -22,7 +22,6 @@ abstract class AbstractSafeQueueThread<E> : AbstractQueueThread<E>() {
 
     protected abstract fun queueSize(): Long
 
-
     override fun onApplicationStopBefore() {
         awaitTerminated()
     }

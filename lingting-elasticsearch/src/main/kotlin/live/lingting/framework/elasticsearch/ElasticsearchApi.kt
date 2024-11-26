@@ -117,22 +117,18 @@ class ElasticsearchApi<T>(
         return builder.build()
     }
 
-
     fun get(id: String): T {
         val request = GetRequest.of { gr -> gr.index(info.index()).id(id) }
         return client.get(request, cls).source()!!
     }
 
-
     fun getByQuery(vararg queries: Query): T? {
         return getByQuery(QueryBuilder.builder<T>(*queries))
     }
 
-
     fun getByQuery(queries: QueryBuilder<T>): T? {
         return getByQuery({ builder -> builder }, queries)
     }
-
 
     fun getByQuery(operator: UnaryOperator<SearchRequest.Builder>, queries: QueryBuilder<T>): T? {
         return search({ builder -> operator.apply(builder).size(1) }, queries).hits()
@@ -142,11 +138,9 @@ class ElasticsearchApi<T>(
             .orElse(null)
     }
 
-
     fun count(vararg queries: Query): Long {
         return count(QueryBuilder.builder<T>(*queries))
     }
-
 
     fun count(queries: QueryBuilder<T>): Long {
         val metadata = search({ builder -> builder.size(0) }, queries)
@@ -154,16 +148,13 @@ class ElasticsearchApi<T>(
         return hits?.value() ?: 0
     }
 
-
     fun search(vararg queries: Query): HitsMetadata<T> {
         return search(QueryBuilder.builder<T>(*queries))
     }
 
-
     fun search(queries: QueryBuilder<T>): HitsMetadata<T> {
         return search({ builder -> builder }, queries)
     }
-
 
     fun search(operator: UnaryOperator<SearchRequest.Builder>, queries: QueryBuilder<T>): HitsMetadata<T> {
         val query = merge(queries)
@@ -190,7 +181,6 @@ class ElasticsearchApi<T>(
         }.toList()
     }
 
-
     fun page(params: PaginationParams, queries: QueryBuilder<T>): PaginationResult<T> {
         val sorts = ofLimitSort(params.sorts)
 
@@ -205,14 +195,12 @@ class ElasticsearchApi<T>(
         return PaginationResult<T>(total, list)
     }
 
-
     fun aggs(
         consumer: BiConsumer<String, Aggregate>, aggregationMap: Map<String, Aggregation>,
         queries: QueryBuilder<T>
     ) {
         aggs({ builder -> builder }, consumer, aggregationMap, queries)
     }
-
 
     fun aggs(
         operator: UnaryOperator<SearchRequest.Builder>, consumer: BiConsumer<String, Aggregate>,
@@ -226,7 +214,6 @@ class ElasticsearchApi<T>(
             }
         }, aggregationMap, queries)
     }
-
 
     fun aggs(
         operator: UnaryOperator<SearchRequest.Builder>, consumer: Consumer<SearchResponse<T>>,
@@ -248,36 +235,29 @@ class ElasticsearchApi<T>(
         consumer.accept(response)
     }
 
-
     fun update(documentId: String, scriptOperator: Function<Script.Builder, ObjectBuilder<Script>>): Boolean {
         return update(documentId, scriptOperator.apply(Script.Builder()).build())
     }
-
 
     fun update(documentId: String, script: Script): Boolean {
         return update({ builder: UpdateRequest.Builder<T, T> -> builder }, documentId, script)
     }
 
-
     fun update(operator: UnaryOperator<UpdateRequest.Builder<T, T>>, documentId: String, script: Script): Boolean {
         return update({ builder: UpdateRequest.Builder<T, T> -> operator.apply(builder).script(script) }, documentId)
     }
-
 
     fun update(t: T): Boolean {
         return update({ builder: UpdateRequest.Builder<T, T> -> builder.doc(t) }, documentId(t))
     }
 
-
     fun upsert(doc: T): Boolean {
         return update({ builder: UpdateRequest.Builder<T, T> -> builder.doc(doc).docAsUpsert(true) }, documentId(doc))
     }
 
-
     fun upsert(doc: T, script: Script): Boolean {
         return update({ builder: UpdateRequest.Builder<T, T> -> builder.doc(doc).script(script) }, documentId(doc))
     }
-
 
     fun update(operator: UnaryOperator<UpdateRequest.Builder<T, T>>, documentId: String): Boolean {
         val builder = operator.apply(
@@ -293,11 +273,9 @@ class ElasticsearchApi<T>(
         return Result.Updated == result
     }
 
-
     fun updateByQuery(script: Script, vararg queries: Query): Boolean {
         return updateByQuery(script, QueryBuilder.builder<T>(*queries))
     }
-
 
     fun updateByQuery(
         scriptOperator: Function<Script.Builder, ObjectBuilder<Script>>,
@@ -306,11 +284,9 @@ class ElasticsearchApi<T>(
         return updateByQuery(scriptOperator.apply(Script.Builder()).build(), queries)
     }
 
-
     fun updateByQuery(script: Script, queries: QueryBuilder<T>): Boolean {
         return updateByQuery({ builder -> builder }, script, queries)
     }
-
 
     fun updateByQuery(
         operator: UnaryOperator<UpdateByQueryRequest.Builder>, script: Script,
@@ -328,7 +304,6 @@ class ElasticsearchApi<T>(
         val total = response.total()
         return total != null && total > 0
     }
-
 
     fun bulk(vararg collection: T, convert: Function<T, BulkOperationBase.AbstractBuilder<*>>): BulkResponse {
         return bulk(collection.toList(), convert)
@@ -393,7 +368,6 @@ class ElasticsearchApi<T>(
         return batch<E>(UnaryOperator { builder -> builder }, collection, function)
     }
 
-
     fun <E> batch(
         operator: UnaryOperator<BulkRequest.Builder>, collection: Collection<E>,
         function: Function<E, BulkOperation>
@@ -425,16 +399,13 @@ class ElasticsearchApi<T>(
         return response
     }
 
-
     fun deleteByQuery(vararg queries: Query): Boolean {
         return deleteByQuery(QueryBuilder.builder<T>(*queries))
     }
 
-
     fun deleteByQuery(queries: QueryBuilder<T>): Boolean {
         return deleteByQuery({ builder -> builder }, queries)
     }
-
 
     fun deleteByQuery(operator: UnaryOperator<DeleteByQueryRequest.Builder>, queries: QueryBuilder<T>): Boolean {
         val query = merge(queries)
@@ -448,21 +419,17 @@ class ElasticsearchApi<T>(
         return deleted != null && deleted > 0
     }
 
-
     fun list(vararg queries: Query): List<T> {
         return list(QueryBuilder.builder<T>(*queries))
     }
-
 
     fun list(queries: QueryBuilder<T>): List<T> {
         return list({ builder -> builder }, queries)
     }
 
-
     fun list(operator: UnaryOperator<SearchRequest.Builder>, vararg queries: Query): List<T> {
         return list(operator, QueryBuilder.builder<T>(*queries))
     }
-
 
     fun list(operator: UnaryOperator<SearchRequest.Builder>, queries: QueryBuilder<T>): List<T> {
         val list: MutableList<T> = ArrayList()
@@ -483,16 +450,13 @@ class ElasticsearchApi<T>(
         return list
     }
 
-
     fun scroll(params: ScrollParams<String>, vararg queries: Query): ScrollResult<T, String> {
         return scroll(params, QueryBuilder.builder<T>(*queries))
     }
 
-
     fun scroll(params: ScrollParams<String>, queries: QueryBuilder<T>): ScrollResult<T, String> {
         return scroll({ builder -> builder }, params, queries)
     }
-
 
     fun scroll(
         operator: UnaryOperator<SearchRequest.Builder>, params: ScrollParams<String>,
@@ -526,7 +490,6 @@ class ElasticsearchApi<T>(
         return ScrollResult.of<T, String>(collect, nextScrollId)
     }
 
-
     fun scroll(operator: UnaryOperator<ScrollRequest.Builder>, scrollId: String?): ScrollResult<T, String> {
         val builder = operator.apply(ScrollRequest.Builder()).scrollId(scrollId)
 
@@ -540,7 +503,6 @@ class ElasticsearchApi<T>(
         }
         return ScrollResult.of(collect, nextScrollId)
     }
-
 
     fun clearScroll(scrollId: String?) {
         if (!StringUtils.hasText(scrollId)) {
@@ -560,11 +522,9 @@ class ElasticsearchApi<T>(
         })
     }
 
-
     fun scrollCursor(params: ScrollParams<String>, vararg queries: Query): ScrollCursor<T, String> {
         return scrollCursor(params, QueryBuilder.builder<T>(*queries))
     }
-
 
     fun scrollCursor(params: ScrollParams<String>, queries: QueryBuilder<T>): ScrollCursor<T, String> {
         val scroll = scroll(params, queries)

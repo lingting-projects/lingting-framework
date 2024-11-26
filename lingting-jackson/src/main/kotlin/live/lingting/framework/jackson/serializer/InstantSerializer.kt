@@ -20,7 +20,6 @@ class InstantSerializer : JsonSerializer<Instant> {
         this.formatter = formatter
     }
 
-
     override fun serialize(value: Instant, gen: JsonGenerator, serializers: SerializerProvider) {
         val format = formatter.format(value)
         gen.writeString(format)

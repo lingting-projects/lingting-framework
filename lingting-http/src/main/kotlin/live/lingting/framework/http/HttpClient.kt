@@ -38,18 +38,14 @@ abstract class HttpClient {
 
     abstract fun client(): Any
 
-
     abstract fun request(request: HttpRequest): HttpResponse
 
-
     abstract fun request(request: HttpRequest, callback: ResponseCallback)
-
 
     fun <T> request(request: HttpRequest, cls: Class<T>): T {
         val response = request(request)
         return response.convert(cls)
     }
-
 
     fun get(uri: URI): HttpResponse {
         return request(HttpRequest.builder().get().url(uri).build())
@@ -106,7 +102,6 @@ abstract class HttpClient {
             return this as B
         }
 
-
         fun ssl(trustManager: X509TrustManager): B {
             val context = Https.sslContext(trustManager)
             return ssl(context, trustManager)
@@ -117,7 +112,6 @@ abstract class HttpClient {
             this.trustManager = trustManager
             return this as B
         }
-
 
         fun disableSsl(): B {
             val manager = Https.SSL_DISABLED_TRUST_MANAGER

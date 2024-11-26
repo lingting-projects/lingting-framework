@@ -13,15 +13,11 @@ class DingTalkParams {
 
     var at: At = At()
 
-
     var actionCard: ActionCard? = null
-
 
     var link: Link? = null
 
-
     var markdown: Markdown? = null
-
 
     var text: Text? = null
 
@@ -52,7 +48,6 @@ class DingTalkParams {
 
     }
 
-
     class ActionCard {
         var title: String? = null
 
@@ -68,7 +63,6 @@ class DingTalkParams {
         @JsonProperty("btns")
         var buttons: List<DingTalkActionCardMessage.Button>? = null
     }
-
 
     class At {
         @JsonProperty("isAtAll")

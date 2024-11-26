@@ -73,7 +73,6 @@ class Async constructor(
                 runnable.run()
             }
 
-
             override fun onFinally() {
                 super.onFinally()
                 lock.runByInterruptibly {

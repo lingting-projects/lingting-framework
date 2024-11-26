@@ -4,7 +4,6 @@ import java.util.Optional
 import live.lingting.framework.security.domain.SecurityScope
 import live.lingting.framework.thread.StackThreadLocal
 
-
 /**
  * @author lingting 2023-03-29 20:29
  */

@@ -1,6 +1,5 @@
 package live.lingting.framework.util
 
-
 import java.util.Objects
 import java.util.function.BiPredicate
 import kotlin.math.max

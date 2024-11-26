@@ -24,7 +24,6 @@ class DingTalkBalancedSender {
         return this
     }
 
-
     protected fun sender(): DingTalkSender {
         return queue.poll()
     }

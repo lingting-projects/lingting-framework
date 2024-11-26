@@ -27,7 +27,6 @@ internal class AbstractTimerTest {
         doTest()
     }
 
-
     fun doTest() {
         start()
         val atomic = AtomicInteger(0)
@@ -40,7 +39,6 @@ internal class AbstractTimerTest {
             override val timeout: Duration
                 get() =// 设置执行间隔
                     Duration.ofMinutes(30)
-
 
             override fun process() {
                 atomic.set(atomic.get() + 1)

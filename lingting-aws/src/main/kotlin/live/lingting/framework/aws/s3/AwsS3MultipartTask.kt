@@ -36,7 +36,6 @@ class AwsS3MultipartTask(multipart: Multipart, async: Async, protected val s3: A
         s3.multipartCancel(uploadId)
     }
 
-
     override fun onPart(part: Part) {
         multipart.stream(part).use { `in` ->
             val etag = s3.multipartUpload(uploadId, part, `in`)

@@ -25,21 +25,17 @@ interface AwsS3ObjectDelegation : AwsS3ObjectInterface, AwsS3Delegation<AwsS3Obj
         return delegation().head()
     }
 
-
     override fun put(file: File) {
         delegation().put(file)
     }
-
 
     override fun put(file: File, acl: Acl?) {
         delegation().put(file, acl)
     }
 
-
     override fun put(`in`: InputStream) {
         delegation().put(`in`)
     }
-
 
     override fun put(`in`: InputStream, acl: Acl?) {
         delegation().put(`in`, acl)
@@ -65,11 +61,9 @@ interface AwsS3ObjectDelegation : AwsS3ObjectInterface, AwsS3Delegation<AwsS3Obj
         return delegation().multipartInit(acl)
     }
 
-
     override fun multipart(source: InputStream): AwsS3MultipartTask {
         return delegation().multipart(source)
     }
-
 
     override fun multipart(source: InputStream, parSize: Long, async: Async): AwsS3MultipartTask {
         return delegation().multipart(source, parSize, async)

@@ -28,16 +28,13 @@ class LocalTimeTypeHandler : BaseTypeHandler<LocalTime>(), AutoRegisterTypeHandl
         }
     }
 
-
     override fun getNullableResult(rs: ResultSet, columnName: String): LocalTime? {
         return parse(rs.getString(columnName))
     }
 
-
     override fun getNullableResult(rs: ResultSet, columnIndex: Int): LocalTime? {
         return parse(rs.getString(columnIndex))
     }
-
 
     override fun getNullableResult(cs: CallableStatement, columnIndex: Int): LocalTime? {
         return parse(cs.getString(columnIndex))

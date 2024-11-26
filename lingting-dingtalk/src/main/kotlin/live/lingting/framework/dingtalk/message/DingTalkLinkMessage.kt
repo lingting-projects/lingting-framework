@@ -12,18 +12,15 @@ class DingTalkLinkMessage : AbstractDingTalkMessage() {
      */
     var text: String? = null
 
-
     /**
      * 标题
      */
     var title: String? = null
 
-
     /**
      * 图片url
      */
     var picUrl: String? = null
-
 
     /**
      * 消息链接

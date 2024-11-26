@@ -39,7 +39,6 @@ class NullSerializerProvider : DefaultSerializerProvider {
         return NullSerializerProvider(this, config, jsf)
     }
 
-
     override fun findNullValueSerializer(property: BeanProperty): JsonSerializer<Any> {
         val propertyType = property.type
         return if (isStringType(propertyType)) {

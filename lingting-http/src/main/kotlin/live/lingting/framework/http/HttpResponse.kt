@@ -49,7 +49,6 @@ class HttpResponse(
         return body
     }
 
-
     fun bytes(): ByteArray {
         return bytes
     }
@@ -82,7 +81,6 @@ class HttpResponse(
         val status = code()
         return status >= start && status <= end
     }
-
 
     override fun close() {
         if (body is CloneInputStream) {

@@ -4,7 +4,6 @@ import java.io.CharArrayWriter
 import java.util.Base64
 import kotlin.math.max
 
-
 /**
  * @author lingting
  */

@@ -29,7 +29,6 @@ class Command protected constructor(init: String, enter: String, exit: String, c
 
     val stdErr: File
 
-
     val enter: String
 
     val exit: String
@@ -67,7 +66,6 @@ class Command protected constructor(init: String, enter: String, exit: String, c
     fun history(): List<String> {
         return history.toList()
     }
-
 
     fun write(str: String): Command {
         val bytes: ByteArray = str.toByteArray(charset)
@@ -185,7 +183,6 @@ class Command protected constructor(init: String, enter: String, exit: String, c
         fun of(init: String, charset: Charset): Command {
             return of(init, ENTER, EXIT, charset)
         }
-
 
         @JvmStatic
         fun of(init: String, enter: String, exit: String, charset: Charset): Command {

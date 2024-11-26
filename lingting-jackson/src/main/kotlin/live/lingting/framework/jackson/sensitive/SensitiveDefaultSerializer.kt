@@ -21,7 +21,6 @@ class SensitiveDefaultSerializer(protected val sensitive: Sensitive) : JsonSeria
         return SensitiveDefaultSerializer(annotation)
     }
 
-
     override fun serialize(raw: Any?, gen: JsonGenerator, serializers: SerializerProvider) {
         var raw = raw
         if (raw == null) {
@@ -30,7 +29,6 @@ class SensitiveDefaultSerializer(protected val sensitive: Sensitive) : JsonSeria
         val `val` = serialize(sensitive, raw as String)
         gen.writeString(`val`)
     }
-
 
     override fun serialize(sensitive: Sensitive, raw: String): String {
         val serializer = SensitiveUtils.findSerializer(sensitive) ?: throw InvalidFormatException(null, "", raw, String::class.java)

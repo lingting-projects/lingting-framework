@@ -13,30 +13,25 @@ import live.lingting.framework.markdown.MarkdownBuilder
 class DingTalkActionCardMessage : AbstractDingTalkMessage() {
     var title: String? = null
 
-
     /**
      * 内容
      */
     var markdown: MarkdownBuilder? = null
-
 
     /**
      * 按钮排列样式 默认横
      */
     var orientation: ActionBtnOrientationEnum = ActionBtnOrientationEnum.HORIZONTAL
 
-
     /**
      * 单个按钮的标题
      */
     var singleTitle: String? = null
 
-
     /**
      * 点击singleTitle按钮触发的URL
      */
     var singleUrl: String? = null
-
 
     /**
      * 自定义按钮组 如果配置了 按钮组 则 单按钮配置无效
@@ -70,7 +65,6 @@ class DingTalkActionCardMessage : AbstractDingTalkMessage() {
         params.actionCard = card
         return params
     }
-
 
     data class Button(
         /**

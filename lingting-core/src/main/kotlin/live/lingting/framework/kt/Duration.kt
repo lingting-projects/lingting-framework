@@ -6,7 +6,6 @@ import java.time.temporal.TemporalUnit
 
 fun Number.duration(unit: TemporalUnit): Duration = Duration.of(this.toLong(), unit)
 
-
 inline val Number.milliseconds: Duration get() = this.duration(ChronoUnit.MILLIS)
 
 inline val Number.seconds: Duration get() = this.duration(ChronoUnit.SECONDS)

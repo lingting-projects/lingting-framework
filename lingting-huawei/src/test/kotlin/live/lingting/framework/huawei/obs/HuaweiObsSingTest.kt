@@ -36,7 +36,6 @@ internal class HuaweiObsSingTest {
             """
 				GET
 
-
 				Tue, 5 Nov 2024 06:26:17 GMT
 				x-obs-content-sha256:UNSIGNED-PAYLOAD
 				/bucket/?uploads

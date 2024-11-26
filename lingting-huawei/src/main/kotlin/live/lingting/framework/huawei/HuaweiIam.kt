@@ -18,7 +18,6 @@ import live.lingting.framework.huawei.properties.HuaweiObsProperties
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.value.WaitValue
 
-
 /**
  * @author lingting 2024-09-12 21:27
  */

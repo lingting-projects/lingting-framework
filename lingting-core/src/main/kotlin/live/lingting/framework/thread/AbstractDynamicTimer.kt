@@ -46,7 +46,6 @@ abstract class AbstractDynamicTimer<T> : AbstractThreadContextComponent() {
         put(t)
     }
 
-
     override fun doRun() {
         val t: T? = pool()
         lock.runByInterruptibly {

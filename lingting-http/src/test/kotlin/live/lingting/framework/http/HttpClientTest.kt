@@ -45,13 +45,11 @@ internal class HttpClientTest {
         assertClient(okhttp)
     }
 
-
     fun assertClient(http: HttpClient) {
         assertGet(http)
         assertPost(http)
         assertCookie(http)
     }
-
 
     fun assertGet(http: HttpClient) {
         val builder = HttpRequest.builder().url(URI.create("https://www.baidu.com"))
@@ -68,7 +66,6 @@ internal class HttpClientTest {
         val string2 = assertDoesNotThrow<String?> { r2.string() }
         assertTrue(string2!!.contains("component-validation"))
     }
-
 
     fun assertPost(http: HttpClient) {
         val builder = HttpRequest.builder()

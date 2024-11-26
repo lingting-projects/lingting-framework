@@ -3,7 +3,6 @@ package live.lingting.framework.crypto.cipher
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-
 /**
  * @author lingting 2024-09-04 11:36
  */
@@ -37,7 +36,6 @@ internal class AESTest {
         val d31 = aes3.decryptBase64(ciphertext)
         assertEquals(plaintext, d31)
     }
-
 
     @Test
     fun ecb() {

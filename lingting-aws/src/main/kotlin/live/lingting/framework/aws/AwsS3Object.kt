@@ -51,16 +51,13 @@ class AwsS3Object(properties: AwsS3Properties, override val key: String) : AwsS3
         put(file, null)
     }
 
-
     override fun put(file: File, acl: Acl?) {
         put(FileCloneInputStream(file), acl)
     }
 
-
     override fun put(`in`: InputStream) {
         put(`in`, null)
     }
-
 
     override fun put(`in`: InputStream, acl: Acl?) {
         put(FileCloneInputStream(`in`), acl)
@@ -100,11 +97,9 @@ class AwsS3Object(properties: AwsS3Properties, override val key: String) : AwsS3
         return node["UploadId"].asText()
     }
 
-
     override fun multipart(source: InputStream): AwsS3MultipartTask {
         return multipart(source, AwsS3Utils.MULTIPART_DEFAULT_PART_SIZE, Async(20))
     }
-
 
     override fun multipart(source: InputStream, parSize: Long, async: Async): AwsS3MultipartTask {
         val uploadId = multipartInit()

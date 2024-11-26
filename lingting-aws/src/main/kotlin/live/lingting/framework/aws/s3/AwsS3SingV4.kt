@@ -128,12 +128,10 @@ class AwsS3SingV4(
         return "$date/$region/s3/$SCOPE_SUFFIX"
     }
 
-
     fun source(date: String, scope: String, request: String): String {
         val requestSha = DigestUtils.sha256Hex(request)
         return "$ALGORITHM\n$date\n$scope\n$requestSha"
     }
-
 
     fun sourceHmacSha(source: String, scopeDate: String): String {
         val mac = Mac.hmacBuilder().sha256().secret("AWS4$sk").build()
@@ -208,21 +206,17 @@ class AwsS3SingV4(
             return this
         }
 
-
         fun bodyUnsigned(): S3SingV4Builder {
             return body(AwsS3Utils.PAYLOAD_UNSIGNED)
         }
-
 
         fun body(body: HttpRequest.Body): S3SingV4Builder {
             return body(body.string())
         }
 
-
         fun body(body: BodySource): S3SingV4Builder {
             return body(body.string())
         }
-
 
         fun body(body: String): S3SingV4Builder {
             if (AwsS3Utils.PAYLOAD_UNSIGNED == body) {

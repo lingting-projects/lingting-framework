@@ -36,21 +36,17 @@ abstract class CloneInputStream(
 
     protected abstract fun newStream(): InputStream
 
-
     override fun read(b: ByteArray): Int {
         return stream!!.read(b)
     }
-
 
     override fun read(b: ByteArray, off: Int, len: Int): Int {
         return stream!!.read(b, off, len)
     }
 
-
     override fun skip(n: Long): Long {
         return stream!!.skip(n)
     }
-
 
     override fun available(): Int {
         return stream!!.available()
@@ -69,18 +65,15 @@ abstract class CloneInputStream(
         }
     }
 
-
     override fun reset() {
         if (stream != null) {
             stream!!.reset()
         }
     }
 
-
     override fun markSupported(): Boolean {
         return stream!!.markSupported()
     }
-
 
     override fun read(): Int {
         return stream!!.read()
