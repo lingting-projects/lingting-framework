@@ -248,7 +248,7 @@ class DefaultJSqlDataScopeParser(scopes: List<JSqlDataScope>) : JSqlDataScopePar
 
     fun injectExpression(tables: List<Table>, expression: Expression?): Expression? {
         val list: MutableList<Expression> = ArrayList(tables.size)
-        // 生成数据权限条件
+        // 生成数据范围条件
         for (table in tables) {
             // 获取表名
             val tableName: String = SqlParseUtils.getTableName(table.name)
@@ -262,7 +262,7 @@ class DefaultJSqlDataScopeParser(scopes: List<JSqlDataScope>) : JSqlDataScopePar
                 matchScopes.addAll(matchDataScopes)
                 // 参数构建
                 val params = JSqlDataScopeParams(tableName, table.alias)
-                // 获取到数据权限过滤的表达式
+                // 获取到数据范围过滤的表达式
                 matchDataScopes.map { it.handler(params) }
                     .filterNotNull()
                     .reduceOrNull { leftExpression, rightExpression -> AndExpression(leftExpression, rightExpression) }

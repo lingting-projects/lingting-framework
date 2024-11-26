@@ -9,7 +9,7 @@ import live.lingting.framework.elasticsearch.ElasticsearchProvider.jacksonMapper
 import live.lingting.framework.elasticsearch.ElasticsearchProvider.transport
 import live.lingting.framework.elasticsearch.annotation.Index
 import live.lingting.framework.elasticsearch.composer.QueryComposer
-import live.lingting.framework.elasticsearch.datascope.DataPermissionInterceptor
+import live.lingting.framework.elasticsearch.datascope.DataScopeInterceptor
 import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataScope
 import live.lingting.framework.elasticsearch.polymerize.PolymerizeFactory
 import org.elasticsearch.client.RestClient
@@ -49,7 +49,7 @@ internal class ElasticsearchApiTest {
             override fun handler(p: IndexInfo): Query? = if (allowDefault) QueryComposer.term("space.name", "default") else null
         }
         val scopes = listOf(scope)
-        val interceptors = listOf(DataPermissionInterceptor(scopes))
+        val interceptors = listOf(DataScopeInterceptor(scopes))
 
         api = ElasticsearchApi(Entity::class.java, PolymerizeFactory(), { it.id!! }, ElasticsearchProperties(), interceptors, client!!)
     }

@@ -12,7 +12,6 @@ import java.util.function.BiConsumer
 import java.util.function.Predicate
 import live.lingting.framework.api.PaginationParams
 import live.lingting.framework.function.ThrowingSupplier
-import live.lingting.framework.mybatis.extend.ExtendService.Companion.DEFAULT_INSERT_BATCH_SIZE
 import org.apache.ibatis.binding.MapperMethod.ParamMap
 import org.apache.ibatis.logging.Log
 import org.apache.ibatis.logging.LogFactory
@@ -74,7 +73,7 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
     }
 
     override fun saveIgnoreBatch(collection: Collection<T>) {
-        saveIgnoreBatch(collection, DEFAULT_INSERT_BATCH_SIZE)
+        saveIgnoreBatch(collection, ExtendService.DEFAULT_INSERT_BATCH_SIZE)
     }
 
     override fun saveIgnoreBatch(collection: Collection<T>, batchSize: Int) {

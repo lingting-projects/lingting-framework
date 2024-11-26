@@ -14,17 +14,17 @@ import org.apache.ibatis.plugin.Plugin
 import org.apache.ibatis.plugin.Signature
 
 /**
- * 数据权限拦截器
+ * 数据范围拦截器
  */
 @Intercepts(Signature(type = StatementHandler::class, method = "prepare", args = [Connection::class, Int::class]))
-class DataPermissionInterceptor(
+class DataScopeInterceptor(
     val factory: JSqlDataScopeParserFactory,
     val scopes: List<JSqlDataScope>,
 ) : Interceptor {
 
     companion object {
         /**
-         * <p>k: 数据权限类型</p>
+         * <p>k: 数据范围类型</p>
          * <p>v: mybatis 的 mappedStatementId</p>
          */
         private val IGNORE_CACHE = ConcurrentHashMap<KClass<out JSqlDataScope>, CopyOnWriteArraySet<String>>()
@@ -48,13 +48,13 @@ class DataPermissionInterceptor(
         val mpBs = mpSh.mPBoundSql()
         val mappedStatementId = ms.id
 
-        // 过滤数据权限
+        // 过滤数据范围
         val filter = scopes.filter {
-            // 数据权限声明忽略
+            // 数据范围声明忽略
             if (it.ignore()) {
                 return@filter false
             }
-            // 没有数据权限匹配当前方法
+            // 没有数据范围匹配当前方法
             if (ignoreContains(it::class, mappedStatementId)) {
                 return@filter false
             }
@@ -67,7 +67,7 @@ class DataPermissionInterceptor(
 
         val parser = factory.get(filter)
 
-        // 根据 DataScopes 进行数据权限的 sql 处理
+        // 根据 DataScopes 进行数据范围的 sql 处理
         val result = if (sct == SqlCommandType.SELECT) {
             parser.parserSingle(mpBs.sql())
         } else if (sct == SqlCommandType.INSERT || sct == SqlCommandType.UPDATE || sct == SqlCommandType.DELETE) {
@@ -75,7 +75,7 @@ class DataPermissionInterceptor(
         } else {
             null
         }
-        // 如果sql没有任何数据权限匹配, 则下一次直接跳过
+        // 如果sql没有任何数据范围匹配, 则下一次直接跳过
         if (result == null || result.matchNumber < 1) {
             filter.forEach { ignoreAdd(it::class, mappedStatementId) }
         } else {

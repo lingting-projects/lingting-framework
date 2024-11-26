@@ -5,8 +5,6 @@ import co.elastic.clients.json.JsonData
 import java.lang.invoke.SerializedLambda
 import java.lang.reflect.Field
 import java.util.concurrent.ConcurrentHashMap
-import live.lingting.framework.elasticsearch.annotation.Index
-import live.lingting.framework.util.AnnotationUtils
 import live.lingting.framework.util.ClassUtils
 import live.lingting.framework.util.StringUtils
 import org.elasticsearch.client.ResponseException
@@ -30,18 +28,6 @@ object ElasticsearchUtils {
     fun <T> getEntityClass(cls: Class<*>): Class<T> {
         val list = ClassUtils.classArguments(cls)
         return list[0] as Class<T>
-    }
-
-    @JvmStatic
-    fun index(cls: Class<*>): String {
-        val document = AnnotationUtils.findAnnotation(cls, Index::class.java)
-        // 使用注解指定的
-        if (document != null && StringUtils.hasText(document.index)) {
-            return document.index
-        }
-        // 没有指定, 使用下划线的
-        val name = cls.simpleName
-        return StringUtils.humpToUnderscore(name)
     }
 
     @JvmStatic

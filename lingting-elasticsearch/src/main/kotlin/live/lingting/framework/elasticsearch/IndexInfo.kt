@@ -12,7 +12,7 @@ import live.lingting.framework.util.StringUtils
  */
 data class IndexInfo(
     /**
-     * 解析出来的基础索引, 数据权限和单个索引基于此
+     * 解析出来的基础索引, 数据范围和单个索引基于此
      */
     val index: String,
     /**

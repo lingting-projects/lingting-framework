@@ -7,13 +7,13 @@ import live.lingting.framework.elasticsearch.interceptor.Interceptor
 /**
  * @author lingting 2024/11/26 11:54
  */
-class DataPermissionInterceptor(
+class DataScopeInterceptor(
     val scopes: List<ElasticsearchDataScope>
 ) : Interceptor {
 
-    override fun intercept(info: IndexInfo, builder: QueryBuilder<*>) {       // 过滤数据权限
+    override fun intercept(info: IndexInfo, builder: QueryBuilder<*>) {       // 过滤数据范围
         scopes.filter {
-            // 数据权限声明忽略
+            // 数据范围声明忽略
             if (it.ignore()) {
                 return@filter false
             }
