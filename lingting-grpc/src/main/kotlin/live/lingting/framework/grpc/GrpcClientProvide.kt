@@ -58,23 +58,23 @@ class GrpcClientProvide(val properties: GrpcClientProperties, val interceptors: 
     @JvmOverloads
     fun useProperties(builder: ManagedChannelBuilder<*>, properties: GrpcClientProperties = this.properties) {
         // 开启心跳
-        if (properties.isEnableKeepAlive) {
+        if (properties.enableKeepAlive) {
             builder.keepAliveTime(properties.keepAliveTime.toMillis(), TimeUnit.MILLISECONDS)
                 .keepAliveTimeout(properties.keepAliveTimeout.toMillis(), TimeUnit.MILLISECONDS)
         }
 
         // 使用明文
-        if (properties.isUsePlaintext) {
+        if (properties.usePlaintext) {
             builder.usePlaintext()
         }
 
         // 重试
-        if (properties.isEnableRetry) {
+        if (properties.enableRetry) {
             builder.enableRetry()
         }
 
         // ssl配置
-        if (!properties.isUsePlaintext && properties.isDisableSsl
+        if (!properties.usePlaintext && properties.disableSsl
             && builder is NettyChannelBuilder
         ) {
             val sslContextBuilder = GrpcSslContexts.forClient()

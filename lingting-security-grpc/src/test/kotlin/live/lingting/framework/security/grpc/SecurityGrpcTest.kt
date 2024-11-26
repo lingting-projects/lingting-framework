@@ -87,7 +87,7 @@ internal class SecurityGrpcTest {
         ValueUtils.awaitTrue { server!!.isRunning }
 
         val clientProperties = GrpcClientProperties()
-        clientProperties.isUsePlaintext = true
+        clientProperties.usePlaintext = true
         val clientInterceptors: MutableList<ClientInterceptor> = ArrayList()
         clientInterceptors.add(GrpcClientTraceIdInterceptor(clientProperties))
         clientInterceptors.add(SecurityGrpcRemoteResourceClientInterceptor(properties))

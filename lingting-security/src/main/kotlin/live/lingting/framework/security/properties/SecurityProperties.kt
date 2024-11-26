@@ -12,7 +12,7 @@ class SecurityProperties {
     var order: Int = -500
 
     class Authorization {
-        var isRemote: Boolean = false
+        var remote: Boolean = false
 
         var remoteHost: String? = null
     }

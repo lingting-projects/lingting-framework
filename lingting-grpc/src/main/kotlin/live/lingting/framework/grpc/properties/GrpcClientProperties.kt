@@ -15,16 +15,16 @@ class GrpcClientProperties {
 
     var traceOrder: Int = Int.MIN_VALUE + 100
 
-    var isUsePlaintext: Boolean = false
+    var usePlaintext: Boolean = false
 
     /**
      * 是否关闭ssl校验,仅在不使用明文时生效
      */
-    var isDisableSsl: Boolean = false
+    var disableSsl: Boolean = false
 
-    var isEnableRetry: Boolean = true
+    var enableRetry: Boolean = true
 
-    var isEnableKeepAlive: Boolean = true
+    var enableKeepAlive: Boolean = true
 
     var keepAliveTime: Duration = Duration.ofMinutes(30)
 

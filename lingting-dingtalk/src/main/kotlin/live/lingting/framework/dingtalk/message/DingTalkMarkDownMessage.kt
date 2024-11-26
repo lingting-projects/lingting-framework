@@ -1,9 +1,9 @@
 package live.lingting.framework.dingtalk.message
 
-import live.lingting.framework.MarkdownBuilder
 import live.lingting.framework.dingtalk.DingTalkParams
 import live.lingting.framework.dingtalk.DingTalkParams.Markdown
 import live.lingting.framework.dingtalk.enums.MessageTypeEnum
+import live.lingting.framework.markdown.MarkdownBuilder
 
 /**
  * @author lingting 2020/6/10 22:13

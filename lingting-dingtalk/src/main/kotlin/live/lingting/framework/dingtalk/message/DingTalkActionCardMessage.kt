@@ -1,10 +1,10 @@
 package live.lingting.framework.dingtalk.message
 
-import live.lingting.framework.MarkdownBuilder
 import live.lingting.framework.dingtalk.DingTalkParams
 import live.lingting.framework.dingtalk.DingTalkParams.ActionCard
 import live.lingting.framework.dingtalk.enums.ActionBtnOrientationEnum
 import live.lingting.framework.dingtalk.enums.MessageTypeEnum
+import live.lingting.framework.markdown.MarkdownBuilder
 
 /**
  * 跳转 ActionCard类型

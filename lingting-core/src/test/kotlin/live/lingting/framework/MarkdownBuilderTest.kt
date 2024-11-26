@@ -1,5 +1,6 @@
 package live.lingting.framework
 
+import live.lingting.framework.markdown.MarkdownBuilder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
