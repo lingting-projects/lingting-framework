@@ -16,6 +16,7 @@ import net.sf.jsqlparser.statement.update.Update
 abstract class JSqlDataScopeParser(protected val scopes: List<JSqlDataScope>) {
 
     protected val log = logger()
+
     protected val matchScopes = mutableSetOf<JSqlDataScope>()
 
     fun parser(sql: String, isMulti: Boolean): DataScopeParserResult {
