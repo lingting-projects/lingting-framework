@@ -157,13 +157,13 @@ object IpUtils {
         val list: MutableList<String> = ArrayList()
 
         for (header in HEADERS) {
-            val `val` = request.getHeader(header)
-            if (StringUtils.hasText(`val`) && !UNKNOWN.equals(`val`, ignoreCase = true)) {
-                if (`val`.contains(MULTI_IP_SPLIT)) {
-                    val split = `val`.split(MULTI_IP_SPLIT)
+            val value = request.getHeader(header)
+            if (StringUtils.hasText(value) && !UNKNOWN.equals(value, ignoreCase = true)) {
+                if (value.contains(MULTI_IP_SPLIT)) {
+                    val split = value.split(MULTI_IP_SPLIT)
                     list.addAll(split)
                 } else {
-                    list.add(`val`)
+                    list.add(value)
                 }
             }
         }

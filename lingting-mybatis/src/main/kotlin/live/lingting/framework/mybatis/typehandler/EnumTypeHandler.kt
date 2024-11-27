@@ -35,12 +35,13 @@ open class EnumTypeHandler<E : Enum<E>>(private val type: Class<E>) : BaseTypeHa
         return of(cs.getString(columnIndex))
     }
 
-    fun of(`val`: String): E? {
+    fun of(v: String): E? {
         for (e in type.enumConstants) {
             val value = EnumUtils.getValue(e)
             if ( // 值匹配
-                `val` == value // 字符串值匹配
-                || (value != null && value.toString() == `val`)
+                v == value
+                // 字符串值匹配
+                || (value != null && value.toString() == value)
             ) {
                 return e
             }

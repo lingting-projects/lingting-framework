@@ -38,16 +38,16 @@ object ArrayUtils {
     }
 
     @JvmStatic
-    fun <T : Any> Array<T>.indexOf(`val`: T): Int {
-        return indexOf(`val`) { a, b -> Objects.equals(a, b) }
+    fun <T : Any> Array<T>.indexOf(value: T): Int {
+        return indexOf(value) { a, b -> Objects.equals(a, b) }
     }
 
     @JvmStatic
-    fun <T : Any> Array<T>.indexOf(`val`: T, predicate: BiPredicate<T, T>): Int {
+    fun <T : Any> Array<T>.indexOf(value: T, predicate: BiPredicate<T, T>): Int {
         if (!isEmpty<T>()) {
             for (i in indices) {
                 val t = this[i]
-                if (predicate.test(t, `val`)) {
+                if (predicate.test(t, value)) {
                     return i
                 }
             }
@@ -56,13 +56,13 @@ object ArrayUtils {
     }
 
     @JvmStatic
-    fun <T : Any> Array<T>.contains(`val`: T): Boolean {
-        return indexOf(`val`) > NOT_FOUNT
+    fun <T : Any> Array<T>.contains(value: T): Boolean {
+        return indexOf(value) > NOT_FOUNT
     }
 
     @JvmStatic
-    fun Array<String>.containsIgnoreCase(`val`: String): Boolean {
-        return indexOf(`val`) { s, t ->
+    fun Array<String>.containsIgnoreCase(value: String): Boolean {
+        return indexOf(value) { s, t ->
             if (s == t) {
                 return@indexOf true
             }

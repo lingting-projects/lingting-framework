@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils.checkValNotNull
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction
 import java.util.ArrayList
 import java.util.function.BiPredicate
+import java.util.function.Consumer
 
 abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper<T, C>() {
 
@@ -79,83 +80,83 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return c
     }
 
-    fun eq(column: SFunction<T, *>, `val`: Any): C {
-        return eq(true, column, `val`)
+    fun eq(column: SFunction<T, *>, value: Any?): C {
+        return eq(true, column, value)
     }
 
-    fun eq(condition: Boolean, column: SFunction<T, *>, `val`: Any): C {
+    fun eq(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
         if (!condition) {
             return c
         }
         val field: String = convertField(column)
-        return eq(field, `val`)
+        return eq(field, value)
     }
 
-    fun ne(column: SFunction<T, *>, `val`: Any): C {
-        return ne(true, column, `val`)
+    fun ne(column: SFunction<T, *>, value: Any?): C {
+        return ne(true, column, value)
     }
 
-    fun ne(condition: Boolean, column: SFunction<T, *>, `val`: Any): C {
+    fun ne(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
         if (!condition) {
             return c
         }
         val field: String = convertField(column)
-        return ne(field, `val`)
+        return ne(field, value)
     }
 
-    fun gt(column: SFunction<T, *>, `val`: Any): C {
-        return gt(true, column, `val`)
+    fun gt(column: SFunction<T, *>, value: Any?): C {
+        return gt(true, column, value)
     }
 
-    fun gt(condition: Boolean, column: SFunction<T, *>, `val`: Any): C {
+    fun gt(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
         if (!condition) {
             return c
         }
         val field: String = convertField(column)
-        return gt(field, `val`)
+        return gt(field, value)
     }
 
-    fun ge(column: SFunction<T, *>, `val`: Any): C {
-        return ge(true, column, `val`)
+    fun ge(column: SFunction<T, *>, value: Any?): C {
+        return ge(true, column, value)
     }
 
-    fun ge(condition: Boolean, column: SFunction<T, *>, `val`: Any): C {
+    fun ge(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
         if (!condition) {
             return c
         }
         val field: String = convertField(column)
-        return ge(field, `val`)
+        return ge(field, value)
     }
 
-    fun lt(column: SFunction<T, *>, `val`: Any): C {
-        return lt(true, column, `val`)
+    fun lt(column: SFunction<T, *>, value: Any?): C {
+        return lt(true, column, value)
     }
 
-    fun lt(condition: Boolean, column: SFunction<T, *>, `val`: Any): C {
+    fun lt(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
         if (!condition) {
             return c
         }
         val field: String = convertField(column)
-        return lt(field, `val`)
+        return lt(field, value)
     }
 
-    fun le(column: SFunction<T, *>, `val`: Any): C {
-        return le(true, column, `val`)
+    fun le(column: SFunction<T, *>, value: Any?): C {
+        return le(true, column, value)
     }
 
-    fun le(condition: Boolean, column: SFunction<T, *>, `val`: Any): C {
+    fun le(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
         if (!condition) {
             return c
         }
         val field: String = convertField(column)
-        return le(field, `val`)
+        return le(field, value)
     }
 
-    fun between(column: SFunction<T, *>, val1: Any, val2: Any): C {
+    fun between(column: SFunction<T, *>, val1: Any?, val2: Any?): C {
         return between(true, column, val1, val2)
     }
 
-    fun between(condition: Boolean, column: SFunction<T, *>, val1: Any, val2: Any): C {
+    fun between(condition: Boolean, column: SFunction<T, *>, val1: Any?, val2: Any?): C {
         if (!condition) {
             return c
         }
@@ -163,11 +164,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return between(field, val1, val2)
     }
 
-    fun notBetween(column: SFunction<T, *>, val1: Any, val2: Any): C {
+    fun notBetween(column: SFunction<T, *>, val1: Any?, val2: Any?): C {
         return notBetween(true, column, val1, val2)
     }
 
-    fun notBetween(condition: Boolean, column: SFunction<T, *>, val1: Any, val2: Any): C {
+    fun notBetween(condition: Boolean, column: SFunction<T, *>, val1: Any?, val2: Any?): C {
         if (!condition) {
             return c
         }
@@ -175,134 +176,134 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return notBetween(field, val1, val2)
     }
 
-    fun like(column: SFunction<T, *>, `val`: Any): C {
-        return like(true, column, `val`)
+    fun like(column: SFunction<T, *>, value: Any?): C {
+        return like(true, column, value)
     }
 
-    fun like(condition: Boolean, column: SFunction<T, *>, `val`: Any): C {
+    fun like(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
         if (!condition) {
             return c
         }
         val field: String = convertField(column)
-        return like(field, `val`)
+        return like(field, value)
     }
 
-    fun notLike(column: SFunction<T, *>, `val`: Any): C {
-        return notLike(true, column, `val`)
+    fun notLike(column: SFunction<T, *>, value: Any?): C {
+        return notLike(true, column, value)
     }
 
-    fun notLike(condition: Boolean, column: SFunction<T, *>, `val`: Any): C {
+    fun notLike(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
         if (!condition) {
             return c
         }
         val field: String = convertField(column)
-        return notLike(field, `val`)
+        return notLike(field, value)
     }
 
-    fun notLikeLeft(column: SFunction<T, *>, `val`: Any): C {
-        return notLikeLeft(true, column, `val`)
+    fun notLikeLeft(column: SFunction<T, *>, value: Any?): C {
+        return notLikeLeft(true, column, value)
     }
 
-    fun notLikeLeft(condition: Boolean, column: SFunction<T, *>, `val`: Any): C {
+    fun notLikeLeft(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
         if (!condition) {
             return c
         }
         val field: String = convertField(column)
-        return notLikeLeft(field, `val`)
+        return notLikeLeft(field, value)
     }
 
-    fun notLikeRight(column: SFunction<T, *>, `val`: Any): C {
-        return notLikeRight(true, column, `val`)
+    fun notLikeRight(column: SFunction<T, *>, value: Any?): C {
+        return notLikeRight(true, column, value)
     }
 
-    fun notLikeRight(condition: Boolean, column: SFunction<T, *>, `val`: Any): C {
+    fun notLikeRight(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
         if (!condition) {
             return c
         }
         val field: String = convertField(column)
-        return notLikeRight(field, `val`)
+        return notLikeRight(field, value)
     }
 
-    fun likeLeft(column: SFunction<T, *>, `val`: Any): C {
-        return likeLeft(true, column, `val`)
+    fun likeLeft(column: SFunction<T, *>, value: Any?): C {
+        return likeLeft(true, column, value)
     }
 
-    fun likeLeft(condition: Boolean, column: SFunction<T, *>, `val`: Any): C {
+    fun likeLeft(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
         if (!condition) {
             return c
         }
         val field: String = convertField(column)
-        return likeLeft(field, `val`)
+        return likeLeft(field, value)
     }
 
-    fun likeRight(column: SFunction<T, *>, `val`: Any): C {
-        return likeRight(true, column, `val`)
+    fun likeRight(column: SFunction<T, *>, value: Any?): C {
+        return likeRight(true, column, value)
     }
 
-    fun likeRight(condition: Boolean, column: SFunction<T, *>, `val`: Any): C {
+    fun likeRight(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
         if (!condition) {
             return c
         }
         val field: String = convertField(column)
-        return likeRight(field, `val`)
+        return likeRight(field, value)
     }
 
     // endregion
     // region compare ifPresent
-    fun eqIfPresent(column: SFunction<T, *>, `val`: Any): C {
-        return eq(isPresent(`val`), column, `val`)
+    fun eqIfPresent(column: SFunction<T, *>, value: Any?): C {
+        return eq(isPresent(value), column, value)
     }
 
-    fun neIfPresent(column: SFunction<T, *>, `val`: Any): C {
-        return ne(isPresent(`val`), column, `val`)
+    fun neIfPresent(column: SFunction<T, *>, value: Any?): C {
+        return ne(isPresent(value), column, value)
     }
 
-    fun gtIfPresent(column: SFunction<T, *>, `val`: Any): C {
-        return gt(isPresent(`val`), column, `val`)
+    fun gtIfPresent(column: SFunction<T, *>, value: Any?): C {
+        return gt(isPresent(value), column, value)
     }
 
-    fun geIfPresent(column: SFunction<T, *>, `val`: Any): C {
-        return ge(isPresent(`val`), column, `val`)
+    fun geIfPresent(column: SFunction<T, *>, value: Any?): C {
+        return ge(isPresent(value), column, value)
     }
 
-    fun ltIfPresent(column: SFunction<T, *>, `val`: Any): C {
-        return lt(isPresent(`val`), column, `val`)
+    fun ltIfPresent(column: SFunction<T, *>, value: Any?): C {
+        return lt(isPresent(value), column, value)
     }
 
-    fun leIfPresent(column: SFunction<T, *>, `val`: Any): C {
-        return le(isPresent(`val`), column, `val`)
+    fun leIfPresent(column: SFunction<T, *>, value: Any?): C {
+        return le(isPresent(value), column, value)
     }
 
-    fun betweenIfPresent(column: SFunction<T, *>, val1: Any, val2: Any): C {
+    fun betweenIfPresent(column: SFunction<T, *>, val1: Any?, val2: Any?): C {
         return between(isPresent(val1) && isPresent(val2), column, val1, val2)
     }
 
-    fun notBetweenIfPresent(column: SFunction<T, *>, val1: Any, val2: Any): C {
+    fun notBetweenIfPresent(column: SFunction<T, *>, val1: Any?, val2: Any?): C {
         return notBetween(isPresent(val1) && isPresent(val2), column, val1, val2)
     }
 
-    fun likeIfPresent(column: SFunction<T, *>, `val`: Any): C {
-        return like(isPresent(`val`), column, `val`)
+    fun likeIfPresent(column: SFunction<T, *>, value: Any?): C {
+        return like(isPresent(value), column, value)
     }
 
-    fun notLikeIfPresent(column: SFunction<T, *>, `val`: Any): C {
-        return notLike(isPresent(`val`), column, `val`)
+    fun notLikeIfPresent(column: SFunction<T, *>, value: Any?): C {
+        return notLike(isPresent(value), column, value)
     }
 
-    fun notLikeLeftIfPresent(column: SFunction<T, *>, `val`: Any): C {
-        return notLikeLeft(isPresent(`val`), column, `val`)
+    fun notLikeLeftIfPresent(column: SFunction<T, *>, value: Any?): C {
+        return notLikeLeft(isPresent(value), column, value)
     }
 
-    fun notLikeRightIfPresent(column: SFunction<T, *>, `val`: Any): C {
-        return notLikeRight(isPresent(`val`), column, `val`)
+    fun notLikeRightIfPresent(column: SFunction<T, *>, value: Any?): C {
+        return notLikeRight(isPresent(value), column, value)
     }
 
-    fun likeLeftIfPresent(column: SFunction<T, *>, `val`: Any): C {
-        return likeLeft(isPresent(`val`), column, `val`)
+    fun likeLeftIfPresent(column: SFunction<T, *>, value: Any?): C {
+        return likeLeft(isPresent(value), column, value)
     }
 
-    fun likeRightIfPresent(column: SFunction<T, *>, `val`: Any): C {
-        return likeRight(isPresent(`val`), column, `val`)
+    fun likeRightIfPresent(column: SFunction<T, *>, value: Any?): C {
+        return likeRight(isPresent(value), column, value)
     }
 
     // endregion
@@ -333,11 +334,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return isNotNull(field)
     }
 
-    fun `in`(column: SFunction<T, *>, coll: MutableCollection<*>): C {
+    fun `in`(column: SFunction<T, *>, coll: Collection<*>): C {
         return `in`(true, column, coll)
     }
 
-    fun `in`(condition: Boolean, column: SFunction<T, *>, coll: MutableCollection<*>): C {
+    fun `in`(condition: Boolean, column: SFunction<T, *>, coll: Collection<*>): C {
         if (!condition) {
             return c
         }
@@ -345,11 +346,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return `in`(field, coll)
     }
 
-    fun `in`(column: SFunction<T, *>, vararg values: Any): C {
+    fun `in`(column: SFunction<T, *>, vararg values: Any?): C {
         return `in`(true, column, *values)
     }
 
-    fun `in`(condition: Boolean, column: SFunction<T, *>, vararg values: Any): C {
+    fun `in`(condition: Boolean, column: SFunction<T, *>, vararg values: Any?): C {
         if (!condition) {
             return c
         }
@@ -357,11 +358,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return `in`(field, *values)
     }
 
-    fun notIn(column: SFunction<T, *>, coll: MutableCollection<*>): C {
+    fun notIn(column: SFunction<T, *>, coll: Collection<*>): C {
         return notIn(true, column, coll)
     }
 
-    fun notIn(condition: Boolean, column: SFunction<T, *>, coll: MutableCollection<*>): C {
+    fun notIn(condition: Boolean, column: SFunction<T, *>, coll: Collection<*>): C {
         if (!condition) {
             return c
         }
@@ -369,11 +370,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return notIn(field, coll)
     }
 
-    fun notIn(column: SFunction<T, *>, vararg value: Any): C {
+    fun notIn(column: SFunction<T, *>, vararg value: Any?): C {
         return notIn(true, column, *value)
     }
 
-    fun notIn(condition: Boolean, column: SFunction<T, *>, vararg values: Any): C {
+    fun notIn(condition: Boolean, column: SFunction<T, *>, vararg values: Any?): C {
         if (!condition) {
             return c
         }
@@ -570,29 +571,29 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
 
     // endregion
     // region func ifPresent
-    fun inIfPresent(column: SFunction<T, *>, coll: MutableCollection<*>): C {
+    fun inIfPresent(column: SFunction<T, *>, coll: Collection<*>?): C {
         return `in`(isPresent(coll), column, coll)
     }
 
-    fun inIfPresent(column: SFunction<T, *>, vararg values: Any): C {
+    fun inIfPresent(column: SFunction<T, *>, vararg values: Any?): C {
         return `in`(isPresent(values), column, *values)
     }
 
-    fun notInIfPresent(column: SFunction<T, *>, coll: MutableCollection<*>): C {
+    fun notInIfPresent(column: SFunction<T, *>, coll: Collection<*>?): C {
         return notIn(isPresent(coll), column, coll)
     }
 
-    fun notInIfPresent(column: SFunction<T, *>, vararg value: Any): C {
+    fun notInIfPresent(column: SFunction<T, *>, vararg value: Any?): C {
         return notIn(isPresent(value), column, *value)
     }
 
     // endregion
     // region func extended
-    fun <E : Any> `in`(column: SFunction<T, *>, consumer: java.util.function.Consumer<QueryWrapper<E>>): C {
+    fun <E : Any> `in`(column: SFunction<T, *>, consumer: Consumer<QueryWrapper<E>>): C {
         return `in`<E>(true, column, consumer)
     }
 
-    fun <E : Any> `in`(condition: Boolean, column: SFunction<T, *>, consumer: java.util.function.Consumer<QueryWrapper<E>>): C {
+    fun <E : Any> `in`(condition: Boolean, column: SFunction<T, *>, consumer: Consumer<QueryWrapper<E>>): C {
         if (!condition) {
             return c
         }

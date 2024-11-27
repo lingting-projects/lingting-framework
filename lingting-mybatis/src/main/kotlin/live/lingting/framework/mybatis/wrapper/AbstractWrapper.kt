@@ -17,7 +17,7 @@ import kotlin.reflect.KClass
 import live.lingting.framework.util.CollectionUtils
 import live.lingting.framework.util.ValueUtils
 
-@Suppress("UNCHECKED_CAST")
+@Suppress("UNCHECKED_CAST", "SYNTHETIC_PROPERTY_WITHOUT_JAVA_ORIGIN")
 abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomidou.mybatisplus.core.conditions.Wrapper<T>(), com.baomidou.mybatisplus.core.conditions.interfaces.Compare<C, String>, com.baomidou.mybatisplus.core.conditions.interfaces.Nested<C, C>, com.baomidou.mybatisplus.core.conditions.interfaces.Join<C>, com.baomidou.mybatisplus.core.conditions.interfaces.Func<C, String>, ISqlSegment {
 
     protected val c = this as C
@@ -64,7 +64,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
         return "$alias.$value"
     }
 
-    fun isPresent(o: Any): Boolean {
+    fun isPresent(o: Any?): Boolean {
         return ValueUtils.isPresent(o)
     }
 
@@ -165,7 +165,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
 
     fun appendCondition(
         condition: Boolean, field: String, keyword: SqlKeyword, valKeyword: SqlKeyword,
-        vararg args: Any
+        vararg args: Any?
     ): C {
         if (!condition) {
             return c
@@ -196,7 +196,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
         return c
     }
 
-    fun appendCondition(condition: Boolean, keyword: SqlKeyword?, sql: String, vararg args: Any): C {
+    fun appendCondition(condition: Boolean, keyword: SqlKeyword?, sql: String, vararg args: Any?): C {
         var sql = sql
         if (!condition || StringUtils.isBlank(sql)) {
             return c
@@ -204,7 +204,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
 
         for (i in args.indices) {
             val r = "{$i}"
-            val arg: Any = args[i]
+            val arg = args[i]
             val param = safeParam(arg)
             sql = sql.replace(r, param)
         }
@@ -256,7 +256,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
     }
 
     override fun getSqlSelect(): String? {
-        if (fields.isNullOrEmpty()) {
+        if (fields.isEmpty) {
             return null
         }
         return fields.joinToString(", ")
@@ -354,7 +354,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
 
     // region compare
     override fun <V> allEq(condition: Boolean, params: MutableMap<String, V>, null2IsNull: Boolean): C {
-        if (condition && !params.isNullOrEmpty()) {
+        if (condition && params.isNotEmpty()) {
             params.forEach { (k: String, v: V) ->
                 if (StringUtils.checkValNotNull(v)) {
                     eq(k, v)
@@ -369,7 +369,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
     }
 
     override fun <V> allEq(condition: Boolean, filter: java.util.function.BiPredicate<String, V>, params: MutableMap<String, V>, null2IsNull: Boolean): C {
-        if (condition && !params.isNullOrEmpty()) {
+        if (condition && params.isNotEmpty()) {
             params.forEach { (k: String, v: V) ->
                 if (filter.test(k, v)) {
                     if (StringUtils.checkValNotNull(v)) {
@@ -385,119 +385,119 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
         return c
     }
 
-    override fun eq(condition: Boolean, column: String, `val`: Any): C {
-        return appendCondition(condition, column, SqlKeyword.EQ, `val`)
+    override fun eq(condition: Boolean, column: String, value: Any?): C {
+        return appendCondition(condition, column, SqlKeyword.EQ, value)
     }
 
-    override fun ne(condition: Boolean, column: String, `val`: Any): C {
-        return appendCondition(condition, column, SqlKeyword.NE, `val`)
+    override fun ne(condition: Boolean, column: String, value: Any?): C {
+        return appendCondition(condition, column, SqlKeyword.NE, value)
     }
 
-    override fun gt(condition: Boolean, column: String, `val`: Any): C {
-        return appendCondition(condition, column, SqlKeyword.GT, `val`)
+    override fun gt(condition: Boolean, column: String, value: Any?): C {
+        return appendCondition(condition, column, SqlKeyword.GT, value)
     }
 
-    override fun ge(condition: Boolean, column: String, `val`: Any): C {
-        return appendCondition(condition, column, SqlKeyword.GE, `val`)
+    override fun ge(condition: Boolean, column: String, value: Any?): C {
+        return appendCondition(condition, column, SqlKeyword.GE, value)
     }
 
-    override fun lt(condition: Boolean, column: String, `val`: Any): C {
-        return appendCondition(condition, column, SqlKeyword.LT, `val`)
+    override fun lt(condition: Boolean, column: String, value: Any?): C {
+        return appendCondition(condition, column, SqlKeyword.LT, value)
     }
 
-    override fun le(condition: Boolean, column: String, `val`: Any): C {
-        return appendCondition(condition, column, SqlKeyword.LE, `val`)
+    override fun le(condition: Boolean, column: String, value: Any?): C {
+        return appendCondition(condition, column, SqlKeyword.LE, value)
     }
 
-    override fun between(condition: Boolean, column: String, val1: Any, val2: Any): C {
+    override fun between(condition: Boolean, column: String, val1: Any?, val2: Any?): C {
         return appendCondition(condition, column, SqlKeyword.BETWEEN, SqlKeyword.AND, val1, val2)
     }
 
-    override fun notBetween(condition: Boolean, column: String, val1: Any, val2: Any): C {
+    override fun notBetween(condition: Boolean, column: String, val1: Any?, val2: Any?): C {
         return appendCondition(condition, column, SqlKeyword.NOT_BETWEEN, SqlKeyword.AND, val1, val2)
     }
 
-    override fun like(condition: Boolean, column: String, `val`: Any): C {
-        return appendCondition(condition, column, SqlKeyword.LIKE, Supplier { "%$`val`%" })
+    override fun like(condition: Boolean, column: String, value: Any?): C {
+        return appendCondition(condition, column, SqlKeyword.LIKE, Supplier { "%$value%" })
     }
 
-    override fun notLike(condition: Boolean, column: String, `val`: Any): C {
-        return appendCondition(condition, column, SqlKeyword.NOT_LIKE, Supplier { "%$`val`%" })
+    override fun notLike(condition: Boolean, column: String, value: Any?): C {
+        return appendCondition(condition, column, SqlKeyword.NOT_LIKE, Supplier { "%$value%" })
     }
 
-    override fun notLikeLeft(condition: Boolean, column: String, `val`: Any): C {
-        return appendCondition(condition, column, SqlKeyword.LIKE, Supplier { "%$`val`" })
+    override fun notLikeLeft(condition: Boolean, column: String, value: Any?): C {
+        return appendCondition(condition, column, SqlKeyword.LIKE, Supplier { "%$value" })
     }
 
-    override fun notLikeRight(condition: Boolean, column: String, `val`: Any): C {
-        return appendCondition(condition, column, SqlKeyword.LIKE, Supplier { "$`val`%" })
+    override fun notLikeRight(condition: Boolean, column: String, value: Any?): C {
+        return appendCondition(condition, column, SqlKeyword.LIKE, Supplier { "$value%" })
     }
 
-    override fun likeLeft(condition: Boolean, column: String, `val`: Any): C {
-        return appendCondition(condition, column, SqlKeyword.NOT_LIKE, Supplier { "%$`val`" })
+    override fun likeLeft(condition: Boolean, column: String, value: Any?): C {
+        return appendCondition(condition, column, SqlKeyword.NOT_LIKE, Supplier { "%$value" })
     }
 
-    override fun likeRight(condition: Boolean, column: String, `val`: Any): C {
-        return appendCondition(condition, column, SqlKeyword.NOT_LIKE, Supplier { "$`val`%" })
+    override fun likeRight(condition: Boolean, column: String, value: Any?): C {
+        return appendCondition(condition, column, SqlKeyword.NOT_LIKE, Supplier { "$value%" })
     }
 
     // endregion
 
     // region compare ifPresent
-    fun eqIfPresent(column: String, `val`: Any): C {
-        return eq(isPresent(`val`), column, `val`)
+    fun eqIfPresent(column: String, value: Any?): C {
+        return eq(isPresent(value), column, value)
     }
 
-    fun neIfPresent(column: String, `val`: Any): C {
-        return ne(isPresent(`val`), column, `val`)
+    fun neIfPresent(column: String, value: Any?): C {
+        return ne(isPresent(value), column, value)
     }
 
-    fun gtIfPresent(column: String, `val`: Any): C {
-        return gt(isPresent(`val`), column, `val`)
+    fun gtIfPresent(column: String, value: Any?): C {
+        return gt(isPresent(value), column, value)
     }
 
-    fun geIfPresent(column: String, `val`: Any): C {
-        return ge(isPresent(`val`), column, `val`)
+    fun geIfPresent(column: String, value: Any?): C {
+        return ge(isPresent(value), column, value)
     }
 
-    fun ltIfPresent(column: String, `val`: Any): C {
-        return lt(isPresent(`val`), column, `val`)
+    fun ltIfPresent(column: String, value: Any?): C {
+        return lt(isPresent(value), column, value)
     }
 
-    fun leIfPresent(column: String, `val`: Any): C {
-        return le(isPresent(`val`), column, `val`)
+    fun leIfPresent(column: String, value: Any?): C {
+        return le(isPresent(value), column, value)
     }
 
-    fun betweenIfPresent(column: String, val1: Any, val2: Any): C {
+    fun betweenIfPresent(column: String, val1: Any?, val2: Any?): C {
         return between(isPresent(val1) && isPresent(val2), column, val1, val2)
     }
 
-    fun notBetweenIfPresent(column: String, val1: Any, val2: Any): C {
+    fun notBetweenIfPresent(column: String, val1: Any?, val2: Any?): C {
         return notBetween(isPresent(val1) && isPresent(val2), column, val1, val2)
     }
 
-    fun likeIfPresent(column: String, `val`: Any): C {
-        return like(isPresent(`val`), column, `val`)
+    fun likeIfPresent(column: String, value: Any?): C {
+        return like(isPresent(value), column, value)
     }
 
-    fun notLikeIfPresent(column: String, `val`: Any): C {
-        return notLike(isPresent(`val`), column, `val`)
+    fun notLikeIfPresent(column: String, value: Any?): C {
+        return notLike(isPresent(value), column, value)
     }
 
-    fun notLikeLeftIfPresent(column: String, `val`: Any): C {
-        return notLikeLeft(isPresent(`val`), column, `val`)
+    fun notLikeLeftIfPresent(column: String, value: Any?): C {
+        return notLikeLeft(isPresent(value), column, value)
     }
 
-    fun notLikeRightIfPresent(column: String, `val`: Any): C {
-        return notLikeRight(isPresent(`val`), column, `val`)
+    fun notLikeRightIfPresent(column: String, value: Any?): C {
+        return notLikeRight(isPresent(value), column, value)
     }
 
-    fun likeLeftIfPresent(column: String, `val`: Any): C {
-        return likeLeft(isPresent(`val`), column, `val`)
+    fun likeLeftIfPresent(column: String, value: Any?): C {
+        return likeLeft(isPresent(value), column, value)
     }
 
-    fun likeRightIfPresent(column: String, `val`: Any): C {
-        return likeRight(isPresent(`val`), column, `val`)
+    fun likeRightIfPresent(column: String, value: Any?): C {
+        return likeRight(isPresent(value), column, value)
     }
 
     // endregion
@@ -529,7 +529,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
         return appendSql(SqlKeyword.OR)
     }
 
-    override fun apply(condition: Boolean, applySql: String, vararg values: Any): C {
+    override fun apply(condition: Boolean, applySql: String, vararg values: Any?): C {
         return appendCondition(condition, null, applySql, *values)
     }
 
@@ -569,11 +569,11 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
         return c
     }
 
-    override fun exists(condition: Boolean, existsSql: String, vararg values: Any): C {
+    override fun exists(condition: Boolean, existsSql: String, vararg values: Any?): C {
         return appendCondition(condition, SqlKeyword.EXISTS, existsSql, *values)
     }
 
-    override fun notExists(condition: Boolean, existsSql: String, vararg values: Any): C {
+    override fun notExists(condition: Boolean, existsSql: String, vararg values: Any?): C {
         return appendCondition(condition, SqlKeyword.NOT_EXISTS, existsSql, *values)
     }
 
@@ -592,7 +592,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
         return appendCondition(condition, column, SqlKeyword.IN, coll)
     }
 
-    override fun `in`(condition: Boolean, column: String, vararg values: Any): C {
+    override fun `in`(condition: Boolean, column: String, vararg values: Any?): C {
         return appendCondition(condition, column, SqlKeyword.IN, values)
     }
 
@@ -600,7 +600,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
         return appendCondition(condition, column, SqlKeyword.NOT_IN, coll)
     }
 
-    override fun notIn(condition: Boolean, column: String, vararg values: Any): C {
+    override fun notIn(condition: Boolean, column: String, vararg values: Any?): C {
         return appendCondition(condition, column, SqlKeyword.NOT_IN, values)
     }
 
@@ -700,20 +700,20 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
     // endregion
 
     // region func ifPresent
-    fun inIfPresent(column: String, coll: MutableCollection<*>): C {
+    fun inIfPresent(column: String, coll: MutableCollection<*>?): C {
         return `in`(isPresent(coll), column, coll)
     }
 
-    fun inIfPresent(column: String, vararg values: Any): C {
+    fun inIfPresent(column: String, vararg values: Any?): C {
         return `in`(isPresent(values), column, *values)
     }
 
-    fun notInIfPresent(column: String, coll: MutableCollection<*>): C {
+    fun notInIfPresent(column: String, coll: MutableCollection<*>?): C {
         return notIn(isPresent(coll), column, coll)
     }
 
-    fun notInIfPresent(column: String, vararg value: Any): C {
-        return notIn(isPresent(value), column, *value)
+    fun notInIfPresent(column: String, vararg values: Any?): C {
+        return notIn(isPresent(values), column, *values)
     }
 
     // endregion

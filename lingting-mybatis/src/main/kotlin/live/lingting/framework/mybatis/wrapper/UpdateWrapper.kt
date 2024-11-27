@@ -14,12 +14,12 @@ class UpdateWrapper<T : Any> : LambdaWrapper<T, UpdateWrapper<T>>(), com.baomido
         throw UnsupportedOperationException()
     }
 
-    override fun set(condition: Boolean, column: String, `val`: Any, mapping: String): UpdateWrapper<T> {
+    override fun set(condition: Boolean, column: String, value: Any, mapping: String): UpdateWrapper<T> {
         if (!condition) {
             return this
         }
         val name = convertField(column)
-        val param = safeParam(`val`)
+        val param = safeParam(value)
         return setSql(true, "$name=$param")
     }
 

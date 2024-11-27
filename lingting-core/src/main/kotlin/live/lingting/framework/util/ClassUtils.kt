@@ -185,15 +185,15 @@ object ClassUtils {
         val map = HashMap<String, T>()
         for (field in fields(o.javaClass)) {
             if (filter.test(field)) {
-                var `val`: Any? = null
+                var value: Any? = null
 
                 try {
-                    `val` = field[o]
+                    value = field[o]
                 } catch (e: IllegalAccessException) {
                     //
                 }
 
-                map.put(toKey.apply(field), toVal.apply(field, `val`))
+                map.put(toKey.apply(field), toVal.apply(field, value))
             }
         }
         return map
@@ -301,7 +301,7 @@ object ClassUtils {
      * @return live.lingting.framework.domain.ClassField 字段
      */
     @JvmStatic
-    fun classField(name: String, cls: Class<*>): ClassField? {
+    fun classField(cls: Class<*>, name: String): ClassField? {
         return classFields(cls).find { it.name == name }
     }
 

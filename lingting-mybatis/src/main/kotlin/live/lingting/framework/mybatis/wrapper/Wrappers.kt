@@ -3,11 +3,16 @@ package live.lingting.framework.mybatis.wrapper
 import com.baomidou.mybatisplus.core.toolkit.Constants
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache
-import com.baomidou.mybatisplus.core.toolkit.support.LambdaMeta
+import com.baomidou.mybatisplus.core.toolkit.support.ReflectLambdaMeta
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction
+import com.baomidou.mybatisplus.core.toolkit.support.SerializedLambda
+import com.baomidou.mybatisplus.core.toolkit.support.ShadowLambdaMeta
+import java.lang.reflect.Proxy
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
-import org.apache.ibatis.reflection.property.PropertyNamer
+import live.lingting.framework.mybatis.lambda.LambdaInfo
+import live.lingting.framework.util.ClassUtils
+import org.apache.ibatis.reflection.ReflectionException
 
 @Suppress("UNCHECKED_CAST")
 object Wrappers {
@@ -17,6 +22,31 @@ object Wrappers {
 
     private val COLUMN_SF_CACHE = ConcurrentHashMap<SFunction<*, *>, ColumnCache?>()
 
+    fun extract(sf: SFunction<*, *>): LambdaInfo {
+        return if (sf is Proxy) {
+            LambdaInfo.of(sf)
+        } else {
+            try {
+                val cls = sf.javaClass
+                val loader = cls.classLoader
+                val cf = ClassUtils.method(cls, "writeReplace")!!.apply { isAccessible = true }
+                val lambda = cf.invoke(sf) as java.lang.invoke.SerializedLambda
+
+                try {
+                    val meta = ReflectLambdaMeta(lambda, loader)
+                    LambdaInfo.of(meta)
+                } catch (_: ReflectionException) {
+                    LambdaInfo.of(lambda, loader)
+                }
+
+            } catch (_: Throwable) {
+                val extract = SerializedLambda.extract(sf)
+                val meta = ShadowLambdaMeta(extract)
+                LambdaInfo.of(meta)
+            }
+        }
+    }
+
     @JvmStatic
     fun column(cls: Class<*>): MutableMap<String, ColumnCache> {
         return COLUMN_CACHE.computeIfAbsent(cls) { k: Class<*> -> LambdaUtils.getColumnMap(cls) }
@@ -24,20 +54,17 @@ object Wrappers {
 
     @JvmStatic
     fun column(sf: SFunction<*, *>): ColumnCache? {
-        return COLUMN_SF_CACHE.computeIfAbsent(sf) { sk: SFunction<*, *> ->
-            val meta: LambdaMeta = LambdaUtils.extract(sf)
-            val field: String = PropertyNamer.methodToProperty(meta.implMethodName)
-            val cls: Class<*> = meta.instantiatedClass
-            column(cls, field)
+        return COLUMN_SF_CACHE.computeIfAbsent(sf) {
+            val info = extract(sf)
+            column(info.cls, info.field)
         }
     }
 
     @JvmStatic
     fun <T> column(cls: Class<T>, sf: SFunction<T, *>): ColumnCache? {
-        return COLUMN_SF_CACHE.computeIfAbsent(sf) { sk: SFunction<*, *> ->
-            val meta: LambdaMeta = LambdaUtils.extract<T>(sf)
-            val field: String = PropertyNamer.methodToProperty(meta.implMethodName)
-            column(cls, field)
+        return COLUMN_SF_CACHE.computeIfAbsent(sf) { sk ->
+            val info = extract(sf)
+            column(cls, info.field)
         }
     }
 

@@ -151,11 +151,11 @@ object NumberUtils {
     }
 
     @JvmStatic
-    fun toNumber(`val`: Any?): BigDecimal? {
-        if (`val` == null) {
+    fun toNumber(value: Any?): BigDecimal? {
+        if (value == null) {
             return null
         }
-        val string = `val`.toString()
+        val string = value.toString()
         if (!StringUtils.hasText(string)) {
             return null
         }

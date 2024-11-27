@@ -47,11 +47,11 @@ open class LocalTimeTypeHandler : BaseTypeHandler<LocalTime>(), AutoRegisterType
         return localDate.format(formatter)
     }
 
-    fun parse(`val`: String): LocalTime? {
-        if (!StringUtils.hasText(`val`)) {
+    fun parse(value: String): LocalTime? {
+        if (!StringUtils.hasText(value)) {
             return null
         }
 
-        return LocalTime.parse(`val`, formatter)
+        return LocalTime.parse(value, formatter)
     }
 }

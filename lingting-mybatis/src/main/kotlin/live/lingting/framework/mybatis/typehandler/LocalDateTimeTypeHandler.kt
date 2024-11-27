@@ -59,12 +59,12 @@ open class LocalDateTimeTypeHandler : BaseTypeHandler<LocalDateTime>(), AutoRegi
         return localDate.format(formatter)
     }
 
-    fun parse(`val`: String): LocalDateTime? {
-        if (!StringUtils.hasText(`val`)) {
+    fun parse(value: String): LocalDateTime? {
+        if (!StringUtils.hasText(value)) {
             return null
         }
 
-        return LocalDateTime.parse(`val`, formatter)
+        return LocalDateTime.parse(value, formatter)
     }
 
 }

@@ -26,8 +26,8 @@ class SensitiveDefaultSerializer(protected val sensitive: Sensitive) : JsonSeria
         if (raw == null) {
             raw = ""
         }
-        val `val` = serialize(sensitive, raw as String)
-        gen.writeString(`val`)
+        val value = serialize(sensitive, raw as String)
+        gen.writeString(value)
     }
 
     override fun serialize(sensitive: Sensitive, raw: String): String {

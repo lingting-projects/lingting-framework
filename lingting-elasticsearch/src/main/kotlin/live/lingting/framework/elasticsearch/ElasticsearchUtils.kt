@@ -91,7 +91,7 @@ object ElasticsearchUtils {
                     implMethodName.substring("is".length)
                 }
                 val fieldName = StringUtils.firstLower(implFieldName)
-                val cf = ClassUtils.classField(fieldName, aClass)
+                val cf = ClassUtils.classField(aClass, fieldName)
                 return@computeIfAbsent cf?.field
             } catch (e: Exception) {
                 log.error("resolve method by lambda error!", e)
