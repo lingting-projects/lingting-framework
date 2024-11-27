@@ -3,22 +3,23 @@ package live.lingting.framework.mybatis.typehandler
 import java.sql.CallableStatement
 import java.sql.PreparedStatement
 import java.sql.ResultSet
-
-import java.time.LocalDateTime
-import live.lingting.framework.time.DateTime
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
+import live.lingting.framework.time.DatePattern
 import live.lingting.framework.util.StringUtils
 import org.apache.ibatis.type.BaseTypeHandler
 import org.apache.ibatis.type.JdbcType
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2022/8/22 9:41
  */
-class LocalTimeTypeHandler : BaseTypeHandler<LocalTime>(), AutoRegisterTypeHandler<LocalTime> {
+open class LocalTimeTypeHandler : BaseTypeHandler<LocalTime>(), AutoRegisterTypeHandler<LocalTime> {
+
+    companion object {
+
+        @JvmStatic
+        var formatter = DatePattern.FORMATTER_HMS
+
+    }
 
     override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: LocalTime?, jdbcType: JdbcType?) {
         if (parameter == null) {
@@ -43,7 +44,7 @@ class LocalTimeTypeHandler : BaseTypeHandler<LocalTime>(), AutoRegisterTypeHandl
     }
 
     fun format(localDate: LocalTime): String {
-        return localDate.format(FORMATTER)
+        return localDate.format(formatter)
     }
 
     fun parse(`val`: String): LocalTime? {
@@ -51,18 +52,6 @@ class LocalTimeTypeHandler : BaseTypeHandler<LocalTime>(), AutoRegisterTypeHandl
             return null
         }
 
-        try {
-            return LocalTime.parse(`val`, FORMATTER)
-        } catch (e: DateTimeParseException) {
-            log.error("Unable to convert string [{}] to LocalTime! using LocalDateTime.toLocalTime", `val`, e)
-            val dateTime: LocalDateTime = LocalDateTimeTypeHandler.parse(`val`) ?: return null
-            return dateTime.toLocalTime()
-        }
-    }
-
-    companion object {
-        @JvmField
-        val FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
-        private val log: Logger = LoggerFactory.getLogger(LocalTimeTypeHandler::class.java)
+        return LocalTime.parse(`val`, formatter)
     }
 }

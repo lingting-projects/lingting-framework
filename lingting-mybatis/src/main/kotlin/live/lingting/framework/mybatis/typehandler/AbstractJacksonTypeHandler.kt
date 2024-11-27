@@ -1,9 +1,11 @@
 package live.lingting.framework.mybatis.typehandler
 
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.ObjectMapper
 import java.sql.CallableStatement
 import java.sql.PreparedStatement
 import java.sql.ResultSet
-import live.lingting.framework.jackson.JacksonUtils
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StringUtils
 import org.apache.ibatis.type.BaseTypeHandler
@@ -15,6 +17,23 @@ import org.apache.ibatis.type.JdbcType
 abstract class AbstractJacksonTypeHandler<T> : BaseTypeHandler<T>() {
     protected val log = logger()
 
+    open val mapper: ObjectMapper
+        get() = JacksonTypeHandler.getObjectMapper()
+
+    abstract val reference: TypeReference<T>
+
+    /**
+     * 取出数据转化异常时 使用
+     * @return 实体类对象
+     */
+    abstract val defaultValue: T
+
+    /**
+     * 存储数据转化异常时 使用
+     * @return 存储数据
+     */
+    abstract val defaultJson: String
+
     protected fun parse(json: String?): T {
         try {
             if (StringUtils.hasText(json)) {
@@ -23,7 +42,7 @@ abstract class AbstractJacksonTypeHandler<T> : BaseTypeHandler<T>() {
         } catch (e: Exception) {
             log.error("json to object error! json: {}; message: {}", json, e.message)
         }
-        return defaultValue()
+        return defaultValue
     }
 
     protected fun resolve(obj: T?): String {
@@ -34,7 +53,7 @@ abstract class AbstractJacksonTypeHandler<T> : BaseTypeHandler<T>() {
         } catch (e: Exception) {
             log.error("object to json error! obj: {}; message: {}", obj, e.message)
         }
-        return defaultJson()
+        return defaultJson
     }
 
     override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: T, jdbcType: JdbcType) {
@@ -58,26 +77,17 @@ abstract class AbstractJacksonTypeHandler<T> : BaseTypeHandler<T>() {
      * @param json 数据库存储数据
      * @return 实体类对象
      */
-    protected abstract fun toObject(json: String): T
+    protected open fun toObject(json: String): T {
+        return mapper.readValue(json, reference)
+    }
 
     /**
      * 将实体类对象转化为数据库存储数据
      * @param t 实体类对象
      * @return 数据库存储数据
      */
-    protected fun toJson(t: T): String {
-        return JacksonUtils.toJson(t)
+    protected open fun toJson(t: T): String {
+        return mapper.writeValueAsString(t)
     }
 
-    /**
-     * 取出数据转化异常时 使用
-     * @return 实体类对象
-     */
-    protected abstract fun defaultValue(): T
-
-    /**
-     * 存储数据异常时 使用
-     * @return 存储数据
-     */
-    protected abstract fun defaultJson(): String
 }

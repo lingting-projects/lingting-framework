@@ -4,18 +4,22 @@ import java.sql.CallableStatement
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
+import live.lingting.framework.time.DatePattern
 import live.lingting.framework.util.StringUtils
 import org.apache.ibatis.type.BaseTypeHandler
 import org.apache.ibatis.type.JdbcType
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2022/8/22 9:41
  */
-class LocalDateTypeHandler : BaseTypeHandler<LocalDate>(), AutoRegisterTypeHandler<LocalDate> {
+open class LocalDateTypeHandler : BaseTypeHandler<LocalDate>(), AutoRegisterTypeHandler<LocalDate> {
+
+    companion object {
+
+        @JvmStatic
+        var formatter = DatePattern.FORMATTER_YMD
+
+    }
 
     override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: LocalDate?, jdbcType: JdbcType?) {
         if (parameter == null) {
@@ -40,7 +44,7 @@ class LocalDateTypeHandler : BaseTypeHandler<LocalDate>(), AutoRegisterTypeHandl
     }
 
     fun format(localDate: LocalDate): String {
-        return localDate.format(FORMATTER)
+        return localDate.format(formatter)
     }
 
     fun parse(`val`: String): LocalDate? {
@@ -48,18 +52,7 @@ class LocalDateTypeHandler : BaseTypeHandler<LocalDate>(), AutoRegisterTypeHandl
             return null
         }
 
-        try {
-            return LocalDate.parse(`val`, FORMATTER)
-        } catch (e: DateTimeParseException) {
-            log.error("Unable to convert string [{}] to LocalData! using LocalDateTime.toLocalData", `val`, e)
-            val dateTime = LocalDateTimeTypeHandler.parse(`val`)
-            return dateTime?.toLocalDate()
-        }
+        return LocalDate.parse(`val`, formatter)
     }
 
-    companion object {
-        @JvmField
-        val FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        private val log: Logger = LoggerFactory.getLogger(LocalDateTypeHandler::class.java)
-    }
 }
