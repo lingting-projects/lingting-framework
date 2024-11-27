@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache
 import com.baomidou.mybatisplus.core.toolkit.support.LambdaMeta
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.reflect.KClass
 import org.apache.ibatis.reflection.property.PropertyNamer
 
 @Suppress("UNCHECKED_CAST")
@@ -48,17 +49,19 @@ object Wrappers {
     }
 
     @JvmStatic
-    fun <T> query(): QueryWrapper<T> {
+    fun <T : Any> query(): QueryWrapper<T> {
         return QueryWrapper<T>()
     }
 
     @JvmStatic
-    fun <T> query(cls: Class<T>): QueryWrapper<T> {
+    fun <T : Any> query(cls: Class<T>): QueryWrapper<T> {
         return QueryWrapper<T>().cls(cls)
     }
 
+    fun <T : Any> query(cls: KClass<T>) = query(cls.java)
+
     @JvmStatic
-    fun <T> query(t: T?): QueryWrapper<T> {
+    fun <T : Any> query(t: T?): QueryWrapper<T> {
         return QueryWrapper<T>().apply {
             e = t
             if (t != null) {
@@ -68,17 +71,19 @@ object Wrappers {
     }
 
     @JvmStatic
-    fun <T> update(): UpdateWrapper<T> {
+    fun <T : Any> update(): UpdateWrapper<T> {
         return UpdateWrapper<T>()
     }
 
     @JvmStatic
-    fun <T> update(cls: Class<T>): UpdateWrapper<T> {
+    fun <T : Any> update(cls: Class<T>): UpdateWrapper<T> {
         return UpdateWrapper<T>().cls(cls)
     }
 
+    fun <T : Any> update(cls: KClass<T>) = update(cls.java)
+
     @JvmStatic
-    fun <T> update(t: T): UpdateWrapper<T> {
+    fun <T : Any> update(t: T?): UpdateWrapper<T> {
         return UpdateWrapper<T>().apply {
             e = t
             if (t != null) {

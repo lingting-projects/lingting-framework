@@ -13,11 +13,12 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 import java.util.function.Supplier
 import java.util.regex.Pattern
+import kotlin.reflect.KClass
 import live.lingting.framework.util.CollectionUtils
 import live.lingting.framework.util.ValueUtils
 
 @Suppress("UNCHECKED_CAST")
-abstract class AbstractWrapper<T, C : AbstractWrapper<T, C>> : com.baomidou.mybatisplus.core.conditions.Wrapper<T>(), com.baomidou.mybatisplus.core.conditions.interfaces.Compare<C, String>, com.baomidou.mybatisplus.core.conditions.interfaces.Nested<C, C>, com.baomidou.mybatisplus.core.conditions.interfaces.Join<C>, com.baomidou.mybatisplus.core.conditions.interfaces.Func<C, String>, ISqlSegment {
+abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomidou.mybatisplus.core.conditions.Wrapper<T>(), com.baomidou.mybatisplus.core.conditions.interfaces.Compare<C, String>, com.baomidou.mybatisplus.core.conditions.interfaces.Nested<C, C>, com.baomidou.mybatisplus.core.conditions.interfaces.Join<C>, com.baomidou.mybatisplus.core.conditions.interfaces.Func<C, String>, ISqlSegment {
 
     protected val c = this as C
 
@@ -50,6 +51,8 @@ abstract class AbstractWrapper<T, C : AbstractWrapper<T, C>> : com.baomidou.myba
         this.entityClass = cls
         return c
     }
+
+    fun cls(cls: KClass<T>?) = cls(cls?.java)
 
     abstract fun instance(): C
 
@@ -109,7 +112,7 @@ abstract class AbstractWrapper<T, C : AbstractWrapper<T, C>> : com.baomidou.myba
         return c
     }
 
-    fun <E> appendSql(condition: Boolean, field: String, keyword: SqlKeyword, consumer: Consumer<QueryWrapper<E>>): C {
+    fun <E : Any> appendSql(condition: Boolean, field: String, keyword: SqlKeyword, consumer: Consumer<QueryWrapper<E>>): C {
         if (!condition) {
             return c
         }
@@ -716,11 +719,11 @@ abstract class AbstractWrapper<T, C : AbstractWrapper<T, C>> : com.baomidou.myba
     // endregion
 
     // region func extended
-    fun <E> `in`(field: String, consumer: Consumer<QueryWrapper<E>>): C {
+    fun <E : Any> `in`(field: String, consumer: Consumer<QueryWrapper<E>>): C {
         return `in`<E>(true, field, consumer)
     }
 
-    fun <E> `in`(condition: Boolean, field: String, consumer: Consumer<QueryWrapper<E>>): C {
+    fun <E : Any> `in`(condition: Boolean, field: String, consumer: Consumer<QueryWrapper<E>>): C {
         return appendSql<E>(condition, field, SqlKeyword.IN, consumer)
     } // endregion
 }

@@ -4,9 +4,8 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils.checkValNotNull
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction
 import java.util.ArrayList
 import java.util.function.BiPredicate
-import live.lingting.framework.util.CollectionUtils
 
-abstract class LambdaWrapper<T, C : LambdaWrapper<T, C>> : AbstractWrapper<T, C>() {
+abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper<T, C>() {
 
     protected fun convertField(sf: SFunction<T, *>): String {
         val column = Wrappers.column(sf)
@@ -589,11 +588,11 @@ abstract class LambdaWrapper<T, C : LambdaWrapper<T, C>> : AbstractWrapper<T, C>
 
     // endregion
     // region func extended
-    fun <E> `in`(column: SFunction<T, *>, consumer: java.util.function.Consumer<QueryWrapper<E>>): C {
+    fun <E : Any> `in`(column: SFunction<T, *>, consumer: java.util.function.Consumer<QueryWrapper<E>>): C {
         return `in`<E>(true, column, consumer)
     }
 
-    fun <E> `in`(condition: Boolean, column: SFunction<T, *>, consumer: java.util.function.Consumer<QueryWrapper<E>>): C {
+    fun <E : Any> `in`(condition: Boolean, column: SFunction<T, *>, consumer: java.util.function.Consumer<QueryWrapper<E>>): C {
         if (!condition) {
             return c
         }

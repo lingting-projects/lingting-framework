@@ -2,9 +2,8 @@ package live.lingting.framework.mybatis.wrapper
 
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction
-import live.lingting.framework.util.CollectionUtils
 
-class QueryWrapper<T> : LambdaWrapper<T, QueryWrapper<T>>() {
+class QueryWrapper<T : Any> : LambdaWrapper<T, QueryWrapper<T>>() {
     override fun instance(): QueryWrapper<T> {
         val w = QueryWrapper<T>()
         w.paramId = paramId
@@ -20,7 +19,7 @@ class QueryWrapper<T> : LambdaWrapper<T, QueryWrapper<T>>() {
 
         builder.append("SELECT ")
 
-        if (fields.isNullOrEmpty()) {
+        if (fields.isEmpty) {
             builder.append("*")
         } else {
             builder.append(fields.joinToString(", "))
