@@ -39,6 +39,9 @@ object ClassUtils {
     @JvmField
     val CACHE_CONSTRUCTOR: MutableMap<Class<*>, Array<Constructor<*>>> = ConcurrentHashMap()
 
+    @JvmField
+    val FIELD_METHOD_START = setOf("is", "get", "set")
+
     /**
      * 获取指定类的泛型
      */
@@ -359,11 +362,12 @@ object ClassUtils {
      */
     @JvmStatic
     fun toFiledName(methodName: String): String {
-        val trim = when {
-            methodName.startsWith("is") -> StringUtils.firstLower(methodName.substring(2))
-            methodName.startsWith("get") || methodName.startsWith("set") -> StringUtils.firstLower(methodName.substring(3))
-            else -> methodName
-        }
+        val trim = FIELD_METHOD_START.firstOrNull {
+            methodName.startsWith(it)
+        }?.let {
+            methodName.substring(it.length)
+        } ?: methodName
+
         return StringUtils.firstLower(trim)
     }
 

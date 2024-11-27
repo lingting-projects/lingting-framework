@@ -21,9 +21,6 @@ class LambdaMeta(
 
     companion object {
 
-        @JvmField
-        val FIELD_METHOD_START = setOf("is", "get", "set")
-
         @JvmStatic
         fun of(a: Any): LambdaMeta {
             if (a is Proxy) {
@@ -69,7 +66,7 @@ class LambdaMeta(
             }
 
             val method = lambda.implMethodName
-            val field = FIELD_METHOD_START.any {
+            val field = ClassUtils.FIELD_METHOD_START.any {
                 method.startsWith(it)
             }.ifTrue(Supplier {
                 ClassUtils.toFiledName(method)
