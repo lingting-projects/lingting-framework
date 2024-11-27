@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonValue
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
-import java.lang.reflect.Parameter
 import java.util.concurrent.ConcurrentHashMap
 import live.lingting.framework.reflect.ClassField
 
@@ -23,7 +22,7 @@ object EnumUtils {
 
     @JvmStatic
     fun getByIEnum(cls: Class<*>): ClassField? {
-        if (!ClassUtils.isPresent(CLS_MYBATIS_PLUS_IENUM, EnumUtils::class.java.getClassLoader())) {
+        if (!ClassUtils.exists(CLS_MYBATIS_PLUS_IENUM, EnumUtils::class.java.getClassLoader())) {
             return null
         }
 
@@ -40,7 +39,7 @@ object EnumUtils {
 
     @JvmStatic
     fun getByJsonValue(cls: Class<*>): ClassField? {
-        if (!ClassUtils.isPresent(CLS_JACKSON_JSON_VALUE, EnumUtils::class.java.getClassLoader())) {
+        if (!ClassUtils.exists(CLS_JACKSON_JSON_VALUE, EnumUtils::class.java.getClassLoader())) {
             return null
         }
 
@@ -74,7 +73,7 @@ object EnumUtils {
         for (method in methods) {
             val annotation = method.getAnnotation<JsonValue>(JsonValue::class.java)
             // 存在注解且参数为空
-            if (annotation != null && ArrayUtils.isEmpty<Parameter>(method.parameters)) {
+            if (annotation != null && method.parameters.isEmpty()) {
                 return method
             }
         }

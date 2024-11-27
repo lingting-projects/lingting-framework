@@ -1,13 +1,14 @@
 package live.lingting.framework.security.grpc.authorization
 
-import java.time.LocalDateTime
+
 import live.lingting.framework.security.authorize.SecurityAuthorizationService
 import live.lingting.framework.security.domain.SecurityScope
 import live.lingting.framework.security.domain.SecurityScopeAttributes
 import live.lingting.framework.security.domain.SecurityToken
 import live.lingting.framework.security.exception.AuthorizationException
 import live.lingting.framework.security.store.SecurityStore
-import live.lingting.framework.util.LocalDateTimeUtils
+import live.lingting.framework.time.DateTime
+import live.lingting.framework.util.LocalDateTimeUtils.timestamp
 import live.lingting.framework.util.MdcUtils
 
 /**
@@ -39,7 +40,9 @@ class AuthorizationServiceImpl(private val store: SecurityStore) : SecurityAutho
     }
 
     fun expireTime(): Long {
-        return LocalDateTimeUtils.toTimestamp(LocalDateTime.now().plusMonths(6))
+        val current = DateTime.current()
+        val plusMonths = current.plusMonths(6)
+        return plusMonths.timestamp
     }
 
     override fun refresh(token: SecurityToken): SecurityScope? {

@@ -7,7 +7,7 @@ import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.header.HttpHeaders
-import live.lingting.framework.kt.logger
+import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.value.multi.StringMultiValue
 
 /**

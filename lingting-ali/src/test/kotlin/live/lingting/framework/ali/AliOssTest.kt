@@ -10,7 +10,6 @@ import live.lingting.framework.aws.s3.AwsS3Utils
 import live.lingting.framework.http.download.HttpDownload
 import live.lingting.framework.id.Snowflake
 import live.lingting.framework.thread.Async
-import live.lingting.framework.util.CollectionUtils
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.StreamUtils
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
@@ -80,7 +79,7 @@ internal class AliOssTest {
         assertTrue(bm.stream().anyMatch { it.uploadId == uploadId })
 
         val list = ossBucket.multipartList()
-        if (!CollectionUtils.isEmpty(list)) {
+        if (!list.isNullOrEmpty()) {
             list.forEach(Consumer {
                 val ossObject = ossBucket.use(it.key)
                 ossObject.multipartCancel(it.uploadId)

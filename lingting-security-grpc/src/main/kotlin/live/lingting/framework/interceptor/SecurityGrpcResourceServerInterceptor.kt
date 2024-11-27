@@ -9,7 +9,7 @@ import live.lingting.framework.Sequence
 import live.lingting.framework.exception.SecurityGrpcThrowing
 import live.lingting.framework.grpc.interceptor.AbstractServerInterceptor
 import live.lingting.framework.grpc.simple.ForwardingServerOnCallListener
-import live.lingting.framework.kt.logger
+import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.security.authorize.SecurityAuthorize
 import live.lingting.framework.security.convert.SecurityConvert
 import live.lingting.framework.security.domain.SecurityScope

@@ -4,8 +4,7 @@ import java.util.Spliterator
 import java.util.Spliterators
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
-import live.lingting.framework.kt.logger
-import live.lingting.framework.util.CollectionUtils
+import live.lingting.framework.util.Slf4jUtils.logger
 import org.slf4j.Logger
 
 /**
@@ -30,7 +29,7 @@ abstract class CursorValue<T> : Iterator<T> {
         protected set
 
     override fun hasNext(): Boolean {
-        if (!CollectionUtils.isEmpty(current)) {
+        if (!current.isNullOrEmpty()) {
             return true
         }
 
@@ -40,7 +39,7 @@ abstract class CursorValue<T> : Iterator<T> {
 
         val list = nextBatchData()
 
-        if (CollectionUtils.isEmpty(list)) {
+        if (list.isNullOrEmpty()) {
             empty = true
             return false
         }

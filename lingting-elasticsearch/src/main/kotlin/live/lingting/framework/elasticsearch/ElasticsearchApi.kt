@@ -172,7 +172,7 @@ class ElasticsearchApi<T>(
     }
 
     fun ofLimitSort(sorts: Collection<PaginationParams.Sort>): List<SortOptions> {
-        if (CollectionUtils.isEmpty(sorts)) {
+        if (sorts.isNullOrEmpty()) {
             return ArrayList()
         }
         return sorts.stream().map<SortOptions> { sort ->
@@ -372,7 +372,7 @@ class ElasticsearchApi<T>(
         operator: UnaryOperator<BulkRequest.Builder>, collection: Collection<E>,
         function: Function<E, BulkOperation>
     ): BulkResponse {
-        if (CollectionUtils.isEmpty(collection)) {
+        if (collection.isNullOrEmpty()) {
             return BulkResponse.of { br -> br.errors(false).items(emptyList()).ingestTook(0L).took(0) }
         }
 
@@ -442,10 +442,10 @@ class ElasticsearchApi<T>(
             records = result.records
             params.cursor = result.cursor
 
-            if (!CollectionUtils.isEmpty(records)) {
+            if (!records.isNullOrEmpty()) {
                 list.addAll(records)
             }
-        } while (!CollectionUtils.isEmpty(records) && params.cursor != null)
+        } while (!records.isNullOrEmpty() && params.cursor != null)
 
         return list
     }
@@ -483,7 +483,7 @@ class ElasticsearchApi<T>(
         val nextScrollId = search.scrollId()
 
         // 如果首次滚动查询结果为空, 直接清除滚动上下文
-        if (CollectionUtils.isEmpty(collect)) {
+        if (collect.isNullOrEmpty()) {
             clearScroll(nextScrollId)
         }
 
@@ -497,7 +497,7 @@ class ElasticsearchApi<T>(
         val collect = response.hits().hits().mapNotNull() { obj: Hit<T> -> obj.source() }
         val nextScrollId = response.scrollId()
 
-        if (CollectionUtils.isEmpty(collect)) {
+        if (collect.isNullOrEmpty()) {
             clearScroll(nextScrollId)
             return ScrollResult.empty()
         }

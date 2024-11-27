@@ -1,11 +1,12 @@
 package live.lingting.framework.ntp
 
 import java.time.Instant
+
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
-import live.lingting.framework.kt.logger
+import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.ThreadUtils
 import live.lingting.framework.value.WaitValue
 import org.slf4j.Logger
@@ -61,7 +62,7 @@ object NtpCn {
 
     @JvmStatic
     fun currentMillis(): Long {
-        return instance().currentMillis()
+        return instance().millis()
     }
 
     fun instant(): Instant? {
@@ -69,7 +70,7 @@ object NtpCn {
     }
 
     fun now(): LocalDateTime {
-        return instance().now()
+        return instance().current()
     }
 
     fun plusSeconds(seconds: Long): Long {

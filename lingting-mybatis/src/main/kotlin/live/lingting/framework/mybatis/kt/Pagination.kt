@@ -11,7 +11,7 @@ import live.lingting.framework.util.CollectionUtils
  * @author lingting 2024/11/22 19:01
  */
 fun <T> PaginationParams.toIPage() = Page<T>(page, size).apply {
-    if (!CollectionUtils.isEmpty(sorts)) {
+    if (!sorts.isNullOrEmpty()) {
         for ((field, desc) in sorts) {
             val item = OrderItem()
             item.isAsc = !desc

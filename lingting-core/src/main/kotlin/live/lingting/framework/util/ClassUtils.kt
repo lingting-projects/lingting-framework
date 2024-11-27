@@ -74,10 +74,10 @@ object ClassUtils {
      * @return true
      */
     @JvmStatic
-    fun isPresent(className: String): Boolean {
+    fun exists(className: String): Boolean {
         val classLoader = ClassUtils::class.java.classLoader
         val systemClassLoader = ClassLoader.getSystemClassLoader()
-        return isPresent(className, classLoader, systemClassLoader)
+        return exists(className, classLoader, systemClassLoader)
     }
 
     /**
@@ -86,9 +86,9 @@ object ClassUtils {
      * @param classLoaders 类加载
      */
     @JvmStatic
-    fun isPresent(className: String, vararg classLoaders: ClassLoader?): Boolean {
+    fun exists(className: String, vararg classLoaders: ClassLoader?): Boolean {
         val loaders = classLoaders.filterNotNull().toSet()
-        require(!CollectionUtils.isEmpty(loaders)) { "ClassLoaders can not be empty!" }
+        require(!loaders.isNullOrEmpty()) { "ClassLoaders can not be empty!" }
         val absent = CACHE_CLASS_PRESENT.computeIfAbsent(
             className
         ) { k -> ConcurrentHashMap(loaders.size) }

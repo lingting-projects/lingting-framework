@@ -1,7 +1,9 @@
 package live.lingting.framework.mybatis.extend
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler
+
 import java.time.LocalDateTime
+import live.lingting.framework.time.DateTime
 import java.util.Objects
 import java.util.function.Supplier
 import org.apache.ibatis.reflection.MetaObject
@@ -12,7 +14,7 @@ class ExtendMetaObjectHandle : MetaObjectHandler {
         // 逻辑删除标识
         strictInsertFill(metaObject, "deleted", Long::class.java, 0L)
         // 创建时间
-        strictInsertFill(metaObject, "createTime", LocalDateTime::class.java, LocalDateTime.now())
+        strictInsertFill(metaObject, "createTime", LocalDateTime::class.java, DateTime.current())
 
         // 新增时, 将创建数据同步到修改数据
         updateFill(metaObject)
@@ -20,7 +22,7 @@ class ExtendMetaObjectHandle : MetaObjectHandler {
 
     override fun updateFill(metaObject: MetaObject) {
         // 修改时间
-        strictUpdateFill(metaObject, "updateTime", LocalDateTime::class.java, LocalDateTime.now())
+        strictUpdateFill(metaObject, "updateTime", LocalDateTime::class.java, DateTime.current())
     }
 
     override fun strictFillStrategy(metaObject: MetaObject, fieldName: String, fieldVal: Supplier<*>): MetaObjectHandler {

@@ -12,9 +12,9 @@ import org.junit.jupiter.api.Test
 internal class BooleanUtilsTest {
     @Test
     fun test() {
-        assertTrue(isTrue("y"))
-        assertFalse(isTrue("n"))
-        assertTrue(isFalse("n"))
-        assertFalse(isFalse("y"))
+        assertTrue("y".isTrue())
+        assertFalse("n".isTrue())
+        assertTrue("n".isFalse())
+        assertFalse("y".isFalse())
     }
 }

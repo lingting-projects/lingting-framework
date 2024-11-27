@@ -8,6 +8,7 @@ import live.lingting.framework.dingtalk.message.DingTalkMessage
 import live.lingting.framework.http.HttpRequest
 import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.api.ApiClient
+import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.StringUtils
 
 /**
@@ -31,7 +32,7 @@ class DingTalkSender(
     var mac: Mac? = null
         private set
 
-    var currentTimeMillisSupplier: Supplier<Long> = Supplier { System.currentTimeMillis() }
+    var currentTimeMillisSupplier: Supplier<Long> = Supplier { DateTime.millis() }
 
     /**
      * 发送消息 根据参数值判断使用哪种发送方式

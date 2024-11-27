@@ -89,7 +89,7 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
     }
 
     override fun removeByIds(idList: Collection<Serializable>): Boolean {
-        if (CollectionUtils.isEmpty(idList)) {
+        if (idList.isNullOrEmpty()) {
             return false
         }
         return SqlHelper.retBool(mapper!!.deleteByIds(idList))

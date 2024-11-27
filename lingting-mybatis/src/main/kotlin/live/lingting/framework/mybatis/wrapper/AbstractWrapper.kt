@@ -253,7 +253,7 @@ abstract class AbstractWrapper<T, C : AbstractWrapper<T, C>> : com.baomidou.myba
     }
 
     override fun getSqlSelect(): String? {
-        if (CollectionUtils.isEmpty(fields)) {
+        if (fields.isNullOrEmpty()) {
             return null
         }
         return fields.joinToString(", ")
@@ -351,7 +351,7 @@ abstract class AbstractWrapper<T, C : AbstractWrapper<T, C>> : com.baomidou.myba
 
     // region compare
     override fun <V> allEq(condition: Boolean, params: MutableMap<String, V>, null2IsNull: Boolean): C {
-        if (condition && !CollectionUtils.isEmpty(params)) {
+        if (condition && !params.isNullOrEmpty()) {
             params.forEach { (k: String, v: V) ->
                 if (StringUtils.checkValNotNull(v)) {
                     eq(k, v)
@@ -366,7 +366,7 @@ abstract class AbstractWrapper<T, C : AbstractWrapper<T, C>> : com.baomidou.myba
     }
 
     override fun <V> allEq(condition: Boolean, filter: java.util.function.BiPredicate<String, V>, params: MutableMap<String, V>, null2IsNull: Boolean): C {
-        if (condition && !CollectionUtils.isEmpty(params)) {
+        if (condition && !params.isNullOrEmpty()) {
             params.forEach { (k: String, v: V) ->
                 if (filter.test(k, v)) {
                     if (StringUtils.checkValNotNull(v)) {

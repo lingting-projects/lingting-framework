@@ -6,11 +6,11 @@ import java.time.Duration
 import java.util.concurrent.ExecutorService
 import java.util.function.Supplier
 import live.lingting.framework.exception.DownloadException
-import live.lingting.framework.kt.logger
 import live.lingting.framework.multipart.Multipart
 import live.lingting.framework.multipart.Part
 import live.lingting.framework.thread.Async
 import live.lingting.framework.util.FileUtils
+import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.ValueUtils
 
 /**

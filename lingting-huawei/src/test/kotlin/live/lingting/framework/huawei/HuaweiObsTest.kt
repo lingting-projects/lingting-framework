@@ -11,7 +11,6 @@ import live.lingting.framework.huawei.exception.HuaweiException
 import live.lingting.framework.huawei.properties.HuaweiObsProperties
 import live.lingting.framework.id.Snowflake
 import live.lingting.framework.thread.Async
-import live.lingting.framework.util.CollectionUtils.isEmpty
 import live.lingting.framework.util.DigestUtils.md5Hex
 import live.lingting.framework.util.StreamUtils.toString
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
@@ -66,8 +65,8 @@ internal class HuaweiObsTest {
     @Test
     fun multipart() {
         val obsBucket = iam!!.obsBucket(properties!!)
-        val items: List<AwsS3MultipartItem> = obsBucket.multipartList()
-        if (!isEmpty(items)) {
+        val items = obsBucket.multipartList()
+        if (items.isNotEmpty()) {
             items.forEach(Consumer { item ->
                 val k = item.key
                 val v = item.uploadId

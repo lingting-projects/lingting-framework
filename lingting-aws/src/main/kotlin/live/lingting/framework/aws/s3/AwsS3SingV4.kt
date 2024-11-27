@@ -1,5 +1,6 @@
 package live.lingting.framework.aws.s3
 
+
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.function.BiConsumer
@@ -8,8 +9,7 @@ import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.HttpRequest
 import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.header.HttpHeaders
-import live.lingting.framework.util.ArrayUtils
-import live.lingting.framework.util.CollectionUtils
+import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.util.StringUtils.deleteLast
@@ -69,7 +69,7 @@ class AwsS3SingV4(
         if (params != null && !params.isEmpty) {
             params.forEachSorted { k, vs ->
                 val name: String = AwsS3Utils.encode(k)
-                if (CollectionUtils.isEmpty(vs)) {
+                if (vs.isNullOrEmpty()) {
                     builder.append(name).append("=").append("&")
                     return@forEachSorted
                 }
@@ -84,7 +84,7 @@ class AwsS3SingV4(
 
     fun headersForEach(consumer: BiConsumer<String, Collection<String>>) {
         headers.forEachSorted { k, vs ->
-            if (!k.startsWith(AwsS3Utils.HEADER_PREFIX) && !ArrayUtils.contains(HEADER_INCLUDE, k)) {
+            if (!k.startsWith(AwsS3Utils.HEADER_PREFIX) && !HEADER_INCLUDE.contains(k)) {
                 return@forEachSorted
             }
             consumer.accept(k, vs)
@@ -257,7 +257,7 @@ class AwsS3SingV4(
         }
 
         fun build(): AwsS3SingV4 {
-            val time = dateTime ?: LocalDateTime.now()
+            val time = dateTime ?: DateTime.current()
             return AwsS3SingV4(
                 time, this.method!!, this.path!!, this.headers!!, this.bodySha256!!, this.params,
                 this.region!!, this.ak!!, this.sk!!, this.bucket!!

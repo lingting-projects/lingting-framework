@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils.checkValNotNull
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction
 import java.util.ArrayList
 import java.util.function.BiPredicate
-import live.lingting.framework.util.ArrayUtils
 import live.lingting.framework.util.CollectionUtils
 
 abstract class LambdaWrapper<T, C : LambdaWrapper<T, C>> : AbstractWrapper<T, C>() {
@@ -20,7 +19,7 @@ abstract class LambdaWrapper<T, C : LambdaWrapper<T, C>> : AbstractWrapper<T, C>
     }
 
     protected fun convertFields(array: Array<SFunction<T, *>?>): MutableList<String> {
-        if (ArrayUtils.isEmpty(array)) {
+        if (array.isEmpty()) {
             return ArrayList<String>()
         }
         return convertFields(array.toList())
@@ -36,7 +35,7 @@ abstract class LambdaWrapper<T, C : LambdaWrapper<T, C>> : AbstractWrapper<T, C>
     }
 
     fun <V> allEqLambda(condition: Boolean, params: Map<SFunction<T, *>, V>, null2IsNull: Boolean): C {
-        if (condition && !CollectionUtils.isEmpty(params)) {
+        if (condition && !params.isNullOrEmpty()) {
             params.forEach { (k, v) ->
                 if (checkValNotNull(v)) {
                     eq(k, v!!)
@@ -65,7 +64,7 @@ abstract class LambdaWrapper<T, C : LambdaWrapper<T, C>> : AbstractWrapper<T, C>
         condition: Boolean, filter: BiPredicate<SFunction<T, *>, V>, params: Map<SFunction<T, *>, V>,
         null2IsNull: Boolean
     ): C {
-        if (condition && !CollectionUtils.isEmpty(params)) {
+        if (condition && !params.isNullOrEmpty()) {
             params.forEach { (k, v) ->
                 if (filter.test(k, v)) {
                     if (checkValNotNull(v)) {

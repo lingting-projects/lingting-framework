@@ -2,7 +2,6 @@ package live.lingting.framework.thread
 
 import java.time.Duration
 import live.lingting.framework.time.StopWatch
-import live.lingting.framework.util.CollectionUtils
 
 /**
  * 顶级队列线程类
@@ -71,7 +70,7 @@ abstract class AbstractQueueThread<E> : AbstractThreadContextComponent() {
     override fun doRun() {
         preProcess()
         fill()
-        if (!CollectionUtils.isEmpty(data)) {
+        if (!data.isNullOrEmpty()) {
             process(ArrayList(data))
             data.clear()
         }
@@ -121,7 +120,7 @@ abstract class AbstractQueueThread<E> : AbstractThreadContextComponent() {
      * 已有数据且超过设定的等待时间
      */
     protected fun isTimeout(watch: StopWatch): Boolean {
-        return !CollectionUtils.isEmpty(data) && watch.timeMillis() >= this.batchTimeout.toMillis()
+        return !data.isNullOrEmpty() && watch.timeMillis() >= this.batchTimeout.toMillis()
     }
 
     fun poll(): E? {

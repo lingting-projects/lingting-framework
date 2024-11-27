@@ -88,7 +88,7 @@ object ByteUtils {
      */
     @JvmStatic
     fun trimEndLine(list: List<Byte>): ByteArray {
-        if (CollectionUtils.isEmpty(list)) {
+        if (list.isNullOrEmpty()) {
             return ByteArray(0)
         }
 

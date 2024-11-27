@@ -42,7 +42,7 @@ class UpdateWrapper<T> : LambdaWrapper<T, UpdateWrapper<T>>(), com.baomidou.myba
     }
 
     override fun getSqlSet(): String? {
-        if (CollectionUtils.isEmpty(sets)) {
+        if (sets.isNullOrEmpty()) {
             return null
         }
         return sets.joinToString(", ")

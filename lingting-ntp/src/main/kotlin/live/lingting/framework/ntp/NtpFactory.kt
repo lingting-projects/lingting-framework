@@ -7,6 +7,7 @@ import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.IpUtils
 import live.lingting.framework.util.ThreadUtils
 import live.lingting.framework.value.CycleValue
@@ -87,7 +88,7 @@ class NtpFactory protected constructor() {
                 client.open()
                 client.setSoTimeout(Duration.ofSeconds(3))
                 val time = client.getTime(InetAddress.getByName(host))
-                val system = System.currentTimeMillis()
+                val system = DateTime.millis()
                 val ntp = time.message.transmitTimeStamp.time
                 return ntp - system
             }

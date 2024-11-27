@@ -5,9 +5,8 @@ import io.grpc.ServerCall
 import io.grpc.Status
 import java.util.concurrent.ConcurrentHashMap
 import live.lingting.framework.Sequence
-import live.lingting.framework.kt.logger
-import live.lingting.framework.util.AnnotationUtils
-import live.lingting.framework.util.ArrayUtils
+import live.lingting.framework.util.Slf4jUtils.logger
+import live.lingting.framework.util.AnnotationUtils.findAnnotation
 import live.lingting.framework.util.ClassUtils
 
 /**
@@ -31,8 +30,8 @@ open class GrpcExceptionProcessor(instances: Collection<GrpcExceptionInstance>) 
     init {
         for (instance in this.instances) {
             for (method in ClassUtils.methods(instance.javaClass)) {
-                val handler = AnnotationUtils.findAnnotation(method, GrpcExceptionHandler::class.java)
-                if (handler != null && !ArrayUtils.isEmpty(handler.value)) {
+                val handler = findAnnotation(method, GrpcExceptionHandler::class.java)
+                if (handler != null && !handler.value.isEmpty()) {
                     invokes.add(GrpcExceptionInvoke(instance, method, handler))
                 }
             }
@@ -57,7 +56,7 @@ open class GrpcExceptionProcessor(instances: Collection<GrpcExceptionInstance>) 
         }
 
         override fun invoke(e: Exception, call: ServerCall<*, *>, metadata: Metadata): Any {
-            log!!.error("unknown exception. target: {}", call.methodDescriptor.fullMethodName, e)
+            log.error("unknown exception. target: {}", call.methodDescriptor.fullMethodName, e)
             return Status.ABORTED.withCause(e)
         }
     }

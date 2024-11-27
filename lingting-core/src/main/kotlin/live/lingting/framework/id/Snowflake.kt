@@ -2,6 +2,7 @@ package live.lingting.framework.id
 
 import java.util.concurrent.locks.LockSupport
 import kotlin.math.max
+import live.lingting.framework.time.DateTime
 
 /**
  * @author lingting 2024-04-18 20:23
@@ -197,6 +198,6 @@ open class Snowflake(params: SnowflakeParams, workerId: Long, datacenterId: Long
      * @return 当前时间戳
      */
     protected fun currentTimestamp(): Long {
-        return System.currentTimeMillis()
+        return DateTime.millis()
     }
 }

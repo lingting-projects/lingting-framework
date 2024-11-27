@@ -4,7 +4,7 @@ import java.lang.reflect.AccessibleObject
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
-import live.lingting.framework.util.AnnotationUtils
+import live.lingting.framework.util.AnnotationUtils.findAnnotation
 import live.lingting.framework.util.ClassUtils.toFiledName
 
 /**
@@ -55,7 +55,7 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
         if (`object` == null) {
             return null
         }
-        return AnnotationUtils.findAnnotation(`object`, a)
+        return findAnnotation(`object`, a)
     }
 
     /**

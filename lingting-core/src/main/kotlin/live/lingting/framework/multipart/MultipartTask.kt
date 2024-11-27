@@ -5,9 +5,9 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Supplier
-import live.lingting.framework.kt.logger
 import live.lingting.framework.lock.JavaReentrantLock
 import live.lingting.framework.thread.Async
+import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.ValueUtils
 
 /**

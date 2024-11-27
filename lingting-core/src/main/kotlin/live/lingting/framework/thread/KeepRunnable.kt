@@ -1,7 +1,7 @@
 package live.lingting.framework.thread
 
-import live.lingting.framework.kt.logger
 import live.lingting.framework.util.MdcUtils
+import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StringUtils
 import org.slf4j.MDC
 

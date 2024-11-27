@@ -5,8 +5,8 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Predicate
-import live.lingting.framework.kt.optional
 import live.lingting.framework.lock.JavaReentrantLock
+import live.lingting.framework.util.OptionalUtils.optional
 import live.lingting.framework.util.ValueUtils
 
 /**

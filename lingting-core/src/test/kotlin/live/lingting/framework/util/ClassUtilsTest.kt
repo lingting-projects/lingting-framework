@@ -1,6 +1,6 @@
 package live.lingting.framework.util
 
-import live.lingting.framework.util.ClassUtils.isPresent
+import live.lingting.framework.util.ClassUtils.exists
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -22,10 +22,10 @@ internal class ClassUtilsTest {
 
         val className = "live.lingting.framework.util.ClassUtilsTest"
         val className2 = "live.lingting.framework.mybatis.typehandler.EnumTypeHandler"
-        assertTrue(isPresent(className))
-        assertTrue(isPresent(className, systemClassLoader, classLoader))
-        assertTrue(isPresent(className, testClassLoader))
-        assertFalse(isPresent(className2))
+        assertTrue(exists(className))
+        assertTrue(exists(className, systemClassLoader, classLoader))
+        assertTrue(exists(className, testClassLoader))
+        assertFalse(exists(className2))
         assertNotNull(ClassUtils.CACHE_CLASS_PRESENT[className])
         assertNotNull(ClassUtils.CACHE_CLASS_PRESENT[className2])
         val map: Map<ClassLoader, Boolean> = ClassUtils.CACHE_CLASS_PRESENT[className]!!
@@ -34,7 +34,7 @@ internal class ClassUtilsTest {
         loaders.add(ClassUtils::class.java.classLoader)
         loaders.add(ClassUtilsTest::class.java.classLoader)
         assertEquals(loaders, map.keys)
-        assertThrows(IllegalArgumentException::class.java) { isPresent(className, null, null) }
+        assertThrows(IllegalArgumentException::class.java) { exists(className, null, null) }
 
         val supplier: ThrowingSupplier<Set<Class<Any>>> = object : ThrowingSupplier<Set<Class<Any>>> {
             override fun get(): Set<Class<Any>> {

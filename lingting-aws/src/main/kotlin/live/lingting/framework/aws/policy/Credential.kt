@@ -1,7 +1,9 @@
 package live.lingting.framework.aws.policy
 
 import java.time.Duration
+
 import java.time.LocalDateTime
+import live.lingting.framework.time.DateTime
 
 /**
  * @author lingting 2024-09-12 20:38
@@ -13,7 +15,7 @@ class Credential(
     @JvmField val expire: LocalDateTime
 ) {
     fun between(): Duration {
-        val now = LocalDateTime.now()
+        val now = DateTime.current()
         return between(now)
     }
 

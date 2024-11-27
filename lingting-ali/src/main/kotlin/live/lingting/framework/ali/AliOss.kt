@@ -3,7 +3,7 @@ package live.lingting.framework.ali
 import live.lingting.framework.ali.oss.AliOssS3Listener
 import live.lingting.framework.aws.AwsS3Client
 import live.lingting.framework.aws.s3.interfaces.AwsS3Delegation
-import live.lingting.framework.kt.logger
+import live.lingting.framework.util.Slf4jUtils.logger
 
 /**
  * @author lingting 2024-09-19 22:05

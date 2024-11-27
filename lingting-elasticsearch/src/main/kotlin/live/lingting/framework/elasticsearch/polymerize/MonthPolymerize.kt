@@ -1,9 +1,9 @@
 package live.lingting.framework.elasticsearch.polymerize
 
-import java.time.LocalDate
 import java.time.temporal.ChronoField
 import java.time.temporal.TemporalAccessor
 import live.lingting.framework.elasticsearch.IndexInfo
+import live.lingting.framework.time.DateTime
 
 /**
  * @author lingting 2024/11/26 14:12
@@ -15,7 +15,7 @@ class MonthPolymerize : Polymerize {
             return info.matchIndex
         }
         val list = ArrayList<String>()
-        val date = LocalDate.now()
+        val date = DateTime.date()
         for (i in 0 until info.polymerizeLimit) {
             if (i > 0) {
                 date.minusMonths(i)

@@ -1,7 +1,6 @@
 package live.lingting.framework.api
 
 import live.lingting.framework.function.ThrowingFunction
-import live.lingting.framework.util.CollectionUtils
 import live.lingting.framework.value.CursorValue
 
 /**
@@ -15,7 +14,7 @@ class ScrollCursor<T, S>(
 
     init {
         // 初始数据就为空, 直接结束
-        if (CollectionUtils.isEmpty(data)) {
+        if (data.isNullOrEmpty()) {
             empty = true
         } else {
             current.addAll(data)

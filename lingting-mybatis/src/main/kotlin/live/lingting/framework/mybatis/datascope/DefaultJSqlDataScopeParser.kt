@@ -50,7 +50,7 @@ class DefaultJSqlDataScopeParser(scopes: List<JSqlDataScope>) : JSqlDataScopePar
     override fun select(select: Select, index: Int, sql: String) {
         processSelect(select)
         val list = select.withItemsList
-        if (!CollectionUtils.isEmpty(list)) {
+        if (!list.isNullOrEmpty()) {
             list.forEach(Consumer { select -> this.processSelect(select) })
         }
     }
@@ -71,7 +71,7 @@ class DefaultJSqlDataScopeParser(scopes: List<JSqlDataScope>) : JSqlDataScopePar
     fun processPlainSelect(plainSelect: PlainSelect) {
         // 处理所有查询项中的子查询
         val selectItems = plainSelect.selectItems
-        if (!CollectionUtils.isEmpty(selectItems)) {
+        if (!selectItems.isNullOrEmpty()) {
             selectItems.forEach(Consumer { item: SelectItem<*> -> this.processSelectItem(item) })
         }
 
@@ -85,7 +85,7 @@ class DefaultJSqlDataScopeParser(scopes: List<JSqlDataScope>) : JSqlDataScopePar
         tables = processJoins(tables, plainSelect.joins)
 
         // 追加where条件
-        if (!CollectionUtils.isEmpty(tables)) {
+        if (!tables.isNullOrEmpty()) {
             val expression = injectExpression(tables, plainSelect.where)
             plainSelect.where = expression
         }
@@ -227,7 +227,7 @@ class DefaultJSqlDataScopeParser(scopes: List<JSqlDataScope>) : JSqlDataScopePar
                     val onExpressions: MutableCollection<Expression> = LinkedList()
                     for (originOnExpression in originOnExpressions) {
                         val currentTableList = onTableDeque.poll()!!
-                        if (CollectionUtils.isEmpty(currentTableList)) {
+                        if (currentTableList.isNullOrEmpty()) {
                             onExpressions.add(originOnExpression)
                         } else {
                             val injected = injectExpression(currentTableList, originOnExpression)
@@ -257,7 +257,7 @@ class DefaultJSqlDataScopeParser(scopes: List<JSqlDataScope>) : JSqlDataScopePar
             val matchDataScopes = scopes.filter { it.includes(tableName) }
 
             // 存在匹配成功的
-            if (!CollectionUtils.isEmpty(matchDataScopes)) {
+            if (!matchDataScopes.isNullOrEmpty()) {
                 // 计数
                 matchScopes.addAll(matchDataScopes)
                 // 参数构建

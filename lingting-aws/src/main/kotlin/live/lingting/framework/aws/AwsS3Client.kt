@@ -1,6 +1,6 @@
 package live.lingting.framework.aws
 
-import java.time.LocalDateTime
+
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3Properties
 import live.lingting.framework.aws.s3.AwsS3Request
@@ -11,6 +11,7 @@ import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.api.ApiClient
 import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.value.multi.StringMultiValue
 
@@ -39,7 +40,7 @@ abstract class AwsS3Client protected constructor(val properties: AwsS3Properties
             headers.put(AwsS3Utils.HEADER_ACL, request.acl!!.value)
         }
 
-        val now = LocalDateTime.now()
+        val now = DateTime.current()
         headers.put(AwsS3Utils.HEADER_CONTENT_SHA256, AwsS3Utils.PAYLOAD_UNSIGNED)
 
         if (StringUtils.hasText(token)) {

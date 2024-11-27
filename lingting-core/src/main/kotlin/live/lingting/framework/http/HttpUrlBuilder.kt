@@ -238,7 +238,7 @@ class HttpUrlBuilder {
 
         @JvmStatic
         fun buildQuery(map: Map<String, Collection<String>>): String {
-            if (CollectionUtils.isEmpty(map)) {
+            if (map.isNullOrEmpty()) {
                 return ""
             }
             val keys = map.keys.stream().sorted().toList()
@@ -246,7 +246,7 @@ class HttpUrlBuilder {
             val builder = StringBuilder()
             for (key in keys) {
                 val list = map[key]
-                if (CollectionUtils.isEmpty(list)) {
+                if (list.isNullOrEmpty()) {
                     builder.append(key).append("&")
                 } else {
                     for (v in list!!) {

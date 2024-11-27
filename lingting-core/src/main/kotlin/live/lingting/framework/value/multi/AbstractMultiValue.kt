@@ -5,7 +5,6 @@ import java.util.function.BiConsumer
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
-import live.lingting.framework.util.CollectionUtils
 import live.lingting.framework.value.MultiValue
 
 /**
@@ -170,7 +169,7 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
 
     override fun first(key: K): V? {
         val collection: Collection<V> = get(key)
-        if (CollectionUtils.isEmpty(collection)) {
+        if (collection.isEmpty()) {
             return null
         }
         return collection.iterator().next()

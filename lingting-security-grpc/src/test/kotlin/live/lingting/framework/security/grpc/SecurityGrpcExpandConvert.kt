@@ -4,8 +4,8 @@ import live.lingting.framework.convert.SecurityGrpcConvert
 import live.lingting.framework.security.domain.AuthorizationVO
 import live.lingting.framework.security.domain.SecurityScope
 import live.lingting.framework.security.domain.SecurityScopeAttributes
-import live.lingting.framework.util.BooleanUtils
 import live.lingting.framework.util.CollectionUtils
+import live.lingting.framework.util.BooleanUtils.isTrue
 
 /**
  * @author lingting 2024-01-30 20:19
@@ -28,8 +28,8 @@ class SecurityGrpcExpandConvert : SecurityGrpcConvert() {
     }
 
     fun isExpand(attributes: SecurityScopeAttributes): Boolean {
-        if (!CollectionUtils.isEmpty(attributes) && attributes.containsKey("expand")) {
-            return BooleanUtils.isTrue(attributes["expand"])
+        if (!attributes.isNullOrEmpty() && attributes.containsKey("expand")) {
+            return attributes["expand"].isTrue()
         }
         return false
     }

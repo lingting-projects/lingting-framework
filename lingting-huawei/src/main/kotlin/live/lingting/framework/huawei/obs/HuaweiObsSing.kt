@@ -1,6 +1,8 @@
 package live.lingting.framework.huawei.obs
 
+
 import java.time.LocalDateTime
+import live.lingting.framework.time.DateTime
 import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.HttpUrlBuilder
@@ -151,7 +153,7 @@ class HuaweiObsSing(
         }
 
         fun build(): HuaweiObsSing {
-            val time = dateTime ?: LocalDateTime.now()
+            val time = dateTime ?: DateTime.current()
             return HuaweiObsSing(
                 time, this.method!!, this.path, this.headers!!, this.params!!, this.ak!!, this.sk!!, this.bucket!!
             )

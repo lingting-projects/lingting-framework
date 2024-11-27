@@ -65,7 +65,7 @@ interface Sequence {
         }
 
         protected fun findBySpring(obj: Any): Int? {
-            if (!ClassUtils.isPresent("org.springframework.core.annotation.Order", javaClass.getClassLoader())) {
+            if (!ClassUtils.exists("org.springframework.core.annotation.Order", javaClass.getClassLoader())) {
                 return null
             }
             val annotation = obj.javaClass.getAnnotation<Order>(Order::class.java)

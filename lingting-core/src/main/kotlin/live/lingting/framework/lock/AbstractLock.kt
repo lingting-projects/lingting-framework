@@ -3,8 +3,8 @@ package live.lingting.framework.lock
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.Condition
-import live.lingting.framework.kt.milliseconds
 import live.lingting.framework.time.StopWatch
+import live.lingting.framework.util.DurationUtils.millis
 
 /**
  * 抽象锁实现
@@ -15,7 +15,7 @@ abstract class AbstractLock : ExpandLock {
     companion object {
 
         @JvmField
-        var defaultSleep = 10.milliseconds
+        var defaultSleep = 10.millis
 
     }
 

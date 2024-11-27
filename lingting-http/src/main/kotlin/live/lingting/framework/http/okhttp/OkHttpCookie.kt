@@ -3,6 +3,7 @@ package live.lingting.framework.http.okhttp
 import java.net.CookieStore
 import java.net.HttpCookie
 import java.util.function.Consumer
+import live.lingting.framework.time.DateTime
 import okhttp3.Cookie
 import okhttp3.Cookie.Builder
 import okhttp3.CookieJar
@@ -15,7 +16,7 @@ class OkHttpCookie(private val store: CookieStore) : CookieJar {
     fun of(cookie: HttpCookie): Cookie {
         val builder = Builder()
         builder.domain(cookie.domain)
-        builder.expiresAt(cookie.maxAge * 1000 + System.currentTimeMillis())
+        builder.expiresAt(cookie.maxAge * 1000 + DateTime.millis())
 
         if (cookie.isHttpOnly) {
             builder.httpOnly()
@@ -36,7 +37,7 @@ class OkHttpCookie(private val store: CookieStore) : CookieJar {
         val hc = HttpCookie(cookie.name, cookie.value)
         hc.domain = cookie.domain
         hc.isHttpOnly = cookie.httpOnly
-        hc.maxAge = (cookie.expiresAt - System.currentTimeMillis()) / 1000
+        hc.maxAge = (cookie.expiresAt - DateTime.millis()) / 1000
         hc.path = cookie.path
         hc.secure = cookie.secure
         return hc

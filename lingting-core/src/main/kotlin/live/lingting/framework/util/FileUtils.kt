@@ -9,7 +9,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
-import live.lingting.framework.kt.logger
+import live.lingting.framework.util.Slf4jUtils.logger
 import org.slf4j.Logger
 
 /**
@@ -41,7 +41,7 @@ object FileUtils {
 
         // 文件夹
         val files = file.listFiles()
-        if (ArrayUtils.isEmpty<File>(files)) {
+        if (files.isEmpty()) {
             return list
         }
 

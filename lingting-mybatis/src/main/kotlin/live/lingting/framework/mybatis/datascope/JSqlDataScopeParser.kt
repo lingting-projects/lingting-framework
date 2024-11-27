@@ -1,7 +1,7 @@
 package live.lingting.framework.mybatis.datascope
 
 import live.lingting.framework.datascope.exception.DataScopeException
-import live.lingting.framework.kt.logger
+import live.lingting.framework.util.Slf4jUtils.logger
 import net.sf.jsqlparser.parser.CCJSqlParserUtil
 import net.sf.jsqlparser.statement.Statement
 import net.sf.jsqlparser.statement.Statements

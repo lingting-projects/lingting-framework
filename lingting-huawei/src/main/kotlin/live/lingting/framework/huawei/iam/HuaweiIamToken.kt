@@ -1,7 +1,9 @@
 package live.lingting.framework.huawei.iam
 
 import java.time.Duration
+
 import java.time.LocalDateTime
+import live.lingting.framework.time.DateTime
 
 /**
  * @author lingting 2024-09-12 22:04
@@ -17,7 +19,7 @@ data class HuaweiIamToken(
     }
 
     fun isExpired(tokenEarlyExpire: Duration): Boolean {
-        val now = LocalDateTime.now()
+        val now = DateTime.current()
         return isExpired(tokenEarlyExpire, now)
     }
 

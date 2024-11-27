@@ -10,7 +10,6 @@ import java.util.function.Function
 import live.lingting.framework.elasticsearch.EFunction
 import live.lingting.framework.elasticsearch.ElasticsearchUtils
 import live.lingting.framework.elasticsearch.function.TermOperator
-import live.lingting.framework.util.CollectionUtils
 
 /**
  * @author lingting 2024-03-06 17:33
@@ -37,7 +36,7 @@ object QueryComposer {
     fun <T> terms(field: String, objects: Collection<T>): Query {
         val values: MutableList<FieldValue> = ArrayList()
 
-        if (!CollectionUtils.isEmpty(objects)) {
+        if (!objects.isNullOrEmpty()) {
             for (`object` in objects) {
                 if (`object` == null) {
                     continue

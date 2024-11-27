@@ -22,6 +22,7 @@ object IpUtils {
 
     const val IPV4_LENGTH_MAX: Int = 16
 
+    @JvmField
     val HEADERS: MutableList<String> = ArrayList(16)
 
     init {

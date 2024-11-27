@@ -1,5 +1,7 @@
 package live.lingting.framework.thread
 
+import live.lingting.framework.time.DateTime
+
 /**
  * @author lingting 2024-04-29 10:41
  */
@@ -17,7 +19,7 @@ abstract class StateKeepRunnable : KeepRunnable {
     protected constructor(name: String?) : super(name)
 
     override fun process() {
-        start = System.currentTimeMillis()
+        start = DateTime.millis()
         state = State.RUNNING
         thread = Thread.currentThread()
         doProcess()
@@ -26,7 +28,7 @@ abstract class StateKeepRunnable : KeepRunnable {
     protected abstract fun doProcess()
 
     override fun onFinally() {
-        end = System.currentTimeMillis()
+        end = DateTime.millis()
         state = State.FINISH
     }
 
@@ -43,7 +45,7 @@ abstract class StateKeepRunnable : KeepRunnable {
         if (state == State.FINISH) {
             return end - start
         }
-        return System.currentTimeMillis() - start
+        return DateTime.millis() - start
     }
 
     /**

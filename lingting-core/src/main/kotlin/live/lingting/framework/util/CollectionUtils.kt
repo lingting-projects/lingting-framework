@@ -7,27 +7,6 @@ import java.util.Collections
  */
 @Suppress("UNCHECKED_CAST")
 object CollectionUtils {
-    @SafeVarargs
-    @JvmStatic
-    fun <T> toList(vararg ts: T): List<T> {
-        return ts.toList()
-    }
-
-    @SafeVarargs
-    @JvmStatic
-    fun <T> toSet(vararg ts: T): Set<T> {
-        return ts.toSet()
-    }
-
-    @JvmStatic
-    fun isEmpty(collection: Collection<*>?): Boolean {
-        return collection.isNullOrEmpty()
-    }
-
-    @JvmStatic
-    fun isEmpty(map: Map<*, *>?): Boolean {
-        return map.isNullOrEmpty()
-    }
 
     /**
      * 是否是否可以存放多个数据
@@ -50,7 +29,7 @@ object CollectionUtils {
         }
 
         if (!isMulti(obj)) {
-            return toList(obj)
+            return listOf(obj)
         } else if (obj is List<*>) {
             return obj as List<Any>
         } else if (obj is Collection<*>) {
@@ -93,23 +72,22 @@ object CollectionUtils {
 
     /**
      * 分割为多个小list, 每个list最多拥有 size个元素
-     * @param collection 原始数据
      * @param size       单个list最多元素数量
      * @return java.util.List<java.util.List></java.util.List> < D>>
      */
     @JvmStatic
-    fun <D> split(collection: Collection<D>, size: Int): List<List<D>> {
-        return split(collection.iterator(), size)
+    fun <D : Any> Iterable<D>.split(size: Int): List<List<D>> {
+        return iterator().split(size)
     }
 
     @JvmStatic
-    fun <D> split(iterator: Iterator<D>, size: Int): List<List<D>> {
+    fun <D : Any> Iterator<D>.split(size: Int): List<List<D>> {
         val list: MutableList<List<D>> = ArrayList()
 
         var items: MutableList<D> = ArrayList(size)
 
-        while (iterator.hasNext()) {
-            val next = iterator.next()
+        while (hasNext()) {
+            val next = next()
             items.add(next)
 
             if (items.size == size) {
@@ -118,7 +96,7 @@ object CollectionUtils {
             }
         }
 
-        if (!isEmpty(items)) {
+        if (items.isNotEmpty()) {
             list.add(items)
         }
 

@@ -6,6 +6,7 @@ import java.nio.charset.Charset
 import java.util.StringTokenizer
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.FileUtils
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.util.SystemUtils
@@ -60,7 +61,7 @@ class Command protected constructor(init: String, enter: String, exit: String, c
         this.enter = enter
         this.exit = exit
         this.charset = charset
-        this.startTime = System.currentTimeMillis()
+        this.startTime = DateTime.millis()
     }
 
     fun history(): List<String> {

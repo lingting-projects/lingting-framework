@@ -18,6 +18,8 @@ import live.lingting.framework.function.ThrowingBiFunctionE
 import live.lingting.framework.function.ThrowingConsumerE
 import live.lingting.framework.stream.CloneInputStream
 import live.lingting.framework.stream.FileCloneInputStream
+import live.lingting.framework.util.ByteUtils.isLine
+import live.lingting.framework.util.ByteUtils.trimEndLine
 
 /**
  * @author lingting
@@ -246,7 +248,7 @@ object StreamUtils {
     @JvmStatic
     fun readLine(`in`: InputStream, size: Int, consumer: BiConsumer<Int, ByteArray>) {
         val doConsumer = BiConsumer<Int, List<Byte>> { index, list ->
-            val bytes: ByteArray = ByteUtils.trimEndLine(list)
+            val bytes: ByteArray = trimEndLine(list)
             consumer.accept(index, bytes)
         }
 
@@ -258,7 +260,7 @@ object StreamUtils {
                 val b = bytes[i]
                 list.add(b)
                 // 如果是一整行数据, 则消费
-                if (ByteUtils.isLine(list)) {
+                if (isLine(list)) {
                     // 获取行索引, 并自增
                     val index = atomic.getAndIncrement()
                     doConsumer.accept(index, list)

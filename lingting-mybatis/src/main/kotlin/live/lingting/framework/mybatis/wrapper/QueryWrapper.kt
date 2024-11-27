@@ -20,7 +20,7 @@ class QueryWrapper<T> : LambdaWrapper<T, QueryWrapper<T>>() {
 
         builder.append("SELECT ")
 
-        if (CollectionUtils.isEmpty(fields)) {
+        if (fields.isNullOrEmpty()) {
             builder.append("*")
         } else {
             builder.append(fields.joinToString(", "))

@@ -17,7 +17,8 @@ import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.time.DatePattern
-import live.lingting.framework.util.ArrayUtils
+import live.lingting.framework.time.DateTime
+import live.lingting.framework.util.ArrayUtils.containsIgnoreCase
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.value.multi.StringMultiValue
@@ -60,7 +61,7 @@ class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsReque
         request: AliStsRequest, headers: HttpHeaders, requestBody: BodySource,
         params: StringMultiValue
     ) {
-        val now = LocalDateTime.now()
+        val now = DateTime.current()
         val date: String = AliUtils.format(now, DatePattern.FORMATTER_ISO_8601)
         headers.put("x-acs-date", date)
 
@@ -76,7 +77,7 @@ class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsReque
         val headerBuilder = StringBuilder()
         val signHeaderBuilder = StringBuilder()
         headers.forEachSorted(BiConsumer { k, vs ->
-            if (!k.startsWith(HEADER_PREFIX) && !ArrayUtils.containsIgnoreCase(HEADER_INCLUDE, k)) {
+            if (!k.startsWith(HEADER_PREFIX) && !HEADER_INCLUDE.containsIgnoreCase(k)) {
                 return@BiConsumer
             }
             for (v in vs) {

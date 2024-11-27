@@ -29,10 +29,10 @@ open class SecurityGrpcConvert : SecurityConvert {
             .setNickname(vo.nickname)
             .setEnabled(java.lang.Boolean.TRUE == vo.enabled)
 
-        if (!CollectionUtils.isEmpty(vo.roles)) {
+        if (!vo.roles.isNullOrEmpty()) {
             builder.addAllRoles(vo.roles)
         }
-        if (!CollectionUtils.isEmpty(vo.permissions)) {
+        if (!vo.permissions.isNullOrEmpty()) {
             builder.addAllPermissions(vo.permissions)
         }
 
@@ -60,7 +60,7 @@ open class SecurityGrpcConvert : SecurityConvert {
     }
 
     fun toBytes(attributes: SecurityScopeAttributes?): ByteString {
-        if (CollectionUtils.isEmpty(attributes)) {
+        if (attributes.isNullOrEmpty()) {
             return ByteString.EMPTY
         }
         val json = JacksonUtils.toJson(attributes)

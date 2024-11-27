@@ -19,7 +19,7 @@ class HuaweiStatement(allow: Boolean) : Statement(allow) {
 
     override fun map(): MutableMap<String, Any> {
         val map = super.map()
-        if (!CollectionUtils.isEmpty(conditions)) {
+        if (!conditions.isNullOrEmpty()) {
             map.put("Condition", conditions)
         }
         return map

@@ -1,28 +1,31 @@
 package live.lingting.framework.util
 
 import java.time.Instant
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.util.Date
 import live.lingting.framework.time.DatePattern
 
 /**
  * @author lingting 2022/11/28 10:12
  */
 object LocalDateTimeUtils {
-    // region LocalDateTime
+
     /**
      * 字符串转时间
      * @param str yyyy-MM-dd HH:mm:ss 格式字符串
      * @return java.time.LocalDateTime 时间
      */
     @JvmStatic
-    fun parse(str: String): LocalDateTime {
-        return LocalDateTime.parse(str, DatePattern.FORMATTER_YMD_HMS)
+    fun parse(str: String, pattern: String): LocalDateTime {
+        val formatter = DateTimeFormatter.ofPattern(pattern)
+        return parse(str, formatter)
+    }
+
+    @JvmStatic
+    fun parse(str: String, formatter: DateTimeFormatter = DatePattern.FORMATTER_YMD_HMS): LocalDateTime {
+        return LocalDateTime.parse(str, formatter)
     }
 
     /**
@@ -36,71 +39,36 @@ object LocalDateTimeUtils {
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), zoneId)
     }
 
+    fun String.toLocalDateTime(pattern: String): LocalDateTime {
+        return parse(this, pattern)
+    }
+
+    fun String.toLocalDateTime(formatter: DateTimeFormatter = DatePattern.FORMATTER_YMD_HMS): LocalDateTime {
+        return parse(this, formatter)
+    }
+
+    fun Long.toLocalDateTime(zoneId: ZoneId = DatePattern.DEFAULT_ZONE_ID): LocalDateTime {
+        return parse(this, zoneId)
+    }
+
+    inline val LocalDateTime.timestamp: Long get() = timestamp()
+
     @JvmStatic
     @JvmOverloads
-    fun toTimestamp(dateTime: LocalDateTime, offset: ZoneOffset = DatePattern.DEFAULT_ZONE_OFFSET): Long {
-        return dateTime.toInstant(offset).toEpochMilli()
+    fun LocalDateTime.timestamp(offset: ZoneOffset = DatePattern.DEFAULT_ZONE_OFFSET): Long {
+        return toInstant(offset).toEpochMilli()
     }
 
     @JvmStatic
-    fun format(dateTime: LocalDateTime, formatter: String): String {
-        return format(dateTime, DateTimeFormatter.ofPattern(formatter))
-    }
-
-    @JvmStatic
-    @JvmOverloads
-    fun format(dateTime: LocalDateTime, formatter: DateTimeFormatter = DatePattern.FORMATTER_YMD_HMS): String {
-        return formatter.format(dateTime)
-    }
-
-    // endregion
-    // region LocalDate
-    @JvmStatic
-    fun parseDate(str: String): LocalDate {
-        return LocalDate.parse(str, DatePattern.FORMATTER_YMD)
-    }
-
-    @JvmStatic
-    fun format(date: LocalDate, formatter: String): String {
-        return format(date, DateTimeFormatter.ofPattern(formatter))
+    fun LocalDateTime.format(pattern: String): String {
+        val formatter = DateTimeFormatter.ofPattern(pattern)
+        return format(formatter)
     }
 
     @JvmStatic
     @JvmOverloads
-    fun format(date: LocalDate, formatter: DateTimeFormatter = DatePattern.FORMATTER_YMD): String {
-        return formatter.format(date)
+    fun LocalDateTime.format(formatter: DateTimeFormatter = DatePattern.FORMATTER_YMD_HMS): String {
+        return formatter.format(this)
     }
-
-    // endregion
-    // region LocalTime
-    @JvmStatic
-    fun parseTime(str: String): LocalTime {
-        return LocalTime.parse(str, DatePattern.FORMATTER_HMS)
-    }
-
-    @JvmStatic
-    fun format(time: LocalTime, formatter: String): String {
-        return format(time, DateTimeFormatter.ofPattern(formatter))
-    }
-
-    @JvmStatic
-    @JvmOverloads
-    fun format(time: LocalTime, formatter: DateTimeFormatter = DatePattern.FORMATTER_HMS): String {
-        return formatter.format(time)
-    }
-
-    // endregion
-    // region Date
-    @JvmStatic
-    fun toDate(dateTime: LocalDateTime): Date {
-        val timestamp = toTimestamp(dateTime)
-        return Date(timestamp)
-    }
-
-    @JvmStatic
-    fun parse(date: Date): LocalDateTime {
-        return parse(date.time)
-    }
-    // endregion
 
 }

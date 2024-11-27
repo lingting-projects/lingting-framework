@@ -3,7 +3,7 @@ package live.lingting.framework.util
 import jakarta.servlet.http.HttpServletRequest
 import java.util.regex.Pattern
 import live.lingting.framework.http.header.HttpHeaders
-import live.lingting.framework.kt.forEach
+import live.lingting.framework.util.EnumerationUtils.forEach
 
 /**
  * @author lingting 2022/10/28 17:54

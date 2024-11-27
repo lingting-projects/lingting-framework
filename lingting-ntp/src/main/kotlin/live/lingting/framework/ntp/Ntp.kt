@@ -1,6 +1,7 @@
 package live.lingting.framework.ntp
 
 import java.time.Instant
+
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -19,7 +20,7 @@ class Ntp(val host: String, val diff: Long) {
         return this
     }
 
-    fun currentMillis(): Long {
+    fun millis(): Long {
         return System.currentTimeMillis() + diff
     }
 
@@ -28,11 +29,11 @@ class Ntp(val host: String, val diff: Long) {
     }
 
     fun instant(): Instant {
-        val millis = currentMillis()
+        val millis = millis()
         return Instant.ofEpochMilli(millis)
     }
 
-    fun now(): LocalDateTime {
+    fun current(): LocalDateTime {
         val instant = instant()
         return LocalDateTime.ofInstant(instant, zoneId)
     }
@@ -42,7 +43,7 @@ class Ntp(val host: String, val diff: Long) {
     }
 
     fun plusMillis(millis: Long): Long {
-        return currentMillis() + millis
+        return millis() + millis
     }
 
     fun plus(time: Long, unit: TimeUnit): Long {

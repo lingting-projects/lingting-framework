@@ -1,7 +1,6 @@
 package live.lingting.framework.queue
 
 import live.lingting.framework.lock.JavaReentrantLock
-import live.lingting.framework.util.CollectionUtils
 
 /**
  * 循环队列
@@ -26,7 +25,7 @@ class CircularQueue<T> {
 
     fun pool(): T? {
         return lock.getByInterruptibly<T?> {
-            if (CollectionUtils.isEmpty(source)) {
+            if (source.isNullOrEmpty()) {
                 return@getByInterruptibly null
             }
             if (iterator == null || !iterator!!.hasNext()) {

@@ -15,10 +15,10 @@ internal class NtpTest {
         val instance: NtpFactory = NtpFactory.DEFAULT
         val ntp = instance.create()
         assertNotNull(ntp)
-        val now = ntp!!.now()
+        val now = ntp!!.current()
         assertNotNull(now)
         assertEquals(Ntp.DEFAULT_ZONE_ID, ntp.zoneId)
-        val millis = ntp.currentMillis()
+        val millis = ntp.millis()
         assertTrue(millis > 0)
     }
 }

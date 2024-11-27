@@ -7,7 +7,6 @@ import java.util.function.Supplier
 import live.lingting.framework.elasticsearch.EFunction
 import live.lingting.framework.elasticsearch.composer.QueryComposer
 import live.lingting.framework.elasticsearch.function.TermOperator
-import live.lingting.framework.util.CollectionUtils
 import live.lingting.framework.util.ValueUtils.isPresent
 
 /**
@@ -344,13 +343,13 @@ open class QueryBuilder<E> {
 
     fun build(): Query {
         val builder = BoolQuery.Builder()
-        if (!CollectionUtils.isEmpty(must)) {
+        if (!must.isNullOrEmpty()) {
             builder.must(ArrayList(must))
         }
-        if (!CollectionUtils.isEmpty(should)) {
+        if (!should.isNullOrEmpty()) {
             builder.should(ArrayList(should))
         }
-        if (!CollectionUtils.isEmpty(mustNot)) {
+        if (!mustNot.isNullOrEmpty()) {
             builder.mustNot(ArrayList(mustNot))
         }
 

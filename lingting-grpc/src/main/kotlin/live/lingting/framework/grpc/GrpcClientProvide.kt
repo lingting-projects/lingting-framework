@@ -45,7 +45,7 @@ class GrpcClientProvide(val properties: GrpcClientProperties, val interceptors: 
 
     @JvmOverloads
     fun addInterceptors(builder: ManagedChannelBuilder<*>, collection: MutableCollection<ClientInterceptor> = interceptors) {
-        if (CollectionUtils.isEmpty(collection)) {
+        if (collection.isNullOrEmpty()) {
             return
         }
 

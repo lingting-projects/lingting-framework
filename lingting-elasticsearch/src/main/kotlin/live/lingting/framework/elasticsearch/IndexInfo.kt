@@ -4,7 +4,7 @@ import live.lingting.framework.elasticsearch.annotation.Index
 import live.lingting.framework.elasticsearch.polymerize.Polymerize
 import live.lingting.framework.elasticsearch.polymerize.PolymerizeFactory
 import live.lingting.framework.reflect.ClassField
-import live.lingting.framework.util.AnnotationUtils
+import live.lingting.framework.util.AnnotationUtils.findAnnotation
 import live.lingting.framework.util.StringUtils
 
 /**
@@ -45,7 +45,7 @@ data class IndexInfo(
 
         @JvmStatic
         fun create(properties: ElasticsearchProperties, cls: Class<*>, polymerizeFactory: PolymerizeFactory): IndexInfo {
-            val a = AnnotationUtils.findAnnotation(cls, Index::class.java) ?: Index()
+            val a = findAnnotation(cls, Index::class.java) ?: Index()
             val polymerize = polymerizeFactory.get(a.polymerize)
             val polymerizeFields = Polymerize.fields(cls)
             val polymerizeLimit = a.polymerizeLimit
