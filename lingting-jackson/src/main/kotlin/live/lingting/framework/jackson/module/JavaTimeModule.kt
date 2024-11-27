@@ -12,13 +12,10 @@ import com.fasterxml.jackson.datatype.jsr310.ser.OffsetDateTimeSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer
 import java.time.Instant
 import java.time.LocalDate
-
 import java.time.LocalDateTime
-import live.lingting.framework.time.DateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import live.lingting.framework.jackson.serializer.InstantSerializer
 import live.lingting.framework.time.DatePattern
 
@@ -30,15 +27,15 @@ class JavaTimeModule : SimpleModule() {
     init {
         addSerializer(
             LocalDateTime::class.java,
-            LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN))
+            LocalDateTimeSerializer(DatePattern.FORMATTER_YMD_HMS)
         )
         addSerializer(
             LocalDate::class.java,
-            LocalDateSerializer(DateTimeFormatter.ofPattern(DatePattern.NORM_DATE_PATTERN))
+            LocalDateSerializer(DatePattern.FORMATTER_YMD)
         )
         addSerializer(
             LocalTime::class.java,
-            LocalTimeSerializer(DateTimeFormatter.ofPattern(DatePattern.NORM_TIME_PATTERN))
+            LocalTimeSerializer(DatePattern.FORMATTER_HMS)
         )
         addSerializer(Instant::class.java, InstantSerializer())
         addSerializer(OffsetDateTime::class.java, OffsetDateTimeSerializer.INSTANCE)
@@ -46,15 +43,15 @@ class JavaTimeModule : SimpleModule() {
 
         addDeserializer(
             LocalDateTime::class.java,
-            LocalDateTimeDeserializer(DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN))
+            LocalDateTimeDeserializer(DatePattern.FORMATTER_YMD_HMS)
         )
         addDeserializer(
             LocalDate::class.java,
-            LocalDateDeserializer(DateTimeFormatter.ofPattern(DatePattern.NORM_DATE_PATTERN))
+            LocalDateDeserializer(DatePattern.FORMATTER_YMD)
         )
         addDeserializer(
             LocalTime::class.java,
-            LocalTimeDeserializer(DateTimeFormatter.ofPattern(DatePattern.NORM_TIME_PATTERN))
+            LocalTimeDeserializer(DatePattern.FORMATTER_HMS)
         )
         addDeserializer(Instant::class.java, InstantDeserializer.INSTANT)
         addDeserializer(OffsetDateTime::class.java, InstantDeserializer.OFFSET_DATE_TIME)

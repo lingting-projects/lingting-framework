@@ -30,14 +30,23 @@ object DatePattern {
 
     const val NORM_DATETIME_PATTERN: String = "yyyy-MM-dd HH:mm:ss"
 
+    const val MILLIS_NORM_DATETIME_PATTERN: String = "yyyy-MM-dd HH:mm:ss.SSS"
+
     const val NORM_DATE_PATTERN: String = "yyyy-MM-dd"
 
     const val NORM_TIME_PATTERN: String = "HH:mm:ss"
 
+    const val MILLIS_NORM_TIME_PATTERN: String = "HH:mm:ss.SSS"
+
     const val ISO_8601_DATETIME_PATTERN: String = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+
+    const val MILLIS_ISO_8601_DATETIME_PATTERN: String = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
 
     @JvmField
     val FORMATTER_YMD_HMS: DateTimeFormatter = DateTimeFormatter.ofPattern(NORM_DATETIME_PATTERN)
+
+    @JvmField
+    val FORMATTER_YMD_HMS_MILLIS: DateTimeFormatter = DateTimeFormatter.ofPattern(MILLIS_NORM_DATETIME_PATTERN)
 
     @JvmField
     val FORMATTER_YMD: DateTimeFormatter = DateTimeFormatter.ofPattern(NORM_DATE_PATTERN)
@@ -46,6 +55,13 @@ object DatePattern {
     val FORMATTER_HMS: DateTimeFormatter = DateTimeFormatter.ofPattern(NORM_TIME_PATTERN)
 
     @JvmField
+    val FORMATTER_HMS_MILLIS: DateTimeFormatter = DateTimeFormatter.ofPattern(MILLIS_NORM_TIME_PATTERN)
+
+    @JvmField
     val FORMATTER_ISO_8601: DateTimeFormatter = DateTimeFormatter.ofPattern(ISO_8601_DATETIME_PATTERN)
+
+    @JvmField
+    val FORMATTER_ISO_8601_MILLIS: DateTimeFormatter = DateTimeFormatter.ofPattern(MILLIS_ISO_8601_DATETIME_PATTERN)
+
 }
 
