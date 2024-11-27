@@ -29,7 +29,7 @@ object Slf4jUtils {
         return LoggerFactory.getLogger(name)
     }
 
-    inline val InlineLogger.log: Logger get() = logger()
+    inline val InlineLogger.log get() = logger()
 
     interface InlineLogger
 }

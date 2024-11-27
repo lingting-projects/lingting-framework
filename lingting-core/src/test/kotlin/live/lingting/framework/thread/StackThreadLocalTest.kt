@@ -1,10 +1,9 @@
 package live.lingting.framework.thread
 
+import live.lingting.framework.util.Slf4jUtils.logger
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2024-03-29 13:38
@@ -41,6 +40,6 @@ internal class StackThreadLocalTest {
 
     companion object {
         val local: StackThreadLocal<Long?> = StackThreadLocal()
-        private val log: Logger = LoggerFactory.getLogger(StackThreadLocalTest::class.java)
+        private val log = logger()
     }
 }

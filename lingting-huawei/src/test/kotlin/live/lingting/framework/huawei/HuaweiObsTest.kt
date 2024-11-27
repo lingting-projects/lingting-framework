@@ -5,13 +5,13 @@ import java.nio.file.Files
 import java.util.function.Consumer
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
 import live.lingting.framework.aws.s3.AwsS3Utils.MULTIPART_MIN_PART_SIZE
-import live.lingting.framework.aws.s3.response.AwsS3MultipartItem
 import live.lingting.framework.http.download.HttpDownload.Companion.single
 import live.lingting.framework.huawei.exception.HuaweiException
 import live.lingting.framework.huawei.properties.HuaweiObsProperties
 import live.lingting.framework.id.Snowflake
 import live.lingting.framework.thread.Async
 import live.lingting.framework.util.DigestUtils.md5Hex
+import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StreamUtils.toString
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -24,8 +24,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty
 import org.junit.jupiter.api.function.Executable
 import org.junit.jupiter.api.function.ThrowingSupplier
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2024-09-13 17:13
@@ -107,6 +105,6 @@ internal class HuaweiObsTest {
     }
 
     companion object {
-        private val log: Logger = LoggerFactory.getLogger(HuaweiObsTest::class.java)
+        private val log = logger()
     }
 }

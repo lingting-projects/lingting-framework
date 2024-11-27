@@ -11,14 +11,13 @@ import live.lingting.framework.aws.s3.interfaces.AwsS3Listener
 import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.value.multi.StringMultiValue
-import org.slf4j.Logger
 
 /**
  * @author lingting 2024/11/5 14:48
  */
 open class AwsS3DefaultListener(@JvmField protected val client: AwsS3Client) : AwsS3Listener {
     @JvmField
-    protected val log: Logger = client.log
+    protected val log = client.log
 
     @JvmField
     protected val region: String = client.properties.region

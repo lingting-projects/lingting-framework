@@ -11,6 +11,7 @@ import live.lingting.framework.http.download.HttpDownload
 import live.lingting.framework.id.Snowflake
 import live.lingting.framework.thread.Async
 import live.lingting.framework.util.DigestUtils
+import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StreamUtils
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -21,8 +22,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2024-09-18 14:29
@@ -31,7 +30,7 @@ import org.slf4j.LoggerFactory
 internal class AliOssTest {
 
     companion object {
-        private val log: Logger = LoggerFactory.getLogger(AliOssTest::class.java)
+        private val log = logger()
     }
 
     var sts: AliSts? = null

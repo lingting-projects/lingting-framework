@@ -10,7 +10,6 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 import live.lingting.framework.util.Slf4jUtils.logger
-import org.slf4j.Logger
 
 /**
  * @author lingting
@@ -18,7 +17,7 @@ import org.slf4j.Logger
 object FileUtils {
     @JvmField
     val TEMP_DIR: File = SystemUtils.tmpDirLingting()
-    private val log: Logger = logger()
+    private val log = logger()
 
     /**
      * 扫描指定路径下所有文件

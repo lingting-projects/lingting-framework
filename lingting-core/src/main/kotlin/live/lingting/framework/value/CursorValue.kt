@@ -5,14 +5,13 @@ import java.util.Spliterators
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
 import live.lingting.framework.util.Slf4jUtils.logger
-import org.slf4j.Logger
 
 /**
  * @author lingting 2023-12-29 11:30
  */
 abstract class CursorValue<T> : Iterator<T> {
 
-    protected val log: Logger = logger()
+    protected val log = logger()
 
     protected val current: MutableList<T> = ArrayList()
 

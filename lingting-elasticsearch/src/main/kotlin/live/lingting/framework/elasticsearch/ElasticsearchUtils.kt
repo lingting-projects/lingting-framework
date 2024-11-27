@@ -6,10 +6,9 @@ import java.lang.invoke.SerializedLambda
 import java.lang.reflect.Field
 import java.util.concurrent.ConcurrentHashMap
 import live.lingting.framework.util.ClassUtils
+import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StringUtils
 import org.elasticsearch.client.ResponseException
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2023-06-16 11:25
@@ -22,7 +21,7 @@ object ElasticsearchUtils {
 
     private val FIELD_LAMBDA_CACHE: MutableMap<Class<out EFunction<*, *>>, Field?> = ConcurrentHashMap()
 
-    private val log: Logger = LoggerFactory.getLogger(ElasticsearchUtils::class.java)
+    private val log = logger()
 
     @JvmStatic
     fun <T> getEntityClass(cls: Class<*>): Class<T> {

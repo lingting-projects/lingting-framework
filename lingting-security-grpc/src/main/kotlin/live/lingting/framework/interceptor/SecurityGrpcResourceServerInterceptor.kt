@@ -9,14 +9,13 @@ import live.lingting.framework.Sequence
 import live.lingting.framework.exception.SecurityGrpcThrowing
 import live.lingting.framework.grpc.interceptor.AbstractServerInterceptor
 import live.lingting.framework.grpc.simple.ForwardingServerOnCallListener
-import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.security.authorize.SecurityAuthorize
 import live.lingting.framework.security.convert.SecurityConvert
 import live.lingting.framework.security.domain.SecurityScope
 import live.lingting.framework.security.domain.SecurityToken
 import live.lingting.framework.security.resource.SecurityResourceService
+import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StringUtils
-import org.slf4j.Logger
 
 /**
  * @author lingting 2023-12-14 16:28
@@ -29,7 +28,7 @@ class SecurityGrpcResourceServerInterceptor(
 ) : AbstractServerInterceptor(), Sequence {
 
     companion object {
-        private val log: Logger = logger()
+        private val log = logger()
     }
 
     override fun <S, R> interceptCall(

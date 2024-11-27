@@ -50,10 +50,8 @@ import live.lingting.framework.function.ThrowingFunction
 import live.lingting.framework.function.ThrowingRunnable
 import live.lingting.framework.function.ThrowingSupplier
 import live.lingting.framework.retry.Retry
-import live.lingting.framework.util.CollectionUtils
+import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StringUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2024-03-06 16:41
@@ -66,6 +64,13 @@ class ElasticsearchApi<T>(
     val interceptors: List<Interceptor>,
     val client: ElasticsearchClient
 ) {
+
+    companion object {
+
+        private val log = logger()
+
+    }
+
     val retryProperties = properties.retry
 
     val scrollSize: Long
@@ -532,9 +537,5 @@ class ElasticsearchApi<T>(
             params.cursor = scrollId
             scroll(params, queries)
         }, scroll.cursor, scroll.records)
-    }
-
-    companion object {
-        private val log: Logger = LoggerFactory.getLogger(ElasticsearchApi::class.java)
     }
 }

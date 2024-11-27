@@ -1,7 +1,6 @@
 package live.lingting.framework.ntp
 
 import java.time.Instant
-
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -9,7 +8,6 @@ import java.util.concurrent.TimeUnit
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.ThreadUtils
 import live.lingting.framework.value.WaitValue
-import org.slf4j.Logger
 
 /**
  * 中国 ntp 类
@@ -25,7 +23,7 @@ object NtpCn {
     @JvmField
     val instance: WaitValue<Ntp> = WaitValue.of()
 
-    val log: Logger = logger()
+    val log = logger()
 
     @JvmStatic
     fun initNtpCN() {

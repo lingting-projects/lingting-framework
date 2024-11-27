@@ -2,8 +2,7 @@ package live.lingting.framework.dingtalk
 
 import live.lingting.framework.dingtalk.message.DingTalkMessage
 import live.lingting.framework.queue.WaitQueue
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import live.lingting.framework.util.Slf4jUtils.logger
 
 /**
  * 订单负载均衡消息发送
@@ -52,6 +51,6 @@ class DingTalkBalancedSender {
     }
 
     companion object {
-        private val log: Logger = LoggerFactory.getLogger(DingTalkBalancedSender::class.java)
+        private val log = logger()
     }
 }

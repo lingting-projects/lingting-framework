@@ -5,14 +5,13 @@ import java.io.FileInputStream
 import java.net.URI
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.FileUtils
+import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StreamUtils
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrowsExactly
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2024-01-29 16:43
@@ -98,6 +97,6 @@ internal class HttpDownloadTest {
     }
 
     companion object {
-        private val log: Logger = LoggerFactory.getLogger(HttpDownloadTest::class.java)
+        private val log = logger()
     }
 }

@@ -6,8 +6,7 @@ import live.lingting.framework.grpc.exception.GrpcExceptionHandler
 import live.lingting.framework.grpc.exception.GrpcExceptionInstance
 import live.lingting.framework.security.exception.AuthorizationException
 import live.lingting.framework.security.exception.PermissionsException
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import live.lingting.framework.util.Slf4jUtils.logger
 
 /**
  * @author lingting 2023-12-15 17:15
@@ -32,6 +31,6 @@ class SecurityGrpcExceptionInstance : GrpcExceptionInstance {
     }
 
     companion object {
-        private val log: Logger = LoggerFactory.getLogger(SecurityGrpcExceptionInstance::class.java)
+        private val log = logger()
     }
 }

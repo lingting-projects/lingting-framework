@@ -11,9 +11,8 @@ import live.lingting.framework.Sequence
 import live.lingting.framework.context.ContextComponent
 import live.lingting.framework.grpc.interceptor.AbstractServerInterceptor
 import live.lingting.framework.util.ClassUtils
+import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.ThreadUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2023-04-14 17:38
@@ -120,6 +119,6 @@ class GrpcServer(
     }
 
     companion object {
-        private val log: Logger = LoggerFactory.getLogger(GrpcServer::class.java)
+        private val log = logger()
     }
 }

@@ -4,12 +4,11 @@ import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.LockSupport
 import live.lingting.framework.time.StopWatch
+import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.ThreadUtils
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2024-01-26 17:07
@@ -89,6 +88,6 @@ internal class AsyncTest {
     }
 
     companion object {
-        private val log: Logger = LoggerFactory.getLogger(AsyncTest::class.java)
+        private val log = logger()
     }
 }

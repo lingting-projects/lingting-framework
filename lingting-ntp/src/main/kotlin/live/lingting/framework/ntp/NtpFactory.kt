@@ -9,14 +9,13 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.IpUtils
+import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.ThreadUtils
 import live.lingting.framework.value.CycleValue
 import live.lingting.framework.value.StepValue
 import live.lingting.framework.value.cycle.StepCycleValue
 import live.lingting.framework.value.step.LongStepValue
 import org.apache.commons.net.ntp.NTPUDPClient
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * @author lingting 2023-12-27 15:47
@@ -113,7 +112,7 @@ class NtpFactory protected constructor() {
             "ntp1.aliyun.com", "ntp2.aliyun.com", "ntp3.aliyun.com", "ntp4.aliyun.com", "ntp5.aliyun.com",
             "ntp6.aliyun.com", "ntp7.aliyun.com",
         )
-        private val log: Logger = LoggerFactory.getLogger(NtpFactory::class.java)
+        private val log = logger()
 
     }
 }
