@@ -123,7 +123,7 @@ configure(javaProjects) {
     // 这样子Java代码直接卸载kotlin里面就可以被访问了
     sourceSets {
         main { java { srcDir("src/main/kotlin") } }
-        test { java { srcDir("src/main/kotlin") } }
+        test { java { srcDir("src/test/kotlin") } }
     }
 
     configure<KotlinJvmProjectExtension> {

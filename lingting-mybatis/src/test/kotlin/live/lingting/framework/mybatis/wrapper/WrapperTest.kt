@@ -33,9 +33,7 @@ class WrapperTest {
 
             .limitOne()
 
-        println(query.getSqlSelect())
         assertEquals("t.s2, t.s1, t.s3", query.getSqlSelect())
-        println(query.getSqlSegment())
         assertEquals(
             "(t.q1 = #{ew.params.PARAM1} AND t.i1 IN (#{ew.params.PARAM2},#{ew.params.PARAM3}) AND t.b1 BETWEEN #{ew.params.PARAM4} AND #{ew.params.PARAM5} AND (aq1 = #{ew.params.PARAM6} AND (aaq1 = #{ew.params.PARAM7})   )    AND (oq1 = #{ew.params.PARAM8} OR (ooq1 = #{ew.params.PARAM9})   )   ) GROUP BY t.g1, t.g2 HAVING sum(t.h1) > 0 ORDER BY t.od1 DESC, t.od2 DESC,t.oa1 ASC, t.oa2 ASC  limit 1",
             query.getSqlSegment()

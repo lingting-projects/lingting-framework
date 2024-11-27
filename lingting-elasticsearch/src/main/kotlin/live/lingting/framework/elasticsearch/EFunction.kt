@@ -6,4 +6,4 @@ import java.util.function.Function
 /**
  * @author lingting 2023-07-13 19:16
  */
-interface EFunction<T, R> : Function<T, R>, Serializable
+fun interface EFunction<T, R> : Function<T, R>, Serializable

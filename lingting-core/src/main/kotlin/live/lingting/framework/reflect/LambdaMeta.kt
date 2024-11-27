@@ -5,6 +5,9 @@ import java.lang.invoke.MethodHandles
 import java.lang.invoke.SerializedLambda
 import java.lang.reflect.Executable
 import java.lang.reflect.Proxy
+import java.util.function.Supplier
+import kotlin.reflect.KClass
+import live.lingting.framework.util.BooleanUtils.ifTrue
 import live.lingting.framework.util.ClassUtils
 
 /**
@@ -29,9 +32,22 @@ class LambdaMeta(
 
             val cls = a.javaClass
             val loader = cls.classLoader
-            val cf = ClassUtils.method(cls, "writeReplace")!!.apply { isAccessible = true }
-            val lambda = cf.invoke(a) as SerializedLambda
-            return of(lambda, loader)
+            val methods = ClassUtils.methods(cls)
+            val writeReplace = methods.firstOrNull {
+                it.name == "writeReplace"
+            }?.apply { isAccessible = true }
+
+            if (writeReplace != null) {
+                val lambda = writeReplace.invoke(a) as SerializedLambda
+                return of(lambda, loader)
+            }
+
+            val getFunctionDelegate = methods.firstOrNull {
+                it.name == "getFunctionDelegate"
+            }!!.apply { isAccessible = true }
+
+            val captured = getFunctionDelegate.invoke(a)
+            return ofCaptured(captured)
         }
 
         @JvmStatic
@@ -53,24 +69,32 @@ class LambdaMeta(
             }
 
             val method = lambda.implMethodName
-            val field = FIELD_METHOD_START.firstOrNull {
+            val field = FIELD_METHOD_START.any {
                 method.startsWith(it)
-            }.let {
-                if (it != null) {
-                    return@let it
-                }
+            }.ifTrue(Supplier {
+                ClassUtils.toFiledName(method)
+            })
 
-                lambda.getCapturedArg(0).toString().let {
-                    it.substring(
-                        it.indexOf(cls.simpleName) + cls.simpleName.length + 1,
-                        it.indexOf(":")
-                    )
-                }
-            }.let {
-                ClassUtils.toFiledName(it)
+            if (field != null) {
+                return LambdaMeta(cls, field)
             }
 
-            return LambdaMeta(cls, field)
+            val captured = lambda.getCapturedArg(0)
+            return ofCaptured(captured)
+        }
+
+        @JvmStatic
+        fun ofCaptured(a: Any): LambdaMeta {
+            val fields = ClassUtils.classFields(a.javaClass)
+            val owner = fields.first { it.name == "owner" }.visibleGet().get(a).let {
+                if (it is KClass<*>) {
+                    it.java
+                } else {
+                    it as Class<*>
+                }
+            }
+            val name = fields.first { it.name == "name" }.visibleGet().get(a) as String
+            return LambdaMeta(owner, name)
         }
 
     }
