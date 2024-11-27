@@ -2,9 +2,8 @@ package live.lingting.framework.elasticsearch
 
 import co.elastic.clients.elasticsearch._types.FieldValue
 import co.elastic.clients.json.JsonData
-import java.lang.invoke.SerializedLambda
-import java.lang.reflect.Field
 import java.util.concurrent.ConcurrentHashMap
+import live.lingting.framework.reflect.LambdaMeta
 import live.lingting.framework.util.ClassUtils
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StringUtils
@@ -15,11 +14,8 @@ import org.elasticsearch.client.ResponseException
  */
 @Suppress("UNCHECKED_CAST")
 object ElasticsearchUtils {
-    private val EF_LAMBDA_CACHE: MutableMap<Class<out EFunction<*, *>>, SerializedLambda?> = ConcurrentHashMap()
 
-    private val CLS_LAMBDA_CACHE: MutableMap<Class<out EFunction<*, *>>, Class<*>?> = ConcurrentHashMap()
-
-    private val FIELD_LAMBDA_CACHE: MutableMap<Class<out EFunction<*, *>>, Field?> = ConcurrentHashMap()
+    private val EF_LAMBDA_CACHE: MutableMap<Class<out EFunction<*, *>>, LambdaMeta?> = ConcurrentHashMap()
 
     private val log = logger()
 
@@ -30,72 +26,14 @@ object ElasticsearchUtils {
     }
 
     @JvmStatic
-    fun <T, R> resolveByReflection(function: EFunction<T, R>): SerializedLambda {
-        val fClass: Class<out EFunction<*, *>> = function.javaClass
-        val method = fClass.getDeclaredMethod("writeReplace")
-        method.isAccessible = true
-        return method.invoke(function) as SerializedLambda
-    }
-
-    @JvmStatic
-    fun <T, R> resolve(function: EFunction<T, R>): SerializedLambda? {
+    fun <T, R> resolve(function: EFunction<T, R>): LambdaMeta? {
         val fClass: Class<out EFunction<*, *>> = function.javaClass
         return EF_LAMBDA_CACHE.computeIfAbsent(fClass) { k ->
             try {
-                return@computeIfAbsent resolveByReflection<T, R>(function)
+                LambdaMeta.of(function)
             } catch (e: Exception) {
                 log.error("resolve lambda error!", e)
-                return@computeIfAbsent null
-            }
-        }
-    }
-
-    @JvmStatic
-    fun <T, R> resolveClass(function: EFunction<T, R>): Class<T>? {
-        val fClass: Class<out EFunction<*, *>> = function.javaClass
-        return CLS_LAMBDA_CACHE.computeIfAbsent(fClass) { k ->
-            try {
-                val lambda = resolve(function)
-                if (lambda == null) {
-                    return@computeIfAbsent null
-                }
-                val implClassName = lambda.implClass
-                val className = implClassName.replace("/", ".")
-                return@computeIfAbsent Class.forName(className)
-            } catch (e: Exception) {
-                log.error("resolve class by lambda error!", e)
-                return@computeIfAbsent null
-            }
-        } as Class<T>
-    }
-
-    @JvmStatic
-    fun <T, R> resolveField(function: EFunction<T, R>): Field? {
-        val fClass: Class<out EFunction<*, *>> = function.javaClass
-        return FIELD_LAMBDA_CACHE.computeIfAbsent(fClass) { k ->
-            try {
-                val lambda = resolve(function)
-                val aClass = resolveClass(function)
-
-                if (lambda == null || aClass == null) {
-                    return@computeIfAbsent null
-                }
-
-                val implMethodName = lambda.implMethodName
-
-                val implFieldName = if (implMethodName.startsWith("get")) {
-                    implMethodName.substring("get".length)
-                } else if (implMethodName.startsWith("set")) {
-                    implMethodName.substring("set".length)
-                } else {
-                    implMethodName.substring("is".length)
-                }
-                val fieldName = StringUtils.firstLower(implFieldName)
-                val cf = ClassUtils.classField(aClass, fieldName)
-                return@computeIfAbsent cf?.field
-            } catch (e: Exception) {
-                log.error("resolve method by lambda error!", e)
-                return@computeIfAbsent null
+                null
             }
         }
     }
@@ -132,8 +70,7 @@ object ElasticsearchUtils {
 
     @JvmStatic
     fun fieldName(func: EFunction<*, *>): String {
-        val field = resolveField(func)
-        return field?.name ?: ""
+        return resolve(func)?.field ?: ""
     }
 
 }

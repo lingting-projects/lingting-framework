@@ -3,16 +3,10 @@ package live.lingting.framework.mybatis.wrapper
 import com.baomidou.mybatisplus.core.toolkit.Constants
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache
-import com.baomidou.mybatisplus.core.toolkit.support.ReflectLambdaMeta
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction
-import com.baomidou.mybatisplus.core.toolkit.support.SerializedLambda
-import com.baomidou.mybatisplus.core.toolkit.support.ShadowLambdaMeta
-import java.lang.reflect.Proxy
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
-import live.lingting.framework.mybatis.lambda.LambdaInfo
-import live.lingting.framework.util.ClassUtils
-import org.apache.ibatis.reflection.ReflectionException
+import live.lingting.framework.reflect.LambdaMeta
 
 @Suppress("UNCHECKED_CAST")
 object Wrappers {
@@ -22,29 +16,8 @@ object Wrappers {
 
     private val COLUMN_SF_CACHE = ConcurrentHashMap<SFunction<*, *>, ColumnCache?>()
 
-    fun extract(sf: SFunction<*, *>): LambdaInfo {
-        return if (sf is Proxy) {
-            LambdaInfo.of(sf)
-        } else {
-            try {
-                val cls = sf.javaClass
-                val loader = cls.classLoader
-                val cf = ClassUtils.method(cls, "writeReplace")!!.apply { isAccessible = true }
-                val lambda = cf.invoke(sf) as java.lang.invoke.SerializedLambda
-
-                try {
-                    val meta = ReflectLambdaMeta(lambda, loader)
-                    LambdaInfo.of(meta)
-                } catch (_: ReflectionException) {
-                    LambdaInfo.of(lambda, loader)
-                }
-
-            } catch (_: Throwable) {
-                val extract = SerializedLambda.extract(sf)
-                val meta = ShadowLambdaMeta(extract)
-                LambdaInfo.of(meta)
-            }
-        }
+    fun extract(sf: SFunction<*, *>): LambdaMeta {
+        return LambdaMeta.of(sf)
     }
 
     @JvmStatic
