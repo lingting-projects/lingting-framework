@@ -5,6 +5,7 @@ import java.time.Duration;
 /**
  * @author lingting 2024-01-26 15:34
  */
+@FunctionalInterface
 public interface InterruptedRunnable extends ThrowingRunnable {
 
 	InterruptedRunnable THREAD_SLEEP = () -> Thread.sleep(500);
