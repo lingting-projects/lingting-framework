@@ -25,7 +25,7 @@ object StringUtils {
      */
     @JvmStatic
     fun hasText(str: CharSequence?): Boolean {
-        if (str == null || str.isEmpty()) {
+        if (str.isNullOrBlank()) {
             return false
         }
 
@@ -68,35 +68,36 @@ object StringUtils {
     }
 
     @JvmStatic
-    fun firstLower(str: String?): String {
-        if (str == null) {
+    fun String?.firstLower(): String {
+        if (this == null) {
             return ""
         }
-        if (!hasText(str)) {
-            return str
+
+        if (!hasText(this)) {
+            return this
         }
 
-        val c = str[0]
+        val c = this[0]
         if (CharUtils.isUpperLetter(c)) {
-            return c.lowercaseChar().toString() + str.substring(1)
+            return c.lowercaseChar().toString() + substring(1)
         }
-        return str
+        return this
     }
 
     @JvmStatic
-    fun firstUpper(str: String?): String {
-        if (str == null) {
+    fun String?.firstUpper(): String {
+        if (this == null) {
             return ""
         }
-        if (!hasText(str)) {
-            return str
+        if (!hasText(this)) {
+            return this
         }
 
-        val c = str[0]
+        val c = this[0]
         if (CharUtils.isLowerLetter(c)) {
-            return c.uppercaseChar().toString() + str.substring(1)
+            return c.uppercaseChar().toString() + substring(1)
         }
-        return str
+        return this
     }
 
     /**
@@ -152,11 +153,12 @@ object StringUtils {
     }
 
     @JvmStatic
-    fun hex(bytes: ByteArray): String {
+    fun ByteArray.hex(): String {
         val builder = StringBuilder()
 
-        for (b in bytes) {
-            val hex = Integer.toHexString((b.toInt() and 0xFF) or 0x100)
+        for (b in this) {
+            val i = (b.toInt() and 0xFF) or 0x100
+            val hex = Integer.toHexString(i)
             builder.append(hex, 1, 3)
         }
 
@@ -164,15 +166,15 @@ object StringUtils {
     }
 
     @JvmStatic
-    fun hex(hex: String): ByteArray {
-        val length = hex.length
+    fun String.hex(): ByteArray {
+        val length = length
         require(length % 2 == 0) { "Invalid hexadecimal string" }
 
         val byteArray = ByteArray(length / 2)
         var i = 0
         while (i < length) {
             // 16进制单字符
-            val h: String = hex.substring(i, i + 2)
+            val h: String = substring(i, i + 2)
             // 转byte
             val b = h.toInt(16).toByte()
             byteArray[i / 2] = b
@@ -186,16 +188,18 @@ object StringUtils {
      * 字节码转base64字符串
      */
     @JvmStatic
-    fun base64(bytes: ByteArray): String {
-        return Base64.getEncoder().encodeToString(bytes)
+    fun ByteArray.base64(): String {
+        val encoder = Base64.getEncoder()
+        return encoder.encodeToString(this)
     }
 
     /**
      * base64字符串转字节码
      */
     @JvmStatic
-    fun base64(base64: String): ByteArray {
-        return Base64.getDecoder().decode(base64)
+    fun String.base64(): ByteArray {
+        val decoder = Base64.getDecoder()
+        return decoder.decode(this)
     }
 
     /**

@@ -13,7 +13,7 @@ import org.junit.jupiter.api.function.ThrowingSupplier
 /**
  * @author lingting 2024-09-11 11:18
  */
-internal class ClassUtilsTest {
+class ClassUtilsTest {
     @Test
     fun test() {
         val classLoader = ClassUtils::class.java.classLoader

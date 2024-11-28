@@ -4,7 +4,8 @@ import java.nio.charset.Charset
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import live.lingting.framework.crypto.AbstractCrypt
-import live.lingting.framework.util.StringUtils
+import live.lingting.framework.util.StringUtils.base64
+import live.lingting.framework.util.StringUtils.hex
 
 /**
  * @author lingting 2024-09-04 10:17
@@ -23,9 +24,27 @@ class Cipher(
      * 加密具体行为, 如: AES/ECB/NoPadding
      */
     val symbol: String,
-    charset: Charset, secret: SecretKeySpec,
+    charset: Charset,
+    secret: SecretKeySpec,
     iv: IvParameterSpec?,
 ) : AbstractCrypt<Cipher>(algorithm, charset, secret, iv) {
+
+    companion object {
+        @JvmStatic
+        fun builder(): CipherBuilder {
+            return CipherBuilder()
+        }
+
+        @JvmStatic
+        fun aesBuilder(): CipherBuilder.AES {
+            return CipherBuilder.AES()
+        }
+
+        @JvmStatic
+        fun aes(): Cipher {
+            return aesBuilder().build()
+        }
+    }
 
     override fun instance(algorithm: String, charset: Charset, secret: SecretKeySpec, iv: IvParameterSpec?): Cipher {
         return Cipher(algorithm, mode, padding, symbol, charset, secret, iv)
@@ -74,7 +93,7 @@ class Cipher(
 
     fun encryptBase64(bytes: ByteArray): String {
         val encrypt = encrypt(bytes)
-        return StringUtils.base64(encrypt)
+        return encrypt.base64()
     }
 
     fun encryptBase64(plaintext: String): String {
@@ -84,7 +103,7 @@ class Cipher(
 
     fun encryptHex(bytes: ByteArray): String {
         val encrypt = encrypt(bytes)
-        return StringUtils.hex(encrypt)
+        return encrypt.hex()
     }
 
     fun encryptHex(plaintext: String): String {
@@ -115,7 +134,7 @@ class Cipher(
     }
 
     fun decryptBase64(ciphertext: String): String {
-        val bytes: ByteArray = StringUtils.base64(ciphertext)
+        val bytes: ByteArray = ciphertext.base64()
         return decryptBase64(bytes)
     }
 
@@ -124,25 +143,9 @@ class Cipher(
     }
 
     fun decryptHex(ciphertext: String): String {
-        val bytes: ByteArray = StringUtils.hex(ciphertext)
+        val bytes: ByteArray = ciphertext.hex()
         return decryptHex(bytes)
     }
     // endregion
 
-    companion object {
-        @JvmStatic
-        fun builder(): CipherBuilder {
-            return CipherBuilder()
-        }
-
-        @JvmStatic
-        fun aesBuilder(): CipherBuilder.AES {
-            return CipherBuilder.AES()
-        }
-
-        @JvmStatic
-        fun aes(): Cipher {
-            return aesBuilder().build()
-        }
-    }
 }

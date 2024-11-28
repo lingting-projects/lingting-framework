@@ -12,6 +12,8 @@ import java.util.function.BiFunction
 import java.util.function.Function
 import java.util.function.Predicate
 import live.lingting.framework.reflect.ClassField
+import live.lingting.framework.util.StringUtils.firstLower
+import live.lingting.framework.util.StringUtils.firstUpper
 
 /**
  * @author lingting 2021/2/25 21:17
@@ -274,7 +276,7 @@ object ClassUtils {
             val fields: MutableList<ClassField> = ArrayList()
             while (k != null && !k.isAssignableFrom(Any::class.java)) {
                 for (field in k.declaredFields) {
-                    val upper: String = StringUtils.firstUpper(field.name)
+                    val upper: String = field.name.firstUpper()
                     // 尝试获取get方法
                     val getMethodName = "get$upper"
 
@@ -368,7 +370,7 @@ object ClassUtils {
             methodName.substring(it.length)
         } ?: methodName
 
-        return StringUtils.firstLower(trim)
+        return trim.firstLower()
     }
 
     @JvmStatic

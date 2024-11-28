@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 /**
  * @author lingting 2024-09-04 14:06
  */
-internal class HmacTest {
+class HmacTest {
     var source: String = "hello"
 
     var secret: String = "secret"

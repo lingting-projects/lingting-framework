@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 /**
  * @author lingting 2024-09-04 11:36
  */
-internal class AESTest {
+class AESTest {
     @Test
     fun defaultTest() {
         val secret = "6A921171B0A28CC2"

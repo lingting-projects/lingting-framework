@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 /**
  * @author lingting 2024-09-05 19:48
  */
-internal class DigestUtilsTest {
+class DigestUtilsTest {
     @Test
 
     fun md5Hex() {

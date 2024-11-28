@@ -5,7 +5,8 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import live.lingting.framework.crypto.AbstractCrypt
 import live.lingting.framework.crypto.mac.MacBuilder.Hmac
-import live.lingting.framework.util.StringUtils
+import live.lingting.framework.util.StringUtils.base64
+import live.lingting.framework.util.StringUtils.hex
 
 /**
  * @author lingting 2024-09-04 11:52
@@ -58,7 +59,7 @@ class Mac(algorithm: String, charset: Charset, secret: SecretKeySpec, iv: IvPara
 
     fun calculateBase64(bytes: ByteArray): String {
         val calculate = calculate(bytes)
-        return StringUtils.base64(calculate)
+        return calculate.base64()
     }
 
     fun calculateBase64(source: String): String {
@@ -68,7 +69,7 @@ class Mac(algorithm: String, charset: Charset, secret: SecretKeySpec, iv: IvPara
 
     fun calculateHex(bytes: ByteArray): String {
         val calculate = calculate(bytes)
-        return StringUtils.hex(calculate)
+        return calculate.hex()
     }
 
     fun calculateHex(source: String): String {

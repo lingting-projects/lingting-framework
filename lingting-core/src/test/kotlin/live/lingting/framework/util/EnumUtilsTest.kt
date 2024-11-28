@@ -8,7 +8,8 @@ import org.junit.jupiter.api.Test
 /**
  * @author lingting 2024-01-29 13:51
  */
-internal class EnumUtilsTest {
+class EnumUtilsTest {
+
     @Test
     fun test() {
         assertEquals(1, EnumUtils.getValue(IE.IE1))
@@ -18,7 +19,7 @@ internal class EnumUtilsTest {
         assertEquals(2, EnumUtils.getValue(JE.JE2))
     }
 
-    internal enum class IE(private val value: Int) : IEnum<Int> {
+    enum class IE(private val value: Int) : IEnum<Int> {
         IE1(1), IE2(2),
         ;
 
@@ -27,7 +28,7 @@ internal class EnumUtilsTest {
         }
     }
 
-    internal enum class JE(@field:JsonValue val value: Int) {
+    enum class JE(@field:JsonValue val value: Int) {
         JE1(1), JE2(2),
     }
 }

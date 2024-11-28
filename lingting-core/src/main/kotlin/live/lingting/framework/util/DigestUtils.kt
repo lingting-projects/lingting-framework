@@ -5,6 +5,7 @@ import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import live.lingting.framework.function.ThrowingBiConsumerE
+import live.lingting.framework.util.StringUtils.hex
 
 /**
  * @author lingting 2023-10-08 14:41
@@ -37,14 +38,14 @@ object DigestUtils {
     @JvmStatic
     fun md5Hex(input: ByteArray): String {
         val bytes = md5(input)
-        return StringUtils.hex(bytes)
+        return bytes.hex()
     }
 
     @JvmStatic
     @JvmOverloads
     fun md5Hex(input: InputStream, size: Int = StreamUtils.readSize): String {
         val bytes = md5(input, size)
-        return StringUtils.hex(bytes)
+        return bytes.hex()
     }
 
     @JvmStatic
@@ -74,14 +75,14 @@ object DigestUtils {
     @JvmStatic
     fun sha1Hex(input: ByteArray): String {
         val bytes = sha1(input)
-        return StringUtils.hex(bytes)
+        return bytes.hex()
     }
 
     @JvmStatic
     @JvmOverloads
     fun sha1Hex(input: InputStream, size: Int = StreamUtils.readSize): String {
         val bytes = sha1(input, size)
-        return StringUtils.hex(bytes)
+        return bytes.hex()
     }
 
     @JvmStatic
@@ -111,14 +112,14 @@ object DigestUtils {
     @JvmStatic
     fun sha256Hex(input: ByteArray): String {
         val bytes = sha256(input)
-        return StringUtils.hex(bytes)
+        return bytes.hex()
     }
 
     @JvmStatic
     @JvmOverloads
     fun sha256Hex(input: InputStream, size: Int = StreamUtils.readSize): String {
         val bytes = sha256(input, size)
-        return StringUtils.hex(bytes)
+        return bytes.hex()
     }
 }
 

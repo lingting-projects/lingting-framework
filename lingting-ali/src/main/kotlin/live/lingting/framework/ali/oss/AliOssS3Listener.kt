@@ -8,6 +8,7 @@ import live.lingting.framework.aws.s3.AwsS3Request
 import live.lingting.framework.aws.s3.impl.AwsS3DefaultListener
 import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.util.StringUtils
+import live.lingting.framework.util.StringUtils.base64
 
 /**
  * @author lingting 2024/11/5 14:53
@@ -22,7 +23,7 @@ class AliOssS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
         if (!StringUtils.hasText(string)) {
             val err = headers.first(AliUtils.HEADER_ERR, "")
             if (StringUtils.hasText(err)) {
-                val base64 = StringUtils.base64(err)
+                val base64 = err.base64()
                 string = String(base64, StandardCharsets.UTF_8)
             }
         }
