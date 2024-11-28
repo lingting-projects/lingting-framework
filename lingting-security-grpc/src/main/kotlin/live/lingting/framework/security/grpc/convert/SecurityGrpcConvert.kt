@@ -26,12 +26,12 @@ open class SecurityGrpcConvert : SecurityConvert {
             .setUsername(vo.username)
             .setAvatar(vo.avatar)
             .setNickname(vo.nickname)
-            .setEnabled(Boolean.TRUE == vo.enabled)
+            .setEnabled(true == vo.enabled)
 
-        if (!vo.roles.isNullOrEmpty()) {
+        if (vo.roles.isNotEmpty()) {
             builder.addAllRoles(vo.roles)
         }
-        if (!vo.permissions.isNullOrEmpty()) {
+        if (vo.permissions.isNotEmpty()) {
             builder.addAllPermissions(vo.permissions)
         }
 
