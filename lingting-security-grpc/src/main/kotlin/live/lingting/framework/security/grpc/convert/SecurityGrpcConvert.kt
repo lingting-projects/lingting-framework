@@ -1,4 +1,4 @@
-package live.lingting.framework.convert
+package live.lingting.framework.security.grpc.convert
 
 import com.google.protobuf.ByteString
 import java.nio.charset.Charset
@@ -10,7 +10,6 @@ import live.lingting.framework.security.domain.AuthorizationVO
 import live.lingting.framework.security.domain.SecurityScopeAttributes
 import live.lingting.framework.security.domain.SecurityToken
 import live.lingting.framework.security.po.EndpointTokenPO
-import live.lingting.framework.util.CollectionUtils
 import live.lingting.framework.util.StringUtils
 
 /**
@@ -27,7 +26,7 @@ open class SecurityGrpcConvert : SecurityConvert {
             .setUsername(vo.username)
             .setAvatar(vo.avatar)
             .setNickname(vo.nickname)
-            .setEnabled(java.lang.Boolean.TRUE == vo.enabled)
+            .setEnabled(Boolean.TRUE == vo.enabled)
 
         if (!vo.roles.isNullOrEmpty()) {
             builder.addAllRoles(vo.roles)

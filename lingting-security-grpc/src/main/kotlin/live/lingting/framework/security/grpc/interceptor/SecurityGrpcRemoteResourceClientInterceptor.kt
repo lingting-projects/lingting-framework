@@ -1,4 +1,4 @@
-package live.lingting.framework.interceptor
+package live.lingting.framework.security.grpc.interceptor
 
 import io.grpc.CallOptions
 import io.grpc.Channel
@@ -7,7 +7,7 @@ import io.grpc.ClientInterceptor
 import io.grpc.Metadata
 import io.grpc.MethodDescriptor
 import live.lingting.framework.grpc.simple.ForwardingClientOnCall
-import live.lingting.framework.properties.SecurityGrpcProperties
+import live.lingting.framework.security.grpc.properties.SecurityGrpcProperties
 
 /**
  * @author lingting 2023-12-18 16:37

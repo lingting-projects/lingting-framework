@@ -1,4 +1,4 @@
-package live.lingting.framework.properties
+package live.lingting.framework.security.grpc.properties
 
 import io.grpc.Metadata
 

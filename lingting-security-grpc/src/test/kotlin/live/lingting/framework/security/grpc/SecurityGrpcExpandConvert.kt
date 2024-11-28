@@ -1,10 +1,9 @@
 package live.lingting.framework.security.grpc
 
-import live.lingting.framework.convert.SecurityGrpcConvert
 import live.lingting.framework.security.domain.AuthorizationVO
 import live.lingting.framework.security.domain.SecurityScope
 import live.lingting.framework.security.domain.SecurityScopeAttributes
-import live.lingting.framework.util.CollectionUtils
+import live.lingting.framework.security.grpc.convert.SecurityGrpcConvert
 import live.lingting.framework.util.BooleanUtils.isTrue
 
 /**

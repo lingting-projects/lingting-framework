@@ -1,4 +1,4 @@
-package live.lingting.framework.exception
+package live.lingting.framework.security.grpc.exception
 
 import io.grpc.MethodDescriptor
 import io.grpc.Status

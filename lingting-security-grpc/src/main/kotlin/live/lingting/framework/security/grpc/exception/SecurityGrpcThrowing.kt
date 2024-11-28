@@ -1,4 +1,4 @@
-package live.lingting.framework.exception
+package live.lingting.framework.security.grpc.exception
 
 import io.grpc.Status
 import io.grpc.StatusException
@@ -18,7 +18,9 @@ object SecurityGrpcThrowing {
             when (status.code) {
                 Status.Code.UNAUTHENTICATED -> return AuthorizationException(status.description, e)
                 Status.Code.PERMISSION_DENIED -> return PermissionsException(status.description, e)
-                else -> {}
+                else -> {
+                    //
+                }
             }
         }
         return e

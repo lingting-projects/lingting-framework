@@ -1,4 +1,4 @@
-package live.lingting.framework.interceptor
+package live.lingting.framework.security.grpc.interceptor
 
 import live.lingting.framework.security.domain.SecurityToken
 import live.lingting.framework.thread.StackThreadLocal

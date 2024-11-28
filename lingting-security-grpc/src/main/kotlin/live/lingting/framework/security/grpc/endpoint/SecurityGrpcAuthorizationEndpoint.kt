@@ -1,13 +1,13 @@
-package live.lingting.framework.endpoint
+package live.lingting.framework.security.grpc.endpoint
 
 import com.google.protobuf.Empty
 import io.grpc.stub.StreamObserver
-import live.lingting.framework.convert.SecurityGrpcConvert
 import live.lingting.framework.protobuf.SecurityGrpcAuthorization
 import live.lingting.framework.protobuf.SecurityGrpcAuthorizationServiceGrpc.SecurityGrpcAuthorizationServiceImplBase
 import live.lingting.framework.security.SecurityEndpointService
 import live.lingting.framework.security.annotation.Authorize
 import live.lingting.framework.security.domain.AuthorizationVO
+import live.lingting.framework.security.grpc.convert.SecurityGrpcConvert
 import live.lingting.framework.security.po.EndpointPasswordPO
 import live.lingting.framework.security.po.EndpointTokenPO
 

@@ -1,21 +1,21 @@
-package live.lingting.framework.resource
+package live.lingting.framework.security.grpc.resource
 
 import io.grpc.ManagedChannel
 import live.lingting.framework.Sequence
 import live.lingting.framework.context.ContextComponent
-import live.lingting.framework.convert.SecurityGrpcConvert
-import live.lingting.framework.exception.SecurityGrpcThrowing
 import live.lingting.framework.protobuf.SecurityGrpcAuthorization
 import live.lingting.framework.protobuf.SecurityGrpcAuthorizationServiceGrpc
 import live.lingting.framework.protobuf.SecurityGrpcAuthorizationServiceGrpc.SecurityGrpcAuthorizationServiceBlockingStub
 import live.lingting.framework.security.domain.SecurityScope
 import live.lingting.framework.security.domain.SecurityToken
+import live.lingting.framework.security.grpc.convert.SecurityGrpcConvert
+import live.lingting.framework.security.grpc.exception.SecurityGrpcThrowing
 import live.lingting.framework.security.resolver.SecurityTokenResolver
 
 /**
  * @author lingting 2023-12-18 16:30
  */
-class SecurityTokenGrpcRemoteResolver(protected val channel: ManagedChannel, protected val convert: SecurityGrpcConvert) : SecurityTokenResolver, ContextComponent, Sequence {
+open class SecurityTokenGrpcRemoteResolver(protected val channel: ManagedChannel, protected val convert: SecurityGrpcConvert) : SecurityTokenResolver, ContextComponent, Sequence {
     protected val blocking: SecurityGrpcAuthorizationServiceBlockingStub = SecurityGrpcAuthorizationServiceGrpc.newBlockingStub(channel)
 
     protected fun resolveByRemote(token: SecurityToken?): SecurityGrpcAuthorization.AuthorizationVO {
@@ -28,7 +28,6 @@ class SecurityTokenGrpcRemoteResolver(protected val channel: ManagedChannel, pro
             return blocking.resolve(request)
         } catch (e: Exception) {
             throw SecurityGrpcThrowing.convert(e)
-        } finally {
         }
     }
 
