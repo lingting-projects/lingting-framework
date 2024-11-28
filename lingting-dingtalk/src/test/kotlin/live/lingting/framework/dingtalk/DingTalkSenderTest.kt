@@ -13,9 +13,9 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty
  */
 @EnabledIfSystemProperty(named = "framework.dingtalk.test", matches = "true")
 internal class DingTalkSenderTest {
-    var webhook: String = System.getProperty("framework.dingtalk.webhook")
+    var webhook: String = System.getenv("DINGTALK_WEBHOOK")
 
-    var secret: String = System.getProperty("framework.dingtalk.secret")
+    var secret: String = System.getenv("DINGTALK_SECRET")
 
     var sender: DingTalkSender? = null
 

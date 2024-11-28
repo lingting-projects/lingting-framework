@@ -78,7 +78,7 @@ internal class AliOssTest {
         assertTrue(bm.stream().anyMatch { it.uploadId == uploadId })
 
         val list = ossBucket.multipartList()
-        if (!list.isNullOrEmpty()) {
+        if (list.isNotEmpty()) {
             list.forEach(Consumer {
                 val ossObject = ossBucket.use(it.key)
                 ossObject.multipartCancel(it.uploadId)

@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 /**
  * @author lingting 2024-01-26 17:07
  */
-internal class AsyncTest {
+class AsyncTest {
     var executor: Executor? = null
 
     @Test
@@ -37,7 +37,7 @@ internal class AsyncTest {
         async.await()
         watch.stop()
 
-        assertTrue(watch.timeMillis() > 500)
+        assertTrue(watch.timeMillis() >= 500)
         assertEquals(0, async.notCompletedCount())
         assertEquals(max.toLong(), async.allCount())
     }
