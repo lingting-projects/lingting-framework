@@ -11,6 +11,7 @@ import java.util.function.BiConsumer
 import java.util.function.BiFunction
 import java.util.function.Function
 import java.util.function.Predicate
+import kotlin.reflect.KClass
 import live.lingting.framework.reflect.ClassField
 import live.lingting.framework.util.StringUtils.firstLower
 import live.lingting.framework.util.StringUtils.firstUpper
@@ -59,6 +60,8 @@ object ClassUtils {
         }
     }
 
+    fun typeArguments(cls: KClass<*>) = typeArguments(cls.java)
+
     @JvmStatic
     fun classArguments(cls: Class<*>): List<Class<*>> {
         val types = typeArguments(cls)
@@ -72,6 +75,8 @@ object ClassUtils {
 
         return list
     }
+
+    fun classArguments(cls: KClass<*>) = classArguments(cls.java)
 
     /**
      * 判断class是否可以被加载, 使用系统类加载器和当前工具类加载器
@@ -117,14 +122,12 @@ object ClassUtils {
     }
 
     @JvmStatic
-    fun <T> scan(basePack: String): Set<Class<T>> {
-        return scan(basePack, null)
+    @JvmOverloads
+    fun <T : Any> scan(basePack: String, cls: Class<*>? = null): Set<Class<T>> {
+        return scan<T>(basePack, Predicate<Class<T>> { cls == null || cls.isAssignableFrom(it) }, { _, _ -> })
     }
 
-    @JvmStatic
-    fun <T> scan(basePack: String, cls: Class<*>?): Set<Class<T>> {
-        return scan(basePack, { tClass -> cls == null || cls.isAssignableFrom(tClass) }, { _, _ -> })
-    }
+    fun <T : Any> scan(basePack: String, cls: KClass<T>?) = scan<T>(basePack, cls?.java)
 
     /**
      * 扫描指定包下, 所有继承指定类的class
@@ -133,7 +136,6 @@ object ClassUtils {
      * @param error    获取类时发生异常处理
      * @return java.util.Set<java.lang.Class></java.lang.Class> < T>>
      */
-
     @JvmStatic
     fun <T> scan(
         basePack: String, filter: Predicate<Class<T>>,
@@ -159,6 +161,10 @@ object ClassUtils {
             }
         }
         return classes
+    }
+
+    fun <T : Any> scan(basePack: String, filter: Predicate<KClass<T>>, error: BiConsumer<String, Exception>) = {
+        scan<T>(basePack, Predicate<Class<T>> { filter.test(it.kotlin) }, error)
     }
 
     /**
@@ -222,6 +228,15 @@ object ClassUtils {
         }
     }
 
+    fun fields(cls: KClass<*>) = fields(cls.java)
+
+    @JvmStatic
+    fun field(cls: Class<*>, name: String): Field? {
+        return fields(cls).find { it.name == name }
+    }
+
+    fun field(cls: KClass<*>, name: String) = field(cls.java, name)
+
     @JvmStatic
     fun methods(cls: Class<*>): Array<Method> {
         return CACHE_METHODS.computeIfAbsent(cls) {
@@ -235,10 +250,14 @@ object ClassUtils {
         }
     }
 
+    fun methods(cls: KClass<*>) = methods(cls.java)
+
     @JvmStatic
     fun method(cls: Class<*>, name: String): Method? {
         return method(cls, name, *EMPTY_CLASS_ARRAY)
     }
+
+    fun method(cls: KClass<*>, name: String) = method(cls.java, name)
 
     @JvmStatic
     fun method(cls: Class<*>, name: String, vararg types: Class<*>): Method? {
@@ -259,6 +278,8 @@ object ClassUtils {
             types.contentEquals(it.parameterTypes)
         }
     }
+
+    fun method(cls: KClass<*>, name: String, vararg types: Class<*>) = method(cls.java, name, *types)
 
     /**
      * 扫描所有字段以及对应字段的值
@@ -299,6 +320,8 @@ object ClassUtils {
         }
     }
 
+    fun classFields(cls: KClass<*>) = classFields(cls.java)
+
     /**
      * 获取指定类中的指定字段名的字段
      * @param name 字段名
@@ -309,6 +332,8 @@ object ClassUtils {
     fun classField(cls: Class<*>, name: String): ClassField? {
         return classFields(cls).find { it.name == name }
     }
+
+    fun classField(cls: KClass<*>, name: String) = classField(cls.java, name)
 
     @JvmStatic
     fun loadClass(className: String): Class<*> {
@@ -377,5 +402,7 @@ object ClassUtils {
     fun <T> constructors(cls: Class<T>): Array<Constructor<T>> {
         return CACHE_CONSTRUCTOR.computeIfAbsent(cls) { it.constructors } as Array<Constructor<T>>
     }
+
+    fun <T : Any> constructors(cls: KClass<T>) = constructors(cls.java)
 
 }

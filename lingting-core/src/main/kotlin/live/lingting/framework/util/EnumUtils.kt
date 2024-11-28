@@ -76,7 +76,7 @@ object EnumUtils {
         val fields = ClassUtils.fields(cls)
 
         for (field in fields) {
-            val annotation = field.getAnnotation<JsonValue>(JsonValue::class.java)
+            val annotation = field.getAnnotation(JsonValue::class.java)
             if (annotation != null) {
                 return field
             }
