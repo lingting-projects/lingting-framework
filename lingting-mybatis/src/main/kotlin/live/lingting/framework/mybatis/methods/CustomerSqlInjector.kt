@@ -8,10 +8,14 @@ import org.apache.ibatis.session.Configuration
 /**
  * @author lingting 2024/11/25 15:02
  */
-class MethodsInjector(val methods: List<AbstractMybatisMethod>) : DefaultSqlInjector() {
+class CustomerSqlInjector(
+    val methods: List<AbstractMybatisMethod>,
+) : DefaultSqlInjector() {
 
     override fun getMethodList(configuration: Configuration, mapperClass: Class<*>, tableInfo: TableInfo): List<AbstractMethod> {
-        return methods
+        val list = super.getMethodList(configuration, mapperClass, tableInfo)
+        list.addAll(methods)
+        return list
     }
 
 }

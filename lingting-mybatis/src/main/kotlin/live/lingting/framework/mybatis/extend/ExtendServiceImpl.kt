@@ -31,6 +31,7 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
 
     var mapper: M
         get() = mapperValue.notNull()
+        @Resource
         set(value) {
             mapperValue.update(value)
         }
