@@ -100,13 +100,13 @@ interface ExtendService<T> {
      * 根据 ID 查询
      * @param id 主键ID
      */
-    fun getById(id: Serializable): T
+    fun getById(id: Serializable): T?
 
     /**
      * 查询（根据ID 批量查询）
-     * @param idList 主键ID列表
+     * @param ids 主键ID列表
      */
-    fun listByIds(idList: Collection<Serializable>): List<T>
+    fun listByIds(ids: Collection<Serializable>): List<T>
 
     /**
      * 查询所有

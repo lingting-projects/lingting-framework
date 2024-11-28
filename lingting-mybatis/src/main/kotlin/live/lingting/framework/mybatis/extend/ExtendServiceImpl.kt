@@ -36,8 +36,14 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
             mapperValue.update(value)
         }
 
-    @Resource
-    var sessionFactory: SqlSessionFactory? = null
+    private val sessionFactoryValue = WaitValue.of<SqlSessionFactory>()
+
+    var sessionFactory: SqlSessionFactory
+        get() = sessionFactoryValue.notNull()
+        @Resource
+        set(value) {
+            sessionFactoryValue.update(value)
+        }
 
     override var entityClass: Class<T> = currentModelClass()
         protected set
@@ -85,7 +91,6 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
     }
 
     override fun saveIgnoreBatch(collection: Collection<T>, batchSize: Int) {
-
         executeBatch(collection, batchSize) { session, e ->
             val m = session.getMapper(mapperClass)
             m.insertIgnore(e)
@@ -97,7 +102,7 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
     }
 
     override fun removeByIds(idList: Collection<Serializable>): Boolean {
-        if (idList.isNullOrEmpty()) {
+        if (idList.isEmpty()) {
             return false
         }
         return SqlHelper.retBool(mapper.deleteByIds(idList))
@@ -116,12 +121,12 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
         }
     }
 
-    override fun getById(id: Serializable): T {
+    override fun getById(id: Serializable): T? {
         return mapper.selectById(id)
     }
 
-    override fun listByIds(idList: Collection<Serializable>): List<T> {
-        return mapper.selectBatchIds(idList)
+    override fun listByIds(ids: Collection<Serializable>): List<T> {
+        return mapper.selectBatchIds(ids)
     }
 
     override fun list(): List<T> {
@@ -138,11 +143,13 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
      * @since 3.3.1
     </E> */
     protected fun <E> executeBatch(list: Collection<E>, batchSize: Int, consumer: BiConsumer<SqlSession, E>): Boolean {
-        return useTransactional<Boolean>(ThrowingSupplier<Boolean> { SqlHelper.executeBatch(sessionFactory, this.log, list, batchSize, consumer) })
+        return useTransactional<Boolean>(ThrowingSupplier {
+            SqlHelper.executeBatch(sessionFactory, this.log, list, batchSize, consumer)
+        })
     }
 
     override fun <R> useTransactional(supplier: ThrowingSupplier<R>, predicate: Predicate<Throwable>): R {
-        val session = sessionFactory!!.openSession(false)
+        val session = sessionFactory.openSession(false)
         try {
             val r = supplier.get()
             session.commit()
