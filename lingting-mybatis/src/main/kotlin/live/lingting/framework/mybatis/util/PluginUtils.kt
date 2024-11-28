@@ -64,8 +64,8 @@ object PluginUtils {
     fun mpStatementHandler(statementHandler: StatementHandler): MPStatementHandler {
         var statementHandler = statementHandler
         statementHandler = realTarget(statementHandler)
-        val `object` = SystemMetaObject.forObject(statementHandler)
-        return MPStatementHandler(SystemMetaObject.forObject(`object`.getValue("delegate")))
+        val obj = SystemMetaObject.forObject(statementHandler)
+        return MPStatementHandler(SystemMetaObject.forObject(obj.getValue("delegate")))
     }
 
     /**

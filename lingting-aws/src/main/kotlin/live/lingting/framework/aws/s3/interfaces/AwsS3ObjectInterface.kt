@@ -28,13 +28,13 @@ interface AwsS3ObjectInterface {
 
     fun put(file: File, acl: Acl?)
 
-    fun put(`in`: InputStream)
+    fun put(input: InputStream)
 
-    fun put(`in`: InputStream, acl: Acl?)
+    fun put(input: InputStream, acl: Acl?)
 
-    fun put(`in`: CloneInputStream)
+    fun put(input: CloneInputStream)
 
-    fun put(`in`: CloneInputStream, acl: Acl?)
+    fun put(input: CloneInputStream, acl: Acl?)
 
     fun delete()
 
@@ -49,7 +49,7 @@ interface AwsS3ObjectInterface {
 
     fun multipart(source: InputStream, parSize: Long, async: Async): AwsS3MultipartTask
 
-    fun multipartUpload(uploadId: String, part: Part, `in`: InputStream): String
+    fun multipartUpload(uploadId: String, part: Part, input: InputStream): String
 
     fun multipartMerge(uploadId: String, map: Map<Part, String>)
 

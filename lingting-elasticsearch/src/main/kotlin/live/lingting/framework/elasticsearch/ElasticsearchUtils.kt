@@ -28,7 +28,7 @@ object ElasticsearchUtils {
     @JvmStatic
     fun <T, R> resolve(function: EFunction<T, R>): LambdaMeta? {
         val fClass: Class<out EFunction<*, *>> = function.javaClass
-        return EF_LAMBDA_CACHE.computeIfAbsent(fClass) { k ->
+        return EF_LAMBDA_CACHE.computeIfAbsent(fClass) {
             try {
                 LambdaMeta.of(function)
             } catch (e: Exception) {
@@ -64,8 +64,12 @@ object ElasticsearchUtils {
     }
 
     @JvmStatic
-    fun <T> fieldValue(`object`: T): FieldValue {
-        return `object` as? FieldValue ?: FieldValue.of(JsonData.of(`object`))
+    fun <T> fieldValue(t: T): FieldValue {
+        if (t is FieldValue) {
+            return t
+        }
+        val value = JsonData.of(t)
+        return FieldValue.of(value)
     }
 
     @JvmStatic

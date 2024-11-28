@@ -51,11 +51,11 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
         return annotation
     }
 
-    fun <T : Annotation> getAnnotation(`object`: AccessibleObject?, a: Class<T>): T? {
-        if (`object` == null) {
+    fun <T : Annotation> getAnnotation(obj: AccessibleObject?, a: Class<T>): T? {
+        if (obj == null) {
             return null
         }
-        return findAnnotation(`object`, a)
+        return findAnnotation(obj, a)
     }
 
     /**

@@ -36,12 +36,12 @@ object QueryComposer {
     fun <T> terms(field: String, objects: Collection<T>): Query {
         val values: MutableList<FieldValue> = ArrayList()
 
-        if (!objects.isNullOrEmpty()) {
-            for (`object` in objects) {
-                if (`object` == null) {
+        if (objects.isNotEmpty()) {
+            for (obj in objects) {
+                if (obj == null) {
                     continue
                 }
-                val value: FieldValue = ElasticsearchUtils.fieldValue(`object`)
+                val value = ElasticsearchUtils.fieldValue(obj)
                 values.add(value)
             }
         }

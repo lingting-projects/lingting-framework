@@ -55,22 +55,22 @@ class AwsS3Object(properties: AwsS3Properties, override val key: String) : AwsS3
         put(FileCloneInputStream(file), acl)
     }
 
-    override fun put(`in`: InputStream) {
-        put(`in`, null)
+    override fun put(input: InputStream) {
+        put(input, null)
     }
 
-    override fun put(`in`: InputStream, acl: Acl?) {
-        put(FileCloneInputStream(`in`), acl)
+    override fun put(input: InputStream, acl: Acl?) {
+        put(FileCloneInputStream(input), acl)
     }
 
-    override fun put(`in`: CloneInputStream) {
-        put(`in`, null)
+    override fun put(input: CloneInputStream) {
+        put(input, null)
     }
 
-    override fun put(`in`: CloneInputStream, acl: Acl?) {
-        `in`.use {
+    override fun put(input: CloneInputStream, acl: Acl?) {
+        input.use {
             val request = AwsS3ObjectPutRequest()
-            request.stream = `in`
+            request.stream = input
             request.acl = acl
             call(request)
         }
@@ -122,9 +122,9 @@ class AwsS3Object(properties: AwsS3Properties, override val key: String) : AwsS3
      * 上传分片
      * @return 合并用的 etag
      */
-    override fun multipartUpload(uploadId: String, part: Part, `in`: InputStream): String {
+    override fun multipartUpload(uploadId: String, part: Part, input: InputStream): String {
         val request = AwsS3ObjectPutRequest()
-        request.stream = `in`
+        request.stream = input
         request.multipart(uploadId, part)
         val response = call(request)
         val headers = response.headers()

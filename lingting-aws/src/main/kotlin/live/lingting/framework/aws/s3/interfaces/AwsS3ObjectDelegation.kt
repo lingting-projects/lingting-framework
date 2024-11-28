@@ -33,20 +33,20 @@ interface AwsS3ObjectDelegation : AwsS3ObjectInterface, AwsS3Delegation<AwsS3Obj
         delegation().put(file, acl)
     }
 
-    override fun put(`in`: InputStream) {
-        delegation().put(`in`)
+    override fun put(input: InputStream) {
+        delegation().put(input)
     }
 
-    override fun put(`in`: InputStream, acl: Acl?) {
-        delegation().put(`in`, acl)
+    override fun put(input: InputStream, acl: Acl?) {
+        delegation().put(input, acl)
     }
 
-    override fun put(`in`: CloneInputStream) {
-        delegation().put(`in`)
+    override fun put(input: CloneInputStream) {
+        delegation().put(input)
     }
 
-    override fun put(`in`: CloneInputStream, acl: Acl?) {
-        delegation().put(`in`, acl)
+    override fun put(input: CloneInputStream, acl: Acl?) {
+        delegation().put(input, acl)
     }
 
     override fun delete() {
@@ -69,8 +69,8 @@ interface AwsS3ObjectDelegation : AwsS3ObjectInterface, AwsS3Delegation<AwsS3Obj
         return delegation().multipart(source, parSize, async)
     }
 
-    override fun multipartUpload(uploadId: String, part: Part, `in`: InputStream): String {
-        return delegation().multipartUpload(uploadId, part, `in`)
+    override fun multipartUpload(uploadId: String, part: Part, input: InputStream): String {
+        return delegation().multipartUpload(uploadId, part, input)
     }
 
     override fun multipartMerge(uploadId: String, map: Map<Part, String>) {

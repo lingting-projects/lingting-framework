@@ -45,9 +45,9 @@ class GrpcServerExceptionInterceptor(
 
     fun process(e: Exception, call: ServerCall<*, *>, headers: Metadata) {
         val invoke = processor.find(e)
-        val `object` = invoke.invoke(e, call, headers)
-        if (`object` is Status) {
-            call.close(`object`, headers)
+        val obj = invoke.invoke(e, call, headers)
+        if (obj is Status) {
+            call.close(obj, headers)
         }
     }
 }

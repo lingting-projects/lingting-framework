@@ -49,8 +49,8 @@ abstract class AbstractFileValue<T> {
             return Optional.of(value!!) as Optional<T>
         }
         try {
-            Files.newInputStream(file.toPath()).use { `in` ->
-                val string = StreamUtils.toString(`in`)
+            Files.newInputStream(file.toPath()).use {
+                val string = StreamUtils.toString(it)
                 value = if (!StringUtils.hasText(string)) {
                     null
                 } else {

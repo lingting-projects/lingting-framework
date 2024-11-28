@@ -22,15 +22,15 @@ class RandomAccessInputStream : InputStream {
 
     var isCloseAndDelete: Boolean = false
 
-    constructor(`in`: InputStream) {
+    constructor(input: InputStream) {
         val temp: File
 
-        if (`in` is RandomAccessInputStream) {
+        if (input is RandomAccessInputStream) {
             this.isCloseAndDelete = false
-            temp = `in`.path.toFile()
+            temp = input.path.toFile()
         } else {
             this.isCloseAndDelete = true
-            temp = FileUtils.createTemp(`in`, ".input", TEMP_DIR)
+            temp = FileUtils.createTemp(input, ".input", TEMP_DIR)
         }
 
         this.file = RandomAccessFile(temp, MODE)

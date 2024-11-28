@@ -37,8 +37,8 @@ class AwsS3MultipartTask(multipart: Multipart, async: Async, protected val s3: A
     }
 
     override fun onPart(part: Part) {
-        multipart.stream(part).use { `in` ->
-            val etag = s3.multipartUpload(uploadId, part, `in`)
+        multipart.stream(part).use {
+            val etag = s3.multipartUpload(uploadId, part, it)
             map.put(part, etag)
         }
     }

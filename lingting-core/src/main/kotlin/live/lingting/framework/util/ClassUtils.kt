@@ -91,10 +91,10 @@ object ClassUtils {
     @JvmStatic
     fun exists(className: String, vararg classLoaders: ClassLoader?): Boolean {
         val loaders = classLoaders.filterNotNull().toSet()
-        require(!loaders.isNullOrEmpty()) { "ClassLoaders can not be empty!" }
+        require(loaders.isNotEmpty()) { "ClassLoaders can not be empty!" }
         val absent = CACHE_CLASS_PRESENT.computeIfAbsent(
             className
-        ) { k -> ConcurrentHashMap(loaders.size) }
+        ) { ConcurrentHashMap(loaders.size) }
 
         for (loader in loaders) {
             val flag = absent.computeIfAbsent(loader) {
@@ -121,7 +121,7 @@ object ClassUtils {
 
     @JvmStatic
     fun <T> scan(basePack: String, cls: Class<*>?): Set<Class<T>> {
-        return scan(basePack, { tClass -> cls == null || cls.isAssignableFrom(tClass) }, { s, e -> })
+        return scan(basePack, { tClass -> cls == null || cls.isAssignableFrom(tClass) }, { _, _ -> })
     }
 
     /**
@@ -343,16 +343,16 @@ object ClassUtils {
 
     /**
      * 设置可访问对象的可访问权限为 true
-     * @param object 可访问的对象
+     * @param obj 可访问的对象
      * @param <T>    类型
      * @return 返回设置后的对象
     </T> */
     @JvmStatic
-    fun <T : AccessibleObject> setAccessible(`object`: T): T {
-        if (!`object`.trySetAccessible()) {
-            `object`.isAccessible = true
+    fun <T : AccessibleObject> setAccessible(obj: T): T {
+        if (!obj.trySetAccessible()) {
+            obj.isAccessible = true
         }
-        return `object`
+        return obj
     }
 
     /**
