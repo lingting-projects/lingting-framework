@@ -15,7 +15,6 @@ import live.lingting.framework.security.domain.SecurityToken
 import live.lingting.framework.security.grpc.exception.SecurityGrpcThrowing
 import live.lingting.framework.security.resource.SecurityResourceService
 import live.lingting.framework.util.Slf4jUtils.logger
-import live.lingting.framework.util.StringUtils
 
 /**
  * @author lingting 2023-12-14 16:28
@@ -73,10 +72,7 @@ open class SecurityGrpcResourceServerInterceptor(
 
     protected fun token(metadata: Metadata): SecurityToken {
         val raw = metadata[authorizationKey]
-        if (!StringUtils.hasText(raw)) {
-            return SecurityToken.EMPTY
-        }
-        return convert.toToken(raw!!)
+        return convert.toToken(raw)
     }
 
     protected fun allowAuthority(metadata: Metadata, descriptor: MethodDescriptor<*, *>): Boolean {

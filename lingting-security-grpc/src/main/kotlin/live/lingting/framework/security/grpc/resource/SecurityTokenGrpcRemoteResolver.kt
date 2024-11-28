@@ -15,7 +15,10 @@ import live.lingting.framework.security.resolver.SecurityTokenResolver
 /**
  * @author lingting 2023-12-18 16:30
  */
-open class SecurityTokenGrpcRemoteResolver(protected val channel: ManagedChannel, protected val convert: SecurityGrpcConvert) : SecurityTokenResolver, ContextComponent, Sequence {
+open class SecurityTokenGrpcRemoteResolver(
+    protected val channel: ManagedChannel,
+    protected val convert: SecurityGrpcConvert,
+) : SecurityTokenResolver, ContextComponent, Sequence {
     protected val blocking: SecurityGrpcAuthorizationServiceBlockingStub = SecurityGrpcAuthorizationServiceGrpc.newBlockingStub(channel)
 
     protected fun resolveByRemote(token: SecurityToken?): SecurityGrpcAuthorization.AuthorizationVO {

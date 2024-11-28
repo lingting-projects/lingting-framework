@@ -59,7 +59,7 @@ interface SecurityConvert {
         return scopeExpand(scope)
     }
 
-    fun toToken(raw: String): SecurityToken {
+    fun toToken(raw: String?): SecurityToken {
         return SecurityToken.ofDelimiter(raw)
     }
 
@@ -69,10 +69,7 @@ interface SecurityConvert {
         if (!value.isNullOrEmpty()) {
             return SecurityToken.of(po.type ?: "", value, raw ?: "")
         }
-        if (!raw.isNullOrBlank()) {
-            return toToken(raw)
-        }
-        return SecurityToken.EMPTY
+        return toToken(raw)
     }
 
 }
