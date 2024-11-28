@@ -1,7 +1,6 @@
 package live.lingting.framework.mybatis.extend
 
 import com.baomidou.mybatisplus.core.enums.SqlMethod
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils
 import com.baomidou.mybatisplus.core.toolkit.Constants
 import com.baomidou.mybatisplus.core.toolkit.ReflectionKit
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page
@@ -12,6 +11,7 @@ import java.util.function.BiConsumer
 import java.util.function.Predicate
 import live.lingting.framework.api.PaginationParams
 import live.lingting.framework.function.ThrowingSupplier
+import live.lingting.framework.value.WaitValue
 import org.apache.ibatis.binding.MapperMethod.ParamMap
 import org.apache.ibatis.logging.Log
 import org.apache.ibatis.logging.LogFactory
@@ -24,9 +24,16 @@ import org.apache.ibatis.session.SqlSessionFactory
  */
 @Suppress("UNCHECKED_CAST")
 abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
+
     protected val log: Log = LogFactory.getLog(javaClass)
 
-    var mapper: M? = null
+    private val mapperValue = WaitValue.of<M>()
+
+    var mapper: M
+        get() = mapperValue.notNull()
+        set(value) {
+            mapperValue.update(value)
+        }
 
     @Resource
     var sessionFactory: SqlSessionFactory? = null
@@ -56,11 +63,11 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
     }
 
     override fun toIpage(params: PaginationParams): Page<T> {
-        return mapper!!.toIPage(params)
+        return mapper.toIPage(params)
     }
 
     override fun save(entity: T): Boolean {
-        return SqlHelper.retBool(mapper!!.insert(entity))
+        return SqlHelper.retBool(mapper.insert(entity))
     }
 
     override fun saveBatch(entityList: Collection<T>, batchSize: Int): Boolean {
@@ -69,7 +76,7 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
     }
 
     override fun saveIgnore(t: T) {
-        mapper!!.insertIgnore(t)
+        mapper.insertIgnore(t)
     }
 
     override fun saveIgnoreBatch(collection: Collection<T>) {
@@ -85,18 +92,18 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
     }
 
     override fun removeById(id: Serializable): Boolean {
-        return SqlHelper.retBool(mapper!!.deleteById(id))
+        return SqlHelper.retBool(mapper.deleteById(id))
     }
 
     override fun removeByIds(idList: Collection<Serializable>): Boolean {
         if (idList.isNullOrEmpty()) {
             return false
         }
-        return SqlHelper.retBool(mapper!!.deleteByIds(idList))
+        return SqlHelper.retBool(mapper.deleteByIds(idList))
     }
 
     override fun updateById(entity: T): Boolean {
-        return SqlHelper.retBool(mapper!!.updateById(entity))
+        return SqlHelper.retBool(mapper.updateById(entity))
     }
 
     override fun updateBatchById(entityList: Collection<T>, batchSize: Int): Boolean {
@@ -109,15 +116,15 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
     }
 
     override fun getById(id: Serializable): T {
-        return mapper!!.selectById(id)
+        return mapper.selectById(id)
     }
 
     override fun listByIds(idList: Collection<Serializable>): List<T> {
-        return mapper!!.selectBatchIds(idList)
+        return mapper.selectBatchIds(idList)
     }
 
     override fun list(): List<T> {
-        return mapper!!.selectList(null)
+        return mapper.selectList(null)
     }
 
     /**

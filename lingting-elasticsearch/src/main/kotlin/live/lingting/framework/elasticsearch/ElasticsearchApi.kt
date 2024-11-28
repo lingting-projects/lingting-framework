@@ -177,7 +177,7 @@ class ElasticsearchApi<T>(
     }
 
     fun ofLimitSort(sorts: Collection<PaginationParams.Sort>): List<SortOptions> {
-        if (sorts.isNullOrEmpty()) {
+        if (sorts.isEmpty()) {
             return ArrayList()
         }
         return sorts.stream().map<SortOptions> { sort ->
@@ -377,7 +377,7 @@ class ElasticsearchApi<T>(
         operator: UnaryOperator<BulkRequest.Builder>, collection: Collection<E>,
         function: Function<E, BulkOperation>
     ): BulkResponse {
-        if (collection.isNullOrEmpty()) {
+        if (collection.isEmpty()) {
             return BulkResponse.of { br -> br.errors(false).items(emptyList()).ingestTook(0L).took(0) }
         }
 
@@ -447,10 +447,10 @@ class ElasticsearchApi<T>(
             records = result.records
             params.cursor = result.cursor
 
-            if (!records.isNullOrEmpty()) {
+            if (records.isNotEmpty()) {
                 list.addAll(records)
             }
-        } while (!records.isNullOrEmpty() && params.cursor != null)
+        } while (records.isNotEmpty() && params.cursor != null)
 
         return list
     }
@@ -483,12 +483,12 @@ class ElasticsearchApi<T>(
         ).index(info.index()).query(query).size(params.size.toInt())
 
         val search = client.search(builder.build(), cls)
-        val collect = search.hits().hits().mapNotNull() { obj: Hit<T> -> obj.source() }
+        val collect = search.hits().hits().mapNotNull { obj: Hit<T> -> obj.source() }
 
         val nextScrollId = search.scrollId()
 
         // 如果首次滚动查询结果为空, 直接清除滚动上下文
-        if (collect.isNullOrEmpty()) {
+        if (collect.isEmpty()) {
             clearScroll(nextScrollId)
         }
 
@@ -499,7 +499,7 @@ class ElasticsearchApi<T>(
         val builder = operator.apply(ScrollRequest.Builder()).scrollId(scrollId)
 
         val response = client.scroll(builder.build(), cls)
-        val collect = response.hits().hits().mapNotNull() { obj: Hit<T> -> obj.source() }
+        val collect = response.hits().hits().mapNotNull { obj: Hit<T> -> obj.source() }
         val nextScrollId = response.scrollId()
 
         if (collect.isNullOrEmpty()) {
