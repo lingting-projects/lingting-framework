@@ -1,7 +1,6 @@
 package live.lingting.framework.huawei
 
 import live.lingting.framework.aws.policy.Statement
-import live.lingting.framework.util.CollectionUtils
 
 /**
  * @author lingting 2024-09-13 13:47
@@ -19,7 +18,7 @@ class HuaweiStatement(allow: Boolean) : Statement(allow) {
 
     override fun map(): MutableMap<String, Any> {
         val map = super.map()
-        if (!conditions.isNullOrEmpty()) {
+        if (conditions.isNotEmpty()) {
             map.put("Condition", conditions)
         }
         return map

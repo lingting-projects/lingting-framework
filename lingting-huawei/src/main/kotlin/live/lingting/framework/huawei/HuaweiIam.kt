@@ -1,9 +1,7 @@
 package live.lingting.framework.huawei
 
 import java.time.Duration
-
 import java.time.LocalDateTime
-import live.lingting.framework.time.DateTime
 import live.lingting.framework.aws.policy.Credential
 import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.api.ApiClient
@@ -43,6 +41,11 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
     }
 
     override fun checkout(request: HuaweiIamRequest, response: HttpResponse): HttpResponse {
+        if (request is HuaweiIamTokenRequest && !response.is2xx) {
+            log.warn("HuaweiIam token request error! uri: {}; code: {}; body:\n{}", response.uri(), response.code(), response.string())
+            throw HuaweiIamException("token request error! code: " + response.code())
+        }
+
         if (response.code() == 401) {
             log.debug("HuaweiIam token expired!")
             refreshToken(true)
