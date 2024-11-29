@@ -6,9 +6,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page
 import live.lingting.framework.api.PaginationParams
 import live.lingting.framework.api.PaginationResult
-import live.lingting.framework.mybatis.kt.toIPage
-import live.lingting.framework.mybatis.kt.toParams
-import live.lingting.framework.mybatis.kt.toResult
+import live.lingting.framework.mybatis.util.IPageUtils.toIPage
+import live.lingting.framework.mybatis.util.IPageUtils.toParams
+import live.lingting.framework.mybatis.util.IPageUtils.toResult
 
 /**
  * @author lingting 2022/9/26 17:07
