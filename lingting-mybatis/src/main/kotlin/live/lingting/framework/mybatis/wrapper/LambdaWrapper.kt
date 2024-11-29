@@ -2,7 +2,6 @@ package live.lingting.framework.mybatis.wrapper
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils.checkValNotNull
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction
-import java.util.ArrayList
 import java.util.function.BiPredicate
 import java.util.function.Consumer
 
@@ -26,16 +25,16 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
     }
 
     // region compare
-    fun <V> allEqLambda(params: Map<SFunction<T, *>, V>): C {
-        return allEqLambda<V>(params, true)
+    fun allEqLambda(params: Map<SFunction<T, Any?>, Any?>): C {
+        return allEqLambda(params, true)
     }
 
-    fun <V> allEqLambda(params: Map<SFunction<T, *>, V>, null2IsNull: Boolean): C {
-        return allEqLambda<V>(true, params, null2IsNull)
+    fun allEqLambda(params: Map<SFunction<T, Any?>, Any?>, null2IsNull: Boolean): C {
+        return allEqLambda(true, params, null2IsNull)
     }
 
-    fun <V> allEqLambda(condition: Boolean, params: Map<SFunction<T, *>, V>, null2IsNull: Boolean): C {
-        if (condition && !params.isNullOrEmpty()) {
+    fun allEqLambda(condition: Boolean, params: Map<SFunction<T, Any?>, Any?>, null2IsNull: Boolean): C {
+        if (condition && params.isNotEmpty()) {
             params.forEach { (k, v) ->
                 if (checkValNotNull(v)) {
                     eq(k, v!!)
@@ -49,22 +48,22 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return c
     }
 
-    fun <V> allEqLambda(filter: BiPredicate<SFunction<T, *>, V>, params: Map<SFunction<T, *>, V>): C {
-        return allEqLambda<V>(filter, params, true)
+    fun allEqLambda(filter: BiPredicate<SFunction<T, Any?>, Any?>, params: Map<SFunction<T, Any?>, Any?>): C {
+        return allEqLambda(filter, params, true)
     }
 
-    fun <V> allEqLambda(
-        filter: BiPredicate<SFunction<T, *>, V>, params: Map<SFunction<T, *>, V>,
+    fun allEqLambda(
+        filter: BiPredicate<SFunction<T, Any?>, Any?>, params: Map<SFunction<T, Any?>, Any?>,
         null2IsNull: Boolean
     ): C {
-        return allEqLambda<V>(true, filter, params, null2IsNull)
+        return allEqLambda(true, filter, params, null2IsNull)
     }
 
-    fun <V> allEqLambda(
-        condition: Boolean, filter: BiPredicate<SFunction<T, *>, V>, params: Map<SFunction<T, *>, V>,
+    fun allEqLambda(
+        condition: Boolean, filter: BiPredicate<SFunction<T, Any?>, Any?>, params: Map<SFunction<T, Any?>, Any?>,
         null2IsNull: Boolean
     ): C {
-        if (condition && !params.isNullOrEmpty()) {
+        if (condition && params.isNotEmpty()) {
             params.forEach { (k, v) ->
                 if (filter.test(k, v)) {
                     if (checkValNotNull(v)) {
@@ -80,11 +79,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return c
     }
 
-    fun eq(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> eq(column: SFunction<T, V?>, value: V?): C {
         return eq(true, column, value)
     }
 
-    fun eq(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> eq(condition: Boolean, column: SFunction<T, V?>, value: V?): C {
         if (!condition) {
             return c
         }
@@ -92,11 +91,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return eq(field, value)
     }
 
-    fun ne(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> ne(column: SFunction<T, V?>, value: V?): C {
         return ne(true, column, value)
     }
 
-    fun ne(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> ne(condition: Boolean, column: SFunction<T, V?>, value: V?): C {
         if (!condition) {
             return c
         }
@@ -104,11 +103,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return ne(field, value)
     }
 
-    fun gt(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> gt(column: SFunction<T, V?>, value: V?): C {
         return gt(true, column, value)
     }
 
-    fun gt(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> gt(condition: Boolean, column: SFunction<T, V?>, value: V?): C {
         if (!condition) {
             return c
         }
@@ -116,11 +115,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return gt(field, value)
     }
 
-    fun ge(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> ge(column: SFunction<T, V?>, value: V?): C {
         return ge(true, column, value)
     }
 
-    fun ge(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> ge(condition: Boolean, column: SFunction<T, V?>, value: V?): C {
         if (!condition) {
             return c
         }
@@ -128,11 +127,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return ge(field, value)
     }
 
-    fun lt(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> lt(column: SFunction<T, V?>, value: V?): C {
         return lt(true, column, value)
     }
 
-    fun lt(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> lt(condition: Boolean, column: SFunction<T, V?>, value: V?): C {
         if (!condition) {
             return c
         }
@@ -140,11 +139,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return lt(field, value)
     }
 
-    fun le(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> le(column: SFunction<T, V?>, value: V?): C {
         return le(true, column, value)
     }
 
-    fun le(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> le(condition: Boolean, column: SFunction<T, V?>, value: V?): C {
         if (!condition) {
             return c
         }
@@ -152,11 +151,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return le(field, value)
     }
 
-    fun between(column: SFunction<T, *>, val1: Any?, val2: Any?): C {
+    fun <V : Any> between(column: SFunction<T, V?>, val1: V?, val2: V?): C {
         return between(true, column, val1, val2)
     }
 
-    fun between(condition: Boolean, column: SFunction<T, *>, val1: Any?, val2: Any?): C {
+    fun <V : Any> between(condition: Boolean, column: SFunction<T, V?>, val1: V?, val2: Any?): C {
         if (!condition) {
             return c
         }
@@ -164,11 +163,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return between(field, val1, val2)
     }
 
-    fun notBetween(column: SFunction<T, *>, val1: Any?, val2: Any?): C {
+    fun <V : Any> notBetween(column: SFunction<T, V?>, val1: V?, val2: V?): C {
         return notBetween(true, column, val1, val2)
     }
 
-    fun notBetween(condition: Boolean, column: SFunction<T, *>, val1: Any?, val2: Any?): C {
+    fun <V : Any> notBetween(condition: Boolean, column: SFunction<T, V?>, val1: V?, val2: Any?): C {
         if (!condition) {
             return c
         }
@@ -176,11 +175,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return notBetween(field, val1, val2)
     }
 
-    fun like(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> like(column: SFunction<T, V?>, value: V?): C {
         return like(true, column, value)
     }
 
-    fun like(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> like(condition: Boolean, column: SFunction<T, V?>, value: V?): C {
         if (!condition) {
             return c
         }
@@ -188,11 +187,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return like(field, value)
     }
 
-    fun notLike(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> notLike(column: SFunction<T, V?>, value: V?): C {
         return notLike(true, column, value)
     }
 
-    fun notLike(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> notLike(condition: Boolean, column: SFunction<T, V?>, value: V?): C {
         if (!condition) {
             return c
         }
@@ -200,11 +199,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return notLike(field, value)
     }
 
-    fun notLikeLeft(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> notLikeLeft(column: SFunction<T, V?>, value: V?): C {
         return notLikeLeft(true, column, value)
     }
 
-    fun notLikeLeft(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> notLikeLeft(condition: Boolean, column: SFunction<T, V?>, value: V?): C {
         if (!condition) {
             return c
         }
@@ -212,11 +211,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return notLikeLeft(field, value)
     }
 
-    fun notLikeRight(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> notLikeRight(column: SFunction<T, V?>, value: V?): C {
         return notLikeRight(true, column, value)
     }
 
-    fun notLikeRight(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> notLikeRight(condition: Boolean, column: SFunction<T, V?>, value: V?): C {
         if (!condition) {
             return c
         }
@@ -224,11 +223,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return notLikeRight(field, value)
     }
 
-    fun likeLeft(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> likeLeft(column: SFunction<T, V?>, value: V?): C {
         return likeLeft(true, column, value)
     }
 
-    fun likeLeft(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> likeLeft(condition: Boolean, column: SFunction<T, V?>, value: V?): C {
         if (!condition) {
             return c
         }
@@ -236,11 +235,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return likeLeft(field, value)
     }
 
-    fun likeRight(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> likeRight(column: SFunction<T, V?>, value: V?): C {
         return likeRight(true, column, value)
     }
 
-    fun likeRight(condition: Boolean, column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> likeRight(condition: Boolean, column: SFunction<T, V?>, value: V?): C {
         if (!condition) {
             return c
         }
@@ -250,59 +249,59 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
 
     // endregion
     // region compare ifPresent
-    fun eqIfPresent(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> eqIfPresent(column: SFunction<T, V?>, value: V?): C {
         return eq(isPresent(value), column, value)
     }
 
-    fun neIfPresent(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> neIfPresent(column: SFunction<T, V?>, value: V?): C {
         return ne(isPresent(value), column, value)
     }
 
-    fun gtIfPresent(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> gtIfPresent(column: SFunction<T, V?>, value: V?): C {
         return gt(isPresent(value), column, value)
     }
 
-    fun geIfPresent(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> geIfPresent(column: SFunction<T, V?>, value: V?): C {
         return ge(isPresent(value), column, value)
     }
 
-    fun ltIfPresent(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> ltIfPresent(column: SFunction<T, V?>, value: V?): C {
         return lt(isPresent(value), column, value)
     }
 
-    fun leIfPresent(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> leIfPresent(column: SFunction<T, V?>, value: V?): C {
         return le(isPresent(value), column, value)
     }
 
-    fun betweenIfPresent(column: SFunction<T, *>, val1: Any?, val2: Any?): C {
+    fun <V : Any> betweenIfPresent(column: SFunction<T, V?>, val1: V?, val2: V?): C {
         return between(isPresent(val1) && isPresent(val2), column, val1, val2)
     }
 
-    fun notBetweenIfPresent(column: SFunction<T, *>, val1: Any?, val2: Any?): C {
+    fun <V : Any> notBetweenIfPresent(column: SFunction<T, V?>, val1: V?, val2: V?): C {
         return notBetween(isPresent(val1) && isPresent(val2), column, val1, val2)
     }
 
-    fun likeIfPresent(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> likeIfPresent(column: SFunction<T, V?>, value: V?): C {
         return like(isPresent(value), column, value)
     }
 
-    fun notLikeIfPresent(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> notLikeIfPresent(column: SFunction<T, V?>, value: V?): C {
         return notLike(isPresent(value), column, value)
     }
 
-    fun notLikeLeftIfPresent(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> notLikeLeftIfPresent(column: SFunction<T, V?>, value: V?): C {
         return notLikeLeft(isPresent(value), column, value)
     }
 
-    fun notLikeRightIfPresent(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> notLikeRightIfPresent(column: SFunction<T, V?>, value: V?): C {
         return notLikeRight(isPresent(value), column, value)
     }
 
-    fun likeLeftIfPresent(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> likeLeftIfPresent(column: SFunction<T, V?>, value: V?): C {
         return likeLeft(isPresent(value), column, value)
     }
 
-    fun likeRightIfPresent(column: SFunction<T, *>, value: Any?): C {
+    fun <V : Any> likeRightIfPresent(column: SFunction<T, V?>, value: V?): C {
         return likeRight(isPresent(value), column, value)
     }
 
@@ -334,11 +333,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return isNotNull(field)
     }
 
-    fun `in`(column: SFunction<T, *>, coll: Collection<*>): C {
+    fun <V : Any> `in`(column: SFunction<T, V?>, coll: Collection<V>): C {
         return `in`(true, column, coll)
     }
 
-    fun `in`(condition: Boolean, column: SFunction<T, *>, coll: Collection<*>): C {
+    fun <V : Any> `in`(condition: Boolean, column: SFunction<T, V?>, coll: Collection<V>): C {
         if (!condition) {
             return c
         }
@@ -346,11 +345,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return `in`(field, coll)
     }
 
-    fun `in`(column: SFunction<T, *>, vararg values: Any?): C {
+    fun <V : Any> `in`(column: SFunction<T, V?>, vararg values: V): C {
         return `in`(true, column, *values)
     }
 
-    fun `in`(condition: Boolean, column: SFunction<T, *>, vararg values: Any?): C {
+    fun <V : Any> `in`(condition: Boolean, column: SFunction<T, V?>, vararg values: V): C {
         if (!condition) {
             return c
         }
@@ -358,11 +357,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return `in`(field, *values)
     }
 
-    fun notIn(column: SFunction<T, *>, coll: Collection<*>): C {
+    fun <V : Any> notIn(column: SFunction<T, V?>, coll: Collection<V>): C {
         return notIn(true, column, coll)
     }
 
-    fun notIn(condition: Boolean, column: SFunction<T, *>, coll: Collection<*>): C {
+    fun <V : Any> notIn(condition: Boolean, column: SFunction<T, V?>, coll: Collection<V>): C {
         if (!condition) {
             return c
         }
@@ -370,11 +369,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return notIn(field, coll)
     }
 
-    fun notIn(column: SFunction<T, *>, vararg value: Any?): C {
+    fun <V : Any> notIn(column: SFunction<T, V?>, vararg value: V): C {
         return notIn(true, column, *value)
     }
 
-    fun notIn(condition: Boolean, column: SFunction<T, *>, vararg values: Any?): C {
+    fun <V : Any> notIn(condition: Boolean, column: SFunction<T, V?>, vararg values: V): C {
         if (!condition) {
             return c
         }
@@ -466,14 +465,14 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return groupBy(true, column)
     }
 
-    fun groupByLambda(condition: Boolean, columns: MutableList<SFunction<T, *>>): C {
+    fun groupByLambda(condition: Boolean, columns: Collection<SFunction<T, *>>): C {
         if (!condition) {
             return c
         }
         return groupBy(convertFields(columns))
     }
 
-    fun groupByLambda(columns: MutableList<SFunction<T, *>>): C {
+    fun groupByLambda(columns: Collection<SFunction<T, *>>): C {
         return groupByLambda(true, columns)
     }
 
@@ -500,11 +499,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return orderByAsc(true, column)
     }
 
-    fun orderByAscLambda(condition: Boolean, columns: MutableList<SFunction<T, *>>): C {
+    fun orderByAscLambda(condition: Boolean, columns: Collection<SFunction<T, *>>): C {
         return orderByLambda(condition, true, columns)
     }
 
-    fun orderByAscLambda(columns: MutableList<SFunction<T, *>>): C {
+    fun orderByAscLambda(columns: Collection<SFunction<T, *>>): C {
         return orderByAscLambda(true, columns)
     }
 
@@ -526,11 +525,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return orderByDesc(true, column)
     }
 
-    fun orderByDescLambda(condition: Boolean, columns: MutableList<SFunction<T, *>>): C {
+    fun orderByDescLambda(condition: Boolean, columns: Collection<SFunction<T, *>>): C {
         return orderByLambda(condition, false, columns)
     }
 
-    fun orderByDescLambda(columns: MutableList<SFunction<T, *>>): C {
+    fun orderByDescLambda(columns: Collection<SFunction<T, *>>): C {
         return orderByDescLambda(true, columns)
     }
 
@@ -552,7 +551,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         return orderBy(true, isAsc, field)
     }
 
-    fun orderByLambda(condition: Boolean, isAsc: Boolean, columns: MutableList<SFunction<T, *>>): C {
+    fun orderByLambda(condition: Boolean, isAsc: Boolean, columns: Collection<SFunction<T, *>>): C {
         if (!condition) {
             return c
         }
@@ -571,19 +570,19 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
 
     // endregion
     // region func ifPresent
-    fun inIfPresent(column: SFunction<T, *>, coll: Collection<*>?): C {
-        return `in`(isPresent(coll), column, coll)
+    fun <V : Any> inIfPresent(column: SFunction<T, V?>, coll: Collection<V>?): C {
+        return `in`(isPresent(coll), column, coll ?: emptyList())
     }
 
-    fun inIfPresent(column: SFunction<T, *>, vararg values: Any?): C {
+    fun <V : Any> inIfPresent(column: SFunction<T, V?>, vararg values: V): C {
         return `in`(isPresent(values), column, *values)
     }
 
-    fun notInIfPresent(column: SFunction<T, *>, coll: Collection<*>?): C {
-        return notIn(isPresent(coll), column, coll)
+    fun <V : Any> notInIfPresent(column: SFunction<T, V?>, coll: Collection<V>?): C {
+        return notIn(isPresent(coll), column, coll ?: emptyList())
     }
 
-    fun notInIfPresent(column: SFunction<T, *>, vararg value: Any?): C {
+    fun <V : Any> notInIfPresent(column: SFunction<T, V?>, vararg value: V): C {
         return notIn(isPresent(value), column, *value)
     }
 

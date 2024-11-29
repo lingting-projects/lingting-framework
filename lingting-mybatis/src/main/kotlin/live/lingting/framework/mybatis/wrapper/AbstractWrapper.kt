@@ -5,10 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.segments.MergeSegments
 import com.baomidou.mybatisplus.core.enums.SqlKeyword
 import com.baomidou.mybatisplus.core.enums.WrapperKeyword
 import com.baomidou.mybatisplus.core.toolkit.StringUtils
-import java.lang.StringBuilder
-import java.util.ArrayList
-import java.util.HashMap
-import java.util.HashSet
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 import java.util.function.Supplier
@@ -64,7 +60,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
         return "$alias.$value"
     }
 
-    fun isPresent(o: Any?): Boolean {
+    open fun isPresent(o: Any?): Boolean {
         return ValueUtils.isPresent(o)
     }
 
@@ -588,7 +584,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
         return appendCondition(condition, column, SqlKeyword.IS_NOT_NULL)
     }
 
-    override fun `in`(condition: Boolean, column: String, coll: MutableCollection<*>): C {
+    override fun `in`(condition: Boolean, column: String, coll: Collection<*>): C {
         return appendCondition(condition, column, SqlKeyword.IN, coll)
     }
 
@@ -596,7 +592,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
         return appendCondition(condition, column, SqlKeyword.IN, values)
     }
 
-    override fun notIn(condition: Boolean, column: String, coll: MutableCollection<*>): C {
+    override fun notIn(condition: Boolean, column: String, coll: Collection<*>): C {
         return appendCondition(condition, column, SqlKeyword.NOT_IN, coll)
     }
 
@@ -633,14 +629,14 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
     }
 
     override fun groupBy(condition: Boolean, column: String): C {
-        return groupBy(condition, mutableListOf<String>(column))
+        return groupBy(condition, mutableListOf(column))
     }
 
     override fun groupBy(condition: Boolean, columns: MutableList<String>): C {
         if (!condition) {
             return c
         }
-        val collect: String = columns.map { value: String -> this.convertField(value) }.joinToString(", ")
+        val collect = columns.joinToString(", ") { this.convertField(it) }
         return appendSql(SqlKeyword.GROUP_BY, collect)
     }
 
@@ -667,7 +663,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
             return c
         }
         val order = if (isAsc) " ASC" else " DESC"
-        val sql: String = columns.map { c -> convertField(c) + order }.joinToString(", ")
+        val sql: String = columns.joinToString(", ") { convertField(it) + order }
         return appendSql(SqlKeyword.ORDER_BY, sql)
     }
 
@@ -679,7 +675,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
         if (!condition) {
             return c
         }
-        val list: MutableList<String> = ArrayList<String>()
+        val list = ArrayList<String>()
         list.add(column)
         list.addAll(columns)
         return orderBy(true, isAsc, list)
@@ -700,30 +696,32 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
     // endregion
 
     // region func ifPresent
-    fun inIfPresent(column: String, coll: MutableCollection<*>?): C {
+    fun inIfPresent(column: String, coll: Collection<*>?): C {
         return `in`(isPresent(coll), column, coll)
     }
 
-    fun inIfPresent(column: String, vararg values: Any?): C {
+    fun inIfPresent(column: String, vararg values: Any): C {
         return `in`(isPresent(values), column, *values)
     }
 
-    fun notInIfPresent(column: String, coll: MutableCollection<*>?): C {
+    fun notInIfPresent(column: String, coll: Collection<*>?): C {
         return notIn(isPresent(coll), column, coll)
     }
 
-    fun notInIfPresent(column: String, vararg values: Any?): C {
+    fun notInIfPresent(column: String, vararg values: Any): C {
         return notIn(isPresent(values), column, *values)
     }
 
     // endregion
 
     // region func extended
+
     fun <E : Any> `in`(field: String, consumer: Consumer<QueryWrapper<E>>): C {
         return `in`<E>(true, field, consumer)
     }
 
     fun <E : Any> `in`(condition: Boolean, field: String, consumer: Consumer<QueryWrapper<E>>): C {
         return appendSql<E>(condition, field, SqlKeyword.IN, consumer)
+
     } // endregion
 }
