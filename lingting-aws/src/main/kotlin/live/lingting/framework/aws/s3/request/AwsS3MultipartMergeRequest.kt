@@ -20,8 +20,7 @@ class AwsS3MultipartMergeRequest : AwsS3Request() {
 
     override fun body(): BodySource {
         val builder = StringBuilder("<CompleteMultipartUpload>\n")
-
-        map.keys.stream().sorted(Comparator.comparing(Part::index)).forEach { p ->
+        map.keys.sortedWith(Comparator.comparing(Part::index)).forEach { p ->
             val e = map[p]
             builder.append("<Part><PartNumber>")
                 .append(p.index + 1)

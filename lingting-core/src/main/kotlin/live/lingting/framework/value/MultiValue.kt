@@ -94,5 +94,6 @@ interface MultiValue<K, V, C : Collection<V>> {
 
     fun eachSorted(consumer: BiConsumer<K, V>, comparator: Comparator<K>) {
         forEachSorted({ k, c -> c.forEach { v -> consumer.accept(k, v) } }, comparator)
-    } // endregion
+    }
+// endregion
 }

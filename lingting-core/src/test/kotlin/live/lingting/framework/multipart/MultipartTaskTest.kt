@@ -28,7 +28,7 @@ internal class MultipartTaskTest {
         val multipart = Multipart.builder().source(input).partSize(partSize).build()
 
         assertEquals(number, multipart.parts.size.toLong())
-        assertEquals(size, multipart.parts.stream().mapToLong(Part::size).sum())
+        assertEquals(size, multipart.parts.sumOf(Part::size))
         for (part in multipart.parts) {
             assertEquals(part.size, part.end - part.start + 1)
         }
@@ -37,7 +37,7 @@ internal class MultipartTaskTest {
         task.start().await(Duration.ofSeconds(5))
         assertTrue(task.isCompleted)
         val output = ByteArrayOutputStream(size.toInt())
-        task.cache.keys.stream().sorted().forEach { i -> output.write(task.cache[i]) }
+        task.cache.keys.sorted().forEach { i -> output.write(task.cache[i]) }
         val merged = output.toByteArray()
         assertArrayEquals(bytes, merged)
         assertEquals(source, String(merged))

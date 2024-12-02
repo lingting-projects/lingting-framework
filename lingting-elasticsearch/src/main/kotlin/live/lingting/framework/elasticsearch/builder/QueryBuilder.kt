@@ -36,7 +36,7 @@ open class QueryBuilder<E> {
     }
 
     fun addMust(queries: Collection<Query>): QueryBuilder<E> {
-        queries.stream().filter { obj -> Objects.nonNull(obj) }.forEach { e -> must.add(e) }
+        queries.filter { obj -> Objects.nonNull(obj) }.forEach { e -> must.add(e) }
         return this
     }
 
@@ -56,7 +56,7 @@ open class QueryBuilder<E> {
     }
 
     fun addMustNot(queries: Collection<Query>): QueryBuilder<E> {
-        queries.stream().filter { obj -> Objects.nonNull(obj) }.forEach { e -> mustNot.add(e) }
+        queries.filter { obj -> Objects.nonNull(obj) }.forEach { e -> mustNot.add(e) }
         return this
     }
 
@@ -69,7 +69,7 @@ open class QueryBuilder<E> {
     }
 
     fun addShould(queries: Collection<Query>): QueryBuilder<E> {
-        queries.stream().filter { obj -> Objects.nonNull(obj) }.forEach { e -> should.add(e) }
+        queries.filter { obj -> Objects.nonNull(obj) }.forEach { e -> should.add(e) }
         return this
     }
 

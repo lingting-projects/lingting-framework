@@ -150,7 +150,7 @@ open class Snowflake(params: SnowflakeParams, workerId: Long, datacenterId: Long
     }
 
     fun nextStr(count: Int): List<String> {
-        return nextIds(count).stream().map { obj -> java.lang.String.valueOf(obj) }.toList()
+        return nextIds(count).map { java.lang.String.valueOf(it) }.toList()
     }
 
     /**

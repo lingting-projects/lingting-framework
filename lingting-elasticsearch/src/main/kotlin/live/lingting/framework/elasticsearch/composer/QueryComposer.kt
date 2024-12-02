@@ -120,7 +120,7 @@ object QueryComposer {
 
     @JvmStatic
     fun should(queries: List<Query>): Query {
-        return Query.of { q -> q.bool { b -> b.should(queries.stream().filter { obj -> Objects.nonNull(obj) }.toList()) } }
+        return Query.of { q -> q.bool { b -> b.should(queries.filter { obj -> Objects.nonNull(obj) }.toList()) } }
     }
 
     @JvmStatic
@@ -130,7 +130,7 @@ object QueryComposer {
 
     @JvmStatic
     fun must(queries: List<Query>): Query {
-        return Query.of { q -> q.bool { b -> b.must(queries.stream().filter { obj -> Objects.nonNull(obj) }.toList()) } }
+        return Query.of { q -> q.bool { b -> b.must(queries.filter { obj -> Objects.nonNull(obj) }.toList()) } }
     }
 
     @JvmStatic
@@ -152,7 +152,7 @@ object QueryComposer {
 
     @JvmStatic
     fun not(queries: List<Query>): Query {
-        return Query.of { q -> q.bool { b -> b.mustNot(queries.stream().filter { obj -> Objects.nonNull(obj) }.toList()) } }
+        return Query.of { q -> q.bool { b -> b.mustNot(queries.filter { obj -> Objects.nonNull(obj) }.toList()) } }
     }
 
     // endregion

@@ -29,7 +29,6 @@ import co.elastic.clients.elasticsearch.core.search.HitsMetadata
 import co.elastic.clients.elasticsearch.core.search.TrackHits
 import co.elastic.clients.util.ObjectBuilder
 import java.io.IOException
-import java.util.Arrays
 import java.util.Objects
 import java.util.Optional
 import java.util.function.BiConsumer
@@ -110,7 +109,7 @@ class ElasticsearchApi<T>(
 
     fun merge(vararg arrays: Query): Query {
         val builder: QueryBuilder<T> = QueryBuilder.builder<T>()
-        Arrays.stream(arrays).filter { obj -> Objects.nonNull(obj) }.forEach { queries -> builder.addMust(queries) }
+        arrays.filter { obj -> Objects.nonNull(obj) }.forEach { queries -> builder.addMust(queries) }
         return merge(builder)
     }
 
@@ -124,7 +123,7 @@ class ElasticsearchApi<T>(
 
     fun get(id: String): T {
         val request = GetRequest.of { gr -> gr.index(info.index()).id(id) }
-        return client.get(request, cls).source()!!
+        return client[request, cls].source()!!
     }
 
     fun getByQuery(vararg queries: Query): T? {
@@ -137,10 +136,8 @@ class ElasticsearchApi<T>(
 
     fun getByQuery(operator: UnaryOperator<SearchRequest.Builder>, queries: QueryBuilder<T>): T? {
         return search({ builder -> operator.apply(builder).size(1) }, queries).hits()
-            .stream()
-            .findFirst()
-            .map { obj -> obj.source() }
-            .orElse(null)
+            .firstOrNull()
+            ?.source()
     }
 
     fun count(vararg queries: Query): Long {
@@ -180,7 +177,7 @@ class ElasticsearchApi<T>(
         if (sorts.isEmpty()) {
             return ArrayList()
         }
-        return sorts.stream().map<SortOptions> { sort ->
+        return sorts.map { sort ->
             val field = StringUtils.underscoreToHump(sort.field)
             SortComposer.sort(field, sort.desc)
         }.toList()
@@ -389,7 +386,7 @@ class ElasticsearchApi<T>(
 
         val response = bulk({ builder -> operator.apply(builder.refresh(Refresh.WaitFor)) }, operations)
         if (response.errors()) {
-            val collect = response.items().stream().filter { item -> item.error() != null }.toList()
+            val collect = response.items().filter { item -> item.error() != null }.toList()
             val allError = collect.size == collection.size
             for (i in (if (allError) 1 else 0) until collect.size) {
                 val error = collect[i].error()

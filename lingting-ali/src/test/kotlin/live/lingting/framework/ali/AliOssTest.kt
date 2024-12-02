@@ -74,8 +74,8 @@ internal class AliOssTest {
             params.add("prefix", bo.key)
         }
         assertFalse(bm.isEmpty())
-        assertTrue(bm.stream().anyMatch { it.key == bo.key })
-        assertTrue(bm.stream().anyMatch { it.uploadId == uploadId })
+        assertTrue(bm.any { it.key == bo.key })
+        assertTrue(bm.any { it.uploadId == uploadId })
 
         val list = ossBucket.multipartList()
         if (list.isNotEmpty()) {

@@ -2,13 +2,13 @@ package live.lingting.framework.huawei.obs
 
 
 import java.time.LocalDateTime
-import live.lingting.framework.time.DateTime
 import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.huawei.HuaweiObs
 import live.lingting.framework.huawei.HuaweiUtils
+import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.value.multi.StringMultiValue
 
@@ -36,7 +36,7 @@ class HuaweiObsSing(
 
     fun canonicalizedHeaders(): String {
         val builder = StringBuilder()
-        headers.keys().stream().filter { k -> k.startsWith(HuaweiObs.HEADER_PREFIX) }.sorted().forEach { k ->
+        headers.keys().filter { k -> k.startsWith(HuaweiObs.HEADER_PREFIX) }.sorted().forEach { k ->
             val vs = headers.get(k)
             if (vs.isEmpty()) {
                 return@forEach

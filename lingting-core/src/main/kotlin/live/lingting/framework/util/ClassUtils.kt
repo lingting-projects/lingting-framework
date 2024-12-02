@@ -1,6 +1,5 @@
 package live.lingting.framework.util
 
-import java.lang.reflect.AccessibleObject
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -366,20 +365,6 @@ object ClassUtils {
             }
         }
         throw ClassNotFoundException("$className not found")
-    }
-
-    /**
-     * 设置可访问对象的可访问权限为 true
-     * @param obj 可访问的对象
-     * @param <T>    类型
-     * @return 返回设置后的对象
-    </T> */
-    @JvmStatic
-    fun <T : AccessibleObject> setAccessible(obj: T): T {
-        if (!obj.trySetAccessible()) {
-            obj.isAccessible = true
-        }
-        return obj
     }
 
     /**

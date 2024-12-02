@@ -89,10 +89,7 @@ class RModule : SimpleModule() {
 
         fun getDefinition(field: String): BeanPropertyDefinition? {
             return beanDesc.findProperties()
-                .stream()
-                .filter { definition -> definition.name == field }
-                .findFirst()
-                .orElse(null)
+                .firstOrNull { definition -> definition.name == field }
         }
 
         fun isNull(node: TreeNode?): Boolean {

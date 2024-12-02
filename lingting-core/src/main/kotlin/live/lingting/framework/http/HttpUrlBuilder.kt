@@ -104,7 +104,7 @@ class HttpUrlBuilder {
     }
 
     fun uriSegment(vararg segments: String): HttpUrlBuilder {
-        if (!uri.isEmpty() && uri.substring(uri.length - 1) != "/") {
+        if (uri.isNotEmpty() && uri.substring(uri.length - 1) != "/") {
             uri.append("/")
         }
 
@@ -117,13 +117,19 @@ class HttpUrlBuilder {
 
     fun addParam(name: String, value: Any?): HttpUrlBuilder {
         params.ifAbsent(name)
-        if (value is Map<*, *>) {
-            value.forEach { (k: Any?, v: Any?) -> addParam(k.toString(), v) }
-        } else if (CollectionUtils.isMulti(value)) {
-            val list: List<Any?> = CollectionUtils.multiToList(value)
-            list.forEach { addParam(name, it) }
-        } else if (value != null) {
-            params.add(name, value.toString())
+        when {
+            value is Map<*, *> -> {
+                value.forEach { (k: Any?, v: Any?) -> addParam(k.toString(), v) }
+            }
+
+            CollectionUtils.isMulti(value) -> {
+                val list: List<Any?> = CollectionUtils.multiToList(value)
+                list.forEach { addParam(name, it) }
+            }
+
+            value != null -> {
+                params.add(name, value.toString())
+            }
         }
         return this
     }
@@ -238,10 +244,10 @@ class HttpUrlBuilder {
 
         @JvmStatic
         fun buildQuery(map: Map<String, Collection<String>>): String {
-            if (map.isNullOrEmpty()) {
+            if (map.isEmpty()) {
                 return ""
             }
-            val keys = map.keys.stream().sorted().toList()
+            val keys = map.keys.sorted().toList()
 
             val builder = StringBuilder()
             for (key in keys) {
@@ -249,7 +255,7 @@ class HttpUrlBuilder {
                 if (list.isNullOrEmpty()) {
                     builder.append(key).append("&")
                 } else {
-                    for (v in list!!) {
+                    for (v in list) {
                         builder.append(key).append("=").append(v).append("&")
                     }
                 }

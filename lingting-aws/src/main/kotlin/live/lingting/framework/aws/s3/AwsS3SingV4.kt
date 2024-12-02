@@ -69,11 +69,11 @@ class AwsS3SingV4(
         if (params != null && !params.isEmpty) {
             params.forEachSorted { k, vs ->
                 val name: String = AwsS3Utils.encode(k)
-                if (vs.isNullOrEmpty()) {
+                if (vs.isEmpty()) {
                     builder.append(name).append("=").append("&")
                     return@forEachSorted
                 }
-                vs.stream().sorted().forEach { v ->
+                vs.sorted().forEach { v ->
                     val value: String = AwsS3Utils.encode(v)
                     builder.append(name).append("=").append(value).append("&")
                 }
@@ -106,7 +106,7 @@ class AwsS3SingV4(
     fun signedHeaders(): String {
         val builder = StringBuilder()
 
-        headersForEach { k, vs -> builder.append(k).append(";") }
+        headersForEach { k, _ -> builder.append(k).append(";") }
 
         return deleteLast(builder).toString()
     }
