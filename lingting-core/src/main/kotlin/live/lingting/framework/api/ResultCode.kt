@@ -68,6 +68,8 @@ interface ResultCode {
     val i18nKey: String
         get() = "${this::class.java.name}.$code"
 
+    fun i18nMessage(): String = i18nMessage(I18n.defaultLocal)
+
     fun i18nMessage(locale: Locale): String {
         return I18n.find(i18nKey, message, locale)
     }

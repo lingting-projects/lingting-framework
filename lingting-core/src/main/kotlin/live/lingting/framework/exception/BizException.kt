@@ -5,10 +5,16 @@ import live.lingting.framework.api.ResultCode
 /**
  * @author lingting 2022/9/22 12:11
  */
-class BizException constructor(val code: Int, override val message: String, e: Exception? = null) : RuntimeException(message, e) {
-    constructor(resultCode: ResultCode) : this(resultCode.code, resultCode.message, null)
+class BizException @JvmOverloads constructor(
+    val code: Int,
+    override val message: String,
+    e: Exception? = null
+) : RuntimeException(message, e) {
 
-    constructor(resultCode: ResultCode, e: Exception?) : this(resultCode, resultCode.message, e)
+    constructor(resultCode: ResultCode) : this(resultCode, null)
 
-    constructor(resultCode: ResultCode, message: String, e: Exception?) : this(resultCode.code, message, e)
+    constructor(resultCode: ResultCode, e: Exception? = null) : this(resultCode, resultCode.i18nMessage(), e)
+
+    constructor(resultCode: ResultCode, message: String, e: Exception? = null) : this(resultCode.code, message, e)
+
 }

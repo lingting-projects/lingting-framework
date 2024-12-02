@@ -79,6 +79,15 @@ open class Context<T> {
         return v
     }
 
+    open fun get(defaultValue: T): T {
+        val v = get()
+        if (isNull(v)) {
+            set(defaultValue)
+            return defaultValue
+        }
+        return v!!
+    }
+
     open fun set(t: T?) {
         local.set(t)
     }

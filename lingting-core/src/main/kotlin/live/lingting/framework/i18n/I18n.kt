@@ -7,6 +7,7 @@ import java.util.ServiceLoader
 import java.util.concurrent.ConcurrentHashMap
 import live.lingting.framework.Sequence
 import live.lingting.framework.api.ApiI18nProviders
+import live.lingting.framework.context.Context
 
 /**
  * @author lingting 2024/11/30 18:26
@@ -66,9 +67,17 @@ object I18n {
         put(Locale.ENGLISH, mutableListOf(Locale.US))
     }
 
+    private val context = Context<Locale>({ defaultLocal })
+
+    fun get() = context.get(defaultLocal)
+
+    fun set(locale: Locale) = context.set(locale)
+
+    fun remove() = context.remove()
+
     @JvmStatic
     @JvmOverloads
-    fun local(locale: Locale = defaultLocal): I18nLocal {
+    fun local(locale: Locale = get()): I18nLocal {
         return localeMap.computeIfAbsent(locale) {
             val locales = LinkedHashSet<Locale>().apply {
                 // 最准确的
@@ -97,14 +106,14 @@ object I18n {
 
     @JvmStatic
     @JvmOverloads
-    fun find(key: String, locale: Locale = defaultLocal): String? {
+    fun find(key: String, locale: Locale = get()): String? {
         val local = local(locale)
         return local.find(key)
     }
 
     @JvmStatic
     @JvmOverloads
-    fun find(key: String, value: String, locale: Locale = defaultLocal): String {
+    fun find(key: String, value: String, locale: Locale = get()): String {
         val local = local(locale)
         return local.find(key, value)
     }
