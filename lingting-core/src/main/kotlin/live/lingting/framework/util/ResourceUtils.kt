@@ -6,10 +6,7 @@ import java.net.JarURLConnection
 import java.net.URI
 import java.net.URL
 import java.nio.file.Files
-import java.util.Arrays
 import java.util.function.Predicate
-import java.util.stream.Collectors
-import live.lingting.framework.function.ThrowingSupplier
 
 /**
  * @author lingting 2024-09-11 17:20
@@ -30,24 +27,9 @@ object ResourceUtils {
 
     @JvmStatic
     fun get(loader: ClassLoader, name: String): Resource? {
-        val resource = loader.getResource(name) ?: return null
-        val url = resource.toString()
-        val protocol: String = StringUtils.substringBefore(url, ":/")
-        if (protocol.startsWith(Resource.PROTOCOL_FILE)) {
-            val uri = resource.toURI()
-            val dir = File(uri)
-            return Resource.of(protocol, dir)
-        }
-
-        if (protocol.startsWith(Resource.PROTOCOL_JAR)) {
-            val connection = resource.openConnection()
-            if (connection is JarURLConnection) {
-                val paths: Collection<String> = url.split(Resource.DELIMITER_JAR).dropLast(1)
-                val entry = connection.jarEntry
-                return Resource(protocol, paths, entry.name, entry.isDirectory)
-            }
-        }
-        return null
+        val url = loader.getResource(name) ?: return null
+        val resources = resolver(url)
+        return resources.firstOrNull()
     }
 
     /**
@@ -58,74 +40,102 @@ object ResourceUtils {
      */
     @JvmStatic
     @JvmOverloads
-    fun scan(name: String, predicate: Predicate<Resource> = Predicate { true }): Collection<Resource> {
+    fun scan(name: String, predicate: Predicate<Resource> = Predicate { true }): List<Resource> {
         val loader = currentClassLoader()
         return scan(loader, name, predicate)
     }
 
     @JvmStatic
-    fun scan(loader: ClassLoader, name: String, predicate: Predicate<Resource>): Collection<Resource> {
+    fun scan(loader: ClassLoader, name: String, predicate: Predicate<Resource>): List<Resource> {
         val resources = loader.getResources(name)
-        val result: MutableCollection<Resource> = LinkedHashSet()
+        val result = LinkedHashSet<Resource>()
         while (resources.hasMoreElements()) {
             val url = resources.nextElement()
-            handler(result, url, predicate)
+            val resolver = resolver(url, predicate)
+            result.addAll(resolver)
+        }
+        return result.toList()
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun resolver(url: URL, predicate: Predicate<Resource> = Predicate { true }): List<Resource> {
+        val root = url.toString()
+        val protocol = StringUtils.substringBefore(root, Resource.DELIMITER_PROTOCOL)
+        val result = ArrayList<Resource>()
+        if (protocol.startsWith(Resource.PROTOCOL_FILE)) {
+            fillByFile(url, protocol, predicate, result)
+        } else if (protocol.startsWith(Resource.PROTOCOL_JAR)) {
+            fillByJar(url, root, protocol, predicate, result)
         }
         return result
     }
 
-    @JvmStatic
-    fun handler(result: MutableCollection<Resource>, resource: URL, predicate: Predicate<Resource>) {
-        val url = resource.toString()
-        val protocol: String = StringUtils.substringBefore(url, ":/")
-
-        if (protocol.startsWith(Resource.PROTOCOL_FILE)) {
-            val uri = resource.toURI()
-            val dir = File(uri)
-            if (!dir.isDirectory) {
-                fill(result, ThrowingSupplier { Resource.of(protocol, dir) }, predicate)
-                return
-            }
-            Files.walk(dir.toPath()).use { walk ->
-                walk.forEach { path -> fill(result, ThrowingSupplier { Resource.of(protocol, path.toFile()) }, predicate) }
-            }
-            return
-        }
-
-        if (protocol.startsWith(Resource.PROTOCOL_JAR)) {
-            val connection = resource.openConnection()
-            if (connection is JarURLConnection) {
-                val split: Array<String> = url.split(Resource.DELIMITER_JAR.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                val size = split.size - 1
-                val paths: Collection<String> = Arrays.stream(split).limit(size.toLong()).toList()
-                val file = connection.jarFile
-                val entries = file.entries()
-                while (entries.hasMoreElements()) {
-                    val entry = entries.nextElement()
-                    fill(result, ThrowingSupplier { Resource(protocol, paths, entry.name, entry.isDirectory) }, predicate)
+    private fun fillByJar(url: URL, root: String, protocol: String, predicate: Predicate<Resource>, result: ArrayList<Resource>) {
+        val connection = url.openConnection()
+        if (connection is JarURLConnection) {
+            val jarPaths = root.split(Resource.DELIMITER_JAR).dropLastWhile { it.isEmpty() }.dropLast(1)
+            val jarPath = jarPaths.joinToString(Resource.DELIMITER_JAR)
+                .substring(protocol.length + Resource.DELIMITER_PROTOCOL.length)
+                .let { it + Resource.DELIMITER_JAR }
+            val jarFile = connection.jarFile
+            val entries = jarFile.entries()
+            while (entries.hasMoreElements()) {
+                val entry = entries.nextElement()
+                val path = "$jarPath${entry.name}"
+                val name = entry.name.split("/").dropLastWhile { it.isEmpty() }.last()
+                val of = Resource(protocol, path, name, entry.isDirectory)
+                if (predicate.test(of)) {
+                    result.add(of)
                 }
             }
         }
     }
 
-    @JvmStatic
-    fun fill(
-        resources: MutableCollection<Resource>, supplier: ThrowingSupplier<Resource>,
-        predicate: Predicate<Resource>
-    ) {
-        val resource = supplier.get()
-        if (predicate.test(resource)) {
-            resources.add(resource)
+    private fun fillByFile(url: URL, protocol: String, predicate: Predicate<Resource>, result: ArrayList<Resource>) {
+        val uri = url.toURI()
+        val source = File(uri)
+        val files = if (source.isDirectory) {
+            ArrayList<File>().apply {
+                Files.walk(source.toPath()).use {
+                    it.forEach { add(it.toFile()) }
+                }
+            }
+        } else {
+            listOf(source)
+        }
+
+        files.forEach {
+            val of = Resource.of(protocol, it)
+            if (predicate.test(of)) {
+                result.add(of)
+            }
         }
     }
 
 }
 
-class Resource(val protocol: String, paths: Collection<String>, val name: String, val isDirectory: Boolean) {
+class Resource(
+    /**
+     * 文件协议
+     */
+    val protocol: String,
+    /**
+     * 文件路径
+     */
+    val path: String,
+    /**
+     * 文件(夹)名称
+     */
+    val name: String,
+    val isDirectory: Boolean
+) {
 
     companion object {
 
-        const val DELIMITER_JAR: String = "!"
+        const val DELIMITER_PROTOCOL = ":/"
+
+        const val DELIMITER_JAR: String = "!/"
 
         const val DELIMITER_FILE: String = "/"
 
@@ -135,11 +145,10 @@ class Resource(val protocol: String, paths: Collection<String>, val name: String
 
         @JvmStatic
         fun of(protocol: String, file: File): Resource {
-            val paths = Arrays
-                .stream<String>(file.parentFile.absoluteFile.toURI().toString().split(DELIMITER_FILE.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
-                .toList()
-            return Resource(protocol, paths, file.name, file.isDirectory)
+            val path = file.absolutePath.replace("\\", DELIMITER_FILE)
+            return Resource(protocol, path, file.name, file.isDirectory)
         }
+
     }
 
     /**
@@ -147,30 +156,21 @@ class Resource(val protocol: String, paths: Collection<String>, val name: String
      */
     val isFile = !isDirectory
 
-    val paths = paths.toList()
-
     /**
      * 资源来源是jar包
      */
-    val fromJar: Boolean = PROTOCOL_JAR.startsWith(protocol)
+    val fromJar: Boolean = protocol.startsWith(PROTOCOL_JAR)
 
     /**
      * 资源来源是文件
      */
-    val fromFile: Boolean = PROTOCOL_FILE.startsWith(protocol)
+    val fromFile: Boolean = protocol.startsWith(PROTOCOL_FILE)
 
-    val delimiter: String = if (this.fromJar) DELIMITER_JAR else DELIMITER_FILE
+    val uriPath = protocol + DELIMITER_PROTOCOL + path
 
-    val path: String
-
-    val uri: URI by lazy { URI.create(path) }
+    val uri: URI by lazy { URI.create(uriPath) }
 
     val url: URL by lazy { uri.toURL() }
-
-    init {
-        val suffix = if (fromJar && !name.startsWith("/")) "/$name" else name
-        this.path = this.paths.stream().collect(Collectors.joining(DELIMITER_FILE, "", delimiter + suffix))
-    }
 
     fun file(): File {
         return File(uri)
@@ -178,6 +178,10 @@ class Resource(val protocol: String, paths: Collection<String>, val name: String
 
     fun stream(): InputStream {
         return url.openStream()
+    }
+
+    fun string(): String {
+        return StreamUtils.toString(stream())
     }
 
 }
