@@ -7,7 +7,6 @@ import java.net.URI
 import java.net.URL
 import java.nio.file.Files
 import java.util.Arrays
-import java.util.Collections
 import java.util.function.Predicate
 import java.util.stream.Collectors
 import live.lingting.framework.function.ThrowingSupplier
@@ -59,7 +58,7 @@ object ResourceUtils {
      */
     @JvmStatic
     @JvmOverloads
-    fun scan(name: String, predicate: Predicate<Resource> = Predicate { resource -> true }): Collection<Resource> {
+    fun scan(name: String, predicate: Predicate<Resource> = Predicate { true }): Collection<Resource> {
         val loader = currentClassLoader()
         return scan(loader, name, predicate)
     }
@@ -123,32 +122,6 @@ object ResourceUtils {
 }
 
 class Resource(val protocol: String, paths: Collection<String>, val name: String, val isDirectory: Boolean) {
-    val paths: Collection<String> = Collections.unmodifiableCollection(paths)
-
-    val isJar: Boolean = PROTOCOL_JAR.startsWith(protocol)
-
-    val isFile: Boolean = PROTOCOL_FILE.startsWith(protocol)
-
-    val delimiter: String = if (this.isJar) DELIMITER_JAR else DELIMITER_FILE
-
-    val path: String
-
-    val uri: URI by lazy { URI.create(path) }
-
-    val url: URL by lazy { uri.toURL() }
-
-    init {
-        val suffix = if (isJar && !name.startsWith("/")) "/$name" else name
-        this.path = this.paths.stream().collect(Collectors.joining(DELIMITER_FILE, "", delimiter + suffix))
-    }
-
-    fun file(): File {
-        return File(uri)
-    }
-
-    fun stream(): InputStream {
-        return url.openStream()
-    }
 
     companion object {
 
@@ -168,5 +141,44 @@ class Resource(val protocol: String, paths: Collection<String>, val name: String
             return Resource(protocol, paths, file.name, file.isDirectory)
         }
     }
+
+    /**
+     * 资源本身是文件
+     */
+    val isFile = !isDirectory
+
+    val paths = paths.toList()
+
+    /**
+     * 资源来源是jar包
+     */
+    val fromJar: Boolean = PROTOCOL_JAR.startsWith(protocol)
+
+    /**
+     * 资源来源是文件
+     */
+    val fromFile: Boolean = PROTOCOL_FILE.startsWith(protocol)
+
+    val delimiter: String = if (this.fromJar) DELIMITER_JAR else DELIMITER_FILE
+
+    val path: String
+
+    val uri: URI by lazy { URI.create(path) }
+
+    val url: URL by lazy { uri.toURL() }
+
+    init {
+        val suffix = if (fromJar && !name.startsWith("/")) "/$name" else name
+        this.path = this.paths.stream().collect(Collectors.joining(DELIMITER_FILE, "", delimiter + suffix))
+    }
+
+    fun file(): File {
+        return File(uri)
+    }
+
+    fun stream(): InputStream {
+        return url.openStream()
+    }
+
 }
 

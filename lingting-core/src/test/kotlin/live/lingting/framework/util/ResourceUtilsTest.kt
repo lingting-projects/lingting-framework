@@ -32,7 +32,7 @@ internal class ResourceUtilsTest {
 
         val s3 = ResourceUtils.scan(".", { it.isDirectory })
         for (r in s3) {
-            if (r.isFile) {
+            if (r.fromFile) {
                 val file = r.file()
                 assertTrue(file.isDirectory)
                 assertTrue(file.exists())
