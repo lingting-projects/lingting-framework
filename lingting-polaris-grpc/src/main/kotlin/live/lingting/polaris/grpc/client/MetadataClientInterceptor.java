@@ -30,7 +30,7 @@ public class MetadataClientInterceptor implements ClientInterceptor {
 	@Override
 	public <R, P> ClientCall<R, P> interceptCall(MethodDescriptor<R, P> methodDescriptor, CallOptions callOptions,
 												 Channel channel) {
-		return new SimpleForwardingClientCall<>(channel.newCall(methodDescriptor, callOptions)) {
+		return new SimpleForwardingClientCall<R, P>(channel.newCall(methodDescriptor, callOptions)) {
 
 			@Override
 			public void start(Listener<P> responseListener, Metadata headers) {

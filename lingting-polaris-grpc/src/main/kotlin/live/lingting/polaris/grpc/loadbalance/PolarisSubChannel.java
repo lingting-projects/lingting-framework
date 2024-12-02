@@ -212,8 +212,8 @@ public class PolarisSubChannel extends Subchannel implements Instance {
 
 	@Override
 	public boolean equals(Object o) {
-		if (o instanceof PolarisSubChannel other) {
-			return StringUtils.equals(this.getId(), other.getId());
+		if (o instanceof PolarisSubChannel) {
+			return StringUtils.equals(this.getId(), ((PolarisSubChannel) o).getId());
 		}
 		return false;
 	}

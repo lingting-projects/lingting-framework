@@ -3,6 +3,7 @@ package live.lingting.framework.security.domain
 import java.util.Optional
 import java.util.function.Function
 import java.util.function.Predicate
+import live.lingting.framework.util.OptionalUtils.isEmpty
 import live.lingting.framework.util.StringUtils
 
 /**

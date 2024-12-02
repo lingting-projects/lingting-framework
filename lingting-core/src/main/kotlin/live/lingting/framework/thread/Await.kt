@@ -32,8 +32,7 @@ class Await<S>(private val supplier: Supplier<S>, private val predicate: Predica
         try {
             // 设置超时
             val future = CompletableFuture.supplyAsync(supply, executor)
-                .orTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS)
-            return future.get()
+            return future.get(timeout.toMillis(), TimeUnit.MILLISECONDS)
         } catch (e: ExecutionException) {
             throw e.cause!!
         }

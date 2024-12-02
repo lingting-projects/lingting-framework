@@ -3,6 +3,7 @@ package live.lingting.framework.context
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Function
 import java.util.function.Supplier
+import live.lingting.framework.util.ThreadUtils.threadId
 
 /**
  * 用于方便切换上下文管理实现, 避免切换jdk导致大量的修改代码

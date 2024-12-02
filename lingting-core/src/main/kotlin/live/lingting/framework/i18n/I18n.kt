@@ -83,7 +83,7 @@ object I18n {
                 // 最准确的
                 add(locale)
                 // 匹配的次级选项
-                add(Locale.of(locale.language))
+                add(Locale(locale.language))
                 // 替代品
                 val r = replaceMap[locale]
                 if (!r.isNullOrEmpty()) {

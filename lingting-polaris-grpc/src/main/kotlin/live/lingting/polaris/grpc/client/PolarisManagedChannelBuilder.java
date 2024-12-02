@@ -163,8 +163,8 @@ public class PolarisManagedChannelBuilder extends ManagedChannelBuilder<PolarisM
 	public PolarisManagedChannelBuilder intercept(List<ClientInterceptor> interceptors) {
 
 		for (ClientInterceptor interceptor : interceptors) {
-			if (interceptor instanceof PolarisClientInterceptor polarisClientInterceptor) {
-				this.polarisInterceptors.add(polarisClientInterceptor);
+			if (interceptor instanceof PolarisClientInterceptor) {
+				this.polarisInterceptors.add((PolarisClientInterceptor) interceptor);
 			}
 			else {
 				this.interceptors.add(interceptor);
@@ -175,8 +175,8 @@ public class PolarisManagedChannelBuilder extends ManagedChannelBuilder<PolarisM
 
 	public PolarisManagedChannelBuilder intercept(ClientInterceptor... interceptors) {
 		for (ClientInterceptor interceptor : interceptors) {
-			if (interceptor instanceof PolarisClientInterceptor polarisClientInterceptor) {
-				this.polarisInterceptors.add(polarisClientInterceptor);
+			if (interceptor instanceof PolarisClientInterceptor) {
+				this.polarisInterceptors.add((PolarisClientInterceptor) interceptor);
 			}
 			else {
 				this.interceptors.add(interceptor);

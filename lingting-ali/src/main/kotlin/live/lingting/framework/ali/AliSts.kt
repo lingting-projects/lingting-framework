@@ -118,7 +118,7 @@ class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsReque
 
     fun credential(timeout: Duration, statements: Collection<Statement>): Credential {
         val request = AliStsCredentialRequest()
-        request.timeout = timeout.toSeconds()
+        request.timeout = timeout.toMillis() / 1000
         request.statements = statements
         request.roleArn = properties.roleArn
         request.roleSessionName = properties.roleSessionName

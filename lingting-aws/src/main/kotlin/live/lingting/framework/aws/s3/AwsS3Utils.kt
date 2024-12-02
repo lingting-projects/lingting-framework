@@ -56,6 +56,6 @@ object AwsS3Utils {
 
     @JvmStatic
     fun encode(s: String): String {
-        return URLEncoder.encode(s, StandardCharsets.UTF_8)
+        return URLEncoder.encode(s, StandardCharsets.UTF_8.name())
     }
 }

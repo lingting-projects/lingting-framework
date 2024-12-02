@@ -1,8 +1,12 @@
 package live.lingting.framework.http
 
+import java.io.IOException
 import java.net.InetSocketAddress
+import java.net.Proxy
 import java.net.ProxySelector
+import java.net.SocketAddress
 import java.net.URI
+import okhttp3.OkHttpClient
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -14,7 +18,7 @@ import org.junit.jupiter.api.Test
  * @author lingting 2024-05-08 14:22
  */
 internal class HttpClientTest {
-    var client: java.net.http.HttpClient? = null
+    var client: OkHttpClient? = null
 
     var selector: ProxySelector? = null
 
@@ -22,20 +26,25 @@ internal class HttpClientTest {
 
     @BeforeEach
     fun before() {
-        client = java.net.http.HttpClient.newBuilder().build()
-        selector = if (!useCharles) null else ProxySelector.of(InetSocketAddress("127.0.0.1", 9999))
+        client = OkHttpClient.Builder().build()
+        selector = if (!useCharles) null else InetSocketAddress("127.0.0.1", 9999).let {
+            val proxy = Proxy(Proxy.Type.HTTP, it)
+            object : ProxySelector() {
+                override fun select(uri: URI?): List<Proxy?>? {
+                    return listOf(proxy)
+                }
+
+                override fun connectFailed(uri: URI?, sa: SocketAddress?, ioe: IOException?) {
+                    //
+                }
+
+            }
+        }
     }
 
     @Test
 
     fun test() {
-        val java = HttpClient.java()
-            .disableSsl()
-            .infiniteTimeout()
-            .memoryCookie()
-            .proxySelector(selector)
-            .build()
-        assertClient(java)
         val okhttp = HttpClient.okhttp()
             .disableSsl()
             .infiniteTimeout()

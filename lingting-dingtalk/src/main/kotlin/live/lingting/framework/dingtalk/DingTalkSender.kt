@@ -80,7 +80,7 @@ class DingTalkSender(
     fun secret(timestamp: Long): String {
         val source = "$timestamp\n$secret"
         val base64 = mac!!.calculateBase64(source)
-        val sign = URLEncoder.encode(base64, StandardCharsets.UTF_8)
+        val sign = URLEncoder.encode(base64, StandardCharsets.UTF_8.name())
         return "$url&timestamp=$timestamp&sign=$sign"
     }
 

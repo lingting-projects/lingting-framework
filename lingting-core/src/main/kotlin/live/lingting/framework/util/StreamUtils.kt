@@ -63,6 +63,9 @@ object StreamUtils {
     }
 
     @JvmStatic
+    fun InputStream.readAllBytes(): ByteArray = read(this)
+
+    @JvmStatic
     fun read(input: InputStream, consumer: ThrowingBiConsumerE<ByteArray, Int, IOException>) {
         read(input, readSize, consumer)
     }
@@ -140,7 +143,7 @@ object StreamUtils {
     fun toString(input: InputStream, size: Int, charset: Charset): String {
         ByteArrayOutputStream().use { out ->
             write(input, out, size)
-            return out.toString(charset)
+            return out.toString(charset.name())
         }
     }
 

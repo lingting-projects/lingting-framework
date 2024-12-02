@@ -52,5 +52,8 @@ object ThreadUtils {
         return instance().submit(callable)
     }
 
+    @JvmStatic
+    fun Thread.threadId(): Long = id
+
 }
 

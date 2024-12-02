@@ -10,6 +10,7 @@ import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.jackson.JacksonUtils
 import live.lingting.framework.stream.CloneInputStream
 import live.lingting.framework.util.StreamUtils
+import live.lingting.framework.util.StreamUtils.readAllBytes
 
 /**
  * @author lingting 2024-09-12 23:37

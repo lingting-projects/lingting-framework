@@ -1,7 +1,7 @@
 package live.lingting.framework.util
 
-import jakarta.servlet.http.HttpServletRequest
 import java.util.regex.Pattern
+import javax.servlet.http.HttpServletRequest
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.util.EnumerationUtils.forEach
 

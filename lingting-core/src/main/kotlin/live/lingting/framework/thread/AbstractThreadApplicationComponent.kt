@@ -9,6 +9,7 @@ import live.lingting.framework.util.BooleanUtils.ifTrue
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.util.ThreadUtils
+import live.lingting.framework.util.ThreadUtils.threadId
 import live.lingting.framework.util.ValueUtils
 import live.lingting.framework.value.WaitValue
 

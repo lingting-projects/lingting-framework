@@ -11,4 +11,7 @@ object OptionalUtils {
     @JvmStatic
     fun <T> T?.optional(): Optional<T> = Optional.ofNullable(this) as Optional<T>
 
+    @JvmStatic
+    inline val Optional<*>.isEmpty: Boolean get() = !isPresent
+
 }

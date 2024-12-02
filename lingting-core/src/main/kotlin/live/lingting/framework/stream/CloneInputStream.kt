@@ -44,6 +44,10 @@ abstract class CloneInputStream(
         return stream!!.read(b, off, len)
     }
 
+    open fun readAllBytes(): ByteArray {
+        return StreamUtils.read(this)
+    }
+
     override fun skip(n: Long): Long {
         return stream!!.skip(n)
     }

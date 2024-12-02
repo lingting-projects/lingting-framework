@@ -90,10 +90,10 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
      */
     fun canGet(o: Any): Boolean {
         if (methodGet != null) {
-            return methodGet.canAccess(o)
+            return methodGet.isAccessible
         }
         if (field != null) {
-            return field.canAccess(o)
+            return field.isAccessible
         }
         return false
     }
@@ -105,7 +105,7 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
         if (methodSet == null) {
             return false
         }
-        return methodSet.canAccess(o)
+        return methodSet.isAccessible
     }
 
     /**
@@ -117,20 +117,20 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
     }
 
     fun visibleGet(): ClassField {
-        if (field != null && !field.trySetAccessible()) {
+        if (field != null) {
             field.isAccessible = true
         }
-        if (methodGet != null && !methodGet.trySetAccessible()) {
+        if (methodGet != null) {
             methodGet.isAccessible = true
         }
         return this
     }
 
     fun visibleSet(): ClassField {
-        if (field != null && !field.trySetAccessible()) {
+        if (field != null) {
             field.isAccessible = true
         }
-        if (methodSet != null && !methodSet.trySetAccessible()) {
+        if (methodSet != null) {
             methodSet.isAccessible = true
         }
         return this

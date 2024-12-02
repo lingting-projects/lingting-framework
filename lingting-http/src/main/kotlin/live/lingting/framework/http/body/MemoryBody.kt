@@ -8,6 +8,7 @@ import java.nio.channels.WritableByteChannel
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import live.lingting.framework.stream.BytesInputStream
+import live.lingting.framework.util.StreamUtils.readAllBytes
 
 /**
  * @author lingting 2024-09-28 14:04

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JavaType
 import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializationConfig
 import com.fasterxml.jackson.databind.SerializerProvider
-import com.fasterxml.jackson.databind.cfg.CacheProvider
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider
 import com.fasterxml.jackson.databind.ser.SerializerFactory
 import live.lingting.framework.jackson.serializer.NullArrayJsonSerializer
@@ -22,17 +21,11 @@ class NullSerializerProvider : DefaultSerializerProvider {
 
     protected constructor(src: SerializerProvider, config: SerializationConfig, f: SerializerFactory?) : super(src, config, f)
 
-    protected constructor(provider: NullSerializerProvider, cacheProvider: CacheProvider) : super(provider, cacheProvider)
-
     override fun copy(): DefaultSerializerProvider {
         if (javaClass != NullSerializerProvider::class.java) {
             return super.copy()
         }
         return NullSerializerProvider(this)
-    }
-
-    override fun withCaches(cacheProvider: CacheProvider): DefaultSerializerProvider {
-        return NullSerializerProvider(this, cacheProvider)
     }
 
     override fun createInstance(config: SerializationConfig, jsf: SerializerFactory): NullSerializerProvider {

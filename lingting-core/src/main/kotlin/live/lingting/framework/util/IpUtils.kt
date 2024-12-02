@@ -1,8 +1,8 @@
 package live.lingting.framework.util
 
-import jakarta.servlet.http.HttpServletRequest
 import java.net.InetAddress
 import java.util.function.Predicate
+import javax.servlet.http.HttpServletRequest
 import live.lingting.framework.http.header.HttpHeaders
 
 /**
