@@ -37,7 +37,6 @@ internal class IpUtilsTest {
 
     fun resolve() {
         val resolve = IpUtils.resolve("ntp.ntsc.ac.cn")
-        println(resolve)
         Assertions.assertNotNull(resolve)
     }
 }

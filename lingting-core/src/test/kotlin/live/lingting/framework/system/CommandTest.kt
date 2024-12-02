@@ -33,7 +33,6 @@ internal class CommandTest {
         result.stdOut().use { stream ->
             val bytes = StreamUtils.read(stream)
             val string = String(bytes, StandardCharsets.UTF_8)
-            println(string)
             assertEquals(stdOut, string)
         }
     }

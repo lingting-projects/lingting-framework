@@ -44,7 +44,6 @@ internal class HttpDownloadTest {
         assertTrue(download.isFinished)
 
         val file = download.file
-        println(file.absolutePath)
         try {
             FileInputStream(file).use { stream ->
                 val string = StreamUtils.toString(stream)
@@ -76,7 +75,6 @@ internal class HttpDownloadTest {
         assertTrue(download.isFinished)
 
         val file = download.file
-        println(file.absolutePath)
         val temp = FileUtils.createTemp(".2")
         try {
             download.transferTo(temp)
