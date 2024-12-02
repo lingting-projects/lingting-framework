@@ -25,6 +25,12 @@ object SensitiveHolder {
         CONTEXT.set(flag)
     }
 
+    /**
+     * 进行脱敏
+     */
+    @JvmStatic
+    fun desensitization() = set(true)
+
     @JvmStatic
     fun remove() {
         CONTEXT.remove()
