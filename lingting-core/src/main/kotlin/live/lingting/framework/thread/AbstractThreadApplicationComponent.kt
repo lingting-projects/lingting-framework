@@ -3,8 +3,8 @@ package live.lingting.framework.thread
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.function.Consumer
-import live.lingting.framework.context.ContextComponent
-import live.lingting.framework.context.ContextHolder
+import live.lingting.framework.application.ApplicationComponent
+import live.lingting.framework.application.ApplicationHolder
 import live.lingting.framework.util.BooleanUtils.ifTrue
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StringUtils
@@ -15,7 +15,7 @@ import live.lingting.framework.value.WaitValue
 /**
  * @author lingting 2023-04-22 10:40
  */
-abstract class AbstractThreadContextComponent : ContextComponent {
+abstract class AbstractThreadApplicationComponent : ApplicationComponent {
     protected val log = logger()
 
     val threadValue: WaitValue<Thread> = WaitValue.of<Thread>()
@@ -37,12 +37,13 @@ abstract class AbstractThreadContextComponent : ContextComponent {
     }
 
     protected fun init() {
+        //
     }
 
     open val isRun: Boolean
         get() {
             val available = threadValue.optional().map { !it.isInterrupted && it.isAlive }.orElse(false)
-            return !ContextHolder.isStop && available
+            return !ApplicationHolder.isStop && available
         }
 
     protected open fun executor(): Executor {
@@ -70,7 +71,7 @@ abstract class AbstractThreadContextComponent : ContextComponent {
                     val thread = Thread.currentThread()
                     threadValue.update(thread)
                     try {
-                        this@AbstractThreadContextComponent.run()
+                        this@AbstractThreadApplicationComponent.run()
                     } finally {
                         threadValue.update(null)
                     }

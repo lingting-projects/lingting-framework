@@ -7,7 +7,7 @@ import live.lingting.framework.time.StopWatch
  * 顶级队列线程类
  * @author lingting 2021/3/2 15:07
  */
-abstract class AbstractQueueThread<E> : AbstractThreadContextComponent() {
+abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
 
     /**
      * 用于子类自定义缓存数据数量
@@ -41,6 +41,7 @@ abstract class AbstractQueueThread<E> : AbstractThreadContextComponent() {
      * 数据处理前执行
      */
     protected fun preProcess() {
+        //
     }
 
     /**

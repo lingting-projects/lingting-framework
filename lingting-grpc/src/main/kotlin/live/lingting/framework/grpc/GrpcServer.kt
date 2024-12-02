@@ -8,7 +8,7 @@ import io.grpc.ServerInterceptor
 import io.grpc.ServiceDescriptor
 import java.lang.reflect.Method
 import live.lingting.framework.Sequence
-import live.lingting.framework.context.ContextComponent
+import live.lingting.framework.application.ApplicationComponent
 import live.lingting.framework.grpc.interceptor.AbstractServerInterceptor
 import live.lingting.framework.util.ClassUtils
 import live.lingting.framework.util.Slf4jUtils.logger
@@ -21,7 +21,7 @@ import live.lingting.framework.util.ThreadUtils
 class GrpcServer(
     builder: ServerBuilder<*>, interceptors: MutableCollection<ServerInterceptor>,
     services: MutableCollection<BindableService>
-) : ContextComponent {
+) : ApplicationComponent {
     val server: Server
 
     val serviceNameMap: MutableMap<String, Class<out BindableService>>

@@ -1,22 +1,22 @@
 package live.lingting.framework.security.grpc.interceptor
 
+import live.lingting.framework.context.StackContext
 import live.lingting.framework.security.domain.SecurityToken
-import live.lingting.framework.thread.StackThreadLocal
 
 /**
  * @author lingting 2023-12-18 16:39
  */
 object SecurityGrpcRemoteContent {
-    val THREAD_LOCAL: StackThreadLocal<SecurityToken?> = StackThreadLocal()
+    val THREAD_LOCAL: StackContext<SecurityToken?> = StackContext()
 
     @JvmStatic
     fun get(): SecurityToken? {
-        return THREAD_LOCAL.get()
+        return THREAD_LOCAL.peek()
     }
 
     @JvmStatic
     fun put(value: SecurityToken?) {
-        THREAD_LOCAL.put(value)
+        THREAD_LOCAL.push(value)
     }
 
     @JvmStatic

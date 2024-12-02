@@ -26,7 +26,7 @@ object SensitiveUtils {
         }
 
         // 如果关闭脱敏
-        if (!SensitiveHolder.allowSensitive()) {
+        if (!SensitiveHolder.allow()) {
             return raw
         }
 

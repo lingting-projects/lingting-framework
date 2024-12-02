@@ -1,9 +1,10 @@
-package live.lingting.framework.context
+package live.lingting.framework.application
 
 /**
  * @author lingting 2023-12-06 17:13
  */
-object ContextHolder {
+object ApplicationHolder {
+
     var isStop: Boolean = true
         private set
 

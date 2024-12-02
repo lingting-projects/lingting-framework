@@ -8,14 +8,9 @@ import live.lingting.framework.security.resolver.SecurityTokenResolver
 /**
  * @author lingting 2023-12-15 15:57
  */
-class SecurityDefaultResourceServiceImpl(resolvers: List<SecurityTokenResolver>) : SecurityResourceService {
-    private val resolvers: List<SecurityTokenResolver>
+class SecurityDefaultResourceServiceImpl(resolvers: Collection<SecurityTokenResolver>) : SecurityResourceService {
 
-    init {
-        val list = ArrayList(resolvers)
-        Sequence.asc(list)
-        this.resolvers = list
-    }
+    val resolvers: List<SecurityTokenResolver> = Sequence.asc(resolvers)
 
     override fun resolve(token: SecurityToken): SecurityScope? {
         return resolvers.find { it.isSupport(token) }?.resolver(token)

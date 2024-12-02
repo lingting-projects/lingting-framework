@@ -3,7 +3,7 @@ package live.lingting.framework.thread
 import java.time.Duration
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
-import live.lingting.framework.context.ContextHolder.start
+import live.lingting.framework.application.ApplicationHolder.start
 import live.lingting.framework.util.ThreadUtils
 import live.lingting.framework.util.ValueUtils
 import org.junit.jupiter.api.Assertions.assertEquals

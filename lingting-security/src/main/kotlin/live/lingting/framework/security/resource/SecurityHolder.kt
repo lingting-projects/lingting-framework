@@ -1,18 +1,19 @@
 package live.lingting.framework.security.resource
 
 import java.util.Optional
+import live.lingting.framework.context.StackContext
 import live.lingting.framework.security.domain.SecurityScope
-import live.lingting.framework.thread.StackThreadLocal
 
 /**
  * @author lingting 2023-03-29 20:29
  */
 object SecurityHolder {
-    val LOCAL: StackThreadLocal<SecurityScope?> = StackThreadLocal()
+
+    val LOCAL: StackContext<SecurityScope?> = StackContext()
 
     @JvmStatic
     fun put(scope: SecurityScope?) {
-        LOCAL.put(scope)
+        LOCAL.push(scope)
     }
 
     @JvmStatic
@@ -32,7 +33,7 @@ object SecurityHolder {
 
     @JvmStatic
     fun scope(): SecurityScope? {
-        return LOCAL.get()
+        return LOCAL.peek()
     }
 
     @JvmStatic

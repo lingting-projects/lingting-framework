@@ -1,25 +1,27 @@
 package live.lingting.framework.money
 
-import live.lingting.framework.thread.StackThreadLocal
+import live.lingting.framework.context.StackContext
 
 /**
  * @author lingting 2023-05-07 18:00
  */
 object MoneyConfigHolder {
-    private val THREAD_LOCAL = StackThreadLocal<MoneyConfig>()
+
+    private val CONTEXT = StackContext<MoneyConfig?>()
 
     @JvmStatic
     fun get(): MoneyConfig? {
-        return THREAD_LOCAL.get()
+        return CONTEXT.peek()
     }
 
     @JvmStatic
     fun put(config: MoneyConfig?) {
-        THREAD_LOCAL.put(config!!)
+        CONTEXT.push(config)
     }
 
     @JvmStatic
     fun pop() {
-        THREAD_LOCAL.pop()
+        CONTEXT.pop()
     }
+
 }

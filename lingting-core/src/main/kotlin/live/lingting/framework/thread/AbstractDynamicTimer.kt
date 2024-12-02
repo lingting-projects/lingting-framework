@@ -8,7 +8,7 @@ import live.lingting.framework.lock.JavaReentrantLock
 /**
  * @author lingting 2023-04-22 10:39
  */
-abstract class AbstractDynamicTimer<T> : AbstractThreadContextComponent() {
+abstract class AbstractDynamicTimer<T> : AbstractThreadApplicationComponent() {
     protected val lock: JavaReentrantLock = JavaReentrantLock()
 
     protected val queue: PriorityQueue<T> = PriorityQueue(comparator())
@@ -55,13 +55,14 @@ abstract class AbstractDynamicTimer<T> : AbstractThreadContextComponent() {
             }
             val duration = sleepTime(t)
             val millis = duration.toMillis()
+            if (
             // 需要休眠
-            if (millis > 0) {
+                millis > 0
                 // 如果是被唤醒
-                if (lock.await(millis, TimeUnit.MILLISECONDS)) {
-                    replay(t)
-                    return@runByInterruptibly
-                }
+                && lock.await(millis, TimeUnit.MILLISECONDS)
+            ) {
+                replay(t)
+                return@runByInterruptibly
             }
             process(t)
         }
