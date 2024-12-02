@@ -14,7 +14,7 @@ import live.lingting.framework.util.ValueUtils
 /**
  * @author lingting 2023-06-05 17:31
  */
-class Async constructor(
+open class Async @JvmOverloads constructor(
     /**
      * 异步任务使用的线程池
      */
@@ -24,6 +24,29 @@ class Async constructor(
      */
     val limit: Long = UNLIMITED
 ) {
+
+    companion object {
+        @JvmStatic
+        var defaultExecutor: Executor = VirtualThread.executor()
+
+        const val UNLIMITED: Long = -1
+
+        @JvmStatic
+        @JvmOverloads
+        fun pool(limit: Long = UNLIMITED): Async {
+            val e: Executor = ThreadUtils.executor()
+            return Async(e, limit)
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        fun virtual(limit: Long = UNLIMITED): Async {
+            val e: Executor = VirtualThread.executor()
+            return Async(e, limit)
+        }
+
+    }
+
     protected val lock: JavaReentrantLock = JavaReentrantLock()
 
     /**
@@ -160,25 +183,4 @@ class Async constructor(
         return all.size.toLong()
     }
 
-    companion object {
-        @JvmStatic
-        var defaultExecutor: Executor = VirtualThread.executor()
-
-        const val UNLIMITED: Long = -1
-
-        @JvmStatic
-        @JvmOverloads
-        fun pool(limit: Long = UNLIMITED): Async {
-            val e: Executor = ThreadUtils.executor()
-            return Async(e, limit)
-        }
-
-        @JvmStatic
-        @JvmOverloads
-        fun virtual(limit: Long = UNLIMITED): Async {
-            val e: Executor = VirtualThread.executor()
-            return Async(e, limit)
-        }
-
-    }
 }

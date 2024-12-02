@@ -24,7 +24,7 @@ class DequeContextTest {
     @Test
     fun test() {
         val max = 1000
-        val async = Async()
+        val async = Async(200)
         for (i in 0 until max) {
             async.submit("stack-$i") {
                 try {

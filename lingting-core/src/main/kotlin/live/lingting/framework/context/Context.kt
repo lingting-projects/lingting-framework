@@ -17,8 +17,6 @@ open class Context<T> {
         @JvmStatic
         var creator = Function<Supplier<*>?, ThreadLocal<*>> { ThreadLocal<Any>() }
 
-        private val FIRST = ConcurrentHashMap<Long, Boolean>()
-
     }
 
     @JvmOverloads
@@ -33,6 +31,8 @@ open class Context<T> {
     protected val local: ThreadLocal<T>
 
     protected val init: Supplier<out T>?
+
+    protected val first = ConcurrentHashMap<Long, Boolean>()
 
     protected open fun id(): Long = Thread.currentThread().threadId()
 
@@ -68,7 +68,7 @@ open class Context<T> {
 
         val id = id()
 
-        val isFirst = FIRST.compute(id) { _, v ->
+        val isFirst = first.compute(id) { _, v ->
             return@compute v == null || v == false
         }
         if (isFirst != true) {
@@ -94,7 +94,7 @@ open class Context<T> {
 
     open fun remove() {
         val id = id()
-        FIRST[id] = false
+        first[id] = false
         local.remove()
     }
 
