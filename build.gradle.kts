@@ -34,7 +34,7 @@ idea {
 
 allprojects {
     group = projectGroup
-    version = projectVersion
+    version = "$projectVersion-jdk8"
 
     apply {
         plugin("idea")
