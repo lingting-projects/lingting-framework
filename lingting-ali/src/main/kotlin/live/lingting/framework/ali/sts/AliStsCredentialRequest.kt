@@ -1,6 +1,5 @@
 package live.lingting.framework.ali.sts
 
-import java.util.Map
 import live.lingting.framework.aws.policy.Statement
 import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.body.MemoryBody
@@ -34,13 +33,15 @@ class AliStsCredentialRequest : AliStsRequest() {
     }
 
     override fun body(): BodySource {
-        val policy = Map.of(
-            "Version", "1", "Statement",
-            statements.map { obj -> obj.map() }.toList()
+        val policy = mapOf(
+            "Version" to "1",
+            "Statement" to statements.map { obj -> obj.map() }.toList(),
         )
-        val map = Map.of(
-            "RoleArn", roleArn, "RoleSessionName", roleSessionName, "DurationSeconds",
-            timeout, "Policy", policy
+        val map = mapOf(
+            "RoleArn" to roleArn,
+            "RoleSessionName" to roleSessionName,
+            "DurationSeconds" to timeout,
+            "Policy" to policy
         )
         val json = JacksonUtils.toJson(map)
         return MemoryBody(json)
