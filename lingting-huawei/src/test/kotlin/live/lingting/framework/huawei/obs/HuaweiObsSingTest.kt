@@ -18,6 +18,7 @@ internal class HuaweiObsSingTest {
     fun test() {
         val eHeaders = empty()
         eHeaders.add("x-obs-content-sha256", PAYLOAD_UNSIGNED)
+        eHeaders.contentType("application/xml")
         val eParams = StringMultiValue()
         eParams.add("uploads")
         val eDate = "Tue, 5 Nov 2024 06:26:17 GMT"
@@ -36,11 +37,12 @@ internal class HuaweiObsSingTest {
             """
 				GET
 
+				application/xml
 				Tue, 5 Nov 2024 06:26:17 GMT
 				x-obs-content-sha256:UNSIGNED-PAYLOAD
 				/bucket/?uploads
 				""".trimIndent(), sing.source()
         )
-        assertEquals("OBS ak:DWeWvzUw0RaQpSPJCOTQKxQyBB8=", sing.calculate())
+        assertEquals("OBS ak:qoJwPdUsDnYYKy/Ze8BBVmql4GI=", sing.calculate())
     }
 }
