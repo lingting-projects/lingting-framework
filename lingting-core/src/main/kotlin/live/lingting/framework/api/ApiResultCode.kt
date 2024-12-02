@@ -3,7 +3,10 @@ package live.lingting.framework.api
 /**
  * @author lingting 2022/9/19 13:56
  */
-enum class ApiResultCode(override val code: Int, override val message: String) : ResultCode {
+enum class ApiResultCode(
+    override val code: Int,
+    override val message: String,
+) : ResultCode {
     /**
      * 成功
      */
@@ -97,18 +100,9 @@ enum class ApiResultCode(override val code: Int, override val message: String) :
     WAIT(2022000011, "Processing!"),
 
     /**
-     * 阿里云相关操作异常
-     */
-    ALI_ERROR(2022000012, "Aliyun operate error!"),
-
-    /**
      * 数据处理异常! 请确认数据填写正确且不存在重复数据
      */
     DB_CONSTRAINT_VIOLATION_ERROR(2022000013, "Data constraint violation error!"),
 
-    /**
-     * 未找到目标
-     */
-    NOT_FOUND(2022000014, "Not found!"),
     // endregion
 }

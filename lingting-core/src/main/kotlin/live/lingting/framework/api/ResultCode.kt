@@ -1,6 +1,8 @@
 package live.lingting.framework.api
 
+import java.util.Locale
 import live.lingting.framework.exception.BizException
+import live.lingting.framework.i18n.I18n
 
 /**
  * @author lingting 2022/9/19 13:55
@@ -62,4 +64,12 @@ interface ResultCode {
     fun throwException(e: Exception?) {
         throw toException(e)
     }
+
+    val i18nKey: String
+        get() = "${this::class.java.name}.$code"
+
+    fun i18nMessage(locale: Locale): String {
+        return I18n.find(i18nKey, message, locale)
+    }
+
 }
