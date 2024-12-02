@@ -19,6 +19,15 @@ import live.lingting.framework.api.R
  * @author lingting 2023-09-27 11:25
  */
 class RModule : SimpleModule() {
+
+    companion object {
+        const val FIELD_CODE: String = "code"
+
+        const val FIELD_DATA: String = "data"
+
+        const val FIELD_MESSAGE: String = "message"
+    }
+
     init {
         setDeserializers(RJacksonDeserializers())
     }
@@ -44,7 +53,7 @@ class RModule : SimpleModule() {
             val code = getCode(root)
             val message = getMessage(root)
             val data = getData(root, getDefinition(FIELD_DATA)!!, ctxt)
-            return R.of(code, data, message!!)
+            return R.of(code, message!!, data)
         }
 
         fun getCode(root: TreeNode): Int {
@@ -91,11 +100,4 @@ class RModule : SimpleModule() {
         }
     }
 
-    companion object {
-        const val FIELD_CODE: String = "code"
-
-        const val FIELD_DATA: String = "data"
-
-        const val FIELD_MESSAGE: String = "message"
-    }
 }

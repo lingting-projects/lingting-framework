@@ -10,13 +10,15 @@ data class R<T>(val code: Int, val data: T?, val message: String) : Serializable
     companion object {
 
         @JvmStatic
-        fun <T> of(code: Int, message: String): R<T> {
-            return of<T>(code, message, null)
+        @JvmOverloads
+        fun <T> of(code: Int, message: String, data: T? = null): R<T> {
+            return R(code, data, message)
         }
 
         @JvmStatic
-        fun <T> of(code: Int, message: String, data: T?): R<T> {
-            return R(code, data, message)
+        @JvmOverloads
+        fun <T> of(rc: ResultCode, data: T? = null): R<T> {
+            return of(rc.code, rc.i18nMessage(), data)
         }
 
         @JvmStatic
@@ -31,12 +33,12 @@ data class R<T>(val code: Int, val data: T?, val message: String) : Serializable
 
         @JvmStatic
         fun <T> ok(code: ResultCode, data: T?): R<T> {
-            return of(code.code, data, code.message)
+            return of(code, data)
         }
 
         @JvmStatic
         fun <T> failed(code: ResultCode): R<T> {
-            return of(code.code, code.message)
+            return of(code)
         }
 
         @JvmStatic
@@ -46,13 +48,9 @@ data class R<T>(val code: Int, val data: T?, val message: String) : Serializable
 
         @JvmStatic
         fun <T> failed(code: Int, message: String): R<T> {
-            return of(code, null, message)
+            return of(code, message)
         }
 
-        @JvmStatic
-        fun <T> of(code: Int, data: T?, message: String): R<T> {
-            return R(code, data, message)
-        }
 
     }
 }
