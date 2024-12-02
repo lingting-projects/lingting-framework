@@ -1,6 +1,5 @@
 package live.lingting.framework.huawei
 
-import java.util.Map
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.huawei.properties.HuaweiIamProperties
 import live.lingting.framework.huawei.properties.HuaweiObsProperties
@@ -14,7 +13,7 @@ internal object HuaweiBasic {
         val properties = HuaweiIamProperties()
         val name = System.getenv("HUAWEI_IAM_DOMAIN_NAME")
         assertNotNull(name)
-        properties.domain = Map.of<String, String?>("name", name)
+        properties.domain = mapOf("name" to name)
         properties.username = System.getenv("HUAWEI_IAM_USERNAME")
         properties.password = System.getenv("HUAWEI_IAM_PASSWORD")
         assertNotNull(properties.username)
