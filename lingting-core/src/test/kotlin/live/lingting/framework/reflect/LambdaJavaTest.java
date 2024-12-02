@@ -7,18 +7,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * @author lingting 2024/11/27 22:00
  */
-public class LambdaJavaTest {
+class LambdaJavaTest {
 
 	@Test
 	void test() {
-		var v = new LambdaV(
+		LambdaV v = new LambdaV(
 			LambdaE::getId,
 			LambdaE::getName
 		);
-		var m0 = LambdaMeta.of(v.getL0());
-		var m1 = LambdaMeta.of(v.getL1());
-		assertEquals(m0.getCls(), LambdaE.class);
-		assertEquals(m1.getCls(), LambdaE.class);
+		LambdaMeta m0 = LambdaMeta.of(v.getL0());
+		LambdaMeta m1 = LambdaMeta.of(v.getL1());
+		assertEquals(LambdaE.class, m0.getCls());
+		assertEquals(LambdaE.class, m1.getCls());
 		assertEquals("id", m0.getField());
 		assertEquals("name", m1.getField());
 	}

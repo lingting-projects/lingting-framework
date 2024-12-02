@@ -54,7 +54,7 @@ class QueryWrapper<T : Any> : LambdaWrapper<T, QueryWrapper<T>>() {
 
     @SafeVarargs
     fun select(vararg args: SFunction<T, *>): QueryWrapper<T> {
-        val fields = java.util.Arrays.stream<SFunction<T, *>>(args).map<String> { sf: SFunction<T, *> -> this.convertField(sf) }.toList()
+        val fields = args.map { sf -> this.convertField(sf) }.toList()
         return select(fields)
     }
 
