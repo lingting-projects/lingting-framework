@@ -3,8 +3,11 @@ package live.lingting.framework.security
 import live.lingting.framework.security.authorize.SecurityAuthorizationService
 import live.lingting.framework.security.convert.SecurityConvert
 import live.lingting.framework.security.domain.AuthorizationVO
+import live.lingting.framework.security.domain.SecurityResultCode.A_EXPIRED
+import live.lingting.framework.security.domain.SecurityResultCode.A_LOGIN_ILLEGAL
+import live.lingting.framework.security.domain.SecurityResultCode.A_PASSWORD_ILLEGAL
+import live.lingting.framework.security.domain.SecurityResultCode.A_TOKEN_INVALID
 import live.lingting.framework.security.domain.SecurityToken
-import live.lingting.framework.security.exception.AuthorizationException
 import live.lingting.framework.security.password.SecurityPassword
 import live.lingting.framework.security.po.EndpointPasswordPO
 import live.lingting.framework.security.po.EndpointTokenPO
@@ -31,10 +34,14 @@ open class SecurityEndpointService(
     open fun password(po: EndpointPasswordPO): AuthorizationVO {
         val username = po.username
         val rawPassword = po.password
-        val password = securityPassword.decodeFront(rawPassword!!)
+        val password = try {
+            securityPassword.decodeFront(rawPassword!!)
+        } catch (_: Throwable) {
+            null
+        } ?: throw A_PASSWORD_ILLEGAL.toException()
         val scope = service.validAndBuildScope(username, password)
         if (scope == null) {
-            throw AuthorizationException("Username or password is incorrect!")
+            throw A_LOGIN_ILLEGAL.toException()
         }
         store.save(scope)
         return convert.scopeToVo(scope)
@@ -53,7 +60,7 @@ open class SecurityEndpointService(
         val token = token(po)
         val scope = service.refresh(token)
         if (scope == null) {
-            throw AuthorizationException("Login authorization has expired!")
+            throw A_EXPIRED.toException()
         }
         store.update(scope)
         return convert.scopeToVo(scope)
@@ -63,7 +70,7 @@ open class SecurityEndpointService(
         val token = token(po)
         val scope = store.get(token)
         if (scope == null || !scope.isLogin || !scope.enabled()) {
-            throw AuthorizationException("Token is invalid!")
+            throw A_TOKEN_INVALID.toException()
         }
         return convert.scopeToVo(scope)
     }

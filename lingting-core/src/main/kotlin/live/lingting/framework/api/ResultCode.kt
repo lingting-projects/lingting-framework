@@ -12,7 +12,7 @@ interface ResultCode {
      * 返回的code
      * @return int
      */
-    val code: Int
+    val code: Long
 
     /**
      * 返回消息
@@ -26,7 +26,7 @@ interface ResultCode {
     fun with(message: String): ResultCode {
         val code = code
         return object : ResultCode {
-            override val code: Int
+            override val code: Long
                 get() = code
 
             override val message: String
@@ -46,11 +46,11 @@ interface ResultCode {
     /**
      * 转异常
      */
-    fun toException(): BizException {
-        return BizException(this)
+    fun toException(): Exception {
+        return toException(null)
     }
 
-    fun toException(e: Exception?): BizException {
+    fun toException(e: Exception?): Exception {
         return BizException(this, e)
     }
 
@@ -58,7 +58,7 @@ interface ResultCode {
      * 抛出异常
      */
     fun throwException() {
-        throw toException()
+        throwException(null)
     }
 
     fun throwException(e: Exception?) {

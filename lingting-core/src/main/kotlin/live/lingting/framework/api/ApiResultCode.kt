@@ -1,10 +1,10 @@
 package live.lingting.framework.api
 
-/**
+/**202201
  * @author lingting 2022/9/19 13:56
  */
 enum class ApiResultCode(
-    override val code: Int,
+    override val code: Long,
     override val message: String,
 ) : ResultCode {
     /**
