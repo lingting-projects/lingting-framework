@@ -6,12 +6,12 @@ import java.io.Serializable
  * @author lingting 2024-01-25 11:12
  */
 
-data class R<T>(val code: Long, val data: T?, val message: String) : Serializable {
+data class R<T>(val code: Int, val data: T?, val message: String) : Serializable {
     companion object {
 
         @JvmStatic
         @JvmOverloads
-        fun <T> of(code: Long, message: String, data: T? = null): R<T> {
+        fun <T> of(code: Int, message: String, data: T? = null): R<T> {
             return R(code, data, message)
         }
 
@@ -47,7 +47,7 @@ data class R<T>(val code: Long, val data: T?, val message: String) : Serializabl
         }
 
         @JvmStatic
-        fun <T> failed(code: Long, message: String): R<T> {
+        fun <T> failed(code: Int, message: String): R<T> {
             return of(code, message)
         }
 

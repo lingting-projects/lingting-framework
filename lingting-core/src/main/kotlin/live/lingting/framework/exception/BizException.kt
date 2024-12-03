@@ -6,7 +6,7 @@ import live.lingting.framework.api.ResultCode
  * @author lingting 2022/9/22 12:11
  */
 class BizException @JvmOverloads constructor(
-    val code: Long,
+    val code: Int,
     override val message: String,
     e: Exception? = null
 ) : RuntimeException(message, e) {

@@ -8,7 +8,7 @@ import live.lingting.framework.security.exception.PermissionsException
  * @author lingting 2024/12/3 20:17
  */
 enum class SecurityResultCode(
-    override val code: Long,
+    override val code: Int,
     override val message: String,
     private val throwAuthorize: Boolean
 ) : ResultCode {

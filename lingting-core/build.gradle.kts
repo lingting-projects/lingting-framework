@@ -10,4 +10,5 @@ dependencies {
     testImplementation("org.springframework:spring-core")
     testImplementation("jakarta.servlet:jakarta.servlet-api")
     testImplementation("com.fasterxml.jackson.core:jackson-annotations")
+    testImplementation(kotlin("test"))
 }

@@ -12,7 +12,7 @@ interface ResultCode {
      * 返回的code
      * @return int
      */
-    val code: Long
+    val code: Int
 
     /**
      * 返回消息
@@ -26,7 +26,7 @@ interface ResultCode {
     fun with(message: String): ResultCode {
         val code = code
         return object : ResultCode {
-            override val code: Long
+            override val code: Int
                 get() = code
 
             override val message: String
