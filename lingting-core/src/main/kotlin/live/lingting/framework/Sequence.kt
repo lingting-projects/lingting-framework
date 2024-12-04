@@ -13,6 +13,7 @@ import org.springframework.core.annotation.Order
 interface Sequence {
 
     companion object {
+
         @JvmStatic
         fun <T> asc(list: MutableList<T>) {
             list.sortWith(INSTANCE_ASC)
@@ -38,6 +39,7 @@ interface Sequence {
 
         @JvmField
         val INSTANCE_DESC: SequenceComparator = SequenceComparator(false, 0)
+
     }
 
     val sequence: Int

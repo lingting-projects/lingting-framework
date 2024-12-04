@@ -22,42 +22,46 @@ object I18n {
             localeMap.clear()
         }
 
-    @JvmField
-    val providers: List<I18nProvider> = ArrayList<I18nProvider>().let {
-        it.add(ApiI18nProviders())
+    @JvmStatic
+    val providers: List<I18nProvider> by lazy {
+        ArrayList<I18nProvider>().let {
+            it.add(ApiI18nProviders())
 
-        try {
-            val loaders = ServiceLoader.load<I18nProvider>(I18nProvider::class.java)
+            try {
+                val loaders = ServiceLoader.load<I18nProvider>(I18nProvider::class.java)
 
-            for (provider in loaders) {
-                if (provider != null) {
-                    it.add(provider)
+                for (provider in loaders) {
+                    if (provider != null) {
+                        it.add(provider)
+                    }
+                }
+
+            } catch (_: ServiceConfigurationError) {
+                //
+            }
+
+            Sequence.asc(it)
+            Collections.unmodifiableList(it)
+        }
+    }
+
+    @JvmStatic
+    val sourceMap: Map<Locale, List<I18nSource>> by lazy {
+        HashMap<Locale, List<I18nSource>>().let {
+
+            for (provider in providers) {
+                for (source in provider.load()) {
+                    val locale = source.locale
+                    val absent = it.computeIfAbsent(locale) { ArrayList() }
+                    val list = absent.toMutableList()
+                    list.add(source)
+                    Sequence.asc(list)
+                    it[locale] = list.toList()
                 }
             }
 
-        } catch (_: ServiceConfigurationError) {
-            //
+            Collections.unmodifiableMap(it)
         }
-
-        Sequence.asc(it)
-        Collections.unmodifiableList(it)
-    }
-
-    @JvmField
-    val sourceMap: Map<Locale, List<I18nSource>> = HashMap<Locale, List<I18nSource>>().let {
-
-        for (provider in providers) {
-            for (source in provider.load()) {
-                val locale = source.locale
-                val absent = it.computeIfAbsent(locale) { ArrayList() }
-                val list = absent.toMutableList()
-                list.add(source)
-                Sequence.asc(list)
-                it[locale] = list.toList()
-            }
-        }
-
-        Collections.unmodifiableMap(it)
     }
 
     @JvmField
