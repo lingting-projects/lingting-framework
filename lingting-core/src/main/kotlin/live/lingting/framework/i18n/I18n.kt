@@ -16,6 +16,11 @@ object I18n {
 
     @JvmStatic
     var defaultLocal: Locale = Locale.getDefault()
+        set(value) {
+            field = value
+            // 默认值切换时, 清空已有的locale缓存
+            localeMap.clear()
+        }
 
     @JvmField
     val providers: List<I18nProvider> = ArrayList<I18nProvider>().let {
@@ -75,21 +80,30 @@ object I18n {
 
     fun remove() = context.remove()
 
+    /**
+     * 获取对应语言的所有替代品
+     */
+    fun replaces(locale: Locale): LinkedHashSet<Locale> = LinkedHashSet<Locale>().apply {
+        // 最准确的
+        add(locale)
+        // 匹配的次级选项
+        add(Locale.of(locale.language))
+        // 替代品
+        val r = replaceMap[locale]
+        if (!r.isNullOrEmpty()) {
+            addAll(r)
+        }
+        if (locale != defaultLocal) {
+            // 添加默认语言的所有替代品
+            addAll(replaces(defaultLocal))
+        }
+    }
+
     @JvmStatic
     @JvmOverloads
     fun local(locale: Locale = get()): I18nLocal {
         return localeMap.computeIfAbsent(locale) {
-            val locales = LinkedHashSet<Locale>().apply {
-                // 最准确的
-                add(locale)
-                // 匹配的次级选项
-                add(Locale.of(locale.language))
-                // 替代品
-                val r = replaceMap[locale]
-                if (!r.isNullOrEmpty()) {
-                    addAll(r)
-                }
-            }
+            val locales = replaces(locale)
 
             val set = LinkedHashSet<I18nSource>()
 
