@@ -14,12 +14,18 @@ class MapI18nSource(
         return map[key]
     }
 
-    fun put(key: String, value: String) {
+    fun put(key: String, value: String): MapI18nSource {
         map[key] = value
+        return this
     }
 
-    fun remove(key: String) {
-        map.remove(key)
+    fun putAll(map: Map<String, String>): MapI18nSource {
+        this.map.putAll(map)
+        return this
+    }
+
+    fun remove(key: String): String? {
+        return map.remove(key)
     }
 
 }

@@ -45,22 +45,12 @@ object I18n {
         }
     }
 
+    private val sourceMap = ConcurrentHashMap<Locale, List<I18nSource>>()
+
     @JvmStatic
-    val sourceMap: Map<Locale, List<I18nSource>> by lazy {
-        HashMap<Locale, List<I18nSource>>().let {
-
-            for (provider in providers) {
-                for (source in provider.load()) {
-                    val locale = source.locale
-                    val absent = it.computeIfAbsent(locale) { ArrayList() }
-                    val list = absent.toMutableList()
-                    list.add(source)
-                    Sequence.asc(list)
-                    it[locale] = list.toList()
-                }
-            }
-
-            Collections.unmodifiableMap(it)
+    fun sources(locale: Locale): List<I18nSource> {
+        return sourceMap.computeIfAbsent(locale) {
+            providers.flatMap { it.find(locale) ?: emptyList() }
         }
     }
 
@@ -112,10 +102,8 @@ object I18n {
             val set = LinkedHashSet<I18nSource>()
 
             locales.forEach {
-                val v = sourceMap[it]
-                if (!v.isNullOrEmpty()) {
-                    set.addAll(v)
-                }
+                val v = sources(it)
+                set.addAll(v)
             }
 
             I18nLocal(locale, set.toList())

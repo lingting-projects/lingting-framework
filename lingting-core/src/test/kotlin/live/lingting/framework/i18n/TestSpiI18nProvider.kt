@@ -6,6 +6,7 @@ import java.util.Locale
  * @author lingting 2024/12/2 16:05
  */
 class TestSpiI18nProvider : I18nProvider {
+
     companion object {
 
         val locale: Locale = Locale.CANADA
@@ -16,9 +17,14 @@ class TestSpiI18nProvider : I18nProvider {
 
     }
 
-    override fun load(): Collection<I18nSource> {
+    override fun find(locale: Locale): Collection<I18nSource>? {
+        if (locale != TestSpiI18nProvider.locale) {
+            return null
+        }
+
         val map = mutableMapOf(key to value)
-        val element = MapI18nSource(locale, map)
+        val element = MapI18nSource(Companion.locale, map)
         return listOf(element)
     }
+
 }

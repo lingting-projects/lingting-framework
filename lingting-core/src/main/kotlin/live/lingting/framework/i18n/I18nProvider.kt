@@ -1,5 +1,6 @@
 package live.lingting.framework.i18n
 
+import java.util.Locale
 import live.lingting.framework.Sequence
 
 /**
@@ -7,7 +8,7 @@ import live.lingting.framework.Sequence
  */
 interface I18nProvider : Sequence {
 
-    fun load(): Collection<I18nSource>
+    fun find(locale: Locale): Collection<I18nSource>?
 
     /**
      * 降序排序
