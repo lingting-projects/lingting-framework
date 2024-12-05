@@ -120,10 +120,32 @@ object ClassUtils {
         return false
     }
 
+    @JvmField
+    val CLASS_SUFFIX = setOf(".java", ".class")
+
+    @JvmStatic
+    fun convertClassName(className: String): String {
+        var c1 = className.replace("/", ".").replace("\\", ".")
+        if (c1.startsWith(".")) {
+            c1 = c1.substring(1)
+        }
+
+        CLASS_SUFFIX.forEach {
+            if (c1.endsWith(it)) {
+                c1 = c1.substring(0, c1.length - it.length)
+            }
+        }
+        return c1
+    }
+
+    val SCAN_IGNORE_PREFIX = setOf("META-INFO", "/META-INFO", "META-INF", "/META-INF")
+
+    val SCAN_IGNORE_NAME = setOf("module-info.class", "package-info.class", "module-info.java", "package-info.java")
+
     @JvmStatic
     @JvmOverloads
     fun <T : Any> scan(basePack: String, cls: Class<*>? = null): Set<Class<T>> {
-        return scan<T>(basePack, Predicate<Class<T>> { cls == null || cls.isAssignableFrom(it) }, { _, _ -> })
+        return scan<T>(basePack, Predicate<Class<T>> { cls == null || cls.isAssignableFrom(it) }) { _, _ -> }
     }
 
     fun <T : Any> scan(basePack: String, cls: KClass<T>?) = scan<T>(basePack, cls?.java)
@@ -138,31 +160,35 @@ object ClassUtils {
     @JvmStatic
     fun <T> scan(
         basePack: String, filter: Predicate<Class<T>>,
-        error: BiConsumer<String, Exception>
+        error: BiConsumer<String, Throwable>
     ): Set<Class<T>> {
-        val scanName: String = basePack.replace(".", "/")
+        val path = Resource.convertPath(basePack).replace(".", "/")
 
-        val collection = ResourceUtils.scan(scanName) { !it.isDirectory && it.name.endsWith(".class") }
+        val collection = ResourceUtils.scan(path) {
+            !it.isDirectory && it.name.endsWith(".class")
+                    && !SCAN_IGNORE_PREFIX.any { prefix -> it.path.startsWith(prefix) }
+                    && !SCAN_IGNORE_NAME.contains(it.name)
+        }
 
         val classes: MutableSet<Class<T>> = HashSet()
         for (resource in collection) {
-            val last: String = StringUtils.substringAfterLast(resource.path, scanName)
-            val classPath: String = StringUtils.substringBeforeLast(scanName + last, ".")
-            val className: String = classPath.replace("/", ".")
+            val last = resource.path
+            val link = path + last
+            val name = convertClassName(link)
 
             try {
-                val aClass = Class.forName(className) as Class<T>
+                val aClass = Class.forName(name) as Class<T>
                 if (filter.test(aClass)) {
                     classes.add(aClass)
                 }
-            } catch (e: Exception) {
-                error.accept(className, e)
+            } catch (e: Throwable) {
+                error.accept(name, e)
             }
         }
         return classes
     }
 
-    fun <T : Any> scan(basePack: String, filter: Predicate<KClass<T>>, error: BiConsumer<String, Exception>) = {
+    fun <T : Any> scan(basePack: String, filter: Predicate<KClass<T>>, error: BiConsumer<String, Throwable>) = {
         scan<T>(basePack, Predicate<Class<T>> { filter.test(it.kotlin) }, error)
     }
 

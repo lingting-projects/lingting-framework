@@ -16,6 +16,9 @@ import org.junit.jupiter.api.function.ThrowingSupplier
 class ClassUtilsTest {
     @Test
     fun test() {
+        val classes = ClassUtils.scan<Any>("")
+        assertFalse(classes.isEmpty())
+
         val classLoader = ClassUtils::class.java.classLoader
         val testClassLoader = ClassUtilsTest::class.java.classLoader
         val systemClassLoader = ClassLoader.getSystemClassLoader()
@@ -36,12 +39,7 @@ class ClassUtilsTest {
         assertEquals(loaders, map.keys)
         assertThrows(IllegalArgumentException::class.java) { exists(className, null, null) }
 
-        val supplier: ThrowingSupplier<Set<Class<Any>>> = object : ThrowingSupplier<Set<Class<Any>>> {
-            override fun get(): Set<Class<Any>> {
-                return ClassUtils.scan<Any>("live.lingting.framework")
-            }
-        }
-        val scan: Set<Class<Any>> = assertDoesNotThrow(supplier)
+        val scan: Set<Class<Any>> = assertDoesNotThrow(ThrowingSupplier { ClassUtils.scan<Any>("live.lingting.framework") })
         assertFalse(scan.isEmpty())
     }
 }
