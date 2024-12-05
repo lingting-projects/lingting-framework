@@ -41,5 +41,24 @@ class ClassUtilsTest {
 
         val scan: Set<Class<Any>> = assertDoesNotThrow(ThrowingSupplier { ClassUtils.scan<Any>("live.lingting.framework") })
         assertFalse(scan.isEmpty())
+        val typesN = ClassUtils.typeArguments(N::class)
+        assertTrue(typesN.isEmpty())
+        val typesS1 = ClassUtils.typeArguments(S1::class)
+        assertEquals(1, typesS1.size)
+        assertEquals(N::class.java, typesS1[0])
+        val typesI1 = ClassUtils.typeArguments(I1::class)
+        assertEquals(1, typesI1.size)
+        assertEquals(N::class.java, typesI1[0])
+        val typesSI = ClassUtils.typeArguments(SI::class)
+        assertEquals(2, typesSI.size)
+        assertEquals(S1::class.java, typesSI[0])
+        assertEquals(I1::class.java, typesSI[1])
     }
 }
+
+class N
+open class S<E>
+class S1 : S<N>()
+interface I<E>
+class I1 : I<N>
+class SI : S<S1>(), I<I1>

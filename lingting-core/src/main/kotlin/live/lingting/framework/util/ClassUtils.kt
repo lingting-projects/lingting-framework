@@ -51,12 +51,23 @@ object ClassUtils {
     @JvmStatic
     fun typeArguments(cls: Class<*>): Array<Type> {
         return CACHE_TYPE_ARGUMENTS.computeIfAbsent(cls) {
+            val types = ArrayList<Type>()
+
+            // 父类
             val superclass = cls.genericSuperclass
             if (superclass is ParameterizedType) {
-                superclass.actualTypeArguments
-            } else {
-                arrayOf()
+                types.addAll(superclass.actualTypeArguments)
             }
+
+            // 接口类
+            val interfaces = cls.genericInterfaces
+            for (inter in interfaces) {
+                if (inter is ParameterizedType) {
+                    types.addAll(inter.actualTypeArguments)
+                }
+            }
+
+            types.toTypedArray()
         }
     }
 
