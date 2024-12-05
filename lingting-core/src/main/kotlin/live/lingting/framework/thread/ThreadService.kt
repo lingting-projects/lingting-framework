@@ -26,7 +26,6 @@ interface ThreadService {
 
     fun execute(name: String?, runnable: ThrowableRunnable) {
         execute(object : KeepRunnable(name) {
-
             override fun process() {
                 runnable.run()
             }

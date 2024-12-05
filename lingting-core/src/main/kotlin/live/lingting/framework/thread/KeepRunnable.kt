@@ -3,13 +3,15 @@ package live.lingting.framework.thread
 import live.lingting.framework.util.MdcUtils
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StringUtils
-import org.slf4j.MDC
 
 /**
  * 保留状态的可运行代码
  * @author lingting 2024-04-28 17:25
  */
-abstract class KeepRunnable protected constructor(protected val name: String, protected val mdc: Map<String, String>) : Runnable {
+abstract class KeepRunnable protected constructor(
+    protected val name: String,
+    protected val mdc: Map<String, String>
+) : Runnable {
 
     constructor() : this("")
 
@@ -24,26 +26,25 @@ abstract class KeepRunnable protected constructor(protected val name: String, pr
             thread.name = name
         }
 
-        val oldMdc: Map<String, String> = MdcUtils.copyContext()
-        MDC.setContextMap(mdc)
-
-        try {
-            process()
-        } catch (e: InterruptedException) {
-            thread.interrupt()
-            log.warn("Thread interrupted inside thread pool")
-        } catch (throwable: Throwable) {
-            log.error("Thread exception inside thread pool!", throwable)
-        } finally {
-            onFinally()
-            MDC.setContextMap(oldMdc)
-            thread.name = oldName
+        MdcUtils.useContext(mdc) {
+            try {
+                process()
+            } catch (_: InterruptedException) {
+                thread.interrupt()
+                log.warn("Thread interrupted inside thread pool")
+            } catch (throwable: Throwable) {
+                log.error("Thread exception inside thread pool!", throwable)
+            } finally {
+                onFinally()
+                thread.name = oldName
+            }
         }
     }
 
     protected abstract fun process()
 
     protected open fun onFinally() {
+        //
     }
 
 }

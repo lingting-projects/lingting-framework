@@ -18,7 +18,7 @@ internal class ThreadPoolTest {
     @Test
     fun testMdc() {
         val atomic = AtomicBoolean(false)
-        val traceId = MdcUtils.fillTraceId()
+        val traceId = MdcUtils.setTraceId()
 
         val currentName = Thread.currentThread().name
         val executor = ThreadPoolExecutor(
