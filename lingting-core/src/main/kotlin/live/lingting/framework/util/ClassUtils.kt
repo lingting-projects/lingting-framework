@@ -3,6 +3,7 @@ package live.lingting.framework.util
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.util.concurrent.ConcurrentHashMap
@@ -415,5 +416,23 @@ object ClassUtils {
     }
 
     fun <T : Any> constructors(cls: KClass<T>) = constructors(cls.java)
+
+    @JvmStatic
+    inline val Class<*>.isPublic: Boolean get() = Modifier.isPublic(modifiers)
+
+    @JvmStatic
+    inline val Class<*>.isProtected: Boolean get() = Modifier.isProtected(modifiers)
+
+    @JvmStatic
+    inline val Class<*>.isPrivate: Boolean get() = Modifier.isPrivate(modifiers)
+
+    @JvmStatic
+    inline val Class<*>.isFinal: Boolean get() = Modifier.isFinal(modifiers)
+
+    @JvmStatic
+    inline val Class<*>.isStatic: Boolean get() = Modifier.isStatic(modifiers)
+
+    @JvmStatic
+    inline val Class<*>.isAbstract: Boolean get() = Modifier.isAbstract(modifiers)
 
 }
