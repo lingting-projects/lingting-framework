@@ -4,6 +4,7 @@ import java.util.Locale
 import live.lingting.framework.i18n.I18nProvider
 import live.lingting.framework.i18n.I18nSource
 import live.lingting.framework.i18n.MapI18nSource
+import live.lingting.framework.util.LocaleUtils.parseLocale
 import live.lingting.framework.util.ResourceUtils
 import live.lingting.framework.util.StreamUtils
 
@@ -24,7 +25,7 @@ class ApiI18nProviders : I18nProvider {
             }
             for (resource in resources) {
                 val tag = resource.name.substring(prefix.length, resource.name.length - suffix.length)
-                val locale = Locale.forLanguageTag(tag)
+                val locale = tag.parseLocale()
                 val lines = resource.stream().use { StreamUtils.toString(it) }.lines()
                 val kv = HashMap<String, String>()
                 for (line in lines) {

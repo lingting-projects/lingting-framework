@@ -3,7 +3,7 @@ package live.lingting.framework.ali
 import live.lingting.framework.ali.properties.AliOssProperties
 import live.lingting.framework.ali.properties.AliStsProperties
 import live.lingting.framework.aws.policy.Acl
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertNotNull
 
 /**
  * @author lingting 2024-09-13 17:18
@@ -16,10 +16,10 @@ internal object AliBasic {
         properties.sk = System.getenv("ALI_STS_SK")
         properties.roleArn = System.getenv("ALI_STS_ROLE_ARN")
         properties.roleSessionName = System.getenv("ALI_STS_ROLE_SESSION_NAME")
-        Assertions.assertNotNull(properties.ak)
-        Assertions.assertNotNull(properties.sk)
-        Assertions.assertNotNull(properties.roleArn)
-        Assertions.assertNotNull(properties.roleSessionName)
+        assertNotNull(properties.ak)
+        assertNotNull(properties.sk)
+        assertNotNull(properties.roleArn)
+        assertNotNull(properties.roleSessionName)
         return AliSts(properties)
     }
 
@@ -28,8 +28,8 @@ internal object AliBasic {
         properties.region = System.getenv("ALI_STS_REGION")
         properties.bucket = System.getenv("ALI_OSS_BUCKET")
         properties.acl = Acl.PUBLIC_READ
-        Assertions.assertNotNull(properties.region)
-        Assertions.assertNotNull(properties.bucket)
+        assertNotNull(properties.region)
+        assertNotNull(properties.bucket)
         return properties
     }
 }
