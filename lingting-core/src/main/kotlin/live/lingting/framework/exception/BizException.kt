@@ -11,10 +11,10 @@ class BizException @JvmOverloads constructor(
     e: Exception? = null
 ) : RuntimeException(message, e) {
 
-    constructor(resultCode: ResultCode) : this(resultCode, null)
+    constructor(resultCode: ResultCode) : this(resultCode, null as String?)
 
-    constructor(resultCode: ResultCode, e: Exception? = null) : this(resultCode, resultCode.i18nMessage(), e)
+    constructor(resultCode: ResultCode, e: Exception? = null) : this(resultCode, null, e)
 
-    constructor(resultCode: ResultCode, message: String, e: Exception? = null) : this(resultCode.code, message, e)
+    constructor(resultCode: ResultCode, message: String?, e: Exception? = null) : this(resultCode.code, message ?: resultCode.i18nMessage(), e)
 
 }

@@ -25,11 +25,13 @@ enum class SecurityResultCode(
 
     ;
 
-    override fun toException(e: Exception?): Exception {
-        val i18n = i18nMessage()
+    override fun toException(text: String?, e: Exception?): Exception {
+        val i18n = text ?: i18nMessage()
         if (throwAuthorize) {
             return AuthorizationException(i18n, e)
         }
         return PermissionsException(i18n, e)
     }
+
+
 }
