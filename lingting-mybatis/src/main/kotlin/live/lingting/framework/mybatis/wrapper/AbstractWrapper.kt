@@ -1,10 +1,16 @@
 package live.lingting.framework.mybatis.wrapper
 
 import com.baomidou.mybatisplus.core.conditions.ISqlSegment
+import com.baomidou.mybatisplus.core.conditions.Wrapper
+import com.baomidou.mybatisplus.core.conditions.interfaces.Compare
+import com.baomidou.mybatisplus.core.conditions.interfaces.Func
+import com.baomidou.mybatisplus.core.conditions.interfaces.Join
+import com.baomidou.mybatisplus.core.conditions.interfaces.Nested
 import com.baomidou.mybatisplus.core.conditions.segments.MergeSegments
 import com.baomidou.mybatisplus.core.enums.SqlKeyword
 import com.baomidou.mybatisplus.core.enums.WrapperKeyword
 import com.baomidou.mybatisplus.core.toolkit.StringUtils
+import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 import java.util.function.Supplier
@@ -14,7 +20,8 @@ import live.lingting.framework.util.CollectionUtils
 import live.lingting.framework.util.ValueUtils
 
 @Suppress("UNCHECKED_CAST", "SYNTHETIC_PROPERTY_WITHOUT_JAVA_ORIGIN")
-abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomidou.mybatisplus.core.conditions.Wrapper<T>(), com.baomidou.mybatisplus.core.conditions.interfaces.Compare<C, String>, com.baomidou.mybatisplus.core.conditions.interfaces.Nested<C, C>, com.baomidou.mybatisplus.core.conditions.interfaces.Join<C>, com.baomidou.mybatisplus.core.conditions.interfaces.Func<C, String>, ISqlSegment {
+abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
+    Wrapper<T>(), Compare<C, String>, Nested<C, C>, Join<C>, Func<C, String>, ISqlSegment {
 
     protected val c = this as C
 
@@ -31,6 +38,17 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
     protected val params = HashMap<String, Any?>()
 
     // region common
+
+    fun column(field: String) = column(entityClass ?: entity?.javaClass, field)
+
+    fun column(cls: Class<T>?, field: String): ColumnCache {
+        return Wrappers.column(cls, field)
+    }
+
+    fun column(fields: Collection<String>) = fields.map { column(it) }
+
+    fun column(cls: Class<T>?, fields: Collection<String>) = fields.map { column(cls, it) }
+
     /**
      * 表的别名.
      */
@@ -52,7 +70,9 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
 
     abstract fun instance(): C
 
-    protected fun convertField(value: String): String {
+    fun field(column: ColumnCache) = field(column.columnSelect)
+
+    fun field(value: String): String {
         // 未设置别名, 或传入字段已设置别名. 则直接使用
         if (StringUtils.isBlank(alias) || value.contains(".")) {
             return value
@@ -94,7 +114,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
         val list: MutableList<ISqlSegment> = ArrayList<ISqlSegment>()
 
         if (StringUtils.isNotBlank(field)) {
-            val name = convertField(field!!)
+            val name = field(field!!)
             list.add(ISqlSegment { name })
         }
 
@@ -210,7 +230,8 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
 
     // endregion
 
-    // region 兼容wrapper
+    // region param
+
     protected var paramId: AtomicInteger = AtomicInteger()
 
     /**
@@ -242,6 +263,10 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
     fun unsafeParam(mapping: String?, value: Any?): String {
         return wrapperParam("$", mapping, value)
     }
+
+    // endregion
+
+    // region 兼容wrapper
 
     fun getParamAlias(): String {
         return Wrappers.PARAM
@@ -307,7 +332,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
     }
 
     fun formatSqlByParam(sql: String?, vararg params: Any?): String? {
-        if (StringUtils.isBlank(sql)) {
+        if (sql.isNullOrBlank()) {
             return null
         }
 
@@ -315,7 +340,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
             return sql
         }
 
-        var string = sql!!
+        var string: String = sql
 
         params.forEachIndexed { i, p ->
             val flag = "{$i}"
@@ -325,21 +350,16 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
             } else {
                 val pattern = Pattern.compile("[{]$i,[a-zA-Z0-9.,=]+")
                 val matcher = pattern.matcher(string)
-                if (!matcher.find()) {
-                    throw IllegalArgumentException("Sql param syntax error! not found: $flag")
-                }
-                while (true) {
+                require(matcher.find()) { "Sql param syntax error! not found: $flag" }
+
+                do {
                     val group = matcher.group()
                     if (StringUtils.isNotBlank(group)) {
                         val mapping = group.substring(flag.length, group.length - 1)
                         val param = safeParam(mapping, p)
                         string = string.replace(group, param)
                     }
-
-                    if (!matcher.find()) {
-                        break
-                    }
-                }
+                } while (matcher.find())
             }
         }
 
@@ -636,7 +656,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
         if (!condition) {
             return c
         }
-        val collect = columns.joinToString(", ") { this.convertField(it) }
+        val collect = columns.joinToString(", ") { this.field(it) }
         return appendSql(SqlKeyword.GROUP_BY, collect)
     }
 
@@ -663,7 +683,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> : com.baomido
             return c
         }
         val order = if (isAsc) " ASC" else " DESC"
-        val sql: String = columns.joinToString(", ") { convertField(it) + order }
+        val sql: String = columns.joinToString(", ") { field(it) + order }
         return appendSql(SqlKeyword.ORDER_BY, sql)
     }
 

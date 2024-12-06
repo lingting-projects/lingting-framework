@@ -54,13 +54,13 @@ class QueryWrapper<T : Any> : LambdaWrapper<T, QueryWrapper<T>>() {
 
     @SafeVarargs
     fun select(vararg args: SFunction<T, *>): QueryWrapper<T> {
-        val fields = args.map { sf -> this.convertField(sf) }.toList()
+        val fields = args.map { sf -> this.field(sf) }.toList()
         return select(fields)
     }
 
     fun select(source: Collection<String>): QueryWrapper<T> {
         for (field in source) {
-            val s = convertField(field)
+            val s = field(field)
             fields.add(s)
         }
         return c
