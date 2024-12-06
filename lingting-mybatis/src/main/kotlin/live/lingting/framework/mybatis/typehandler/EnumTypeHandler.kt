@@ -3,6 +3,7 @@ package live.lingting.framework.mybatis.typehandler
 import java.sql.CallableStatement
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import java.util.Objects
 import live.lingting.framework.util.EnumUtils
 import org.apache.ibatis.type.BaseTypeHandler
 import org.apache.ibatis.type.JdbcType
@@ -35,17 +36,11 @@ open class EnumTypeHandler<E : Enum<E>>(private val type: Class<E>) : BaseTypeHa
         return of(cs.getString(columnIndex))
     }
 
-    fun of(v: String): E? {
-        for (e in type.enumConstants) {
+    fun of(v: String?): E? {
+        return type.enumConstants.firstOrNull { e ->
             val value = EnumUtils.getValue(e)
-            if ( // 值匹配
-                v == value
-                // 字符串值匹配
-                || (value != null && value.toString() == value)
-            ) {
-                return e
-            }
+            // 值匹配, 或者字符串值匹配
+            v == value || Objects.equals(value?.toString(), v)
         }
-        return null
     }
 }
