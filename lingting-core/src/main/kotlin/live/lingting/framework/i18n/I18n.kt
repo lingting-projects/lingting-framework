@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap
 import live.lingting.framework.Sequence
 import live.lingting.framework.api.ApiI18nProviders
 import live.lingting.framework.context.Context
+import live.lingting.framework.util.LocaleUtils.parseLocale
 
 /**
  * @author lingting 2024/11/30 18:26
@@ -81,7 +82,7 @@ object I18n {
         // 最准确的
         add(locale)
         // 匹配的次级选项
-        add(Locale.of(locale.language))
+        add(locale.language.parseLocale())
         // 替代品
         val r = replaceMap[locale]
         if (!r.isNullOrEmpty()) {
