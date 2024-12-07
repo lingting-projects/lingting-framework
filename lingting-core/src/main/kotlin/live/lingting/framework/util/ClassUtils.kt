@@ -6,6 +6,7 @@ import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import java.util.Objects
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.BiConsumer
 import java.util.function.BiFunction
@@ -21,11 +22,6 @@ import live.lingting.framework.util.StringUtils.firstUpper
  */
 @Suppress("UNCHECKED_CAST")
 object ClassUtils {
-    @JvmField
-    val EMPTY_CLASS_ARRAY: Array<Class<*>> = arrayOf()
-
-    @JvmField
-    val CACHE_CLASS_PRESENT: MutableMap<String, MutableMap<ClassLoader, Boolean>> = ConcurrentHashMap(8)
 
     @JvmField
     val CACHE_FIELDS: MutableMap<Class<*>, Array<Field>> = ConcurrentHashMap(16)
@@ -89,6 +85,16 @@ object ClassUtils {
 
     fun classArguments(cls: KClass<*>) = classArguments(cls.java)
 
+    @JvmStatic
+    fun classLoaders(vararg loaders: ClassLoader?): Set<ClassLoader> {
+        val set = HashSet<ClassLoader>()
+        set.addAll(loaders.filterNotNull())
+        set.add(ClassUtils::class.java.classLoader)
+        set.add(ClassLoader.getSystemClassLoader())
+        set.add(Thread.currentThread().contextClassLoader)
+        return set
+    }
+
     /**
      * 判断class是否可以被加载, 使用系统类加载器和当前工具类加载器
      * @param className 类名
@@ -96,9 +102,8 @@ object ClassUtils {
      */
     @JvmStatic
     fun exists(className: String): Boolean {
-        val classLoader = ClassUtils::class.java.classLoader
-        val systemClassLoader = ClassLoader.getSystemClassLoader()
-        return exists(className, classLoader, systemClassLoader)
+        val loaders = classLoaders(className::class.java.classLoader)
+        return exists(className, loaders)
     }
 
     /**
@@ -108,28 +113,48 @@ object ClassUtils {
      */
     @JvmStatic
     fun exists(className: String, vararg classLoaders: ClassLoader?): Boolean {
-        val loaders = classLoaders.filterNotNull().toSet()
-        require(loaders.isNotEmpty()) { "ClassLoaders can not be empty!" }
-        val absent = CACHE_CLASS_PRESENT.computeIfAbsent(
-            className
-        ) { ConcurrentHashMap(loaders.size) }
+        return exists(className, classLoaders(*classLoaders))
+    }
 
+    @JvmStatic
+    fun exists(className: String, loaders: Set<ClassLoader>): Boolean {
+        return try {
+            loadClass(className, loaders)
+            true
+        } catch (_: Exception) {
+            //
+            false
+        }
+
+    }
+
+    @JvmStatic
+    fun loadClass(className: String): Class<*> {
+        return loadClass(className, *emptyArray())
+    }
+
+    @JvmStatic
+    fun loadClass(className: String, vararg classLoaders: ClassLoader?): Class<*> {
+        return loadClass(className, classLoaders(*classLoaders, className::class.java.classLoader))
+    }
+
+    @JvmStatic
+    fun loadClass(className: String, loaders: Set<ClassLoader>): Class<*> {
+        if (Objects.equals(className, ClassUtils::class.java.name)) {
+            return ClassUtils::class.java
+        }
+        require(loaders.isNotEmpty()) { "ClassLoaders can not be empty!" }
+
+        var ex: Exception? = null
         for (loader in loaders) {
-            val flag = absent.computeIfAbsent(loader) {
-                try {
-                    Class.forName(className, true, loader)
-                    true
-                } catch (_: Exception) {
-                    //
-                    false
-                }
-            }
-            if (java.lang.Boolean.TRUE == flag) {
-                return true
+            try {
+                return Class.forName(className, false, loader)
+            } catch (e: Exception) {
+                ex = e
             }
         }
 
-        return false
+        throw ex ?: ClassNotFoundException(className)
     }
 
     @JvmField
@@ -157,7 +182,7 @@ object ClassUtils {
     @JvmStatic
     @JvmOverloads
     fun <T : Any> scan(basePack: String, cls: Class<*>? = null): Set<Class<T>> {
-        return scan<T>(basePack, Predicate<Class<T>> { cls == null || cls.isAssignableFrom(it) }) { _, _ -> }
+        return scan<T>(basePack, Predicate { cls == null || cls.isAssignableFrom(it) }, classLoaders(cls?.classLoader))
     }
 
     fun <T : Any> scan(basePack: String, cls: KClass<T>?) = scan<T>(basePack, cls?.java)
@@ -170,9 +195,11 @@ object ClassUtils {
      * @return java.util.Set<java.lang.Class></java.lang.Class> < T>>
      */
     @JvmStatic
+    @JvmOverloads
     fun <T> scan(
         basePack: String, filter: Predicate<Class<T>>,
-        error: BiConsumer<String, Throwable>
+        loaders: Set<ClassLoader> = classLoaders(),
+        error: BiConsumer<String, Throwable> = BiConsumer { _, _ -> },
     ): Set<Class<T>> {
         val path = Resource.convertPath(basePack).replace(".", "/")
 
@@ -189,7 +216,7 @@ object ClassUtils {
             val name = convertClassName(link)
 
             try {
-                val aClass = Class.forName(name) as Class<T>
+                val aClass = loadClass(name, loaders) as Class<T>
                 if (filter.test(aClass)) {
                     classes.add(aClass)
                 }
@@ -201,7 +228,7 @@ object ClassUtils {
     }
 
     fun <T : Any> scan(basePack: String, filter: Predicate<KClass<T>>, error: BiConsumer<String, Throwable>) = {
-        scan<T>(basePack, Predicate<Class<T>> { filter.test(it.kotlin) }, error)
+        scan<T>(basePack, Predicate<Class<T>> { filter.test(it.kotlin) }, error = error)
     }
 
     /**
@@ -291,7 +318,7 @@ object ClassUtils {
 
     @JvmStatic
     fun method(cls: Class<*>, name: String): Method? {
-        return method(cls, name, *EMPTY_CLASS_ARRAY)
+        return method(cls, name, *emptyArray())
     }
 
     fun method(cls: KClass<*>, name: String) = method(cls.java, name)
@@ -371,39 +398,6 @@ object ClassUtils {
     }
 
     fun classField(cls: KClass<*>, name: String) = classField(cls.java, name)
-
-    @JvmStatic
-    fun loadClass(className: String): Class<*> {
-        val loader = ClassUtils::class.java.getClassLoader()
-        return loadClass(className, loader)
-    }
-
-    @JvmStatic
-    fun loadClass(className: String, classLoader: ClassLoader): Class<*> {
-        val systemClassLoader = ClassLoader.getSystemClassLoader()
-        val classLoaders = ClassUtils::class.java.getClassLoader()
-        val contextClassLoader = Thread.currentThread().contextClassLoader
-        return loadClass(
-            className,
-            classLoader, systemClassLoader, classLoaders, contextClassLoader
-        )
-    }
-
-    @JvmStatic
-    fun loadClass(className: String, vararg classLoaders: ClassLoader?): Class<*> {
-        for (loader in classLoaders) {
-            if (loader == null) {
-                continue
-            }
-
-            try {
-                return loader.loadClass(className)
-            } catch (_: ClassNotFoundException) {
-                //
-            }
-        }
-        throw ClassNotFoundException("$className not found")
-    }
 
     /**
      * 方法名转字段名
