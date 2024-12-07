@@ -1,27 +1,31 @@
 package live.lingting.framework.mybatis.wrapper
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils.checkValNotNull
+import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction
 import java.util.function.BiPredicate
 import java.util.function.Consumer
 
 abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper<T, C>() {
 
-    protected fun convertField(sf: SFunction<T, *>): String {
+    fun column(sf: SFunction<T, *>): ColumnCache {
+        return Wrappers.column(sf)
+    }
+
+    fun columns(sfs: Collection<SFunction<T, *>>) = sfs.map(this::column)
+
+    fun field(sf: SFunction<T, *>): String {
         val column = Wrappers.column(sf)
-        val name = column!!.columnSelect
-        return convertField(name)
+        val name = column.columnSelect
+        return field(name)
     }
 
-    protected fun convertFields(collection: Collection<SFunction<T, *>?>): MutableList<String> {
-        return collection.filterNotNull().map(this::convertField).toMutableList()
+    fun fields(collection: Collection<SFunction<T, *>?>): MutableList<String> {
+        return collection.filterNotNull().map(this::field).toMutableList()
     }
 
-    protected fun convertFields(array: Array<SFunction<T, *>?>): MutableList<String> {
-        if (array.isEmpty()) {
-            return ArrayList<String>()
-        }
-        return convertFields(array.toList())
+    fun fields(array: Array<SFunction<T, *>?>): MutableList<String> {
+        return fields(array.toList())
     }
 
     // region compare
@@ -87,7 +91,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return eq(field, value)
     }
 
@@ -99,7 +103,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return ne(field, value)
     }
 
@@ -111,7 +115,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return gt(field, value)
     }
 
@@ -123,7 +127,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return ge(field, value)
     }
 
@@ -135,7 +139,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return lt(field, value)
     }
 
@@ -147,7 +151,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return le(field, value)
     }
 
@@ -159,7 +163,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return between(field, val1, val2)
     }
 
@@ -171,7 +175,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return notBetween(field, val1, val2)
     }
 
@@ -183,7 +187,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return like(field, value)
     }
 
@@ -195,7 +199,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return notLike(field, value)
     }
 
@@ -207,7 +211,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return notLikeLeft(field, value)
     }
 
@@ -219,7 +223,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return notLikeRight(field, value)
     }
 
@@ -231,7 +235,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return likeLeft(field, value)
     }
 
@@ -243,7 +247,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return likeRight(field, value)
     }
 
@@ -317,7 +321,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return isNull(field)
     }
 
@@ -329,7 +333,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return isNotNull(field)
     }
 
@@ -341,7 +345,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return `in`(field, coll)
     }
 
@@ -353,7 +357,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return `in`(field, *values)
     }
 
@@ -365,7 +369,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return notIn(field, coll)
     }
 
@@ -377,7 +381,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return notIn(field, *values)
     }
 
@@ -389,7 +393,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return inSql(field, inValue)
     }
 
@@ -397,7 +401,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return gtSql(field, inValue)
     }
 
@@ -409,7 +413,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return geSql(field, inValue)
     }
 
@@ -421,7 +425,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return ltSql(field, inValue)
     }
 
@@ -433,7 +437,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return leSql(field, inValue)
     }
 
@@ -449,7 +453,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return notInSql(field, inValue)
     }
 
@@ -457,7 +461,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return groupBy(field)
     }
 
@@ -469,7 +473,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        return groupBy(convertFields(columns))
+        return groupBy(fields(columns))
     }
 
     fun groupByLambda(columns: Collection<SFunction<T, *>>): C {
@@ -486,8 +490,8 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val fields = convertFields(columns.toList())
-        fields.add(convertField(column))
+        val fields = fields(columns.toList())
+        fields.add(field(column))
         return groupBy(fields)
     }
 
@@ -547,7 +551,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val field: String = convertField(column)
+        val field: String = field(column)
         return orderBy(true, isAsc, field)
     }
 
@@ -555,7 +559,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        return orderBy(true, isAsc, convertFields(columns))
+        return orderBy(true, isAsc, fields(columns))
     }
 
     @SafeVarargs
@@ -563,8 +567,8 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val fields = convertFields(columns.toList())
-        fields.add(convertField(column))
+        val fields = fields(columns.toList())
+        fields.add(field(column))
         return orderBy(true, isAsc, fields)
     }
 
@@ -596,7 +600,9 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
         if (!condition) {
             return c
         }
-        val filed: String = convertField(column)
+        val filed: String = field(column)
         return `in`<E>(true, filed, consumer)
-    } // endregion
+    }
+
+    // endregion
 }

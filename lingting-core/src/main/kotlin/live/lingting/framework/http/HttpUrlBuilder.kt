@@ -146,7 +146,8 @@ class HttpUrlBuilder {
 
     fun build(): String {
         require(StringUtils.hasText(host)) { "Host [$host] is invalid!" }
-        require(!(port != null && (port!! < 0 || port!! > 65535))) { "Port [$port] is invalid!" }
+        val p = port
+        require(p == null || (p > 0 && p < 65535)) { "Port [$p] is invalid!" }
 
         val builder = StringBuilder()
         builder.append(scheme).append("://")
@@ -154,8 +155,8 @@ class HttpUrlBuilder {
         if (host!!.endsWith("/")) {
             builder.deleteCharAt(builder.length - 1)
         }
-        if (port != null) {
-            builder.append(":").append(port)
+        if (p != null) {
+            builder.append(":").append(p)
         }
         builder.append(buildPath())
         val query = buildQuery()

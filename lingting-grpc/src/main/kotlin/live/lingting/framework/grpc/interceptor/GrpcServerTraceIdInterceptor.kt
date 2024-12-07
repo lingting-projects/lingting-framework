@@ -23,7 +23,7 @@ class GrpcServerTraceIdInterceptor(private val properties: GrpcServerProperties)
     protected fun traceId(headers: Metadata): String {
         var traceId: String? = null
         if (headers.containsKey(traceIdKey)) {
-            traceId = headers.get(traceIdKey)
+            traceId = headers[traceIdKey]
         }
         if (StringUtils.hasText(traceId)) {
             return traceId!!
@@ -36,7 +36,7 @@ class GrpcServerTraceIdInterceptor(private val properties: GrpcServerProperties)
         next: ServerCallHandler<S, R>
     ): ServerCall.Listener<S> {
         val traceId = traceId(headers)
-        MdcUtils.fillTraceId(traceId)
+        MdcUtils.setTraceId(traceId)
         try {
             // 返回traceId
             headers.put(traceIdKey, traceId)

@@ -1,9 +1,9 @@
 package live.lingting.framework.lock
 
-import live.lingting.framework.thread.Async
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicInteger
+import live.lingting.framework.thread.Async
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 /**
  * @author lingting 2024-01-26 11:25
@@ -28,6 +28,6 @@ internal class JavaReentrantLockTest {
         }
 
         async.await()
-        Assertions.assertEquals(count * count, value.get())
+        assertEquals(count * count, value.get())
     }
 }

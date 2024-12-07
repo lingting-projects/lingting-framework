@@ -133,6 +133,10 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
         return mapper.selectList(null)
     }
 
+    fun <E> executeBatch(list: Collection<E>, consumer: BiConsumer<SqlSession, E>): Boolean {
+        return executeBatch(list, ExtendService.DEFAULT_INSERT_BATCH_SIZE, consumer)
+    }
+
     /**
      * 执行批量操作
      * @param list      数据集合
@@ -142,7 +146,7 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
      * @return 操作结果
      * @since 3.3.1
     </E> */
-    protected fun <E> executeBatch(list: Collection<E>, batchSize: Int, consumer: BiConsumer<SqlSession, E>): Boolean {
+    fun <E> executeBatch(list: Collection<E>, batchSize: Int, consumer: BiConsumer<SqlSession, E>): Boolean {
         return useTransactional<Boolean>(ThrowingSupplier {
             SqlHelper.executeBatch(sessionFactory, this.log, list, batchSize, consumer)
         })

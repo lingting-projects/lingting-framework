@@ -3,9 +3,9 @@ package live.lingting.framework.security.authorize
 import java.lang.reflect.Method
 import java.util.function.Predicate
 import live.lingting.framework.security.annotation.Authorize
+import live.lingting.framework.security.domain.SecurityResultCode.A_EXPIRED
+import live.lingting.framework.security.domain.SecurityResultCode.P_REJECT
 import live.lingting.framework.security.domain.SecurityScope
-import live.lingting.framework.security.exception.AuthorizationException
-import live.lingting.framework.security.exception.PermissionsException
 import live.lingting.framework.security.resource.SecurityHolder
 import live.lingting.framework.util.AnnotationUtils.findAnnotation
 import live.lingting.framework.util.ArrayUtils.isEmpty
@@ -13,7 +13,7 @@ import live.lingting.framework.util.ArrayUtils.isEmpty
 /**
  * @author lingting 2023-03-29 20:45
  */
-class SecurityAuthorize(@JvmField val order: Int) {
+open class SecurityAuthorize(@JvmField val order: Int) {
     fun findAuthorize(cls: Class<*>?, method: Method?): Authorize? {
         if (cls == null) {
             return null
@@ -89,7 +89,7 @@ class SecurityAuthorize(@JvmField val order: Int) {
         valid { scope ->
             if (scope == null || !scope.isLogin) {
                 // 未登录让前端登录
-                throw AuthorizationException()
+                throw A_EXPIRED.toException()
             }
             scope.enabled()
         }
@@ -107,7 +107,7 @@ class SecurityAuthorize(@JvmField val order: Int) {
 
         for (need in needArray!!) {
             // 任一存在则true
-            if (havaArray!!.contains(need)) {
+            if (havaArray.contains(need)) {
                 return true
             }
         }
@@ -126,7 +126,7 @@ class SecurityAuthorize(@JvmField val order: Int) {
 
         for (need in needArray!!) {
             // 任一不存在则false
-            if (!havaArray!!.contains(need)) {
+            if (!havaArray.contains(need)) {
                 return false
             }
         }
@@ -137,7 +137,7 @@ class SecurityAuthorize(@JvmField val order: Int) {
         val scope = SecurityHolder.scope()
         val flag = predicate.test(scope)
         if (!flag) {
-            throw PermissionsException()
+            throw P_REJECT.toException()
         }
     }
 }

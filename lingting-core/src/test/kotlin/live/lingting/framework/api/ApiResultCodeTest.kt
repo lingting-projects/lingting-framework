@@ -3,8 +3,9 @@ package live.lingting.framework.api
 import java.util.Locale
 import live.lingting.framework.exception.BizException
 import live.lingting.framework.i18n.I18n
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
@@ -21,9 +22,11 @@ internal class ApiResultCodeTest {
         val message = "testMessage"
         val with = resultCode.with(message)
         assertEquals(message, with.message)
-        Assertions.assertThrows(BizException::class.java) { with.throwException() }
+        assertThrows(BizException::class.java) { with.throwException() }
         val exception = with.toException()
-        assertEquals(with.message, exception.message)
-        assertEquals(with.code, exception.code)
+        assertTrue(exception is BizException)
+        val biz = exception as BizException
+        assertEquals(with.message, biz.message)
+        assertEquals(with.code, biz.code)
     }
 }

@@ -3,8 +3,10 @@ package live.lingting.framework.util
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import java.util.Objects
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.BiConsumer
 import java.util.function.BiFunction
@@ -20,11 +22,6 @@ import live.lingting.framework.util.StringUtils.firstUpper
  */
 @Suppress("UNCHECKED_CAST")
 object ClassUtils {
-    @JvmField
-    val EMPTY_CLASS_ARRAY: Array<Class<*>> = arrayOf()
-
-    @JvmField
-    val CACHE_CLASS_PRESENT: MutableMap<String, MutableMap<ClassLoader, Boolean>> = ConcurrentHashMap(8)
 
     @JvmField
     val CACHE_FIELDS: MutableMap<Class<*>, Array<Field>> = ConcurrentHashMap(16)
@@ -50,12 +47,23 @@ object ClassUtils {
     @JvmStatic
     fun typeArguments(cls: Class<*>): Array<Type> {
         return CACHE_TYPE_ARGUMENTS.computeIfAbsent(cls) {
+            val types = ArrayList<Type>()
+
+            // 父类
             val superclass = cls.genericSuperclass
             if (superclass is ParameterizedType) {
-                superclass.actualTypeArguments
-            } else {
-                arrayOf()
+                types.addAll(superclass.actualTypeArguments)
             }
+
+            // 接口类
+            val interfaces = cls.genericInterfaces
+            for (inter in interfaces) {
+                if (inter is ParameterizedType) {
+                    types.addAll(inter.actualTypeArguments)
+                }
+            }
+
+            types.toTypedArray()
         }
     }
 
@@ -77,6 +85,16 @@ object ClassUtils {
 
     fun classArguments(cls: KClass<*>) = classArguments(cls.java)
 
+    @JvmStatic
+    fun classLoaders(vararg loaders: ClassLoader?): Set<ClassLoader> {
+        val set = HashSet<ClassLoader>()
+        set.addAll(loaders.filterNotNull())
+        set.add(ClassUtils::class.java.classLoader)
+        set.add(ClassLoader.getSystemClassLoader())
+        set.add(Thread.currentThread().contextClassLoader)
+        return set
+    }
+
     /**
      * 判断class是否可以被加载, 使用系统类加载器和当前工具类加载器
      * @param className 类名
@@ -84,9 +102,8 @@ object ClassUtils {
      */
     @JvmStatic
     fun exists(className: String): Boolean {
-        val classLoader = ClassUtils::class.java.classLoader
-        val systemClassLoader = ClassLoader.getSystemClassLoader()
-        return exists(className, classLoader, systemClassLoader)
+        val loaders = classLoaders(className::class.java.classLoader)
+        return exists(className, loaders)
     }
 
     /**
@@ -96,34 +113,76 @@ object ClassUtils {
      */
     @JvmStatic
     fun exists(className: String, vararg classLoaders: ClassLoader?): Boolean {
-        val loaders = classLoaders.filterNotNull().toSet()
-        require(loaders.isNotEmpty()) { "ClassLoaders can not be empty!" }
-        val absent = CACHE_CLASS_PRESENT.computeIfAbsent(
-            className
-        ) { ConcurrentHashMap(loaders.size) }
+        return exists(className, classLoaders(*classLoaders))
+    }
 
+    @JvmStatic
+    fun exists(className: String, loaders: Set<ClassLoader>): Boolean {
+        return try {
+            loadClass(className, loaders)
+            true
+        } catch (_: Exception) {
+            //
+            false
+        }
+
+    }
+
+    @JvmStatic
+    fun loadClass(className: String): Class<*> {
+        return loadClass(className, *emptyArray())
+    }
+
+    @JvmStatic
+    fun loadClass(className: String, vararg classLoaders: ClassLoader?): Class<*> {
+        return loadClass(className, classLoaders(*classLoaders, className::class.java.classLoader))
+    }
+
+    @JvmStatic
+    fun loadClass(className: String, loaders: Set<ClassLoader>): Class<*> {
+        if (Objects.equals(className, ClassUtils::class.java.name)) {
+            return ClassUtils::class.java
+        }
+        require(loaders.isNotEmpty()) { "ClassLoaders can not be empty!" }
+
+        var ex: Exception? = null
         for (loader in loaders) {
-            val flag = absent.computeIfAbsent(loader) {
-                try {
-                    Class.forName(className, true, loader)
-                    true
-                } catch (_: Exception) {
-                    //
-                    false
-                }
-            }
-            if (java.lang.Boolean.TRUE == flag) {
-                return true
+            try {
+                return Class.forName(className, false, loader)
+            } catch (e: Exception) {
+                ex = e
             }
         }
 
-        return false
+        throw ex ?: ClassNotFoundException(className)
     }
+
+    @JvmField
+    val CLASS_SUFFIX = setOf(".java", ".class")
+
+    @JvmStatic
+    fun convertClassName(className: String): String {
+        var c1 = className.replace("/", ".").replace("\\", ".")
+        if (c1.startsWith(".")) {
+            c1 = c1.substring(1)
+        }
+
+        CLASS_SUFFIX.forEach {
+            if (c1.endsWith(it)) {
+                c1 = c1.substring(0, c1.length - it.length)
+            }
+        }
+        return c1
+    }
+
+    val SCAN_IGNORE_PREFIX = setOf("META-INFO", "/META-INFO", "META-INF", "/META-INF")
+
+    val SCAN_IGNORE_NAME = setOf("module-info.class", "package-info.class", "module-info.java", "package-info.java")
 
     @JvmStatic
     @JvmOverloads
     fun <T : Any> scan(basePack: String, cls: Class<*>? = null): Set<Class<T>> {
-        return scan<T>(basePack, Predicate<Class<T>> { cls == null || cls.isAssignableFrom(it) }, { _, _ -> })
+        return scan<T>(basePack, Predicate { cls == null || cls.isAssignableFrom(it) }, classLoaders(cls?.classLoader))
     }
 
     fun <T : Any> scan(basePack: String, cls: KClass<T>?) = scan<T>(basePack, cls?.java)
@@ -136,34 +195,40 @@ object ClassUtils {
      * @return java.util.Set<java.lang.Class></java.lang.Class> < T>>
      */
     @JvmStatic
+    @JvmOverloads
     fun <T> scan(
         basePack: String, filter: Predicate<Class<T>>,
-        error: BiConsumer<String, Exception>
+        loaders: Set<ClassLoader> = classLoaders(),
+        error: BiConsumer<String, Throwable> = BiConsumer { _, _ -> },
     ): Set<Class<T>> {
-        val scanName: String = basePack.replace(".", "/")
+        val path = Resource.convertPath(basePack).replace(".", "/")
 
-        val collection = ResourceUtils.scan(scanName) { !it.isDirectory && it.name.endsWith(".class") }
+        val collection = ResourceUtils.scan(path) {
+            !it.isDirectory && it.name.endsWith(".class")
+                    && !SCAN_IGNORE_PREFIX.any { prefix -> it.path.startsWith(prefix) }
+                    && !SCAN_IGNORE_NAME.contains(it.name)
+        }
 
         val classes: MutableSet<Class<T>> = HashSet()
         for (resource in collection) {
-            val last: String = StringUtils.substringAfterLast(resource.path, scanName)
-            val classPath: String = StringUtils.substringBeforeLast(scanName + last, ".")
-            val className: String = classPath.replace("/", ".")
+            val last = resource.path
+            val link = path + last
+            val name = convertClassName(link)
 
             try {
-                val aClass = Class.forName(className) as Class<T>
+                val aClass = loadClass(name, loaders) as Class<T>
                 if (filter.test(aClass)) {
                     classes.add(aClass)
                 }
-            } catch (e: Exception) {
-                error.accept(className, e)
+            } catch (e: Throwable) {
+                error.accept(name, e)
             }
         }
         return classes
     }
 
-    fun <T : Any> scan(basePack: String, filter: Predicate<KClass<T>>, error: BiConsumer<String, Exception>) = {
-        scan<T>(basePack, Predicate<Class<T>> { filter.test(it.kotlin) }, error)
+    fun <T : Any> scan(basePack: String, filter: Predicate<KClass<T>>, error: BiConsumer<String, Throwable>) = {
+        scan<T>(basePack, Predicate<Class<T>> { filter.test(it.kotlin) }, error = error)
     }
 
     /**
@@ -253,7 +318,7 @@ object ClassUtils {
 
     @JvmStatic
     fun method(cls: Class<*>, name: String): Method? {
-        return method(cls, name, *EMPTY_CLASS_ARRAY)
+        return method(cls, name, *emptyArray())
     }
 
     fun method(cls: KClass<*>, name: String) = method(cls.java, name)
@@ -334,39 +399,6 @@ object ClassUtils {
 
     fun classField(cls: KClass<*>, name: String) = classField(cls.java, name)
 
-    @JvmStatic
-    fun loadClass(className: String): Class<*> {
-        val loader = ClassUtils::class.java.getClassLoader()
-        return loadClass(className, loader)
-    }
-
-    @JvmStatic
-    fun loadClass(className: String, classLoader: ClassLoader): Class<*> {
-        val systemClassLoader = ClassLoader.getSystemClassLoader()
-        val classLoaders = ClassUtils::class.java.getClassLoader()
-        val contextClassLoader = Thread.currentThread().contextClassLoader
-        return loadClass(
-            className,
-            classLoader, systemClassLoader, classLoaders, contextClassLoader
-        )
-    }
-
-    @JvmStatic
-    fun loadClass(className: String, vararg classLoaders: ClassLoader?): Class<*> {
-        for (loader in classLoaders) {
-            if (loader == null) {
-                continue
-            }
-
-            try {
-                return loader.loadClass(className)
-            } catch (_: ClassNotFoundException) {
-                //
-            }
-        }
-        throw ClassNotFoundException("$className not found")
-    }
-
     /**
      * 方法名转字段名
      * @param methodName 方法名
@@ -389,5 +421,23 @@ object ClassUtils {
     }
 
     fun <T : Any> constructors(cls: KClass<T>) = constructors(cls.java)
+
+    @JvmStatic
+    inline val Class<*>.isPublic: Boolean get() = Modifier.isPublic(modifiers)
+
+    @JvmStatic
+    inline val Class<*>.isProtected: Boolean get() = Modifier.isProtected(modifiers)
+
+    @JvmStatic
+    inline val Class<*>.isPrivate: Boolean get() = Modifier.isPrivate(modifiers)
+
+    @JvmStatic
+    inline val Class<*>.isFinal: Boolean get() = Modifier.isFinal(modifiers)
+
+    @JvmStatic
+    inline val Class<*>.isStatic: Boolean get() = Modifier.isStatic(modifiers)
+
+    @JvmStatic
+    inline val Class<*>.isAbstract: Boolean get() = Modifier.isAbstract(modifiers)
 
 }

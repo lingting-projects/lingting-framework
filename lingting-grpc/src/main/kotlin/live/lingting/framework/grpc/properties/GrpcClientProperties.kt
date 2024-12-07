@@ -11,7 +11,7 @@ class GrpcClientProperties {
 
     var port: Int = 80
 
-    var traceIdKey: String = MdcUtils.TRACE_ID
+    var traceIdKey: String = MdcUtils.traceIdKey
 
     var traceOrder: Int = Int.MIN_VALUE + 100
 

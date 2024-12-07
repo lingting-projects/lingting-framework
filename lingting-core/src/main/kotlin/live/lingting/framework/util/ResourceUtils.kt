@@ -82,9 +82,8 @@ object ResourceUtils {
             val entries = jarFile.entries()
             while (entries.hasMoreElements()) {
                 val entry = entries.nextElement()
-                val path = "$jarPath${entry.name}"
                 val name = entry.name.split("/").dropLastWhile { it.isEmpty() }.last()
-                val of = Resource(protocol, path, name, entry.isDirectory)
+                val of = Resource(protocol, entry.name, name, jarPath, entry.isDirectory)
                 if (predicate.test(of)) {
                     result.add(of)
                 }
@@ -95,6 +94,7 @@ object ResourceUtils {
     private fun fillByFile(url: URL, protocol: String, predicate: Predicate<Resource>, result: ArrayList<Resource>) {
         val uri = url.toURI()
         val source = File(uri)
+        val root = Resource.convertPath(source.absolutePath)
         val files = if (source.isDirectory) {
             ArrayList<File>().apply {
                 Files.walk(source.toPath()).use {
@@ -106,7 +106,7 @@ object ResourceUtils {
         }
 
         files.forEach {
-            val of = Resource.of(protocol, it)
+            val of = Resource(protocol, it, root)
             if (predicate.test(of)) {
                 result.add(of)
             }
@@ -117,17 +117,21 @@ object ResourceUtils {
 
 class Resource(
     /**
-     * 文件协议
+     * 资源协议
      */
     val protocol: String,
     /**
-     * 文件路径
+     * 资源路径(根路径下的相对路径)
      */
     val path: String,
     /**
-     * 文件(夹)名称
+     * 资源名称
      */
     val name: String,
+    /**
+     * 资源根路径, 表示文件从哪个文件(夹)开始识别到的
+     */
+    val root: String,
     val isDirectory: Boolean
 ) {
 
@@ -144,12 +148,15 @@ class Resource(
         const val PROTOCOL_FILE: String = "file"
 
         @JvmStatic
-        fun of(protocol: String, file: File): Resource {
-            val path = file.absolutePath.replace("\\", DELIMITER_FILE)
-            return Resource(protocol, path, file.name, file.isDirectory)
+        fun convertPath(source: String): String {
+            return source.replace("\\", DELIMITER_FILE)
         }
 
     }
+
+    constructor(protocol: String, file: File, root: String) : this(
+        protocol, convertPath(file.absolutePath.substring(root.length)), file.name, root, file.isDirectory
+    )
 
     /**
      * 资源本身是文件
@@ -166,9 +173,12 @@ class Resource(
      */
     val fromFile: Boolean = protocol.startsWith(PROTOCOL_FILE)
 
-    val uriPath = protocol + DELIMITER_PROTOCOL + path
+    /**
+     * 资源链接 - 包含协议和路径
+     */
+    val link = protocol + DELIMITER_PROTOCOL + root + path
 
-    val uri: URI by lazy { URI.create(uriPath) }
+    val uri: URI by lazy { URI.create(link) }
 
     val url: URL by lazy { uri.toURL() }
 
@@ -184,5 +194,8 @@ class Resource(
         return StreamUtils.toString(stream())
     }
 
+    override fun toString(): String {
+        return link
+    }
 }
 

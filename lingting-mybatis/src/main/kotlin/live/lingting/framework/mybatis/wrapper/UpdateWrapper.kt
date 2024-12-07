@@ -1,8 +1,9 @@
 package live.lingting.framework.mybatis.wrapper
 
+import com.baomidou.mybatisplus.core.conditions.update.Update
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction
 
-class UpdateWrapper<T : Any> : LambdaWrapper<T, UpdateWrapper<T>>(), com.baomidou.mybatisplus.core.conditions.update.Update<UpdateWrapper<T>, String> {
+class UpdateWrapper<T : Any> : LambdaWrapper<T, UpdateWrapper<T>>(), Update<UpdateWrapper<T>, String> {
 
     private val sets = ArrayList<String>()
 
@@ -14,11 +15,15 @@ class UpdateWrapper<T : Any> : LambdaWrapper<T, UpdateWrapper<T>>(), com.baomido
         throw UnsupportedOperationException()
     }
 
+    override fun set(condition: Boolean, column: String, value: Any?): UpdateWrapper<T>? {
+        return set(condition, column, value, column(column).mapping)
+    }
+
     override fun set(condition: Boolean, column: String, value: Any?, mapping: String?): UpdateWrapper<T> {
         if (!condition) {
             return this
         }
-        val name = convertField(column)
+        val name = field(column)
         val param = safeParam(mapping, value)
         return setSql(true, "$name=$param")
     }
@@ -35,7 +40,7 @@ class UpdateWrapper<T : Any> : LambdaWrapper<T, UpdateWrapper<T>>(), com.baomido
 
     @JvmOverloads
     fun setSql(column: String, setSql: String, vararg params: Any? = arrayOf()): UpdateWrapper<T> {
-        val name = convertField(column)
+        val name = field(column)
         val format = formatSqlByParam(setSql, params)
         val sql = "$name $format"
         sets.add(sql)
@@ -46,7 +51,7 @@ class UpdateWrapper<T : Any> : LambdaWrapper<T, UpdateWrapper<T>>(), com.baomido
     // region ifPresent
 
     fun setIfPresent(column: String, value: Any?): UpdateWrapper<T> {
-        return set(isPresent(value), column, value)
+        return setIfPresent(column, value, column(column).mapping)
     }
 
     fun setIfPresent(column: String, value: Any?, mapping: String?): UpdateWrapper<T> {
@@ -62,7 +67,7 @@ class UpdateWrapper<T : Any> : LambdaWrapper<T, UpdateWrapper<T>>(), com.baomido
     }
 
     fun <V : Any> set(condition: Boolean, column: SFunction<T, V?>, value: V?): UpdateWrapper<T> {
-        return set(condition, column, value, null)
+        return set(condition, column, value, column(column).mapping)
     }
 
     fun <V : Any> set(column: SFunction<T, V?>, value: V?, mapping: String?): UpdateWrapper<T> {
@@ -73,13 +78,14 @@ class UpdateWrapper<T : Any> : LambdaWrapper<T, UpdateWrapper<T>>(), com.baomido
         if (!condition) {
             return this
         }
-        val field = convertField(column)
+
+        val field = field(column)
         return set(true, field, value, mapping)
     }
 
     @JvmOverloads
     fun setSql(column: SFunction<T, *>, setSql: String, vararg params: Any? = arrayOf()): UpdateWrapper<T> {
-        val field = convertField(column)
+        val field = field(column)
         return setSql(true, field, setSql, *params)
     }
 
@@ -88,7 +94,7 @@ class UpdateWrapper<T : Any> : LambdaWrapper<T, UpdateWrapper<T>>(), com.baomido
     // region lambdaIfPresent
 
     fun <V : Any> setIfPresent(column: SFunction<T, V?>, value: V?): UpdateWrapper<T> {
-        return set(isPresent(value), column, value)
+        return setIfPresent(column, value, column(column).mapping)
     }
 
     fun <V : Any> setIfPresent(column: SFunction<T, V?>, value: V?, mapping: String?): UpdateWrapper<T> {

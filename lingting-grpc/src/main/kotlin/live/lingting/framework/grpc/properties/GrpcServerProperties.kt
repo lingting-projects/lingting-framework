@@ -16,7 +16,7 @@ class GrpcServerProperties {
 
     var keepAliveTimeout: Duration = Duration.ofSeconds(2)
 
-    var traceIdKey: String = MdcUtils.TRACE_ID
+    var traceIdKey: String = MdcUtils.traceIdKey
 
     var traceOrder: Int = Int.MIN_VALUE + 100
 

@@ -1,6 +1,7 @@
 package live.lingting.framework.util
 
 import java.util.UUID
+import live.lingting.framework.function.ThrowableRunnable
 import org.slf4j.MDC
 
 /**
@@ -8,7 +9,8 @@ import org.slf4j.MDC
  */
 object MdcUtils {
 
-    const val TRACE_ID: String = "traceId"
+    @JvmStatic
+    val traceIdKey: String = "traceId"
 
     @JvmStatic
     fun traceId(): String {
@@ -17,28 +19,51 @@ object MdcUtils {
 
     @JvmStatic
     val traceId: String?
-        get() = MDC.get(TRACE_ID)
+        get() = MDC.get(traceIdKey)
 
     @JvmStatic
-    fun fillTraceId(): String {
-        val traceId = traceId()
-        fillTraceId(traceId)
+    @JvmOverloads
+    fun setTraceId(traceId: String = traceId()): String {
+        MDC.put(traceIdKey, traceId)
         return traceId
     }
 
     @JvmStatic
-    fun fillTraceId(traceId: String) {
-        MDC.put(TRACE_ID, traceId)
-    }
-
-    @JvmStatic
     fun removeTraceId() {
-        MDC.remove(TRACE_ID)
+        MDC.remove(traceIdKey)
     }
 
     @JvmStatic
     fun copyContext(): Map<String, String> {
         return MDC.getCopyOfContextMap() ?: HashMap()
     }
+
+    @JvmStatic
+    fun setContext(map: Map<String, String>) {
+        MDC.setContextMap(map)
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun useTraceId(traceId: String = MdcUtils.traceId ?: traceId(), runnable: ThrowableRunnable) {
+        useContext {
+            setTraceId(traceId)
+            runnable.run()
+        }
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun useContext(map: Map<String, String> = HashMap(), runnable: ThrowableRunnable) {
+        copyContext().let {
+            setContext(map)
+            try {
+                runnable.run()
+            } finally {
+                setContext(it)
+            }
+        }
+    }
+
 }
 

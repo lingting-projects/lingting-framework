@@ -99,6 +99,7 @@ configure(dependencyProjects) {
     apply {
         plugin("java-platform")
     }
+
 }
 
 configure(javaProjects) {

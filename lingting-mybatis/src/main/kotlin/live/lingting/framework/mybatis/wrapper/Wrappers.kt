@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.core.toolkit.Constants
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction
+import java.util.Objects
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 import live.lingting.framework.reflect.LambdaMeta
+import live.lingting.framework.util.StringUtils
 
 @Suppress("UNCHECKED_CAST")
 object Wrappers {
@@ -14,7 +16,7 @@ object Wrappers {
 
     private val COLUMN_CACHE = ConcurrentHashMap<Class<*>, MutableMap<String, ColumnCache>>()
 
-    private val COLUMN_SF_CACHE = ConcurrentHashMap<SFunction<*, *>, ColumnCache?>()
+    private val COLUMN_SF_CACHE = ConcurrentHashMap<SFunction<*, *>, ColumnCache>()
 
     fun extract(sf: SFunction<*, *>): LambdaMeta {
         return LambdaMeta.of(sf)
@@ -22,11 +24,11 @@ object Wrappers {
 
     @JvmStatic
     fun column(cls: Class<*>): MutableMap<String, ColumnCache> {
-        return COLUMN_CACHE.computeIfAbsent(cls) { k: Class<*> -> LambdaUtils.getColumnMap(cls) }
+        return COLUMN_CACHE.computeIfAbsent(cls) { LambdaUtils.getColumnMap(it) ?: mutableMapOf() }
     }
 
     @JvmStatic
-    fun column(sf: SFunction<*, *>): ColumnCache? {
+    fun column(sf: SFunction<*, *>): ColumnCache {
         return COLUMN_SF_CACHE.computeIfAbsent(sf) {
             val info = extract(sf)
             column(info.cls, info.field)
@@ -34,18 +36,33 @@ object Wrappers {
     }
 
     @JvmStatic
-    fun <T> column(cls: Class<T>, sf: SFunction<T, *>): ColumnCache? {
-        return COLUMN_SF_CACHE.computeIfAbsent(sf) { sk ->
+    fun <T> column(cls: Class<T>, sf: SFunction<T, *>): ColumnCache {
+        return COLUMN_SF_CACHE.computeIfAbsent(sf) {
             val info = extract(sf)
             column(cls, info.field)
         }
     }
 
     @JvmStatic
-    fun column(cls: Class<*>, field: String): ColumnCache? {
-        val map: MutableMap<String, ColumnCache> = column(cls)
+    fun column(cls: Class<*>?, field: String): ColumnCache {
+        val clazz = cls ?: Wrappers::class.java
+        val map = column(clazz)
         val key: String = LambdaUtils.formatKey(field)
-        return map[key]
+        val v1 = map[key]
+        if (v1 != null) {
+            return v1
+        }
+        // 转驼峰
+        val hump = StringUtils.underscoreToHump(field)
+        // 不匹配重新获取
+        if (!Objects.equals(field, hump)) {
+            return column(clazz, hump)
+        }
+        // 没有手动生成
+        val underscore = StringUtils.humpToUnderscore(field)
+        val cache = ColumnCache(underscore, underscore)
+        map[key] = cache
+        return cache
     }
 
     @JvmStatic

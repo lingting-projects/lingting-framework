@@ -4,8 +4,6 @@ import live.lingting.framework.util.ClassUtils.exists
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.ThrowingSupplier
@@ -16,6 +14,9 @@ import org.junit.jupiter.api.function.ThrowingSupplier
 class ClassUtilsTest {
     @Test
     fun test() {
+        val classes = ClassUtils.scan<Any>("")
+        assertFalse(classes.isEmpty())
+
         val classLoader = ClassUtils::class.java.classLoader
         val testClassLoader = ClassUtilsTest::class.java.classLoader
         val systemClassLoader = ClassLoader.getSystemClassLoader()
@@ -26,22 +27,31 @@ class ClassUtilsTest {
         assertTrue(exists(className, systemClassLoader, classLoader))
         assertTrue(exists(className, testClassLoader))
         assertFalse(exists(className2))
-        assertNotNull(ClassUtils.CACHE_CLASS_PRESENT[className])
-        assertNotNull(ClassUtils.CACHE_CLASS_PRESENT[className2])
-        val map: Map<ClassLoader, Boolean> = ClassUtils.CACHE_CLASS_PRESENT[className]!!
         val loaders: MutableSet<ClassLoader> = HashSet(3)
         loaders.add(systemClassLoader)
         loaders.add(ClassUtils::class.java.classLoader)
         loaders.add(ClassUtilsTest::class.java.classLoader)
-        assertEquals(loaders, map.keys)
-        assertThrows(IllegalArgumentException::class.java) { exists(className, null, null) }
 
-        val supplier: ThrowingSupplier<Set<Class<Any>>> = object : ThrowingSupplier<Set<Class<Any>>> {
-            override fun get(): Set<Class<Any>> {
-                return ClassUtils.scan<Any>("live.lingting.framework")
-            }
-        }
-        val scan: Set<Class<Any>> = assertDoesNotThrow(supplier)
+        val scan: Set<Class<Any>> = assertDoesNotThrow(ThrowingSupplier { ClassUtils.scan<Any>("live.lingting.framework") })
         assertFalse(scan.isEmpty())
+        val typesN = ClassUtils.typeArguments(N::class)
+        assertTrue(typesN.isEmpty())
+        val typesS1 = ClassUtils.typeArguments(S1::class)
+        assertEquals(1, typesS1.size)
+        assertEquals(N::class.java, typesS1[0])
+        val typesI1 = ClassUtils.typeArguments(I1::class)
+        assertEquals(1, typesI1.size)
+        assertEquals(N::class.java, typesI1[0])
+        val typesSI = ClassUtils.typeArguments(SI::class)
+        assertEquals(2, typesSI.size)
+        assertEquals(S1::class.java, typesSI[0])
+        assertEquals(I1::class.java, typesSI[1])
     }
 }
+
+class N
+open class S<E>
+class S1 : S<N>()
+interface I<E>
+class I1 : I<N>
+class SI : S<S1>(), I<I1>

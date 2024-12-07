@@ -1,6 +1,6 @@
 package live.lingting.framework.api
 
-/**
+/**202201
  * @author lingting 2022/9/19 13:56
  */
 enum class ApiResultCode(

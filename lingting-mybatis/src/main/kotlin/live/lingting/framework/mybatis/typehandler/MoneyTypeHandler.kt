@@ -13,9 +13,9 @@ import org.apache.ibatis.type.MappedTypes
  * @author lingting
  */
 @MappedTypes(Money::class)
-class MoneyTypeHandler : BaseTypeHandler<Money>(), AutoRegisterTypeHandler<Money> {
+open class MoneyTypeHandler : BaseTypeHandler<Money>(), AutoRegisterTypeHandler<Money> {
 
-    override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: Money, jdbcType: JdbcType) {
+    override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: Money, jdbcType: JdbcType?) {
         ps.setBigDecimal(i, parameter.value)
     }
 

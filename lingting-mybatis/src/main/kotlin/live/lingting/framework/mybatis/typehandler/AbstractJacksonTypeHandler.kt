@@ -56,7 +56,7 @@ abstract class AbstractJacksonTypeHandler<T> : BaseTypeHandler<T>() {
         return defaultJson
     }
 
-    override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: T, jdbcType: JdbcType) {
+    override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: T, jdbcType: JdbcType?) {
         ps.setString(i, resolve(parameter))
     }
 

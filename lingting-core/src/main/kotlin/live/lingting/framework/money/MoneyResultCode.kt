@@ -3,6 +3,7 @@ package live.lingting.framework.money
 import live.lingting.framework.api.ResultCode
 
 /**
+ * 202201
  * @author lingting 2023-05-07 18:02
  */
 enum class MoneyResultCode(override val code: Int, override val message: String) : ResultCode {

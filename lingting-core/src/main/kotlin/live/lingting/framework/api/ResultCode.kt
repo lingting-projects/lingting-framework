@@ -39,26 +39,51 @@ interface ResultCode {
      * @return 返回一个新的组装消息后的对象
      */
     fun format(vararg args: Any?): ResultCode {
-        val message: String = String.format(message, *args)
-        return with(message)
+        val text = i18nMessage(*args)
+        return with(text)
     }
 
     /**
      * 转异常
      */
-    fun toException(): BizException {
-        return BizException(this)
+    fun toException(vararg args: Any?): Exception {
+        return toException(I18n.get(), *args)
     }
 
-    fun toException(e: Exception?): BizException {
-        return BizException(this, e)
+    fun toException(e: Exception?, vararg args: Any?): Exception {
+        return toException(e, I18n.get(), *args)
+    }
+
+    fun toException(locale: Locale, vararg args: Any?): Exception {
+        return toException(null, locale, *args)
+    }
+
+    fun toException(e: Exception?, locale: Locale, vararg args: Any?): Exception {
+        val text = i18nMessage(locale, *args)
+        return toException(text, e)
+    }
+
+    fun toException(): Exception {
+        return toException(null)
+    }
+
+    fun toException(text: String): Exception {
+        return toException(text, null)
+    }
+
+    fun toException(e: Exception?): Exception {
+        return toException(null as String?, e)
+    }
+
+    fun toException(text: String?, e: Exception?): Exception {
+        return BizException(this, text, e)
     }
 
     /**
      * 抛出异常
      */
     fun throwException() {
-        throw toException()
+        throwException(null)
     }
 
     fun throwException(e: Exception?) {
@@ -68,7 +93,14 @@ interface ResultCode {
     val i18nKey: String
         get() = "${this::class.java.name}.$code"
 
-    fun i18nMessage(): String = i18nMessage(I18n.get())
+    fun i18nMessage(): String = i18nMessage(null)
+
+    fun i18nMessage(vararg args: Any?) = i18nMessage(I18n.get(), *args)
+
+    fun i18nMessage(locale: Locale, vararg args: Any?): String {
+        val text = i18nMessage(locale)
+        return String.format(locale, text, *args)
+    }
 
     fun i18nMessage(locale: Locale): String {
         return I18n.find(i18nKey, message, locale)
