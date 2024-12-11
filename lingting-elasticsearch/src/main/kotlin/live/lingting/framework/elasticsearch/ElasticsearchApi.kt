@@ -4,7 +4,6 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient
 import co.elastic.clients.elasticsearch._types.Refresh
 import co.elastic.clients.elasticsearch._types.Result
 import co.elastic.clients.elasticsearch._types.Script
-import co.elastic.clients.elasticsearch._types.SortOptions
 import co.elastic.clients.elasticsearch._types.Time
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregate
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregation
@@ -12,12 +11,15 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query
 import co.elastic.clients.elasticsearch.core.BulkRequest
 import co.elastic.clients.elasticsearch.core.BulkResponse
 import co.elastic.clients.elasticsearch.core.DeleteByQueryRequest
+import co.elastic.clients.elasticsearch.core.DeleteByQueryResponse
 import co.elastic.clients.elasticsearch.core.GetRequest
 import co.elastic.clients.elasticsearch.core.ScrollRequest
 import co.elastic.clients.elasticsearch.core.SearchRequest
 import co.elastic.clients.elasticsearch.core.SearchResponse
 import co.elastic.clients.elasticsearch.core.UpdateByQueryRequest
+import co.elastic.clients.elasticsearch.core.UpdateByQueryResponse
 import co.elastic.clients.elasticsearch.core.UpdateRequest
+import co.elastic.clients.elasticsearch.core.UpdateResponse
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperationBase
 import co.elastic.clients.elasticsearch.core.bulk.CreateOperation
@@ -41,8 +43,8 @@ import live.lingting.framework.api.PaginationResult
 import live.lingting.framework.api.ScrollCursor
 import live.lingting.framework.api.ScrollParams
 import live.lingting.framework.api.ScrollResult
+import live.lingting.framework.elasticsearch.ElasticsearchUtils.toOptions
 import live.lingting.framework.elasticsearch.builder.QueryBuilder
-import live.lingting.framework.elasticsearch.composer.SortComposer
 import live.lingting.framework.elasticsearch.interceptor.Interceptor
 import live.lingting.framework.elasticsearch.polymerize.PolymerizeFactory
 import live.lingting.framework.function.ThrowingFunction
@@ -159,6 +161,13 @@ class ElasticsearchApi<T>(
     }
 
     fun search(operator: UnaryOperator<SearchRequest.Builder>, queries: QueryBuilder<T>): HitsMetadata<T> {
+        return search(operator, queries) { it.hits() }
+    }
+
+    fun <E> search(
+        operator: UnaryOperator<SearchRequest.Builder>, queries: QueryBuilder<T>,
+        convert: Function<SearchResponse<T>, E>
+    ): E {
         val query = merge(queries)
 
         val builder = operator.apply(
@@ -170,21 +179,11 @@ class ElasticsearchApi<T>(
         builder.query(query)
 
         val searchResponse = client.search(builder.build(), cls)
-        return searchResponse.hits()
-    }
-
-    fun ofLimitSort(sorts: Collection<PaginationParams.Sort>): List<SortOptions> {
-        if (sorts.isEmpty()) {
-            return ArrayList()
-        }
-        return sorts.map { sort ->
-            val field = StringUtils.underscoreToHump(sort.field)
-            SortComposer.sort(field, sort.desc)
-        }.toList()
+        return convert.apply(searchResponse)
     }
 
     fun page(params: PaginationParams, queries: QueryBuilder<T>): PaginationResult<T> {
-        val sorts = ofLimitSort(params.sorts)
+        val sorts = params.toOptions()
 
         val from = params.start().toInt()
         val size = params.size.toInt()
@@ -262,17 +261,23 @@ class ElasticsearchApi<T>(
     }
 
     fun update(operator: UnaryOperator<UpdateRequest.Builder<T, T>>, documentId: String): Boolean {
+        return update({ operator.apply(it).id(documentId) }) {
+            val result = it.result()
+            Result.Updated == result
+        }
+    }
+
+    fun <E> update(operator: UnaryOperator<UpdateRequest.Builder<T, T>>, convert: Function<UpdateResponse<T>, E>): E {
         val builder = operator.apply(
             UpdateRequest.Builder<T, T>() // 刷新策略
                 .refresh(Refresh.WaitFor) // 版本冲突时自动重试次数
                 .retryOnConflict(5)
         )
 
-        builder.index(info.index()).id(documentId)
+        builder.index(info.index())
 
         val response = client.update(builder.build(), cls)
-        val result = response.result()
-        return Result.Updated == result
+        return convert.apply(response)
     }
 
     fun updateByQuery(script: Script, vararg queries: Query): Boolean {
@@ -294,6 +299,16 @@ class ElasticsearchApi<T>(
         operator: UnaryOperator<UpdateByQueryRequest.Builder>, script: Script,
         queries: QueryBuilder<T>
     ): Boolean {
+        return updateByQuery(operator, script, queries) {
+            val total = it.total()
+            total != null && total > 0
+        }
+    }
+
+    fun <E> updateByQuery(
+        operator: UnaryOperator<UpdateByQueryRequest.Builder>,
+        script: Script, queries: QueryBuilder<T>, convert: Function<UpdateByQueryResponse, E>
+    ): E {
         val query = merge(queries)
 
         val builder = operator.apply(
@@ -303,8 +318,7 @@ class ElasticsearchApi<T>(
         builder.index(info.index()).query(query).script(script)
 
         val response = client.updateByQuery(builder.build())
-        val total = response.total()
-        return total != null && total > 0
+        return convert.apply(response)
     }
 
     fun bulk(vararg collection: T, convert: Function<T, BulkOperationBase.AbstractBuilder<*>>): BulkResponse {
@@ -410,6 +424,13 @@ class ElasticsearchApi<T>(
     }
 
     fun deleteByQuery(operator: UnaryOperator<DeleteByQueryRequest.Builder>, queries: QueryBuilder<T>): Boolean {
+        return deleteByQuery(operator, queries) {
+            val deleted = it.deleted()
+            deleted != null && deleted > 0
+        }
+    }
+
+    fun <E> deleteByQuery(operator: UnaryOperator<DeleteByQueryRequest.Builder>, queries: QueryBuilder<T>, convert: Function<DeleteByQueryResponse, E>): E {
         val query = merge(queries)
 
         val builder = operator.apply(DeleteByQueryRequest.Builder().refresh(false))
@@ -417,8 +438,7 @@ class ElasticsearchApi<T>(
         builder.query(query)
 
         val response = client.deleteByQuery(builder.build())
-        val deleted = response.deleted()
-        return deleted != null && deleted > 0
+        return convert.apply(response)
     }
 
     fun list(vararg queries: Query): List<T> {
@@ -499,7 +519,7 @@ class ElasticsearchApi<T>(
         val collect = response.hits().hits().mapNotNull { obj: Hit<T> -> obj.source() }
         val nextScrollId = response.scrollId()
 
-        if (collect.isNullOrEmpty()) {
+        if (collect.isEmpty()) {
             clearScroll(nextScrollId)
             return ScrollResult.empty()
         }

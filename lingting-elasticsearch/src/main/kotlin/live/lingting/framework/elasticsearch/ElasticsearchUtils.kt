@@ -1,8 +1,11 @@
 package live.lingting.framework.elasticsearch
 
 import co.elastic.clients.elasticsearch._types.FieldValue
+import co.elastic.clients.elasticsearch._types.SortOptions
 import co.elastic.clients.json.JsonData
 import java.util.concurrent.ConcurrentHashMap
+import live.lingting.framework.api.PaginationParams
+import live.lingting.framework.elasticsearch.composer.SortComposer
 import live.lingting.framework.reflect.LambdaMeta
 import live.lingting.framework.util.ClassUtils
 import live.lingting.framework.util.Slf4jUtils.logger
@@ -75,6 +78,15 @@ object ElasticsearchUtils {
     @JvmStatic
     fun fieldName(func: EFunction<*, *>): String {
         return resolve(func)?.field ?: ""
+    }
+
+    fun PaginationParams.Sort.toOptions(): SortOptions {
+        val field = StringUtils.underscoreToHump(field)
+        return SortComposer.sort(field, desc)
+    }
+
+    fun PaginationParams.toOptions(): List<SortOptions> {
+        return sorts.map { it.toOptions() }
     }
 
 }
