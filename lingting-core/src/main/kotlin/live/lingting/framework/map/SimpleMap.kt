@@ -3,7 +3,6 @@ package live.lingting.framework.map
 import java.util.Optional
 import java.util.function.Function
 import java.util.function.Predicate
-import live.lingting.framework.util.BooleanUtils.isTrue
 import live.lingting.framework.util.OptionalUtils.optional
 
 /**
@@ -36,7 +35,4 @@ interface SimpleMap<K, V> : MutableMap<K, V> {
         return func.apply(v)
     }
 
-    fun toBoolean(key: K): Boolean {
-        return find<Boolean>(key, false, Function<V, Boolean> { it.isTrue() })
-    }
 }

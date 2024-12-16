@@ -16,7 +16,6 @@ import java.util.function.Function
 import java.util.function.UnaryOperator
 import live.lingting.framework.Sequence
 import live.lingting.framework.grpc.properties.GrpcClientProperties
-import live.lingting.framework.util.CollectionUtils
 
 /**
  * @author lingting 2023-12-15 14:44
@@ -44,8 +43,8 @@ class GrpcClientProvide(val properties: GrpcClientProperties, val interceptors: 
     }
 
     @JvmOverloads
-    fun addInterceptors(builder: ManagedChannelBuilder<*>, collection: MutableCollection<ClientInterceptor> = interceptors) {
-        if (collection.isNullOrEmpty()) {
+    fun addInterceptors(builder: ManagedChannelBuilder<*>, collection: List<ClientInterceptor> = interceptors) {
+        if (collection.isEmpty()) {
             return
         }
 
@@ -94,7 +93,7 @@ class GrpcClientProvide(val properties: GrpcClientProperties, val interceptors: 
     }
 
     @JvmOverloads
-    fun channel(builder: ManagedChannelBuilder<*>, list: MutableList<ClientInterceptor> = interceptors): ManagedChannel {
+    fun channel(builder: ManagedChannelBuilder<*>, list: List<ClientInterceptor> = interceptors): ManagedChannel {
         useProperties(builder)
         addInterceptors(builder, list)
         return builder.build()

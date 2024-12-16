@@ -269,8 +269,11 @@ class ElasticsearchApi<T>(
 
     fun <E> update(operator: UnaryOperator<UpdateRequest.Builder<T, T>>, convert: Function<UpdateResponse<T>, E>): E {
         val builder = operator.apply(
-            UpdateRequest.Builder<T, T>() // 刷新策略
-                .refresh(Refresh.WaitFor) // 版本冲突时自动重试次数
+            UpdateRequest.Builder<T, T>()
+
+                // 刷新策略
+                .refresh(Refresh.WaitFor)
+                // 版本冲突时自动重试次数
                 .retryOnConflict(5)
         )
 
@@ -312,7 +315,8 @@ class ElasticsearchApi<T>(
         val query = merge(queries)
 
         val builder = operator.apply(
-            UpdateByQueryRequest.Builder() // 刷新策略
+            UpdateByQueryRequest.Builder()
+                // 刷新策略
                 .refresh(false)
         )
         builder.index(info.index()).query(query).script(script)
