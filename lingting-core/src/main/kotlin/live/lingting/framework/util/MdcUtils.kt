@@ -29,7 +29,7 @@ object MdcUtils {
     }
 
     @JvmStatic
-    fun getOrSetTraceId(): String {
+    fun ifAbsentTraceId(): String {
         return traceId ?: setTraceId()
     }
 
