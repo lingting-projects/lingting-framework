@@ -6,6 +6,7 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import live.lingting.framework.time.DatePattern
+import live.lingting.framework.time.DateTime
 
 /**
  * @author lingting 2022/11/28 10:12
@@ -35,7 +36,7 @@ object LocalDateTimeUtils {
      */
     @JvmStatic
     @JvmOverloads
-    fun parse(timestamp: Long, zoneId: ZoneId = DatePattern.DEFAULT_ZONE_ID): LocalDateTime {
+    fun parse(timestamp: Long, zoneId: ZoneId = DateTime.zoneId): LocalDateTime {
         return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), zoneId)
     }
 
@@ -47,7 +48,7 @@ object LocalDateTimeUtils {
         return parse(this, formatter)
     }
 
-    fun Long.toLocalDateTime(zoneId: ZoneId = DatePattern.DEFAULT_ZONE_ID): LocalDateTime {
+    fun Long.toLocalDateTime(zoneId: ZoneId = DateTime.zoneId): LocalDateTime {
         return parse(this, zoneId)
     }
 
@@ -55,7 +56,7 @@ object LocalDateTimeUtils {
 
     @JvmStatic
     @JvmOverloads
-    fun LocalDateTime.timestamp(offset: ZoneOffset = DatePattern.DEFAULT_ZONE_OFFSET): Long {
+    fun LocalDateTime.timestamp(offset: ZoneOffset = DateTime.zoneOffset): Long {
         return toInstant(offset).toEpochMilli()
     }
 

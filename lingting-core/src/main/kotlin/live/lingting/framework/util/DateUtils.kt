@@ -4,7 +4,7 @@ package live.lingting.framework.util
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.Date
-import live.lingting.framework.time.DatePattern
+import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.LocalDateTimeUtils.timestamp
 import live.lingting.framework.util.LocalDateTimeUtils.toLocalDateTime
 
@@ -17,14 +17,14 @@ object DateUtils {
 
     @JvmStatic
     @JvmOverloads
-    fun parse(dateTime: LocalDateTime, offset: ZoneOffset = DatePattern.DEFAULT_ZONE_OFFSET): Date {
+    fun parse(dateTime: LocalDateTime, offset: ZoneOffset = DateTime.zoneOffset): Date {
         val timestamp = dateTime.timestamp(offset)
         return Date(timestamp)
     }
 
     @JvmStatic
     @JvmOverloads
-    fun parse(date: Date, offset: ZoneOffset = DatePattern.DEFAULT_ZONE_OFFSET): LocalDateTime {
+    fun parse(date: Date, offset: ZoneOffset = DateTime.zoneOffset): LocalDateTime {
         return date.time.toLocalDateTime(offset)
     }
 
@@ -32,11 +32,11 @@ object DateUtils {
 
     // region kt
 
-    fun LocalDateTime.toDate(offset: ZoneOffset = DatePattern.DEFAULT_ZONE_OFFSET): Date {
+    fun LocalDateTime.toDate(offset: ZoneOffset = DateTime.zoneOffset): Date {
         return parse(this, offset)
     }
 
-    fun Date.toLocalDateTime(offset: ZoneOffset = DatePattern.DEFAULT_ZONE_OFFSET): LocalDateTime {
+    fun Date.toLocalDateTime(offset: ZoneOffset = DateTime.zoneOffset): LocalDateTime {
         return parse(this, offset)
     }
 
