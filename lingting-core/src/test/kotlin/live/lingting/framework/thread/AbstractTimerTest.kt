@@ -36,7 +36,7 @@ internal class AbstractTimerTest {
                 return executor!!
             }
 
-            override val timeout: Duration
+            override val interval: Duration
                 get() =// 设置执行间隔
                     Duration.ofMinutes(30)
 
