@@ -8,7 +8,11 @@ import io.grpc.ServerCallHandler
 /**
  * @author lingting 2023-12-18 19:10
  */
-open class ForwardingServerOnCallListener<S, R> protected constructor(call: ServerCall<S, R>, headers: Metadata, next: ServerCallHandler<S, R>) : ForwardingServerCallListener<S>() {
+open class ForwardingServerOnCallListener<S, R> protected constructor(
+    val call: ServerCall<S, R>,
+    val headers: Metadata, next: ServerCallHandler<S, R>,
+) : ForwardingServerCallListener<S>() {
+
     val delegate: ServerCall.Listener<S> by lazy {
         try {
             next.startCall(call, headers)
@@ -55,43 +59,43 @@ open class ForwardingServerOnCallListener<S, R> protected constructor(call: Serv
         onReadyAfter()
     }
 
-    fun onMessageBefore(message: S) {
+    open fun onMessageBefore(message: S) {
         //
     }
 
-    fun onMessageAfter(message: S) {
+    open fun onMessageAfter(message: S) {
         //
     }
 
-    fun onHalfCloseBefore() {
+    open fun onHalfCloseBefore() {
         //
     }
 
-    fun onHalfCloseAfter() {
+    open fun onHalfCloseAfter() {
         //
     }
 
-    fun onCancelBefore() {
+    open fun onCancelBefore() {
         //
     }
 
-    fun onCancelAfter() {
+    open fun onCancelAfter() {
         //
     }
 
-    fun onCompleteBefore() {
+    open fun onCompleteBefore() {
         //
     }
 
-    fun onCompleteAfter() {
+    open fun onCompleteAfter() {
         //
     }
 
-    fun onReadyBefore() {
+    open fun onReadyBefore() {
         //
     }
 
-    fun onReadyAfter() {
+    open fun onReadyAfter() {
         //
     }
 

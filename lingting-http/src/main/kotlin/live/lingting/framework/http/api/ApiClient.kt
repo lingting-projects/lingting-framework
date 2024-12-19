@@ -14,11 +14,20 @@ import live.lingting.framework.value.multi.StringMultiValue
  * @author lingting 2024-09-14 15:33
  */
 abstract class ApiClient<R : ApiRequest> protected constructor(@JvmField protected val host: String) {
+    companion object {
+        @JvmStatic
+        var defaultClient: HttpClient = HttpClient.builder()
+            .disableSsl()
+            .timeout(Duration.ofSeconds(15), Duration.ofSeconds(30))
+            .build()
+
+    }
+
     @JvmField
     val log = logger()
 
     @JvmField
-    var client: HttpClient = CLIENT
+    var client: HttpClient = defaultClient
 
     protected open fun customize(request: R) {
         //
@@ -77,12 +86,4 @@ abstract class ApiClient<R : ApiRequest> protected constructor(@JvmField protect
         return checkout(r, response)
     }
 
-    companion object {
-        @JvmField
-        var CLIENT: HttpClient = HttpClient.builder()
-            .disableSsl()
-            .timeout(Duration.ofSeconds(15), Duration.ofSeconds(30))
-            .build()
-
-    }
 }

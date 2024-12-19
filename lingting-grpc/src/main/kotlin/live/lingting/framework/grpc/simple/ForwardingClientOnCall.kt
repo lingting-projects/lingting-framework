@@ -10,7 +10,11 @@ import io.grpc.MethodDescriptor
 /**
  * @author lingting 2023-12-18 19:13
  */
-open class ForwardingClientOnCall<S, R>(method: MethodDescriptor<S, R>, callOptions: CallOptions, next: Channel) : ForwardingClientCall<S, R>() {
+open class ForwardingClientOnCall<S, R>(
+    method: MethodDescriptor<S, R>,
+    callOptions: CallOptions, next: Channel,
+) : ForwardingClientCall<S, R>() {
+
     val delegate: ClientCall<S, R> by lazy {
         try {
             next.newCall(method, callOptions)
@@ -47,27 +51,27 @@ open class ForwardingClientOnCall<S, R>(method: MethodDescriptor<S, R>, callOpti
         //
     }
 
-    fun onStartAfter(responseListener: Listener<R>, headers: Metadata) {
+    open fun onStartAfter(responseListener: Listener<R>, headers: Metadata) {
         //
     }
 
-    fun onSendMessageBefore(message: S) {
+    open fun onSendMessageBefore(message: S) {
         //
     }
 
-    fun onSendMessageAfter(message: S) {
+    open fun onSendMessageAfter(message: S) {
         //
     }
 
-    fun onHalfCloseBefore() {
+    open fun onHalfCloseBefore() {
         //
     }
 
-    fun onHalfCloseAfter() {
+    open fun onHalfCloseAfter() {
         //
     }
 
-    fun onFinally() {
+    open fun onFinally() {
         //
     }
 }

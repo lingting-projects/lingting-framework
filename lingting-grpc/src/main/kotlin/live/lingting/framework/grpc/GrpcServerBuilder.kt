@@ -6,15 +6,17 @@ import io.grpc.ServerInterceptor
 import java.util.concurrent.TimeUnit
 import java.util.function.IntFunction
 import java.util.function.UnaryOperator
+import live.lingting.framework.grpc.interceptor.GrpcServerCompressionInterceptor
 import live.lingting.framework.grpc.properties.GrpcServerProperties
+import live.lingting.framework.util.ThreadUtils
 
 /**
  * @author lingting 2024-01-30 15:37
  */
-class GrpcServerBuilder {
-    protected var services: MutableList<BindableService> = ArrayList()
+open class GrpcServerBuilder {
+    protected var services = ArrayList<BindableService>()
 
-    protected var interceptors: MutableList<ServerInterceptor> = ArrayList()
+    protected var interceptors = ArrayList<ServerInterceptor>()
 
     protected var port: Int? = null
 
@@ -31,7 +33,7 @@ class GrpcServerBuilder {
         return this
     }
 
-    fun service(collection: MutableCollection<BindableService>): GrpcServerBuilder {
+    fun service(collection: Collection<BindableService>): GrpcServerBuilder {
         services.addAll(collection)
         return this
     }
@@ -41,7 +43,7 @@ class GrpcServerBuilder {
         return this
     }
 
-    fun interceptor(collection: MutableCollection<ServerInterceptor>): GrpcServerBuilder {
+    fun interceptor(collection: Collection<ServerInterceptor>): GrpcServerBuilder {
         interceptors.addAll(collection)
         return this
     }
@@ -65,12 +67,25 @@ class GrpcServerBuilder {
     fun build(function: IntFunction<ServerBuilder<*>>): GrpcServer {
         port(port)
         val builder = function.apply(port!!)
-        properties?.also {
-            // 单个消息最大大小
-            builder.maxInboundMessageSize(it.messageSize.toInt())
-                .keepAliveTime(it.keepAliveTime.toMillis(), TimeUnit.MILLISECONDS)
-                .keepAliveTimeout(it.keepAliveTimeout.toMillis(), TimeUnit.MILLISECONDS)
+        val interceptorsCopy = interceptors.toMutableList()
+
+        properties?.apply {
+            builder
+                // 单个消息最大大小
+                .maxInboundMessageSize(messageSize.toInt())
+                .keepAliveTime(keepAliveTime.toMillis(), TimeUnit.MILLISECONDS)
+                .keepAliveTimeout(keepAliveTimeout.toMillis(), TimeUnit.MILLISECONDS)
+
+            if (useGzip) {
+                val interceptor = GrpcServerCompressionInterceptor.create("gzip")
+                interceptorsCopy.add(interceptor)
+            }
+
+            if (useCustomerExecutor) {
+                builder.executor(ThreadUtils.executor())
+            }
+
         }
-        return GrpcServer(builder, interceptors, services)
+        return GrpcServer(builder, interceptorsCopy, services)
     }
 }

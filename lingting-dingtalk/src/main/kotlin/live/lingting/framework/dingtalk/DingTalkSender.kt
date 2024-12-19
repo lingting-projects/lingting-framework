@@ -21,7 +21,7 @@ class DingTalkSender(
      */
     @JvmField val url: String
 ) {
-    var client = ApiClient.CLIENT
+    var client = ApiClient.defaultClient
 
     /**
      * 密钥

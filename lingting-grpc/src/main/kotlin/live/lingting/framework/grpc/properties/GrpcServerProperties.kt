@@ -10,6 +10,17 @@ import live.lingting.framework.util.MdcUtils
 class GrpcServerProperties {
     var port: Int? = null
 
+    /**
+     * 是否使用gzip压缩/解压
+     */
+    var useGzip: Boolean = false
+
+    /**
+     * 是否使用自定义线程池
+     * @see live.lingting.framework.util.ThreadUtils.executor
+     */
+    var useCustomerExecutor = true
+
     var messageSize: Long = DataSize.ofMb(1).bytes
 
     var keepAliveTime: Duration = Duration.ofMinutes(30)

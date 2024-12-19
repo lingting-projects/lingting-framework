@@ -1,7 +1,6 @@
 package live.lingting.framework.security.grpc
 
 import com.google.protobuf.Empty
-import io.grpc.ClientInterceptor
 import io.grpc.ManagedChannel
 import io.grpc.StatusRuntimeException
 import live.lingting.framework.grpc.GrpcClientProvide
@@ -23,6 +22,7 @@ import live.lingting.framework.security.grpc.authorization.AuthorizationServiceI
 import live.lingting.framework.security.grpc.authorization.Password
 import live.lingting.framework.security.grpc.endpoint.SecurityGrpcAuthorizationEndpoint
 import live.lingting.framework.security.grpc.exception.SecurityGrpcExceptionInstance
+import live.lingting.framework.security.grpc.interceptor.GzipInterceptor
 import live.lingting.framework.security.grpc.interceptor.SecurityGrpcRemoteContent.pop
 import live.lingting.framework.security.grpc.interceptor.SecurityGrpcRemoteContent.put
 import live.lingting.framework.security.grpc.interceptor.SecurityGrpcRemoteResourceClientInterceptor
@@ -63,9 +63,16 @@ internal class SecurityGrpcTest {
             authorizationService, store,
             password, convert!!
         )
-
+        val gzipInterceptor = GzipInterceptor()
         val endpoint = SecurityGrpcAuthorizationEndpoint(service, convert!!)
         val serverProperties = GrpcServerProperties()
+        serverProperties.useGzip = true
+        serverProperties.useCustomerExecutor = false
+
+        val clientProperties = GrpcClientProperties()
+        clientProperties.usePlaintext = true
+        clientProperties.useGzip = true
+
         val properties = SecurityGrpcProperties()
         val resolvers: MutableList<SecurityTokenResolver> = ArrayList()
         resolvers.add(SecurityTokenDefaultResolver(store))
@@ -77,6 +84,7 @@ internal class SecurityGrpcTest {
         server = GrpcServerBuilder().port(0)
             .properties(serverProperties)
             .service(endpoint)
+            .interceptor(gzipInterceptor)
             .interceptor(GrpcServerExceptionInterceptor(serverProperties, processor))
             .interceptor(GrpcServerTraceIdInterceptor(serverProperties))
             .interceptor(SecurityGrpcResourceServerInterceptor(authorizationKey, resourceService, authorize, convert!!))
@@ -84,11 +92,11 @@ internal class SecurityGrpcTest {
         server!!.onApplicationStart()
         ValueUtils.awaitTrue { server!!.isRunning }
 
-        val clientProperties = GrpcClientProperties()
-        clientProperties.usePlaintext = true
-        val clientInterceptors: MutableList<ClientInterceptor> = ArrayList()
-        clientInterceptors.add(GrpcClientTraceIdInterceptor(clientProperties))
-        clientInterceptors.add(SecurityGrpcRemoteResourceClientInterceptor(properties))
+        val clientInterceptors = listOf(
+            gzipInterceptor,
+            GrpcClientTraceIdInterceptor(clientProperties),
+            SecurityGrpcRemoteResourceClientInterceptor(properties),
+        )
         val provide = GrpcClientProvide(clientProperties, clientInterceptors)
 
         channel = provide.channel("127.0.0.1", server!!.port())

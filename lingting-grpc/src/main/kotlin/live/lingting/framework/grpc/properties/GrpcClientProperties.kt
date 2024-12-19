@@ -18,6 +18,17 @@ class GrpcClientProperties {
     var usePlaintext: Boolean = false
 
     /**
+     * 是否使用gzip压缩/解压
+     */
+    var useGzip: Boolean = false
+
+    /**
+     * 是否使用自定义线程池
+     * @see live.lingting.framework.util.ThreadUtils.executor
+     */
+    var useCustomerExecutor = true
+
+    /**
      * 是否关闭ssl校验,仅在不使用明文时生效
      */
     var disableSsl: Boolean = false

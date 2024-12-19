@@ -16,17 +16,25 @@ import java.util.function.Function
 import java.util.function.UnaryOperator
 import live.lingting.framework.Sequence
 import live.lingting.framework.grpc.properties.GrpcClientProperties
+import live.lingting.framework.util.ThreadUtils
 
 /**
  * @author lingting 2023-12-15 14:44
  */
-class GrpcClientProvide(val properties: GrpcClientProperties, val interceptors: MutableList<ClientInterceptor>) {
+class GrpcClientProvide(
+    val properties: GrpcClientProperties,
+    val interceptors: Collection<ClientInterceptor>
+) {
+
     // region builder
     /**
      * 直接使用默认配置构建
      */
     fun builder(): GrpcChannelBuilder {
-        return builder(properties.host, properties.port).provide()
+        return properties.host.let {
+            require(!it.isNullOrBlank()) { "Host [$it] is invalid!" }
+            builder(it, properties.port).provide()
+        }
     }
 
     fun builder(target: String): GrpcChannelBuilder {
@@ -37,13 +45,13 @@ class GrpcClientProvide(val properties: GrpcClientProperties, val interceptors: 
     /**
      * 使用自定义配置构建, 不会自动加入配置
      */
-    fun builder(host: String?, port: Int?): GrpcChannelBuilder {
+    fun builder(host: String, port: Int): GrpcChannelBuilder {
         val builder = GrpcChannelBuilder(this)
         return builder.address(host, port)
     }
 
     @JvmOverloads
-    fun addInterceptors(builder: ManagedChannelBuilder<*>, collection: List<ClientInterceptor> = interceptors) {
+    fun addInterceptors(builder: ManagedChannelBuilder<*>, collection: Collection<ClientInterceptor> = interceptors) {
         if (collection.isEmpty()) {
             return
         }
@@ -67,15 +75,17 @@ class GrpcClientProvide(val properties: GrpcClientProperties, val interceptors: 
             builder.usePlaintext()
         }
 
+        if (properties.useCustomerExecutor) {
+            builder.executor(ThreadUtils.executor())
+        }
+
         // 重试
         if (properties.enableRetry) {
             builder.enableRetry()
         }
 
         // ssl配置
-        if (!properties.usePlaintext && properties.disableSsl
-            && builder is NettyChannelBuilder
-        ) {
+        if (!properties.usePlaintext && properties.disableSsl && builder is NettyChannelBuilder) {
             val sslContextBuilder = GrpcSslContexts.forClient()
                 .trustManager(InsecureTrustManagerFactory.INSTANCE)
             builder.sslContext(sslContextBuilder.build())
@@ -83,6 +93,7 @@ class GrpcClientProvide(val properties: GrpcClientProperties, val interceptors: 
     }
 
     // endregion
+
     fun channel(): ManagedChannel {
         return builder().build()
     }
@@ -93,14 +104,20 @@ class GrpcClientProvide(val properties: GrpcClientProperties, val interceptors: 
     }
 
     @JvmOverloads
-    fun channel(builder: ManagedChannelBuilder<*>, list: List<ClientInterceptor> = interceptors): ManagedChannel {
+    fun channel(builder: ManagedChannelBuilder<*>, list: Collection<ClientInterceptor> = interceptors): ManagedChannel {
         useProperties(builder)
         addInterceptors(builder, list)
         return builder.build()
     }
 
     fun <R : AbstractStub<R>> stub(channel: Channel, function: Function<Channel, R>): R {
-        return function.apply(channel)
+        return function.apply(channel).let {
+            if (properties.useGzip) {
+                it.withCompression("gzip")
+            } else {
+                it
+            }
+        }
     }
 
     fun <R : AbstractAsyncStub<R>> async(channel: Channel, function: Function<Channel, R>): R {
@@ -114,4 +131,5 @@ class GrpcClientProvide(val properties: GrpcClientProperties, val interceptors: 
     fun <R : AbstractFutureStub<R>> future(channel: Channel, function: Function<Channel, R>): R {
         return stub<R>(channel, function)
     }
+
 }
