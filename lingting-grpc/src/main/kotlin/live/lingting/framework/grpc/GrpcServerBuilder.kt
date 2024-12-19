@@ -6,14 +6,16 @@ import io.grpc.ServerInterceptor
 import java.util.concurrent.TimeUnit
 import java.util.function.IntFunction
 import java.util.function.UnaryOperator
+import live.lingting.framework.Sequence
+import live.lingting.framework.grpc.customizer.ServerCustomizer
 import live.lingting.framework.grpc.interceptor.GrpcServerCompressionInterceptor
 import live.lingting.framework.grpc.properties.GrpcServerProperties
-import live.lingting.framework.util.ThreadUtils
 
 /**
  * @author lingting 2024-01-30 15:37
  */
 open class GrpcServerBuilder {
+
     protected var services = ArrayList<BindableService>()
 
     protected var interceptors = ArrayList<ServerInterceptor>()
@@ -57,18 +59,21 @@ open class GrpcServerBuilder {
     }
 
     @JvmOverloads
-    fun build(operator: UnaryOperator<ServerBuilder<*>> = UnaryOperator { builder: ServerBuilder<*> -> builder }): GrpcServer {
+    fun build(
+        operator: UnaryOperator<ServerBuilder<*>> = UnaryOperator { builder: ServerBuilder<*> -> builder },
+        customizers: Collection<ServerCustomizer> = emptyList(),
+    ): GrpcServer {
         return build(IntFunction { forPort ->
             val builder = ServerBuilder.forPort(forPort)
             operator.apply(builder)
-        })
+        }, customizers)
     }
 
-    fun build(function: IntFunction<ServerBuilder<*>>): GrpcServer {
+    @JvmOverloads
+    fun build(function: IntFunction<ServerBuilder<*>>, customizers: Collection<ServerCustomizer> = emptyList()): GrpcServer {
         port(port)
         val builder = function.apply(port!!)
         val interceptorsCopy = interceptors.toMutableList()
-
         properties?.apply {
             builder
                 // 单个消息最大大小
@@ -81,11 +86,14 @@ open class GrpcServerBuilder {
                 interceptorsCopy.add(interceptor)
             }
 
-            if (useCustomerExecutor) {
-                builder.executor(ThreadUtils.executor())
-            }
-
         }
+
+        Sequence.asc(customizers).forEach {
+            val r = it.customize(builder)
+            interceptorsCopy.addAll(r)
+        }
+
         return GrpcServer(builder, interceptorsCopy, services)
     }
+
 }

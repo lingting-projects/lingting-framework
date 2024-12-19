@@ -67,7 +67,6 @@ internal class SecurityGrpcTest {
         val endpoint = SecurityGrpcAuthorizationEndpoint(service, convert!!)
         val serverProperties = GrpcServerProperties()
         serverProperties.useGzip = true
-        serverProperties.useCustomerExecutor = false
 
         val clientProperties = GrpcClientProperties()
         clientProperties.usePlaintext = true

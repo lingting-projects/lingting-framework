@@ -15,16 +15,18 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Function
 import java.util.function.UnaryOperator
 import live.lingting.framework.Sequence
+import live.lingting.framework.grpc.customizer.ClientCustomizer
 import live.lingting.framework.grpc.properties.GrpcClientProperties
-import live.lingting.framework.util.ThreadUtils
 
 /**
  * @author lingting 2023-12-15 14:44
  */
-class GrpcClientProvide(
+class GrpcClientProvide @JvmOverloads constructor(
     val properties: GrpcClientProperties,
-    val interceptors: Collection<ClientInterceptor>
+    val interceptors: Collection<ClientInterceptor>,
+    customizers: Collection<ClientCustomizer> = emptyList(),
 ) {
+    val customizers = Sequence.asc(customizers)
 
     // region builder
     /**
@@ -63,7 +65,8 @@ class GrpcClientProvide(
     }
 
     @JvmOverloads
-    fun useProperties(builder: ManagedChannelBuilder<*>, properties: GrpcClientProperties = this.properties) {
+    fun useProperties(builder: ManagedChannelBuilder<*>, properties: GrpcClientProperties = this.properties): Collection<ClientInterceptor> {
+        val list = mutableListOf<ClientInterceptor>()
         // 开启心跳
         if (properties.enableKeepAlive) {
             builder.keepAliveTime(properties.keepAliveTime.toMillis(), TimeUnit.MILLISECONDS)
@@ -73,10 +76,6 @@ class GrpcClientProvide(
         // 使用明文
         if (properties.usePlaintext) {
             builder.usePlaintext()
-        }
-
-        if (properties.useCustomerExecutor) {
-            builder.executor(ThreadUtils.executor())
         }
 
         // 重试
@@ -90,6 +89,13 @@ class GrpcClientProvide(
                 .trustManager(InsecureTrustManagerFactory.INSTANCE)
             builder.sslContext(sslContextBuilder.build())
         }
+
+        customizers.forEach {
+            val r = it.customize(builder)
+            list.addAll(r)
+        }
+
+        return list
     }
 
     // endregion

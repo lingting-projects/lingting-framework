@@ -38,7 +38,7 @@ class GzipInterceptor : ServerInterceptor, ClientInterceptor, Sequence {
         }
     }
 
-    override fun <ReqT : Any, RespT : Any> interceptCall(method: MethodDescriptor<ReqT, RespT>, callOptions: CallOptions, next: Channel): ClientCall<ReqT, RespT> {
+    override fun <ReqT, RespT> interceptCall(method: MethodDescriptor<ReqT, RespT>, callOptions: CallOptions, next: Channel): ClientCall<ReqT, RespT> {
         return object : ForwardingClientOnCall<ReqT, RespT>(method, callOptions, next) {
             override fun start(responseListener: Listener<RespT>, headers: Metadata) {
                 val listen = object : ForwardingClientOnCallListener<RespT>(responseListener) {

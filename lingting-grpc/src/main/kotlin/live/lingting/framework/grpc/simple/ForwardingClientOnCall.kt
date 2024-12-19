@@ -10,12 +10,12 @@ import io.grpc.MethodDescriptor
 /**
  * @author lingting 2023-12-18 19:13
  */
-open class ForwardingClientOnCall<S, R>(
-    method: MethodDescriptor<S, R>,
+open class ForwardingClientOnCall<ReqT, RespT>(
+    method: MethodDescriptor<ReqT, RespT>,
     callOptions: CallOptions, next: Channel,
-) : ForwardingClientCall<S, R>() {
+) : ForwardingClientCall<ReqT, RespT>() {
 
-    val delegate: ClientCall<S, R> by lazy {
+    val delegate: ClientCall<ReqT, RespT> by lazy {
         try {
             next.newCall(method, callOptions)
         } catch (e: Exception) {
@@ -24,17 +24,17 @@ open class ForwardingClientOnCall<S, R>(
         }
     }
 
-    override fun delegate(): ClientCall<S, R> {
+    override fun delegate(): ClientCall<ReqT, RespT> {
         return delegate
     }
 
-    override fun start(responseListener: Listener<R>, headers: Metadata) {
+    override fun start(responseListener: Listener<RespT>, headers: Metadata) {
         onStartBefore(responseListener, headers)
         super.start(responseListener, headers)
         onStartAfter(responseListener, headers)
     }
 
-    override fun sendMessage(message: S) {
+    override fun sendMessage(message: ReqT) {
         onSendMessageBefore(message)
         super.sendMessage(message)
         onSendMessageAfter(message)
@@ -47,19 +47,19 @@ open class ForwardingClientOnCall<S, R>(
         onFinally()
     }
 
-    open fun onStartBefore(responseListener: Listener<R>, headers: Metadata) {
+    open fun onStartBefore(responseListener: Listener<RespT>, headers: Metadata) {
         //
     }
 
-    open fun onStartAfter(responseListener: Listener<R>, headers: Metadata) {
+    open fun onStartAfter(responseListener: Listener<RespT>, headers: Metadata) {
         //
     }
 
-    open fun onSendMessageBefore(message: S) {
+    open fun onSendMessageBefore(message: ReqT) {
         //
     }
 
-    open fun onSendMessageAfter(message: S) {
+    open fun onSendMessageAfter(message: ReqT) {
         //
     }
 

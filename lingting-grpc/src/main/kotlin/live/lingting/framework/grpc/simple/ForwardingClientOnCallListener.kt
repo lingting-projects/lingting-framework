@@ -8,21 +8,21 @@ import io.grpc.Status
 /**
  * @author lingting 2024/12/19 20:30
  */
-open class ForwardingClientOnCallListener<R>(private val delegate: ClientCall.Listener<R>) : ForwardingClientCallListener<R>() {
+open class ForwardingClientOnCallListener<RespT>(private val delegate: ClientCall.Listener<RespT>) : ForwardingClientCallListener<RespT>() {
 
-    override fun delegate(): ClientCall.Listener<R> = delegate
+    override fun delegate(): ClientCall.Listener<RespT> = delegate
 
-    open fun onMessageBefore(message: R) {
+    open fun onMessageBefore(message: RespT) {
         //
     }
 
-    override fun onMessage(message: R) {
+    override fun onMessage(message: RespT) {
         onMessageBefore(message)
         super.onMessage(message)
         onMessageAfter(message)
     }
 
-    open fun onMessageAfter(message: R) {
+    open fun onMessageAfter(message: RespT) {
         //
     }
 

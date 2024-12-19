@@ -15,12 +15,6 @@ class GrpcServerProperties {
      */
     var useGzip: Boolean = false
 
-    /**
-     * 是否使用自定义线程池
-     * @see live.lingting.framework.util.ThreadUtils.executor
-     */
-    var useCustomerExecutor = true
-
     var messageSize: Long = DataSize.ofMb(1).bytes
 
     var keepAliveTime: Duration = Duration.ofMinutes(30)
