@@ -2,11 +2,12 @@ package live.lingting.framework.thread
 
 import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
+import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Supplier
 import live.lingting.framework.function.ThrowableRunnable
+import live.lingting.framework.thread.executor.ThreadPoolExecutorServiceImpl
 import live.lingting.framework.util.ClassUtils
 
 /**
@@ -27,12 +28,12 @@ object VirtualThread {
     }
 
     @JvmStatic
-    fun executor(): ExecutorService {
+    fun executor(): ThreadPoolExecutor {
         return instance.executor()
     }
 
     @JvmStatic
-    fun update(executor: ExecutorService): VirtualThreadServiceImpl {
+    fun update(executor: ThreadPoolExecutor): VirtualThreadServiceImpl {
         return instance.executor(executor)
     }
 
@@ -42,6 +43,41 @@ object VirtualThread {
          * 线程池是否运行中
          */
         get() = instance.isRunning
+
+    @JvmStatic
+    val corePoolSize: Long
+        /**
+         * 核心线程数
+         */
+        get() = instance.corePoolSize
+
+    @JvmStatic
+    val activeCount: Long
+        /**
+         * 活跃线程数
+         */
+        get() = instance.activeCount
+
+    @JvmStatic
+    val taskCount: Long
+        /**
+         * 已执行任务总数
+         */
+        get() = instance.taskCount
+
+    @JvmStatic
+    val maximumPoolSize: Long
+        /**
+         * 允许的最大线程数量
+         */
+        get() = instance.maximumPoolSize
+
+    @JvmStatic
+    val isReject: Boolean
+        /**
+         * 是否可能触发拒绝策略, 仅为估算
+         */
+        get() = instance.isReject
 
     @JvmStatic
     fun execute(runnable: ThrowableRunnable) {
@@ -69,25 +105,20 @@ object VirtualThread {
     }
 }
 
-class VirtualThreadServiceImpl : ThreadService {
-    private var executor: ExecutorService
+class VirtualThreadServiceImpl : ThreadPoolExecutorServiceImpl {
 
-    init {
-        // 如果不支持虚拟线程则使用线程池
-        this.executor = if (VirtualThread.isSupport) {
+    constructor() : super(
+        if (VirtualThread.isSupport) {
             val atomic = AtomicLong()
-            ThreadPool.newExecutor { runnable -> Thread.ofVirtual().name("tv-${atomic.incrementAndGet()}").unstarted(runnable) }
+            ThreadPool.newExecutor { runnable ->
+                Thread.ofVirtual().name("tv-${atomic.incrementAndGet()}").unstarted(runnable)
+            }
         } else {
             ThreadPool.executor()
-        }
-    }
+        })
 
-    override fun executor(): ExecutorService {
-        return executor
-    }
-
-    fun executor(executor: ExecutorService): VirtualThreadServiceImpl {
-        this.executor = executor
+    override fun executor(executor: ThreadPoolExecutor): VirtualThreadServiceImpl {
+        super.executor(executor)
         return this
     }
 }
