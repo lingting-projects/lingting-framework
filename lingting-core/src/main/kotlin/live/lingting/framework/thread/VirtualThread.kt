@@ -3,8 +3,8 @@ package live.lingting.framework.thread
 import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Supplier
 import live.lingting.framework.function.ThrowableRunnable
 import live.lingting.framework.util.ClassUtils
@@ -74,7 +74,12 @@ class VirtualThreadServiceImpl : ThreadService {
 
     init {
         // 如果不支持虚拟线程则使用线程池
-        this.executor = if (VirtualThread.isSupport) Executors.newVirtualThreadPerTaskExecutor() else ThreadPool.executor()
+        this.executor = if (VirtualThread.isSupport) {
+            val atomic = AtomicLong()
+            ThreadPool.newExecutor { runnable -> Thread.ofVirtual().name("tv-${atomic.incrementAndGet()}").unstarted(runnable) }
+        } else {
+            ThreadPool.executor()
+        }
     }
 
     override fun executor(): ExecutorService {

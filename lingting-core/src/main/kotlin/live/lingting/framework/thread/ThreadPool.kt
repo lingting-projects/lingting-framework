@@ -4,9 +4,11 @@ import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ThreadFactory
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Supplier
 import live.lingting.framework.function.ThrowableRunnable
 
@@ -20,6 +22,12 @@ object ThreadPool {
 
     @JvmStatic
     fun newExecutor(): ThreadPoolExecutor {
+        val atomic = AtomicLong()
+        return newExecutor { runnable -> Thread(null, runnable, "t-${atomic.incrementAndGet()}") }
+    }
+
+    @JvmStatic
+    fun newExecutor(factory: ThreadFactory): ThreadPoolExecutor {
         val processors = Runtime.getRuntime().availableProcessors()
         val core = processors * 50
         val max = core * 30
@@ -38,7 +46,7 @@ object ThreadPool {
             // 这样配置. 当积压任务数量为 队列最大值 时. 会创建新线程来执行任务. 直到线程总数达到 最大线程数
             LinkedBlockingQueue(queue),
             // 新线程创建工厂 - LinkedBlockingQueue 不支持线程优先级. 所以直接新增线程就可以了
-            { runnable -> Thread(null, runnable) },
+            factory,
             // 拒绝策略 - 在主线程继续执行.
             CallerRunsPolicy()
         )
