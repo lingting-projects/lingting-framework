@@ -14,7 +14,9 @@ import live.lingting.framework.grpc.properties.GrpcServerProperties
 /**
  * @author lingting 2024-01-30 15:37
  */
-open class GrpcServerBuilder {
+open class GrpcServerBuilder @JvmOverloads constructor(
+    customizers: Collection<ServerCustomizer> = emptyList(),
+) {
 
     protected var services = ArrayList<BindableService>()
 
@@ -23,6 +25,8 @@ open class GrpcServerBuilder {
     protected var port: Int? = null
 
     protected var properties: GrpcServerProperties? = null
+
+    protected val customizers = customizers.toMutableList()
 
     fun port(port: Int?): GrpcServerBuilder {
         require(!(port == null || port < 0 || port > 65535)) { "Port [$port] is invalid!" }
@@ -58,19 +62,25 @@ open class GrpcServerBuilder {
         return this
     }
 
-    @JvmOverloads
-    fun build(
-        operator: UnaryOperator<ServerBuilder<*>> = UnaryOperator { builder: ServerBuilder<*> -> builder },
-        customizers: Collection<ServerCustomizer> = emptyList(),
-    ): GrpcServer {
-        return build(IntFunction { forPort ->
-            val builder = ServerBuilder.forPort(forPort)
-            operator.apply(builder)
-        }, customizers)
+    fun customizer(customizer: ServerCustomizer): GrpcServerBuilder {
+        customizers.add(customizer)
+        return this
+    }
+
+    fun customizer(collection: Collection<ServerCustomizer>): GrpcServerBuilder {
+        customizers.addAll(collection)
+        return this
     }
 
     @JvmOverloads
-    fun build(function: IntFunction<ServerBuilder<*>>, customizers: Collection<ServerCustomizer> = emptyList()): GrpcServer {
+    fun build(operator: UnaryOperator<ServerBuilder<*>> = UnaryOperator { builder: ServerBuilder<*> -> builder }): GrpcServer {
+        return build(IntFunction { forPort ->
+            val builder = ServerBuilder.forPort(forPort)
+            operator.apply(builder)
+        })
+    }
+
+    fun build(function: IntFunction<ServerBuilder<*>>): GrpcServer {
         port(port)
         val builder = function.apply(port!!)
         val interceptorsCopy = interceptors.toMutableList()
@@ -88,7 +98,8 @@ open class GrpcServerBuilder {
 
         }
 
-        Sequence.asc(customizers).forEach {
+        val asc = Sequence.asc(customizers.toList())
+        asc.forEach {
             val r = it.customize(builder)
             interceptorsCopy.addAll(r)
         }

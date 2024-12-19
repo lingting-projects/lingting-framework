@@ -91,14 +91,14 @@ internal class SecurityGrpcTest {
         val securityGrpcExceptionInstance = SecurityGrpcExceptionInstance()
         val processor = GrpcExceptionProcessor(listOf(securityGrpcExceptionInstance))
         val authorizationKey = properties.authorizationKey()
-        server = GrpcServerBuilder().port(0)
+        server = GrpcServerBuilder(serverCustomizers).port(0)
             .properties(serverProperties)
             .service(endpoint)
             .interceptor(gzipInterceptor)
             .interceptor(GrpcServerExceptionInterceptor(serverProperties, processor))
             .interceptor(GrpcServerTraceIdInterceptor(serverProperties))
             .interceptor(SecurityGrpcResourceServerInterceptor(authorizationKey, resourceService, authorize, convert!!))
-            .build(customizers = serverCustomizers)
+            .build()
         server!!.onApplicationStart()
         ValueUtils.awaitTrue { server!!.isRunning }
 
