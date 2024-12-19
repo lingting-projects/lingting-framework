@@ -1,5 +1,7 @@
 package live.lingting.framework.data
 
+import java.math.BigDecimal
+import java.math.RoundingMode
 import live.lingting.framework.data.DataSizeUnit.BIT
 import live.lingting.framework.data.DataSizeUnit.BYTES
 import live.lingting.framework.data.DataSizeUnit.GB
@@ -11,9 +13,13 @@ import live.lingting.framework.data.DataSizeUnit.TB
 /**
  * @author lingting 2024/11/26 10:22
  */
-data class DataSize(val bit: Long) {
+data class DataSize @JvmOverloads constructor(
+    val bit: Long,
+    val scale: Int = 2,
+) {
 
     companion object {
+
         const val STEP: Long = 1024L
 
         @JvmStatic
@@ -50,6 +56,7 @@ data class DataSize(val bit: Long) {
         fun ofPb(value: Long): DataSize {
             return PB.of(value)
         }
+
     }
 
     val unit = DataSizeUnit.of(bit)
@@ -68,43 +75,73 @@ data class DataSize(val bit: Long) {
 
     val pb by lazy { bit / PB.size }
 
-    override fun toString(): String {
-        return "$value ${unit.text}"
+    val scaleValue: BigDecimal by lazy { (bit / unit.size.toDouble()).toBigDecimal().setScale(scale, RoundingMode.CEILING).stripTrailingZeros() }
+
+    override fun hashCode(): Int {
+        return bit.hashCode()
     }
 
-}
-
-enum class DataSizeUnit(
-    val size: Long,
-    val text: String,
-) {
-    BIT(1, "Bit"),
-    BYTES(BIT.size * DataSize.STEP, "Bytes"),
-    KB(BYTES.size * DataSize.STEP, "KB"),
-    MB(KB.size * DataSize.STEP, "MB"),
-    GB(MB.size * DataSize.STEP, "GB"),
-    TB(GB.size * DataSize.STEP, "TB"),
-    PB(TB.size * DataSize.STEP, "PB"),
-
-    ;
-
-    companion object {
-
-        @JvmStatic
-        fun of(bit: Long): DataSizeUnit {
-            return when {
-                bit >= PB.size -> PB
-                bit >= TB.size -> TB
-                bit >= GB.size -> GB
-                bit >= MB.size -> MB
-                bit >= KB.size -> KB
-                else -> BIT
-            }
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
+            return true
         }
+        if (other == null || other !is DataSize) {
+            return false
+        }
+        return bit == other.bit
     }
 
-    fun of(value: Long): DataSize {
-        return DataSize(value * size)
+    override fun toString(): String {
+        return "${scaleValue.toPlainString()} ${unit.text}"
     }
+
+    // region operator
+
+    operator fun plus(other: DataSize): DataSize {
+        return DataSize(bit + other.bit, scale)
+    }
+
+    operator fun plus(other: Number): DataSize {
+        return DataSize(bit + other.toLong(), scale)
+    }
+
+    operator fun minus(other: DataSize): DataSize {
+        return DataSize(bit - other.bit, scale)
+    }
+
+    operator fun minus(other: Number): DataSize {
+        return DataSize(bit - other.toLong(), scale)
+    }
+
+    operator fun times(other: DataSize): DataSize {
+        return DataSize(bit * other.bit, scale)
+    }
+
+    operator fun times(other: Number): DataSize {
+        return DataSize(bit * other.toLong(), scale)
+    }
+
+    operator fun div(other: DataSize): DataSize {
+        return DataSize(bit / other.bit, scale)
+    }
+
+    operator fun div(other: Number): DataSize {
+        return DataSize(bit / other.toLong(), scale)
+    }
+
+    operator fun rem(other: Byte): Long = bit % other
+
+    operator fun rem(other: Double): Double = bit % other
+
+    operator fun rem(other: Float): Float = bit % other
+
+    operator fun rem(other: Int): Long = bit % other
+
+    operator fun rem(other: Long): Long = bit % other
+
+    operator fun rem(other: Short): Long = bit % other
+
+    // endregion
 
 }
+
