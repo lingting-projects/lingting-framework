@@ -8,12 +8,12 @@ import live.lingting.framework.lock.JavaReentrantLock
 /**
  * @author lingting 2023-04-22 10:39
  */
-abstract class AbstractDynamicTimer<T> : AbstractThreadApplicationComponent() {
+abstract class AbstractQueueTimer<T> : AbstractThreadApplicationComponent() {
     protected val lock: JavaReentrantLock = JavaReentrantLock()
 
-    protected val queue: PriorityQueue<T> = PriorityQueue(comparator())
+    protected val queue: PriorityQueue<T> = PriorityQueue(comparator)
 
-    abstract fun comparator(): Comparator<T>?
+    abstract val comparator: Comparator<T>
 
     /**
      * 还有多久要处理该对象
@@ -50,7 +50,7 @@ abstract class AbstractDynamicTimer<T> : AbstractThreadApplicationComponent() {
         val t: T? = pool()
         lock.runByInterruptibly {
             if (t == null) {
-                lock.await(24, TimeUnit.HOURS)
+                lock.await(1, TimeUnit.HOURS)
                 return@runByInterruptibly
             }
             val duration = sleepTime(t)
@@ -74,10 +74,8 @@ abstract class AbstractDynamicTimer<T> : AbstractThreadApplicationComponent() {
 
     protected abstract fun process(t: T)
 
-    override fun shutdown() {
-        log.warn(
-            "Class: {}; ThreadId: {}; shutdown! unprocessed data size: {}", simpleName, threadId(),
-            queue.size
-        )
+    override fun onInterrupt() {
+        log.warn("Class: {}; ThreadId: {}; interrupt! unprocessed data size: {}", simpleName, threadId(), queue.size)
     }
+
 }

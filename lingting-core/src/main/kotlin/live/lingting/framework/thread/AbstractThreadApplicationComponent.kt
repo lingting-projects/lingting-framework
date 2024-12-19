@@ -17,6 +17,7 @@ import live.lingting.framework.value.WaitValue
  * @author lingting 2023-04-22 10:40
  */
 abstract class AbstractThreadApplicationComponent : ApplicationComponent {
+
     protected val log = logger()
 
     val threadValue: WaitValue<Thread> = WaitValue.of<Thread>()
@@ -35,6 +36,19 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
         threadValue.consumer {
             it?.isInterrupted?.ifFalse { it.interrupt() }
         }
+    }
+
+    /**
+     * 安全模式, 会等待线程自动结束
+     */
+    var safe: Boolean = false
+
+    fun safe() {
+        safe = true
+    }
+
+    fun unsafe() {
+        safe = false
     }
 
     protected fun init() {
@@ -89,8 +103,16 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
         }
     }
 
+    override fun onApplicationStopBefore() {
+        log.warn("Class: {}; ThreadId: {}; before interrupt!", simpleName, threadId())
+        if (safe) {
+            log.debug("Class: {}; ThreadId: {}; is safe!", simpleName, threadId())
+            awaitTerminated()
+        }
+    }
+
     override fun onApplicationStop() {
-        log.warn("Class: {}; ThreadId: {}; closing!", simpleName, threadId())
+        log.warn("Class: {}; ThreadId: {}; interrupt!", simpleName, threadId())
         interrupt()
     }
 
@@ -110,9 +132,9 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
                 doRun()
             } catch (_: InterruptedException) {
                 interrupt()
-                shutdown()
+                onInterrupt()
             } catch (e: Exception) {
-                error(e)
+                onError(e)
             }
         }
     }
@@ -122,17 +144,16 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
     /**
      * 线程被中断触发.
      */
-    protected open fun shutdown() {
+    protected open fun onInterrupt() {
         log.warn("Class: {}; ThreadId: {}; shutdown!", simpleName, threadId())
     }
 
-    protected fun error(e: Exception) {
+    protected fun onError(e: Exception) {
         log.error("Class: {}; ThreadId: {}; error!", simpleName, threadId(), e)
     }
 
     fun awaitTerminated() {
-        log.debug("wait thread terminated.")
         ValueUtils.awaitTrue { threadValue.optional().map { Thread.State.TERMINATED == it.state }.orElse(true) }
-        log.debug("thread terminated.")
     }
+
 }

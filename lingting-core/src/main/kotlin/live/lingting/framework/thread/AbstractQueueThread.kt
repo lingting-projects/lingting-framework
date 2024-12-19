@@ -9,6 +9,25 @@ import live.lingting.framework.time.StopWatch
  */
 abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
 
+    companion object {
+        /**
+         * 默认缓存数据数量
+         */
+        const val BATCH_SIZE: Int = 500
+
+        /**
+         * 默认等待时长 30秒
+         */
+        @JvmField
+        val BATCH_TIMEOUT: Duration = Duration.ofSeconds(30)
+
+        /**
+         * 默认获取数据时的超时时间
+         */
+        @JvmField
+        val POLL_TIMEOUT: Duration = Duration.ofSeconds(5)
+    }
+
     /**
      * 用于子类自定义缓存数据数量
      * @return long
@@ -30,6 +49,13 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
     open val pollTimeout: Duration = POLL_TIMEOUT
 
     protected val data: MutableList<E> = ArrayList<E>(batchSize)
+
+
+    override val isRun: Boolean
+        // 开启安全模式时必须在队列空的情况下关闭
+        get() = super.isRun || (safe && queueSize.toLong() > 0)
+
+    abstract val queueSize: Number
 
     /**
      * 往队列插入数据
@@ -71,7 +97,7 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
     override fun doRun() {
         preProcess()
         fill()
-        if (!data.isNullOrEmpty()) {
+        if (data.isNotEmpty()) {
             process(ArrayList(data))
             data.clear()
         }
@@ -121,7 +147,7 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
      * 已有数据且超过设定的等待时间
      */
     protected fun isTimeout(watch: StopWatch): Boolean {
-        return !data.isNullOrEmpty() && watch.timeMillis() >= this.batchTimeout.toMillis()
+        return data.isNotEmpty() && watch.timeMillis() >= this.batchTimeout.toMillis()
     }
 
     fun poll(): E? {
@@ -129,7 +155,7 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
         try {
             val duration: Duration = this.pollTimeout
             e = poll(duration)
-        } catch (ex: InterruptedException) {
+        } catch (_: InterruptedException) {
             log.error("Class: {}; ThreadId: {}; poll interrupted!", simpleName, threadId())
             interrupt()
         }
@@ -139,27 +165,8 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
     /**
      * 线程被中断后的处理. 如果有缓存手段可以让数据进入缓存.
      */
-    override fun shutdown() {
+    override fun onInterrupt() {
         log.warn("Class: {}; ThreadId: {}; shutdown! data: {}", simpleName, threadId(), data)
     }
 
-    companion object {
-        /**
-         * 默认缓存数据数量
-         */
-        @JvmField
-        val BATCH_SIZE: Int = 500
-
-        /**
-         * 默认等待时长 30秒
-         */
-        @JvmField
-        val BATCH_TIMEOUT: Duration = Duration.ofSeconds(30)
-
-        /**
-         * 默认获取数据时的超时时间
-         */
-        @JvmField
-        val POLL_TIMEOUT: Duration = Duration.ofSeconds(5)
-    }
 }

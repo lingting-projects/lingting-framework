@@ -12,13 +12,15 @@ import java.util.concurrent.TimeUnit
 abstract class AbstractBlockingQueueThread<T> : AbstractQueueThread<T>() {
     protected val queue: BlockingQueue<T> = LinkedBlockingQueue()
 
+    override val queueSize = queue.size
+
     override fun put(t: T?) {
         if (t == null) {
             return
         }
         try {
             queue.put(t)
-        } catch (e: InterruptedException) {
+        } catch (_: InterruptedException) {
             Thread.currentThread().interrupt()
         } catch (e: Exception) {
             log.error("{} put Object error, object: {}", simpleName, t, e)
