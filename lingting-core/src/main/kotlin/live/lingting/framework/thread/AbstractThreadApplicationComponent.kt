@@ -22,7 +22,7 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
 
     val threadValue: WaitValue<Thread> = WaitValue.of<Thread>()
 
-    private var executor: ExecutorService = VirtualThread.executor()
+    private var executor: ExecutorService = ThreadUtils.executor()
 
     fun thread(consumer: Consumer<Thread>) {
         threadValue.optional().ifPresent { consumer.accept(it) }

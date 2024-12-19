@@ -70,7 +70,7 @@ object VirtualThread {
 }
 
 class VirtualThreadServiceImpl : ThreadService {
-    protected var executor: ExecutorService
+    private var executor: ExecutorService
 
     init {
         // 如果不支持虚拟线程则使用线程池
