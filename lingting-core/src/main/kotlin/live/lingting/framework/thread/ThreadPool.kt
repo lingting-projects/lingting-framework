@@ -15,8 +15,8 @@ import live.lingting.framework.function.ThrowableRunnable
  */
 object ThreadPool {
 
-    @JvmField
-    val instance: PoolThreadServiceImpl = PoolThreadServiceImpl(newExecutor())
+    @JvmStatic
+    val instance by lazy { PoolThreadServiceImpl(newExecutor()) }
 
     @JvmStatic
     fun newExecutor(): ThreadPoolExecutor {
@@ -50,8 +50,15 @@ object ThreadPool {
     }
 
     @JvmStatic
-    fun update(executor: ThreadPoolExecutor): PoolThreadServiceImpl {
-        return instance.executor(executor)
+    @JvmOverloads
+    fun update(executor: ThreadPoolExecutor, closeOld: Boolean = true): PoolThreadServiceImpl {
+        val old = instance.executor()
+        return instance.executor(executor).apply {
+            // 替换成功后关闭原线程池
+            if (closeOld && old != executor && (old.isShutdown || !old.isTerminated)) {
+                old.shutdown()
+            }
+        }
     }
 
     @JvmStatic
@@ -118,7 +125,7 @@ object ThreadPool {
 
 }
 
-class PoolThreadServiceImpl(protected var executor: ThreadPoolExecutor) : ThreadService {
+open class PoolThreadServiceImpl(protected var executor: ThreadPoolExecutor) : ThreadService {
     override fun executor(): ThreadPoolExecutor {
         return executor
     }
