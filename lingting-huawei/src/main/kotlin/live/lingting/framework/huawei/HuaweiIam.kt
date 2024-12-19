@@ -35,6 +35,7 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
 
     override fun customize(request: HuaweiIamRequest, headers: HttpHeaders) {
         if (request.usingToken()) {
+            refreshToken()
             val token = tokenValue.notNull()
             headers.put("X-Auth-Token", token.value)
         }
@@ -62,15 +63,16 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
 
     @JvmOverloads
     fun refreshToken(force: Boolean = false) {
-        if (!force) {
-            val value = tokenValue.value
-            if (value != null && !value.isExpired(tokenEarlyExpire)) {
-                return
+        tokenValue.compute {
+            // 非强制刷新 且 token未过期
+            if (!force && it != null && !it.isExpired(tokenEarlyExpire)) {
+                it
+            }
+            // 强制刷新 或 token过期
+            else {
+                token()
             }
         }
-
-        val token = token()
-        tokenValue.update(token)
     }
 
     fun token(): HuaweiIamToken {
