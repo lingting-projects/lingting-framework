@@ -7,8 +7,7 @@ enum class DataSizeUnit(
     val size: Long,
     val text: String,
 ) {
-    BIT(1, "Bit"),
-    BYTES(BIT.size * DataSize.STEP, "Bytes"),
+    BYTES(1, "Bytes"),
     KB(BYTES.size * DataSize.STEP, "KB"),
     MB(KB.size * DataSize.STEP, "MB"),
     GB(MB.size * DataSize.STEP, "GB"),
@@ -26,8 +25,7 @@ enum class DataSizeUnit(
                 bit >= TB.size -> TB
                 bit >= GB.size -> GB
                 bit >= MB.size -> MB
-                bit >= KB.size -> KB
-                else -> BIT
+                else -> KB
             }
         }
     }
