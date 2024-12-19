@@ -125,12 +125,12 @@ data class DataSize @JvmOverloads constructor(
         return DataSize(bytes * other.toLong(), scale)
     }
 
-    operator fun div(other: DataSize): DataSize {
-        return DataSize(bytes / other.bytes, scale)
+    operator fun div(other: DataSize): Double {
+        return this / other.bytes
     }
 
-    operator fun div(other: Number): DataSize {
-        return DataSize(bytes / other.toLong(), scale)
+    operator fun div(other: Number): Double {
+        return bytes / other.toDouble()
     }
 
     operator fun rem(other: Byte): Long = bytes % other
