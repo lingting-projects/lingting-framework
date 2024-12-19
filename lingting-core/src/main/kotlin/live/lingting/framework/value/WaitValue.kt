@@ -40,14 +40,7 @@ class WaitValue<T> {
         get() = value == null
 
     fun update(t: T?) {
-        update { t }
-    }
-
-    fun update(operator: Function<T?, T?>) {
-        lock.runByInterruptibly {
-            value = operator.apply(value)
-            lock.signalAll()
-        }
+        compute { t }
     }
 
     /**
@@ -57,7 +50,8 @@ class WaitValue<T> {
     fun compute(operator: Function<T?, T?>): T? {
         return lock.getByInterruptibly {
             val v = operator.apply(value)
-            update(v)
+            value = v
+            lock.signalAll()
             v
         }
     }
