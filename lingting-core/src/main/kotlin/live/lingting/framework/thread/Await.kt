@@ -13,7 +13,26 @@ import live.lingting.framework.util.ThreadUtils
 /**
  * @author lingting 2024-05-31 11:14
  */
-class Await<S>(private val supplier: Supplier<S>, private val predicate: Predicate<S>, private val sleep: InterruptedRunnable, private val timeout: Duration?, private val executor: ExecutorService) {
+class Await<S>(
+    val supplier: Supplier<S>,
+    val predicate: Predicate<S>,
+    val sleep: InterruptedRunnable,
+    val timeout: Duration?,
+    val executor: ExecutorService
+) {
+
+    companion object {
+        @JvmStatic
+        fun <S> builder(supplier: Supplier<S>, predicate: Predicate<S>): AwaitBuilder<S> {
+            return builder<S>().supplier(supplier).predicate(predicate)
+        }
+
+        @JvmStatic
+        fun <S> builder(): AwaitBuilder<S> {
+            return AwaitBuilder()
+        }
+    }
+
     fun await(): S {
         val supply = {
             var s: S = supplier.get()
@@ -92,15 +111,4 @@ class Await<S>(private val supplier: Supplier<S>, private val predicate: Predica
         }
     }
 
-    companion object {
-        @JvmStatic
-        fun <S> builder(supplier: Supplier<S>, predicate: Predicate<S>): AwaitBuilder<S> {
-            return builder<S>().supplier(supplier).predicate(predicate)
-        }
-
-        @JvmStatic
-        fun <S> builder(): AwaitBuilder<S> {
-            return AwaitBuilder()
-        }
-    }
 }

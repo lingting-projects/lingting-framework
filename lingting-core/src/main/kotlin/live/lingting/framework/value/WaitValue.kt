@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Predicate
+import live.lingting.framework.function.InterruptedRunnable
 import live.lingting.framework.lock.JavaReentrantLock
 import live.lingting.framework.util.OptionalUtils.optional
 import live.lingting.framework.util.ValueUtils
@@ -13,7 +14,22 @@ import live.lingting.framework.util.ValueUtils
  * @author lingting 2023-05-21 20:13
  */
 class WaitValue<T> {
-    protected val lock: JavaReentrantLock = JavaReentrantLock()
+
+    companion object {
+        @JvmStatic
+        fun <T> of(): WaitValue<T> {
+            return WaitValue()
+        }
+
+        @JvmStatic
+        fun <T> of(t: T?): WaitValue<T> {
+            val of = of<T>()
+            of.value = t
+            return of
+        }
+    }
+
+    val lock: JavaReentrantLock = JavaReentrantLock()
 
     /**
      * 如果直接调用 set 方法是不会触发 [JavaReentrantLock.signalAll]. 会导致在set之前挂起的等待线程不会被唤醒
@@ -62,30 +78,21 @@ class WaitValue<T> {
 
     fun optional() = value.optional()
 
-    fun wait(predicate: Predicate<T>): T {
+    fun wait(predicate: Predicate<T?>): T {
+        return wait(predicate) { lock.await(1, TimeUnit.HOURS) }
+    }
+
+    fun wait(predicate: Predicate<T?>, sleep: InterruptedRunnable): T {
         lock.lockInterruptibly()
         try {
             return ValueUtils.await(
                 { value },
                 { it != null && predicate.test(it) },
-                { lock.await(1, TimeUnit.HOURS) }
+                sleep
             )!!
         } finally {
             lock.unlock()
         }
     }
 
-    companion object {
-        @JvmStatic
-        fun <T> of(): WaitValue<T> {
-            return WaitValue()
-        }
-
-        @JvmStatic
-        fun <T> of(t: T?): WaitValue<T> {
-            val of = of<T>()
-            of.value = t
-            return of
-        }
-    }
 }

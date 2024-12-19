@@ -5,7 +5,8 @@ import java.util.concurrent.ExecutorService
 import java.util.function.Consumer
 import live.lingting.framework.application.ApplicationComponent
 import live.lingting.framework.application.ApplicationHolder
-import live.lingting.framework.util.BooleanUtils.ifTrue
+import live.lingting.framework.util.BooleanUtils.ifFalse
+import live.lingting.framework.util.DurationUtils.millis
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.util.ThreadUtils
@@ -22,17 +23,17 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
 
     private var executor: ExecutorService = VirtualThread.executor()
 
-    protected fun thread(consumer: Consumer<Thread>) {
+    fun thread(consumer: Consumer<Thread>) {
         threadValue.optional().ifPresent { consumer.accept(it) }
     }
 
-    protected fun threadId(): Long {
+    fun threadId(): Long {
         return threadValue.optional().map { it.threadId() }.orElse(-1L)
     }
 
-    protected fun interrupt() {
+    fun interrupt() {
         threadValue.consumer {
-            it?.isInterrupted.ifTrue { it?.interrupt() }
+            it?.isInterrupted?.ifFalse { it.interrupt() }
         }
     }
 
@@ -46,7 +47,7 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
             return !ApplicationHolder.isStop && available
         }
 
-    protected open fun executor(): Executor {
+    open fun executor(): Executor {
         return executor
     }
 
@@ -59,24 +60,32 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
     }
 
     override fun onApplicationStart() {
-        val name = simpleName
         threadValue.consumer {
             // 已分配, 不再重新分配
             if (it != null) {
+                if (!it.isAlive) {
+                    it.start()
+                }
                 return@consumer
             }
 
-            executor().execute(object : KeepRunnable(name) {
+            val executor = executor()
+            val name = simpleName
+            val runnable = object : KeepRunnable(name) {
                 override fun process() {
                     val thread = Thread.currentThread()
-                    threadValue.update(thread)
+                    threadValue.value = thread
                     try {
                         this@AbstractThreadApplicationComponent.run()
                     } finally {
                         threadValue.update(null)
                     }
                 }
-            })
+            }
+            executor.execute(runnable)
+            threadValue.wait({ it != null }) {
+                threadValue.lock.await(100.millis)
+            }
         }
     }
 

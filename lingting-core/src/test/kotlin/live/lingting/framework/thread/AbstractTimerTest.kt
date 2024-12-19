@@ -54,7 +54,7 @@ internal class AbstractTimerTest {
         val thread = timer.threadValue.value
         assertNotNull(thread)
         assertFalse(thread!!.isInterrupted)
-        thread.interrupt()
+        timer.interrupt()
         assertTrue(thread.isInterrupted)
     }
 }
