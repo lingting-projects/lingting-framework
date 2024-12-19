@@ -20,9 +20,7 @@ interface Polymerize {
     /**
      * 查询时使用的索引
      */
-    fun index(info: IndexInfo): String {
-        return info.matchIndex
-    }
+    fun index(info: IndexInfo): String
 
     /**
      * 获取指定实体对象的聚合索引

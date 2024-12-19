@@ -16,4 +16,5 @@ class HuaweiIamProperties {
     var password: String = ""
 
     var zone: ZoneOffset = DatePattern.UTC8_ZONE_OFFSET
+
 }
