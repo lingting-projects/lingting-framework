@@ -6,6 +6,9 @@ import io.grpc.StatusRuntimeException
 import live.lingting.framework.grpc.GrpcClientProvide
 import live.lingting.framework.grpc.GrpcServer
 import live.lingting.framework.grpc.GrpcServerBuilder
+import live.lingting.framework.grpc.customizer.ClientCustomizer
+import live.lingting.framework.grpc.customizer.ServerCustomizer
+import live.lingting.framework.grpc.customizer.ThreadExecutorCustomizer
 import live.lingting.framework.grpc.exception.GrpcExceptionProcessor
 import live.lingting.framework.grpc.interceptor.GrpcClientTraceIdInterceptor
 import live.lingting.framework.grpc.interceptor.GrpcServerExceptionInterceptor
@@ -63,6 +66,14 @@ internal class SecurityGrpcTest {
             authorizationService, store,
             password, convert!!
         )
+
+        val clientCustomizers = mutableListOf<ClientCustomizer>()
+        val serverCustomizers = mutableListOf<ServerCustomizer>()
+
+        val threadExecutorCustomizer = ThreadExecutorCustomizer()
+        clientCustomizers.add(threadExecutorCustomizer)
+        serverCustomizers.add(threadExecutorCustomizer)
+
         val gzipInterceptor = GzipInterceptor()
         val endpoint = SecurityGrpcAuthorizationEndpoint(service, convert!!)
         val serverProperties = GrpcServerProperties()
@@ -87,7 +98,7 @@ internal class SecurityGrpcTest {
             .interceptor(GrpcServerExceptionInterceptor(serverProperties, processor))
             .interceptor(GrpcServerTraceIdInterceptor(serverProperties))
             .interceptor(SecurityGrpcResourceServerInterceptor(authorizationKey, resourceService, authorize, convert!!))
-            .build()
+            .build(customizers = serverCustomizers)
         server!!.onApplicationStart()
         ValueUtils.awaitTrue { server!!.isRunning }
 
@@ -96,7 +107,7 @@ internal class SecurityGrpcTest {
             GrpcClientTraceIdInterceptor(clientProperties),
             SecurityGrpcRemoteResourceClientInterceptor(properties),
         )
-        val provide = GrpcClientProvide(clientProperties, clientInterceptors)
+        val provide = GrpcClientProvide(clientProperties, clientInterceptors, customizers = clientCustomizers)
 
         channel = provide.channel("127.0.0.1", server!!.port())
         blocking = provide.blocking(channel!!) { channel -> SecurityGrpcAuthorizationServiceGrpc.newBlockingStub(channel) }
