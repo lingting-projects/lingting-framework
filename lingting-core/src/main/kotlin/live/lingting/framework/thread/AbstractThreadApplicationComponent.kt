@@ -51,7 +51,7 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
         safe = false
     }
 
-    protected fun init() {
+    protected open fun init() {
         //
     }
 
