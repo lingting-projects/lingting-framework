@@ -67,4 +67,5 @@ class QueryWrapper<T : Any> : LambdaWrapper<T, QueryWrapper<T>>() {
     }
 
 // endregion
+
 }

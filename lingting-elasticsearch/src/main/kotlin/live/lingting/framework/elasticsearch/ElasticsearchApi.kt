@@ -60,7 +60,7 @@ import live.lingting.framework.util.StringUtils
 class ElasticsearchApi<T>(
     val info: IndexInfo,
     val cls: Class<T>,
-    val getDocumentId: Function<T, String>,
+    val getDocumentId: Function<T, String?>,
     val properties: ElasticsearchProperties,
     val interceptors: List<Interceptor>,
     val client: ElasticsearchClient
@@ -79,7 +79,7 @@ class ElasticsearchApi<T>(
     val scrollTime: Time?
 
     constructor(
-        cls: Class<T>, polymerizeFactory: PolymerizeFactory, getDocumentId: Function<T, String>, properties: ElasticsearchProperties,
+        cls: Class<T>, polymerizeFactory: PolymerizeFactory, getDocumentId: Function<T, String?>, properties: ElasticsearchProperties,
         interceptors: List<Interceptor>, client: ElasticsearchClient
     ) : this(IndexInfo.create(properties, cls, polymerizeFactory), cls, getDocumentId, properties, interceptors, client)
 
@@ -89,7 +89,7 @@ class ElasticsearchApi<T>(
         this.scrollTime = Time.of { t -> t.time("${scroll.timeout.toSeconds()}%ds") }
     }
 
-    fun documentId(t: T): String {
+    fun documentId(t: T): String? {
         return getDocumentId.apply(t)
     }
 
@@ -260,7 +260,7 @@ class ElasticsearchApi<T>(
         return update({ builder: UpdateRequest.Builder<T, T> -> builder.doc(doc).script(script) }, documentId(doc))
     }
 
-    fun update(operator: UnaryOperator<UpdateRequest.Builder<T, T>>, documentId: String): Boolean {
+    fun update(operator: UnaryOperator<UpdateRequest.Builder<T, T>>, documentId: String?): Boolean {
         return update({ operator.apply(it).id(documentId) }) {
             val result = it.result()
             Result.Updated == result

@@ -14,10 +14,7 @@ import live.lingting.framework.util.ClassUtils
  * 从匿名函数解析对应调用的字段
  * @author lingting 2024/11/27 20:38
  */
-class LambdaMeta(
-    val cls: Class<*>,
-    val field: String,
-) {
+class LambdaMeta(val cls: Class<*>, val field: String) {
 
     companion object {
 

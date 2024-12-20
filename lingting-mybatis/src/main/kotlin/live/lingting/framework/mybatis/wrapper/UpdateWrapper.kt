@@ -47,7 +47,6 @@ class UpdateWrapper<T : Any> : LambdaWrapper<T, UpdateWrapper<T>>(), Update<Upda
         return this
     }
 
-
     // region ifPresent
 
     fun setIfPresent(column: String, value: Any?): UpdateWrapper<T> {
