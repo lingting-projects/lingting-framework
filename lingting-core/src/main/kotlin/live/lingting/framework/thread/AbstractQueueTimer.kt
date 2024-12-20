@@ -22,17 +22,13 @@ abstract class AbstractQueueTimer<T> : AbstractThreadApplicationComponent() {
      */
     protected abstract fun sleepTime(t: T): Duration
 
-    fun put(t: T?) {
-        if (t == null) {
-            return
-        }
-
+    fun put(t: T) {
         try {
             lock.runByInterruptibly {
                 queue.add(t)
                 lock.signalAll()
             }
-        } catch (e: InterruptedException) {
+        } catch (_: InterruptedException) {
             interrupt()
         } catch (e: Exception) {
             log.error("{} put error, param: {}", simpleName, t, e)

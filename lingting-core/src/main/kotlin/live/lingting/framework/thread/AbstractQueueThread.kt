@@ -61,7 +61,7 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
      * 往队列插入数据
      * @param e 数据
      */
-    abstract fun put(e: E?)
+    abstract fun put(e: E)
 
     /**
      * 数据处理前执行
@@ -92,7 +92,7 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
      * @param list 所有已接收的数据
      * @throws Exception 异常
      */
-    protected abstract fun process(list: List<E>?)
+    protected abstract fun process(list: List<E>)
 
     override fun doRun() {
         preProcess()

@@ -14,12 +14,11 @@ abstract class AbstractBlockingQueueThread<T> : AbstractQueueThread<T>() {
 
     override val queueSize = queue.size
 
-    override fun put(t: T?) {
-        if (t == null) {
-            return
-        }
+    override fun put(t: T) {
         try {
-            queue.put(t)
+            if (t != null) {
+                queue.put(t)
+            }
         } catch (_: InterruptedException) {
             Thread.currentThread().interrupt()
         } catch (e: Exception) {
