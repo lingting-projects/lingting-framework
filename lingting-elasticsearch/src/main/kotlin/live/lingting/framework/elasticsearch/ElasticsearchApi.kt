@@ -236,15 +236,15 @@ class ElasticsearchApi<T>(
         consumer.accept(response)
     }
 
-    fun update(documentId: String, scriptOperator: Function<Script.Builder, ObjectBuilder<Script>>): Boolean {
+    fun update(documentId: String?, scriptOperator: Function<Script.Builder, ObjectBuilder<Script>>): Boolean {
         return update(documentId, scriptOperator.apply(Script.Builder()).build())
     }
 
-    fun update(documentId: String, script: Script): Boolean {
+    fun update(documentId: String?, script: Script): Boolean {
         return update({ builder: UpdateRequest.Builder<T, T> -> builder }, documentId, script)
     }
 
-    fun update(operator: UnaryOperator<UpdateRequest.Builder<T, T>>, documentId: String, script: Script): Boolean {
+    fun update(operator: UnaryOperator<UpdateRequest.Builder<T, T>>, documentId: String?, script: Script): Boolean {
         return update({ builder: UpdateRequest.Builder<T, T> -> operator.apply(builder).script(script) }, documentId)
     }
 
