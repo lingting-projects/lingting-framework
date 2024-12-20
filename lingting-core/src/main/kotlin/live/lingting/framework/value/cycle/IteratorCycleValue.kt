@@ -5,16 +5,13 @@ import live.lingting.framework.value.step.IteratorStepValue
 /**
  * @author lingting 2024-01-23 15:24
  */
-class IteratorCycleValue<T>(step: IteratorStepValue<T>) : AbstractCycleValue<T>() {
-    private val step: IteratorStepValue<T>
+class IteratorCycleValue<T>(private val step: IteratorStepValue<T>) : AbstractConcurrentCycleValue<T>() {
+
+    constructor(iterable: Iterable<T>) : this(iterable.iterator())
 
     constructor(iterator: Iterator<T>) : this(IteratorStepValue<T>(iterator))
 
-    init {
-        this.step = step
-    }
-
-    override fun reset() {
+    override fun doReset() {
         step.reset()
     }
 
@@ -31,4 +28,5 @@ class IteratorCycleValue<T>(step: IteratorStepValue<T>) : AbstractCycleValue<T>(
     fun remove() {
         step.remove()
     }
+
 }
