@@ -7,27 +7,26 @@ import io.grpc.ServerBuilder
 import io.grpc.ServerCall
 import io.grpc.ServerCallExecutorSupplier
 import io.grpc.ServerInterceptor
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
-import live.lingting.framework.thread.executor.CallPolicy
-import live.lingting.framework.thread.executor.CallPolicyResolver
+import live.lingting.framework.thread.WorkerRunnable
 import live.lingting.framework.thread.executor.PolicyThreadPoolExecutor
+import live.lingting.framework.thread.executor.ThreadExecuteResolver
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.ThreadUtils
 
 /**
  * @author lingting 2024/12/19 22:44
  */
-class ThreadExecutorCustomizer @JvmOverloads constructor(val executor: Executor = ThreadUtils.executor()) : ClientCustomizer, ServerCustomizer {
+open class ThreadExecutorCustomizer @JvmOverloads constructor(val executor: Executor = ThreadUtils.executor()) :
+    ClientCustomizer, ServerCustomizer, ThreadExecuteResolver {
 
     companion object {
-        @JvmStatic
-        val resolver = CallPolicyResolver {
-            if (it.javaClass.name == "io.grpc.internal.SerializingExecutor") {
-                CallPolicy.DIRECT
-            } else {
-                null
-            }
-        }
+        @JvmField
+        val RUNNABLE_MAP = ConcurrentHashMap<Runnable, Wrapper>()
+
+        @JvmField
+        val THREAD_MAP = ConcurrentHashMap<Thread, Wrapper>()
     }
 
     val log = logger()
@@ -37,7 +36,7 @@ class ThreadExecutorCustomizer @JvmOverloads constructor(val executor: Executor 
             log.warn("This thread pool may cause context exceptions through ThreadLocal! Please use PolicyThreadPoolExecutor.")
             return
         }
-        executor.register(resolver)
+        executor.register(this)
     }
 
     override fun customize(builder: ManagedChannelBuilder<*>): Collection<ClientInterceptor> {
@@ -56,5 +55,29 @@ class ThreadExecutorCustomizer @JvmOverloads constructor(val executor: Executor 
             }
         })
         return emptyList()
+    }
+
+    override fun isSupport(command: Runnable): Boolean {
+        return command.javaClass.name == "io.grpc.internal.SerializingExecutor"
+    }
+
+    override fun wrapper(command: Runnable): Runnable? {
+        return RUNNABLE_MAP.computeIfAbsent(command) { Wrapper(it) }
+            .also { it.push(command) }
+    }
+
+    open class Wrapper(val r: Runnable) : WorkerRunnable() {
+
+        override fun run() {
+            THREAD_MAP[Thread.currentThread()] = this
+            super.run()
+        }
+
+        override fun stop() {
+            super.stop()
+            THREAD_MAP.remove(Thread.currentThread())
+            RUNNABLE_MAP.remove(r)
+        }
+
     }
 }
