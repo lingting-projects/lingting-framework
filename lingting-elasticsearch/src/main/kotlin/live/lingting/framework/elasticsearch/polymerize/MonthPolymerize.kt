@@ -8,7 +8,7 @@ import live.lingting.framework.elasticsearch.IndexInfo
 /**
  * @author lingting 2024/11/26 14:12
  */
-class MonthPolymerize : DateTimePolymerize() {
+open class MonthPolymerize : DateTimePolymerize() {
 
     override fun formatter(info: IndexInfo): DateTimeFormatter {
         return DateTimeFormatter.ofPattern("yyyy'${info.separate}'MM")

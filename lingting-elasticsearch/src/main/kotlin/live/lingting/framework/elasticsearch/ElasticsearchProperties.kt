@@ -32,6 +32,8 @@ class ElasticsearchProperties {
          * 索引各部分分隔符. 用于 前缀, 聚合后缀 拼接分隔. 仅在存在前/后缀时拼接
          */
         var separate = "_"
+
+        var autoCreate = false
     }
 
     class Retry {

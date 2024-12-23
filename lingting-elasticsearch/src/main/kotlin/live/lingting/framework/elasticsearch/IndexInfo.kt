@@ -39,6 +39,13 @@ data class IndexInfo(
      * 聚合索引查询限制
      */
     val polymerizeLimit: Long,
+    /**
+     * 是否拆分限制, 默认不拆分.
+     * <p> 假如时间查询限制为2, 不拆分则查询的时间范围为当前时间-2, 当前时间 </p>
+     * <p> 假如时间查询限制为2, 拆分则查询的时间范围为当前时间-1, 当前时间+1 </p>
+     * <p> 假如时间查询限制为3, 拆分则查询的时间范围为当前时间-2, 当前时间+1 </p>
+     */
+    val polymerizeSplit: Boolean
 ) {
 
     companion object {
@@ -49,6 +56,7 @@ data class IndexInfo(
             val polymerize = polymerizeFactory.get(a.polymerize)
             val polymerizeFields = Polymerize.fields(cls)
             val polymerizeLimit = a.polymerizeLimit
+            val polymerizeSplit = a.polymerizeSplit
 
             val config = properties.index
             val separate = config.separate
@@ -56,7 +64,7 @@ data class IndexInfo(
             val rawIndex = if (a.index.isBlank()) StringUtils.humpToUnderscore(cls.simpleName) else a.index
             val index = if (prefix.isNotBlank()) "$prefix$separate$rawIndex" else rawIndex
             val matchIndex = if (polymerizeFields.isNotEmpty()) "$index$separate*" else index
-            return IndexInfo(index, matchIndex, cls, separate, polymerize, polymerizeFields, polymerizeLimit)
+            return IndexInfo(index, matchIndex, cls, separate, polymerize, polymerizeFields, polymerizeLimit, polymerizeSplit)
         }
 
     }

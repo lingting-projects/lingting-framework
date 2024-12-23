@@ -379,7 +379,7 @@ class ElasticsearchApi<T>(
         batch<T>(operator, collection, Function { t ->
             val documentId = documentId(t)
             val ob = BulkOperation.Builder()
-            ob.create { create: CreateOperation.Builder<Any> -> create.id(documentId).document(t) }
+            ob.create { create -> create.id(documentId).document(t) }
             ob.build()
         })
     }

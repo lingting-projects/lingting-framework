@@ -1,5 +1,6 @@
 package live.lingting.framework.elasticsearch.polymerize
 
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAccessor
 import java.time.temporal.TemporalUnit
@@ -21,7 +22,7 @@ abstract class DateTimePolymerize : Polymerize {
 
     abstract val unit: TemporalUnit
 
-    fun from(info: IndexInfo): DateTimeFormatter {
+    open fun from(info: IndexInfo): DateTimeFormatter {
         return CACHE.computeIfAbsent(this) { ConcurrentHashMap() }.computeIfAbsent(info) { formatter(info) }
     }
 
@@ -29,17 +30,7 @@ abstract class DateTimePolymerize : Polymerize {
         if (info.polymerizeLimit < 1) {
             return info.matchIndex
         }
-        val current = DateTime.current()
-        return LinkedHashSet<String>().apply {
-
-            for (i in 0 until info.polymerizeLimit) {
-                val time = current.minus(i, unit)
-                val index = index(info, time)
-                add(index)
-            }
-
-
-        }.joinToString(",")
+        return indices(info).joinToString(",")
     }
 
     override fun <T> index(info: IndexInfo, o: T): String {
@@ -49,11 +40,41 @@ abstract class DateTimePolymerize : Polymerize {
         return index(info, v)
     }
 
-    fun index(info: IndexInfo, ta: TemporalAccessor): String {
+    open fun index(info: IndexInfo, ta: TemporalAccessor): String {
         val formatter = from(info)
         val format = formatter.format(ta)
         return "${info.index}${info.separate}$format"
     }
 
+    open fun indices(info: IndexInfo): LinkedHashSet<String> {
+        val current = DateTime.current()
+        return indices(current, info)
+    }
+
+    open fun indices(current: LocalDateTime, info: IndexInfo): LinkedHashSet<String> {
+        var before = info.polymerizeLimit
+        var after = 0L
+
+        if (info.polymerizeSplit) {
+            after = info.polymerizeLimit / 2
+            before = info.polymerizeLimit - after
+        }
+        return indices(current, info, before, after)
+    }
+
+    open fun indices(current: LocalDateTime, info: IndexInfo, before: Long, after: Long): LinkedHashSet<String> {
+        val set = LinkedHashSet<String>()
+        for (i in 0 until before + 1) {
+            val time = current.minus(i, unit)
+            val index = index(info, time)
+            set.add(index)
+        }
+        for (i in 0 until after + 1) {
+            val time = current.plus(i, unit)
+            val index = index(info, time)
+            set.add(index)
+        }
+        return set
+    }
 
 }

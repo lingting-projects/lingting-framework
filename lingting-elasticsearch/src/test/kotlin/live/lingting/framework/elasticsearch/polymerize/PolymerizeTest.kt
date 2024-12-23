@@ -4,6 +4,7 @@ import java.time.LocalDateTime
 import live.lingting.framework.elasticsearch.IndexInfo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
@@ -25,7 +26,8 @@ class PolymerizeTest {
             ":_:rar#@!~.",
             non,
             emptyList(),
-            0
+            0,
+            false
         )
 
         assertEquals(info.index, non.index(info))
@@ -33,8 +35,29 @@ class PolymerizeTest {
         assertEquals(info.matchIndex, day.index(info))
 
         val time = LocalDateTime.of(2024, 1, 1, 0, 0, 0, 0)
-
         assertEquals("${info.index}${info.separate}2024${info.separate}01", month.index(info, time))
         assertEquals("${info.index}${info.separate}2024${info.separate}01${info.separate}01", day.index(info, time))
+
+        val splitInfo = IndexInfo(
+            "index",
+            "matchIndex",
+            IndexInfo::class.java,
+            ":_:rar#@!~.",
+            non,
+            emptyList(),
+            3,
+            true
+        )
+        val indices = day.indices(time, splitInfo)
+        assertEquals(4, indices.size)
+        val values = listOf(
+            "index:_:rar#@!~.2024:_:rar#@!~.01:_:rar#@!~.01",
+            "index:_:rar#@!~.2023:_:rar#@!~.12:_:rar#@!~.31",
+            "index:_:rar#@!~.2023:_:rar#@!~.12:_:rar#@!~.30",
+            "index:_:rar#@!~.2024:_:rar#@!~.01:_:rar#@!~.02",
+        )
+        values.forEach {
+            assertTrue(indices.contains(it))
+        }
     }
 }
