@@ -241,23 +241,23 @@ class ElasticsearchApi<T>(
     }
 
     fun update(documentId: String?, script: Script): Boolean {
-        return update({ builder: UpdateRequest.Builder<T, T> -> builder }, documentId, script)
+        return update({ builder -> builder }, documentId, script)
     }
 
     fun update(operator: UnaryOperator<UpdateRequest.Builder<T, T>>, documentId: String?, script: Script): Boolean {
-        return update({ builder: UpdateRequest.Builder<T, T> -> operator.apply(builder).script(script) }, documentId)
+        return update({ builder -> operator.apply(builder).script(script) }, documentId)
     }
 
     fun update(t: T): Boolean {
-        return update({ builder: UpdateRequest.Builder<T, T> -> builder.doc(t) }, documentId(t))
+        return update({ builder -> builder.doc(t).index(info.index(t)) }, documentId(t))
     }
 
     fun upsert(doc: T): Boolean {
-        return update({ builder: UpdateRequest.Builder<T, T> -> builder.doc(doc).docAsUpsert(true) }, documentId(doc))
+        return update({ builder -> builder.doc(doc).docAsUpsert(true).index(info.index(doc)) }, documentId(doc))
     }
 
     fun upsert(doc: T, script: Script): Boolean {
-        return update({ builder: UpdateRequest.Builder<T, T> -> builder.doc(doc).script(script) }, documentId(doc))
+        return update({ builder -> builder.doc(doc).script(script).index(info.index(doc)) }, documentId(doc))
     }
 
     fun update(operator: UnaryOperator<UpdateRequest.Builder<T, T>>, documentId: String?): Boolean {
@@ -277,7 +277,9 @@ class ElasticsearchApi<T>(
                 .retryOnConflict(5)
         )
 
-        builder.index(info.index())
+        if (!info.hasMulti) {
+            builder.index(info.index())
+        }
 
         val response = client.update(builder.build(), cls)
         return convert.apply(response)
@@ -336,8 +338,8 @@ class ElasticsearchApi<T>(
     fun bulk(operator: UnaryOperator<BulkRequest.Builder>, collection: Collection<T>, convert: Function<T, BulkOperationBase.AbstractBuilder<*>>): BulkResponse {
         val operations = collection.map {
             val builder = BulkOperation.Builder()
-            val index = info.index(it)
             val apply = convert.apply(it)
+            val index = info.index(it)
             apply.index(index)
             when (apply) {
                 is UpdateOperation.Builder<*, *> -> builder.update(apply.build())
@@ -376,10 +378,10 @@ class ElasticsearchApi<T>(
     }
 
     fun saveBatch(operator: UnaryOperator<BulkRequest.Builder>, collection: Collection<T>) {
-        batch<T>(operator, collection, Function { t ->
-            val documentId = documentId(t)
+        batch<T>(operator, collection, Function {
+            val documentId = documentId(it)
             val ob = BulkOperation.Builder()
-            ob.create { create -> create.id(documentId).document(t) }
+            ob.create { create -> create.id(documentId).document(it).index(info.index(it)) }
             ob.build()
         })
     }
@@ -389,7 +391,8 @@ class ElasticsearchApi<T>(
     }
 
     fun <E> batch(
-        operator: UnaryOperator<BulkRequest.Builder>, collection: Collection<E>,
+        operator: UnaryOperator<BulkRequest.Builder>,
+        collection: Collection<E>,
         function: Function<E, BulkOperation>
     ): BulkResponse {
         if (collection.isEmpty()) {
@@ -499,7 +502,8 @@ class ElasticsearchApi<T>(
 
         val query = merge(queries)
         val builder = operator.apply(
-            SearchRequest.Builder().scroll(scrollTime) // 返回匹配的所有文档数量
+            SearchRequest.Builder().scroll(scrollTime)
+                // 返回匹配的所有文档数量
                 .trackTotalHits(TrackHits.of { th -> th.enabled(true) })
         ).index(info.index()).query(query).size(params.size.toInt())
 

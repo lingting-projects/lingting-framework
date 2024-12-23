@@ -46,7 +46,7 @@ open class PolicyThreadPoolExecutor(
             for (resolver in value) {
                 val policy = resolver.getPolicy(command)
                 if (policy != null) {
-                    log.debug("Hit resolver: {}; Policy: {}", resolver.javaClass.name, policy)
+                    log.trace("Hit resolver: {}; Policy: {}", resolver.javaClass.name, policy)
                     return policy
                 }
             }
