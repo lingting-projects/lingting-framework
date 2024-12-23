@@ -26,13 +26,6 @@ abstract class DateTimePolymerize : Polymerize {
         return CACHE.computeIfAbsent(this) { ConcurrentHashMap() }.computeIfAbsent(info) { formatter(info) }
     }
 
-    override fun index(info: IndexInfo): String {
-        if (info.polymerizeLimit < 1) {
-            return info.matchIndex
-        }
-        return indices(info).joinToString(",")
-    }
-
     override fun <T> index(info: IndexInfo, o: T): String {
         val cf = info.polymerizeFields[0]
         val v = cf.get(o as Any)
@@ -46,7 +39,7 @@ abstract class DateTimePolymerize : Polymerize {
         return "${info.index}${info.separate}$format"
     }
 
-    open fun indices(info: IndexInfo): LinkedHashSet<String> {
+    override fun indices(info: IndexInfo): LinkedHashSet<String> {
         val current = DateTime.current()
         return indices(current, info)
     }

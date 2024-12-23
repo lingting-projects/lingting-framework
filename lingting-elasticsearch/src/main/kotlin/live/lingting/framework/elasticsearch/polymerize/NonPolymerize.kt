@@ -11,6 +11,12 @@ class NonPolymerize : Polymerize {
         return info.index
     }
 
+    override fun indices(info: IndexInfo): LinkedHashSet<String> {
+        val set = LinkedHashSet<String>()
+        set.add(info.index)
+        return set
+    }
+
     override fun <T> index(info: IndexInfo, o: T): String {
         return info.index
     }
