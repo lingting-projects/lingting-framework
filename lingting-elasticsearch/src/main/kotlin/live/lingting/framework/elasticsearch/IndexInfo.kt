@@ -60,9 +60,9 @@ data class IndexInfo(
 
             val config = properties.index
             val separate = config.separate
-            val prefix = if (config.prefix.isNotBlank()) "${config.prefix}$separate${a.prefix}" else a.prefix
             val rawIndex = if (a.index.isBlank()) StringUtils.humpToUnderscore(cls.simpleName) else a.index
-            val index = if (prefix.isNotBlank()) "$prefix$separate$rawIndex" else rawIndex
+            val names = listOf(config.prefix, a.prefix, rawIndex)
+            val index = names.filter { it.isNotBlank() }.joinToString(separate)
             val matchIndex = if (polymerizeFields.isNotEmpty()) "$index$separate*" else index
             return IndexInfo(index, matchIndex, cls, separate, polymerize, polymerizeFields, polymerizeLimit, polymerizeSplit)
         }
