@@ -7,8 +7,8 @@ import live.lingting.framework.grpc.GrpcClientProvide
 import live.lingting.framework.grpc.GrpcServer
 import live.lingting.framework.grpc.GrpcServerBuilder
 import live.lingting.framework.grpc.customizer.ClientCustomizer
+import live.lingting.framework.grpc.customizer.GrpcThreadExecutorCustomizer
 import live.lingting.framework.grpc.customizer.ServerCustomizer
-import live.lingting.framework.grpc.customizer.ThreadExecutorCustomizer
 import live.lingting.framework.grpc.exception.GrpcExceptionProcessor
 import live.lingting.framework.grpc.interceptor.GrpcClientTraceIdInterceptor
 import live.lingting.framework.grpc.interceptor.GrpcServerExceptionInterceptor
@@ -70,7 +70,7 @@ internal class SecurityGrpcTest {
         val clientCustomizers = mutableListOf<ClientCustomizer>()
         val serverCustomizers = mutableListOf<ServerCustomizer>()
 
-        val threadExecutorCustomizer = ThreadExecutorCustomizer()
+        val threadExecutorCustomizer = GrpcThreadExecutorCustomizer()
         clientCustomizers.add(threadExecutorCustomizer)
         serverCustomizers.add(threadExecutorCustomizer)
 
@@ -160,6 +160,8 @@ internal class SecurityGrpcTest {
                         .buildPartial()
                 )
             }
+            assertEquals(0, GrpcThreadExecutorCustomizer.RUNNABLE_MAP.size)
+            assertEquals(0, GrpcThreadExecutorCustomizer.THREAD_MAP.size)
         } finally {
             pop()
         }

@@ -9,7 +9,7 @@ import io.grpc.ServerCallExecutorSupplier
 import io.grpc.ServerInterceptor
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
-import live.lingting.framework.thread.WorkerRunnable
+import live.lingting.framework.grpc.interceptor.GrpcThreadExecutorInterceptor
 import live.lingting.framework.thread.executor.PolicyThreadPoolExecutor
 import live.lingting.framework.thread.executor.ThreadExecuteResolver
 import live.lingting.framework.util.Slf4jUtils.logger
@@ -18,15 +18,15 @@ import live.lingting.framework.util.ThreadUtils
 /**
  * @author lingting 2024/12/19 22:44
  */
-open class ThreadExecutorCustomizer @JvmOverloads constructor(val executor: Executor = ThreadUtils.executor()) :
+open class GrpcThreadExecutorCustomizer @JvmOverloads constructor(val executor: Executor = ThreadUtils.executor()) :
     ClientCustomizer, ServerCustomizer, ThreadExecuteResolver {
 
     companion object {
         @JvmField
-        val RUNNABLE_MAP = ConcurrentHashMap<Runnable, Wrapper>()
+        val RUNNABLE_MAP = ConcurrentHashMap<Runnable, GrpcWorkerRunnable>()
 
         @JvmField
-        val THREAD_MAP = ConcurrentHashMap<Thread, Wrapper>()
+        val THREAD_MAP = ConcurrentHashMap<Thread, GrpcWorkerRunnable>()
     }
 
     val log = logger()
@@ -43,7 +43,7 @@ open class ThreadExecutorCustomizer @JvmOverloads constructor(val executor: Exec
         register()
         builder.executor(executor)
         builder.offloadExecutor(executor)
-        return emptyList()
+        return listOf(GrpcThreadExecutorInterceptor)
     }
 
     override fun customize(builder: ServerBuilder<*>): Collection<ServerInterceptor> {
@@ -54,7 +54,7 @@ open class ThreadExecutorCustomizer @JvmOverloads constructor(val executor: Exec
                 return executor
             }
         })
-        return emptyList()
+        return listOf(GrpcThreadExecutorInterceptor)
     }
 
     override fun isSupport(command: Runnable): Boolean {
@@ -62,22 +62,8 @@ open class ThreadExecutorCustomizer @JvmOverloads constructor(val executor: Exec
     }
 
     override fun wrapper(command: Runnable): Runnable? {
-        return RUNNABLE_MAP.computeIfAbsent(command) { Wrapper(it) }
+        return RUNNABLE_MAP.computeIfAbsent(command) { GrpcWorkerRunnable(it) }
             .also { it.push(command) }
     }
 
-    open class Wrapper(val r: Runnable) : WorkerRunnable() {
-
-        override fun run() {
-            THREAD_MAP[Thread.currentThread()] = this
-            super.run()
-        }
-
-        override fun stop() {
-            super.stop()
-            THREAD_MAP.remove(Thread.currentThread())
-            RUNNABLE_MAP.remove(r)
-        }
-
-    }
 }
