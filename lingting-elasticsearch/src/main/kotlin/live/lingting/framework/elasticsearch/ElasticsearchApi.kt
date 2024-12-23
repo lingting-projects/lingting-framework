@@ -86,7 +86,7 @@ class ElasticsearchApi<T>(
     init {
         val scroll = properties.scroll
         this.scrollSize = scroll.size
-        this.scrollTime = Time.of { t -> t.time("${scroll.timeout.toSeconds()}%ds") }
+        this.scrollTime = Time.of { t -> t.time("${scroll.timeout.toSeconds()}s") }
     }
 
     fun documentId(t: T): String? {
