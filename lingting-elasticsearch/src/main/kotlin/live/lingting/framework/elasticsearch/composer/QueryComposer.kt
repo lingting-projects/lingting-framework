@@ -17,12 +17,12 @@ import live.lingting.framework.elasticsearch.function.TermOperator
 object QueryComposer {
     // region basic
     @JvmStatic
-    fun <T> term(field: String, obj: T): Query {
+    fun <T> term(field: String, obj: T?): Query {
         return term(field, obj) { builder -> builder }
     }
 
     @JvmStatic
-    fun <T> term(field: String, obj: T, operator: Function<TermQuery.Builder, ObjectBuilder<TermQuery>>): Query {
+    fun <T> term(field: String, obj: T?, operator: Function<TermQuery.Builder, ObjectBuilder<TermQuery>>): Query {
         val value: FieldValue = ElasticsearchUtils.fieldValue(obj)
         return Query.of { qb ->
             qb.term { tq ->
@@ -33,10 +33,10 @@ object QueryComposer {
     }
 
     @JvmStatic
-    fun <T> terms(field: String, objects: Collection<T>): Query {
+    fun <T> terms(field: String, objects: Collection<T>?): Query {
         val values: MutableList<FieldValue> = ArrayList()
 
-        if (objects.isNotEmpty()) {
+        if (!objects.isNullOrEmpty()) {
             for (obj in objects) {
                 if (obj == null) {
                     continue
@@ -53,7 +53,7 @@ object QueryComposer {
      * 小于
      */
     @JvmStatic
-    fun <T> lt(field: String, obj: T): Query {
+    fun <T> lt(field: String, obj: T?): Query {
         val value = JsonData.of(obj)
         return Query.of { qb -> qb.range { rb -> rb.untyped { ub -> ub.field(field).lt(value) } } }
     }
@@ -62,7 +62,7 @@ object QueryComposer {
      * 小于等于
      */
     @JvmStatic
-    fun <T> le(field: String, obj: T): Query {
+    fun <T> le(field: String, obj: T?): Query {
         val value = JsonData.of(obj)
         return Query.of { qb -> qb.range { rq -> rq.untyped { ub -> ub.field(field).lte(value) } } }
     }
@@ -71,7 +71,7 @@ object QueryComposer {
      * 大于
      */
     @JvmStatic
-    fun <T> gt(field: String, obj: T): Query {
+    fun <T> gt(field: String, obj: T?): Query {
         val value = JsonData.of(obj)
         return Query.of { qb -> qb.range { rq -> rq.untyped { ub -> ub.field(field).gt(value) } } }
     }
@@ -80,7 +80,7 @@ object QueryComposer {
      * 大于等于
      */
     @JvmStatic
-    fun <T> ge(field: String, obj: T): Query {
+    fun <T> ge(field: String, obj: T?): Query {
         val value = JsonData.of(obj)
         return Query.of { qb -> qb.range { rq -> rq.untyped { ub -> ub.field(field).gte(value) } } }
     }
@@ -134,13 +134,13 @@ object QueryComposer {
     }
 
     @JvmStatic
-    fun <T> wildcardAll(field: String, obj: T): Query {
+    fun <T> wildcardAll(field: String, obj: T?): Query {
         val format = String.format("*%s*", obj)
         return wildcard(field, format)
     }
 
     @JvmStatic
-    fun <T> wildcard(field: String, obj: T): Query {
+    fun <T> wildcard(field: String, obj: T?): Query {
         val value = obj.toString()
         return Query.of { qb -> qb.wildcard { wq -> wq.field(field).value(value) } }
     }
@@ -158,18 +158,18 @@ object QueryComposer {
     // endregion
     // region lambda
     @JvmStatic
-    fun <T> term(func: EFunction<*, T>, obj: T): Query {
+    fun <T> term(func: EFunction<*, T>, obj: T?): Query {
         return term(func, obj) { it }
     }
 
     @JvmStatic
-    fun <T> term(func: EFunction<*, T>, obj: T, operator: TermOperator): Query {
+    fun <T> term(func: EFunction<*, T>, obj: T?, operator: TermOperator): Query {
         val field: String = ElasticsearchUtils.fieldName(func)
         return term(field, obj, operator)
     }
 
     @JvmStatic
-    fun <T> terms(func: EFunction<*, T>, objects: Collection<T>): Query {
+    fun <T> terms(func: EFunction<*, T>, objects: Collection<T>?): Query {
         val field: String = ElasticsearchUtils.fieldName(func)
         return terms<T>(field, objects)
     }
@@ -178,7 +178,7 @@ object QueryComposer {
      * 小于
      */
     @JvmStatic
-    fun <T> lt(func: EFunction<*, T>, obj: T): Query {
+    fun <T> lt(func: EFunction<*, T>, obj: T?): Query {
         val field: String = ElasticsearchUtils.fieldName(func)
         return lt(field, obj)
     }
@@ -187,7 +187,7 @@ object QueryComposer {
      * 小于等于
      */
     @JvmStatic
-    fun <T> le(func: EFunction<*, T>, obj: T): Query {
+    fun <T> le(func: EFunction<*, T>, obj: T?): Query {
         val field: String = ElasticsearchUtils.fieldName(func)
         return le(field, obj)
     }
@@ -196,7 +196,7 @@ object QueryComposer {
      * 大于
      */
     @JvmStatic
-    fun <T> gt(func: EFunction<*, T>, obj: T): Query {
+    fun <T> gt(func: EFunction<*, T>, obj: T?): Query {
         val field: String = ElasticsearchUtils.fieldName(func)
         return gt(field, obj)
     }
@@ -205,7 +205,7 @@ object QueryComposer {
      * 大于等于
      */
     @JvmStatic
-    fun <T> ge(func: EFunction<*, T>, obj: T): Query {
+    fun <T> ge(func: EFunction<*, T>, obj: T?): Query {
         val field: String = ElasticsearchUtils.fieldName(func)
         return ge(field, obj)
     }
@@ -220,13 +220,13 @@ object QueryComposer {
     }
 
     @JvmStatic
-    fun <T> wildcardAll(func: EFunction<*, T>, obj: T): Query {
+    fun <T> wildcardAll(func: EFunction<*, T>, obj: T?): Query {
         val field: String = ElasticsearchUtils.fieldName(func)
         return wildcardAll(field, obj)
     }
 
     @JvmStatic
-    fun <T> wildcard(func: EFunction<*, T>, obj: T): Query {
+    fun <T> wildcard(func: EFunction<*, T>, obj: T?): Query {
         val field: String = ElasticsearchUtils.fieldName(func)
         return wildcard(field, obj)
     } // endregion
