@@ -41,8 +41,6 @@ configure(javaProjects + dependencyProjects) {
 
     apply {
         plugin("idea")
-        plugin("signing")
-        plugin(catalogLibs.plugins.publish.get().pluginId)
     }
 
     idea {
@@ -50,49 +48,6 @@ configure(javaProjects + dependencyProjects) {
             languageLevel = ideaLanguageLevel
             targetBytecodeVersion = javaVersion
         }
-    }
-
-    mavenPublishing {
-        val projectRepository = "lingting-projects/lingting-live.lingting.framework"
-        val projectUrl = "https://github.com/$projectRepository"
-
-        publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
-        signAllPublications()
-
-        pom {
-            name = project.name
-            description = if (project.description.isNullOrBlank()) {
-                project.name
-            } else {
-                project.description
-            }
-            url = projectUrl
-
-            licenses {
-                license {
-                    name = "MIT License"
-                    url = "https://www.opensource.org/licenses/mit-license.php"
-                    distribution = "repo"
-                }
-            }
-
-            developers {
-                developer {
-                    id = "lingting"
-                    name = id
-                    email = "sunlisten.gzm@gmail.com"
-                    url = "https://github.com/lingting"
-                }
-            }
-
-            scm {
-                connection = "scm:git:git@github.com:$projectRepository.git"
-                developerConnection = "scm:git:git@github.com:$projectRepository.git"
-                url = projectUrl
-                tag = "HEAD"
-            }
-        }
-
     }
 
 }
@@ -162,5 +117,56 @@ configure(javaProjects) {
     tasks.withType<Javadoc> {
         isFailOnError = false
         options.encoding(encoding)
+    }
+}
+
+configure(javaProjects + dependencyProjects) {
+
+    apply {
+        plugin("signing")
+        plugin(catalogLibs.plugins.publish.get().pluginId)
+    }
+
+    mavenPublishing {
+        val projectRepository = "lingting-projects/lingting-live.lingting.framework"
+        val projectUrl = "https://github.com/$projectRepository"
+
+        publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
+        signAllPublications()
+
+        pom {
+            name = project.name
+            description = if (project.description.isNullOrBlank()) {
+                project.name
+            } else {
+                project.description
+            }
+            url = projectUrl
+
+            licenses {
+                license {
+                    name = "MIT License"
+                    url = "https://www.opensource.org/licenses/mit-license.php"
+                    distribution = "repo"
+                }
+            }
+
+            developers {
+                developer {
+                    id = "lingting"
+                    name = id
+                    email = "sunlisten.gzm@gmail.com"
+                    url = "https://github.com/lingting"
+                }
+            }
+
+            scm {
+                connection = "scm:git:git@github.com:$projectRepository.git"
+                developerConnection = "scm:git:git@github.com:$projectRepository.git"
+                url = projectUrl
+                tag = "HEAD"
+            }
+        }
+
     }
 }
