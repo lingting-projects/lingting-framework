@@ -128,7 +128,7 @@ configure(javaProjects + dependencyProjects) {
     }
 
     mavenPublishing {
-        val projectRepository = "lingting-projects/lingting-live.lingting.framework"
+        val projectRepository = "lingting-projects/lingting-framework"
         val projectUrl = "https://github.com/$projectRepository"
 
         publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
