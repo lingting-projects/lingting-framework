@@ -35,6 +35,9 @@ idea {
 allprojects {
     group = projectGroup
     version = projectVersion
+}
+
+configure(javaProjects + dependencyProjects) {
 
     apply {
         plugin("idea")
