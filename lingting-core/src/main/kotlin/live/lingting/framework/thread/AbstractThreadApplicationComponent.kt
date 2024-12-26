@@ -73,6 +73,8 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
         executor = VirtualThread.executor()
     }
 
+    abstract fun wake();
+
     override fun onApplicationStart() {
         threadValue.consumer {
             // 已分配, 不再重新分配
@@ -106,6 +108,7 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
     override fun onApplicationStopBefore() {
         log.warn("Class: {}; ThreadId: {}; before interrupt!", simpleName, threadId())
         if (safe) {
+            wake()
             log.debug("Class: {}; ThreadId: {}; is safe!", simpleName, threadId())
             awaitTerminated()
         }

@@ -50,7 +50,6 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
 
     protected val data: MutableList<E> = ArrayList<E>(batchSize)
 
-
     override val isRun: Boolean
         // 开启安全模式时必须在队列空的情况下关闭
         get() = super.isRun || (safe && queueSize.toLong() > 0)
@@ -61,7 +60,11 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
      * 往队列插入数据
      * @param e 数据
      */
-    abstract fun put(e: E)
+    fun put(e: E?) {
+        put(QueueItem(QueueSignal.DATA, e))
+    }
+
+    abstract fun put(item: QueueItem<E>)
 
     /**
      * 数据处理前执行
@@ -76,7 +79,7 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
      * @return E
      * @throws InterruptedException 线程中断
      */
-    protected abstract fun poll(timeout: Duration): E?
+    protected abstract fun poll(timeout: Duration): QueueItem<E>?
 
     /**
      * 处理单个接收的数据
@@ -110,7 +113,9 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
         var count = 0
         val watch = StopWatch()
         while (count < this.batchSize) {
-            val e = poll()
+            val item = poll()
+            // 唤醒信号值忽略
+            val e = if (item?.signal != QueueSignal.DATA) null else item.data
             val p = if (e != null) process(e) else null
 
             if (p != null) {
@@ -150,8 +155,8 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
         return data.isNotEmpty() && watch.timeMillis() >= this.batchTimeout.toMillis()
     }
 
-    fun poll(): E? {
-        var e: E? = null
+    fun poll(): QueueItem<E>? {
+        var e: QueueItem<E>? = null
         try {
             val duration: Duration = this.pollTimeout
             e = poll(duration)
@@ -162,6 +167,10 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
         return e
     }
 
+    override fun wake() {
+        put(QueueItem<E>(QueueSignal.WAKE, null))
+    }
+
     /**
      * 线程被中断后的处理. 如果有缓存手段可以让数据进入缓存.
      */
@@ -169,4 +178,9 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
         log.warn("Class: {}; ThreadId: {}; shutdown! data: {}", simpleName, threadId(), data)
     }
 
+    data class QueueItem<E>(val signal: QueueSignal, val data: E?)
+
+    enum class QueueSignal {
+        DATA, WAKE
+    }
 }

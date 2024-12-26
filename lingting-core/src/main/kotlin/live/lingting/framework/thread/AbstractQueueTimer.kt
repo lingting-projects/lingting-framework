@@ -9,7 +9,7 @@ import live.lingting.framework.lock.JavaReentrantLock
  * @author lingting 2023-04-22 10:39
  */
 abstract class AbstractQueueTimer<T> : AbstractThreadApplicationComponent() {
-    protected val lock: JavaReentrantLock = JavaReentrantLock()
+    protected val lock = JavaReentrantLock()
 
     protected val queue: PriorityQueue<T> = PriorityQueue(comparator)
 
@@ -69,6 +69,10 @@ abstract class AbstractQueueTimer<T> : AbstractThreadApplicationComponent() {
     }
 
     protected abstract fun process(t: T)
+
+    override fun wake() {
+        lock.runByTry { lock.signalAll() }
+    }
 
     override fun onInterrupt() {
         log.warn("Class: {}; ThreadId: {}; interrupt! unprocessed data size: {}", simpleName, threadId(), queue.size)

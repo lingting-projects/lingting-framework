@@ -30,7 +30,7 @@ abstract class AbstractTimer : AbstractThreadApplicationComponent() {
     /**
      * 唤醒定时器, 立即执行代码
      */
-    fun wake() {
+    override fun wake() {
         lock.runByTry { lock.signalAll() }
     }
 
