@@ -12,6 +12,9 @@ class HttpUtilsTest {
 
     @Test
     fun test() {
+        assertTrue(HttpUtils.isHttpUrl("http://a.b.com/index/c?d=e&r=https://www.baidu.com"))
+        assertTrue(HttpUtils.isHttpUrl("http://a.example.com/index.html"))
+        assertTrue(HttpUtils.isHttpUrl("http://a.b.example.com/index.html"))
         assertTrue(HttpUtils.isHttpUrl("http://example.com/index.html"))
         assertTrue(HttpUtils.isHttpUrl("http://testsite.org:8080/about?a+b"))
         assertTrue(HttpUtils.isHttpUrl("http://demo.net/products?a=s j&2"))
@@ -44,6 +47,9 @@ class HttpUtilsTest {
         assertTrue(HttpUtils.isHttpUrl("http://othersite.co:8080/index.html"))
         assertTrue(HttpUtils.isHttpUrl("https://bucket.oss-accelerate.aliyuncs.com/tid/uid/avatar/websocket_cid_t1_t2_f.jpg"))
 
+        assertEquals("a.b.com", HttpUtils.pickHost("http://a.b.com/index/c?d=e&r=https://www.baidu.com"))
+        assertEquals("a.example.com", HttpUtils.pickHost("http://a.example.com/index.html"))
+        assertEquals("a.b.example.com", HttpUtils.pickHost("http://a.b.example.com/index.html"))
         assertEquals("example.com", HttpUtils.pickHost("http://example.com/index.html"))
         assertEquals("testsite.org:8080", HttpUtils.pickHost("http://testsite.org:8080/about?a+b"))
         assertEquals("demo.net", HttpUtils.pickHost("http://demo.net/products?a=s j&2"))

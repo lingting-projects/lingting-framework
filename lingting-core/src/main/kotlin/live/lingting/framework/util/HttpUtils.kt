@@ -36,18 +36,24 @@ object HttpUtils {
     }
 
     @JvmStatic
-    fun isHttpUrl(string: String): Boolean {
+    fun isHttpUrl(string: String?): Boolean {
+        if (string.isNullOrBlank()) {
+            return false
+        }
         val matcher = PATTERN.matcher(string)
         return matcher.matches()
     }
 
     @JvmStatic
-    fun pickHost(string: String): String {
+    fun pickHost(string: String?): String? {
+        if (string.isNullOrBlank()) {
+            return null
+        }
         val matcher = PATTERN.matcher(string)
         if (matcher.matches()) {
             return matcher.group(1)
         }
-        return ""
+        return null
     }
 
 }
