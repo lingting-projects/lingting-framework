@@ -13,23 +13,33 @@ import live.lingting.framework.util.ArrayUtils.isEmpty
 /**
  * @author lingting 2023-03-29 20:45
  */
-open class SecurityAuthorize(@JvmField val order: Int) {
-    fun findAuthorize(cls: Class<*>?, method: Method?): Authorize? {
-        if (cls == null) {
+open class SecurityAuthorize @JvmOverloads constructor(
+    @JvmField val order: Int,
+    @JvmField val customizers: List<SecurityAuthorizationCustomizer> = emptyList()
+) {
+    companion object {
+        @JvmStatic
+        fun findAuthorize(cls: Class<*>?, method: Method?): Authorize? {
+            if (method != null) {
+                val authorize = findAnnotation(method, Authorize::class.java)
+                if (authorize != null) {
+                    return authorize
+                }
+            }
+            if (cls != null) {
+                return findAnnotation(cls, Authorize::class.java)
+            }
             return null
         }
-        if (method != null) {
-            val authorize = findAnnotation(method, Authorize::class.java)
-            if (authorize != null) {
-                return authorize
-            }
-        }
-        return findAnnotation(cls, Authorize::class.java)
+
     }
 
     fun valid(cls: Class<*>?, method: Method?) {
         val authorize = findAuthorize(cls, method)
         valid(authorize)
+        for (customizer in customizers) {
+            customizer.valid(cls, method, authorize)
+        }
     }
 
     /**
