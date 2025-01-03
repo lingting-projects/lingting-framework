@@ -77,6 +77,6 @@ data class IndexInfo(
     /**
      * 是否存在多个索引
      */
-    val hasMulti = polymerizeFields.size > 1
+    val hasMulti = polymerizeFields.isNotEmpty()
 
 }
