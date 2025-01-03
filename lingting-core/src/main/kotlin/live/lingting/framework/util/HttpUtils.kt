@@ -19,8 +19,10 @@ object HttpUtils {
 
     const val HEADER_ACCEPT_LANGUAGE: String = "Accept-Language"
 
+    const val PATTERN_REGEX: String = "^https?://(([a-zA-Z0-9.\\-]+)(:[0-9]+)?)(/.*)?\$"
+
     @JvmField
-    val PATTERN: Pattern = Pattern.compile("^https?://(([a-zA-Z0-9.\\-]+)(:[0-9]+)?)(/.*)?\$")!!
+    val PATTERN: Pattern = Pattern.compile(PATTERN_REGEX)!!
 
     @JvmStatic
     fun headers(request: HttpServletRequest): HttpHeaders {

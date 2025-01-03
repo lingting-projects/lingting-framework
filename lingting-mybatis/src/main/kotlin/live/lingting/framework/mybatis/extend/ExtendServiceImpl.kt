@@ -11,6 +11,7 @@ import java.util.function.BiConsumer
 import java.util.function.Predicate
 import live.lingting.framework.api.PaginationParams
 import live.lingting.framework.function.ThrowingSupplier
+import live.lingting.framework.value.CursorValue
 import live.lingting.framework.value.WaitValue
 import org.apache.ibatis.binding.MapperMethod.ParamMap
 import org.apache.ibatis.logging.Log
@@ -169,4 +170,5 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
         }
     }
 
+    override fun cursor(params: PaginationParams): CursorValue<T> = mapper.cursor(params)
 }

@@ -37,7 +37,7 @@ import java.util.function.BiConsumer
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.UnaryOperator
-import live.lingting.framework.api.LimitCursor
+import live.lingting.framework.api.PaginationCursor
 import live.lingting.framework.api.PaginationParams
 import live.lingting.framework.api.PaginationResult
 import live.lingting.framework.api.ScrollCursor
@@ -541,15 +541,12 @@ class ElasticsearchApi<T>(
         client.clearScroll { scr -> scr.scrollId(scrollId) }
     }
 
-    fun pageCursor(params: PaginationParams, vararg queries: Query): LimitCursor<T> {
+    fun pageCursor(params: PaginationParams, vararg queries: Query): PaginationCursor<T> {
         return pageCursor(params, QueryBuilder.builder<T>(*queries))
     }
 
-    fun pageCursor(params: PaginationParams, queries: QueryBuilder<T>): LimitCursor<T> {
-        return LimitCursor(ThrowingFunction<Long, PaginationResult<T>> { page ->
-            params.page = page
-            page(params, queries)
-        })
+    fun pageCursor(params: PaginationParams, queries: QueryBuilder<T>): PaginationCursor<T> {
+        return PaginationCursor(params) { page(it, queries) }
     }
 
     fun scrollCursor(params: ScrollParams<String>, vararg queries: Query): ScrollCursor<T, String> {
