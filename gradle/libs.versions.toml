@@ -21,6 +21,7 @@ spring-boot-classpath = { group = "org.springframework.boot", name = "spring-boo
 spring-formatter-plugin = { group = "io.spring.javaformat", name = "spring-javaformat-gradle-plugin", version.ref = "formatter" }
 spring-formatter-checkstyle = { group = "io.spring.javaformat", name = "spring-javaformat-checkstyle", version.ref = "formatter" }
 spring-boot-dependencies = { group = "org.springframework.boot", name = "spring-boot-dependencies", version.ref = "springBoot" }
+spring-boot-admin-dependencies = { group = "de.codecentric", name = "spring-boot-admin-dependencies", version.ref = "springBoot" }
 polaris-dependencies = { group = "com.tencent.polaris", name = "polaris-dependencies", version.ref = "polaris" }
 grpc-dependencies = { group = "io.grpc", name = "grpc-bom", version.ref = "grpc" }
 grpc-protobuf-plugin = { group = "com.google.protobuf", name = "protobuf-gradle-plugin", version.ref = "grpcProtobuf" }
@@ -43,7 +44,7 @@ kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", versio
 kotlin-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
 
 [bundles]
-dependencies = ["spring-boot-dependencies", "grpc-dependencies"]
+dependencies = ["spring-boot-dependencies", "grpc-dependencies", "spring-boot-admin-dependencies"]
 annotation = []
 ksp = []
 implementation = ["slf4j", "kotlin-reflect", "kotlin-stdlib", "kotlin-coroutines-core"]
