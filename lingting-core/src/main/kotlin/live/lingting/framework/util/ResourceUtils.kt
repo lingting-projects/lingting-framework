@@ -28,7 +28,9 @@ object ResourceUtils {
     @JvmStatic
     fun get(loader: ClassLoader, name: String): Resource? {
         val url = loader.getResource(name) ?: return null
-        val resources = resolver(url)
+        val resources = resolver(url).filter {
+            it.name == name || it.link.endsWith(name)
+        }
         return resources.firstOrNull()
     }
 
