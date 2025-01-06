@@ -131,11 +131,7 @@ open class Async @JvmOverloads constructor(
      * @param duration       超时时间
      * @param forceInterrupt 是否强制中断已超时的任务
      */
-    /**
-     * 等待结束, 执行时间超过超时时间的任务强行中断
-     * @param duration 超时时间
-     */
-
+    @JvmOverloads
     fun await(duration: Duration? = null, forceInterrupt: Boolean = true) {
         val supplier = Supplier {
             val count = notCompletedCount()
@@ -181,6 +177,12 @@ open class Async @JvmOverloads constructor(
      */
     fun allCount(): Long {
         return all.size.toLong()
+    }
+
+    fun clearCompleted() {
+        val list = completed.toList()
+        all.removeAll(list)
+        completed.removeAll(list)
     }
 
 }
