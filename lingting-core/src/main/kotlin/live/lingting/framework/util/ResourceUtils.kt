@@ -75,9 +75,11 @@ object ResourceUtils {
         val connection = url.openConnection()
         if (connection is JarURLConnection) {
             val jarPaths = root.split(Resource.DELIMITER_JAR).dropLastWhile { it.isEmpty() }.dropLast(1)
-            val jarPath = jarPaths.joinToString(Resource.DELIMITER_JAR)
-                .substring(protocol.length + Resource.DELIMITER_PROTOCOL.length)
-                .let { it + Resource.DELIMITER_JAR }
+            val jarPath = if (jarPaths.isEmpty()) "" else {
+                jarPaths.joinToString(Resource.DELIMITER_JAR)
+                    .substring(protocol.length + Resource.DELIMITER_PROTOCOL.length)
+                    .let { it + Resource.DELIMITER_JAR }
+            }
             val jarFile = connection.jarFile
             val entries = jarFile.entries()
             while (entries.hasMoreElements()) {
