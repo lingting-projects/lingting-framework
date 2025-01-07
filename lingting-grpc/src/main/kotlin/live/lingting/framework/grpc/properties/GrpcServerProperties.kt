@@ -26,4 +26,11 @@ class GrpcServerProperties {
     var traceOrder: Int = Int.MIN_VALUE + 100
 
     var exceptionHandlerOrder: Int = Int.MIN_VALUE + 200
+
+    /**
+     * 当上下文在关闭阶段时, 是否拒绝请求
+     * @see live.lingting.framework.application.ApplicationHolder.isStop
+     */
+    var rejectRequestOnStop = true
+
 }
