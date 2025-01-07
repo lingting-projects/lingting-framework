@@ -18,7 +18,7 @@ open class Async @JvmOverloads constructor(
     /**
      * 异步任务使用的线程池
      */
-    protected val executor: Executor? = defaultExecutor,
+    protected val executor: Executor = defaultExecutor,
     /**
      * 线程数量限制. -1 表示不限制
      */
@@ -71,11 +71,17 @@ open class Async @JvmOverloads constructor(
 
     constructor(limit: Long) : this(defaultExecutor, limit)
 
+    /**
+     * 是否可以无限制使用线程
+     */
     val isUnlimited: Boolean
-        /**
-         * 是否可以无限制使用线程
-         */
         get() = limit == UNLIMITED
+
+    /**
+     * 是否已满, 不能立即执行新任务
+     */
+    val isFull: Boolean
+        get() = !isUnlimited && running.size >= limit
 
     fun execute(runnable: Runnable) {
         execute("", runnable)
@@ -117,12 +123,13 @@ open class Async @JvmOverloads constructor(
     fun walk() {
         // 上锁确保不会多执行
         lock.runByInterruptibly {
-            // 无限制 || 可以执行新任务
-            if (isUnlimited || running.size < limit) {
-                val runnable = queue.poll() ?: return@runByInterruptibly
-                executor!!.execute(runnable)
-                running.add(runnable)
+            // 已满
+            if (isFull) {
+                return@runByInterruptibly
             }
+            val runnable = queue.poll() ?: return@runByInterruptibly
+            executor.execute(runnable)
+            running.add(runnable)
         }
     }
 
@@ -153,6 +160,11 @@ open class Async @JvmOverloads constructor(
         }
         ValueUtils.awaitTrue(supplier)
     }
+
+    /**
+     * 等待可线程空闲, 此时可立即执行新任务
+     */
+    fun awaitIdle() = ValueUtils.awaitFalse { isFull }
 
     /**
      * 执行中和待执行的任务数量
