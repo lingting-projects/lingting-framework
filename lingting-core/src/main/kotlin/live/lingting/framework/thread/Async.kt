@@ -104,7 +104,7 @@ open class Async @JvmOverloads constructor(
 
             override fun onFinally() {
                 super.onFinally()
-                lock.runByInterruptibly {
+                lock.run {
                     completed.add(this)
                     running.remove(this)
                     walk()
