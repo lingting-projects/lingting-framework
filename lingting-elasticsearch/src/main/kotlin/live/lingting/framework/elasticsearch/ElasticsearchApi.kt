@@ -305,8 +305,8 @@ class ElasticsearchApi<T>(
         queries: QueryBuilder<T>
     ): Boolean {
         return updateByQuery(operator, script, queries) {
-            val total = it.total()
-            total != null && total > 0
+            val updated = it.updated()
+            updated != null && updated > 0
         }
     }
 
