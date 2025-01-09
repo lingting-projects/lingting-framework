@@ -30,7 +30,7 @@ class AsyncTest {
         val watch = StopWatch()
         watch.start()
 
-        val async = Async(executor)
+        val async = Async(executor!!)
         for (i in 0 until max) {
             async.submit("Async-$i") { LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(500)) }
         }
@@ -53,7 +53,7 @@ class AsyncTest {
     fun doTestLimit() {
         val limit: Long = 5
         val max = 10
-        val async = Async(executor, limit)
+        val async = Async(executor!!, limit)
         for (i in 0 until max) {
             async.submit("Async-$i") { LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(500)) }
         }
@@ -77,7 +77,7 @@ class AsyncTest {
 
     fun doTestMulti() {
         val max = 100000
-        val async = Async(executor)
+        val async = Async(executor!!)
         for (i in 0 until max) {
             async.submit("Async-$i") { LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1)) }
         }

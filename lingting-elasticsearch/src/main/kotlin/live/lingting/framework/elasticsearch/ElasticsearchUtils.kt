@@ -3,12 +3,10 @@ package live.lingting.framework.elasticsearch
 import co.elastic.clients.elasticsearch._types.FieldValue
 import co.elastic.clients.elasticsearch._types.SortOptions
 import co.elastic.clients.json.JsonData
-import java.util.concurrent.ConcurrentHashMap
 import live.lingting.framework.api.PaginationParams
 import live.lingting.framework.elasticsearch.composer.SortComposer
 import live.lingting.framework.reflect.LambdaMeta
 import live.lingting.framework.util.ClassUtils
-import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StringUtils
 import org.elasticsearch.client.ResponseException
 
@@ -18,10 +16,6 @@ import org.elasticsearch.client.ResponseException
 @Suppress("UNCHECKED_CAST")
 object ElasticsearchUtils {
 
-    private val EF_LAMBDA_CACHE: MutableMap<Class<out EFunction<*, *>>, LambdaMeta?> = ConcurrentHashMap()
-
-    private val log = logger()
-
     @JvmStatic
     fun <T> getEntityClass(cls: Class<*>): Class<T> {
         val list = ClassUtils.classArguments(cls)
@@ -30,15 +24,7 @@ object ElasticsearchUtils {
 
     @JvmStatic
     fun <T, R> resolve(function: EFunction<T, R>): LambdaMeta? {
-        val fClass: Class<out EFunction<*, *>> = function.javaClass
-        return EF_LAMBDA_CACHE.computeIfAbsent(fClass) {
-            try {
-                LambdaMeta.of(function)
-            } catch (e: Exception) {
-                log.error("resolve lambda error!", e)
-                null
-            }
-        }
+        return LambdaMeta.of(function)
     }
 
     @JvmStatic

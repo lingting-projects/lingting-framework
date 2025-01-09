@@ -416,6 +416,48 @@ object ClassUtils {
     }
 
     @JvmStatic
+    fun isSuper(cls: Class<*>?, superClassName: String): Boolean {
+        if (cls == null) {
+            return false
+        }
+        if (superClassName == Any::class.java.name) {
+            return true
+        }
+
+        if (cls == Any::class.java) {
+            return false
+        }
+
+        if (cls.name == superClassName) {
+            return true
+        }
+
+        // 找父类
+        if (isSuper(cls.superclass, superClassName)) {
+            return true
+        }
+
+        // 接口
+        return cls.interfaces.any { isSuper(it, superClassName) }
+    }
+
+    /**
+     * cls 是否是 superClass 的子类
+     */
+    @JvmStatic
+    fun isSuper(cls: Class<*>, superClass: Class<*>): Boolean {
+        if (superClass == Any::class.java) {
+            return true
+        }
+        if (cls == Any::class.java) {
+            return false
+        }
+        return superClass.isAssignableFrom(cls)
+    }
+
+    fun isSuper(cls: KClass<*>, superClass: KClass<*>) = isSuper(cls.java, superClass.java)
+
+    @JvmStatic
     fun <T> constructors(cls: Class<T>): Array<Constructor<T>> {
         return CACHE_CONSTRUCTOR.computeIfAbsent(cls) { it.constructors } as Array<Constructor<T>>
     }
