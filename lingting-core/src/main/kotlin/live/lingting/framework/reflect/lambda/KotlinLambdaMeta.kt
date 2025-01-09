@@ -13,9 +13,10 @@ class KotlinLambdaMeta(
 
         fun getDelegate(source: Any): Any {
             val methods = ClassUtils.methods(source.javaClass)
-            return methods.first {
+            val method = methods.first {
                 it.name == "getFunctionDelegate"
             }.apply { isAccessible = true }
+            return method.invoke(source)
         }
 
     }
