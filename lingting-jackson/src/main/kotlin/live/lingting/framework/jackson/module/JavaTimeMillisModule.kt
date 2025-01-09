@@ -1,35 +1,19 @@
 package live.lingting.framework.jackson.module
 
-import com.fasterxml.jackson.databind.module.SimpleModule
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer
-import java.time.LocalDateTime
-import java.time.LocalTime
+import com.fasterxml.jackson.core.util.JacksonFeatureSet
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeFeature
+import java.time.format.DateTimeFormatter
 import live.lingting.framework.time.DatePattern
 
 /**
  * 精确到毫秒的序列化
  */
-class JavaTimeMillisModule : SimpleModule() {
-    init {
-        addSerializer(
-            LocalDateTime::class.java,
-            LocalDateTimeSerializer(DatePattern.FORMATTER_YMD_HMS_MILLIS)
-        )
-        addSerializer(
-            LocalTime::class.java,
-            LocalTimeSerializer(DatePattern.FORMATTER_HMS_MILLIS)
-        )
+class JavaTimeMillisModule @JvmOverloads constructor(
+    features: JacksonFeatureSet<JavaTimeFeature> = JacksonFeatureSet.fromDefaults(JavaTimeFeature.entries.toTypedArray())
+) : JavaTimeModule(features) {
 
-        addDeserializer(
-            LocalDateTime::class.java,
-            LocalDateTimeDeserializer(DatePattern.FORMATTER_YMD_HMS_MILLIS)
-        )
-        addDeserializer(
-            LocalTime::class.java,
-            LocalTimeDeserializer(DatePattern.FORMATTER_HMS_MILLIS)
-        )
-    }
+    override val localDateTime: DateTimeFormatter = DatePattern.FORMATTER_YMD_HMS_MILLIS
+
+    override val localTime: DateTimeFormatter = DatePattern.FORMATTER_HMS_MILLIS
+
 }

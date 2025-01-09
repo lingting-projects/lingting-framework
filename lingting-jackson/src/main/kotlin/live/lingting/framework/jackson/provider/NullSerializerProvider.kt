@@ -16,6 +16,29 @@ import live.lingting.framework.jackson.serializer.NullStringJsonSerializer
  * @author lingting
  */
 class NullSerializerProvider : DefaultSerializerProvider {
+
+    companion object {
+
+        /**
+         * null array 或 list，set 则转 '[]'
+         */
+        @JvmStatic
+        val nullArrayJsonSerializer = NullArrayJsonSerializer()
+
+        /**
+         * null Map 转 '{}'
+         */
+        @JvmStatic
+        val nullMapJsonSerializer = NullMapJsonSerializer()
+
+        /**
+         * null 字符串转 ''
+         */
+        @JvmStatic
+        val nullStringJsonSerializer = NullStringJsonSerializer()
+
+    }
+
     constructor() : super()
 
     constructor(src: NullSerializerProvider) : super(src)
@@ -82,24 +105,4 @@ class NullSerializerProvider : DefaultSerializerProvider {
         return clazz.isArray || MutableCollection::class.java.isAssignableFrom(clazz)
     }
 
-    companion object {
-
-        /**
-         * null array 或 list，set 则转 '[]'
-         */
-        @JvmStatic
-        val nullArrayJsonSerializer = NullArrayJsonSerializer()
-
-        /**
-         * null Map 转 '{}'
-         */
-        @JvmStatic
-        val nullMapJsonSerializer = NullMapJsonSerializer()
-
-        /**
-         * null 字符串转 ''
-         */
-        @JvmStatic
-        val nullStringJsonSerializer = NullStringJsonSerializer()
-    }
 }
