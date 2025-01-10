@@ -76,7 +76,7 @@ object Wrappers {
         return QueryWrapper<T>().also {
             it.e = t
             if (t != null) {
-                cls(t::class.java as Class<T>)
+                it.cls(t::class.java as Class<T>)
             }
         }
     }
@@ -98,7 +98,7 @@ object Wrappers {
         return UpdateWrapper<T>().also {
             it.e = t
             if (t != null) {
-                cls(t::class.java as Class<T>)
+                it.cls(t::class.java as Class<T>)
             }
         }
     }
