@@ -22,7 +22,7 @@ object GrpcThreadExecutorInterceptor : ClientInterceptor, ServerInterceptor, Seq
     val log = logger()
 
     fun clear() {
-        GrpcThreadExecutorCustomizer.THREAD_MAP.remove(Thread.currentThread())?.stop()
+        GrpcThreadExecutorCustomizer.THREAD_MAP.remove(Thread.currentThread())?.onFinally()
     }
 
     override fun <ReqT : Any, RespT : Any> interceptCall(call: ServerCall<ReqT, RespT>, headers: io.grpc.Metadata, next: ServerCallHandler<ReqT, RespT>):

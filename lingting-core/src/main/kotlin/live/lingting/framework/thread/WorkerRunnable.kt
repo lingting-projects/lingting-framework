@@ -10,28 +10,31 @@ import live.lingting.framework.value.WaitValue
  * @author lingting 2024/12/23 17:25
  */
 abstract class WorkerRunnable : Runnable {
-    val log = logger()
+    protected val log = logger()
 
-    val queue = LinkedBlockingQueue<Runnable>()
+    protected val queue = LinkedBlockingQueue<Runnable>()
 
     /**
-     * 是否结束
+     * 是否完成
      */
-    val state = AtomicBoolean(true)
+    protected val finish = AtomicBoolean(false)
 
-    val threadValue = WaitValue.of<Thread>()
+    protected val threadValue = WaitValue.of<Thread>()
 
     open fun push(runnable: Runnable) {
+        check(!finish.get()) { "worker is finish!" }
         queue.add(runnable)
     }
 
     override fun run() {
+        if (isFinish()) {
+            log.error("worker is finish! not allowed to run again!")
+            return
+        }
         try {
-            if (!state.compareAndSet(true, false)) {
-                return
-            }
+            onStart()
             threadValue.update(Thread.currentThread())
-            while (!state.get()) {
+            while (!finish.get()) {
                 val thread = threadValue.value
                 if (thread == null || thread.isInterrupted || !thread.isAlive) {
                     break
@@ -39,19 +42,25 @@ abstract class WorkerRunnable : Runnable {
                 queue.poll(10, TimeUnit.MINUTES)?.run()
             }
         } finally {
-            stop()
+            if (finish.compareAndSet(false, true)) {
+                push { }
+                onFinally()
+            }
         }
     }
 
     fun isStarted(): Boolean = !threadValue.isNull
 
-    fun isRunning(): Boolean = !state.get() && isStarted()
+    fun isRunning(): Boolean = isStarted() && !isFinish()
 
-    fun isStopped(): Boolean = state.get()
+    fun isFinish(): Boolean = finish.get()
 
-    open fun stop() {
-        state.set(false)
-        push { }
+    open fun onStart() {
+        //
+    }
+
+    open fun onFinally() {
+        //
     }
 
 }
