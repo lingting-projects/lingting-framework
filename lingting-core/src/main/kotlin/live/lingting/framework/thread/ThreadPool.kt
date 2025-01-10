@@ -41,7 +41,7 @@ object ThreadPool {
     @JvmOverloads
     fun update(executor: ThreadPoolExecutor, closeOld: Boolean = true): ThreadPoolExecutorServiceImpl {
         val old = instance.executor()
-        return instance.executor(executor).apply {
+        return instance.executor(executor).also {
             // 替换成功后关闭原线程池
             if (closeOld && old != executor && (old.isShutdown || !old.isTerminated)) {
                 old.shutdown()

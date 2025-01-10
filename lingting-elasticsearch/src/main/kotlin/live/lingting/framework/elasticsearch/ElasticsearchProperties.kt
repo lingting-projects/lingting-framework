@@ -33,7 +33,6 @@ class ElasticsearchProperties {
          */
         var separate = "_"
 
-        var autoCreate = false
     }
 
     class Retry {

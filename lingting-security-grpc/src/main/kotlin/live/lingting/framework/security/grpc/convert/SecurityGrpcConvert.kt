@@ -82,10 +82,10 @@ open class SecurityGrpcConvert : SecurityConvert {
     }
 
     fun toToken(po: SecurityGrpcAuthorization.TokenPO): SecurityToken {
-        val p = EndpointTokenPO().apply {
-            raw = po.raw
-            type = po.type
-            value = po.value
+        val p = EndpointTokenPO().also {
+            it.raw = po.raw
+            it.type = po.type
+            it.value = po.value
         }
         return toToken(p)
     }

@@ -73,8 +73,8 @@ object Wrappers {
 
     @JvmStatic
     fun <T : Any> query(t: T?): QueryWrapper<T> {
-        return QueryWrapper<T>().apply {
-            e = t
+        return QueryWrapper<T>().also {
+            it.e = t
             if (t != null) {
                 cls(t::class.java as Class<T>)
             }
@@ -95,8 +95,8 @@ object Wrappers {
 
     @JvmStatic
     fun <T : Any> update(t: T?): UpdateWrapper<T> {
-        return UpdateWrapper<T>().apply {
-            e = t
+        return UpdateWrapper<T>().also {
+            it.e = t
             if (t != null) {
                 cls(t::class.java as Class<T>)
             }

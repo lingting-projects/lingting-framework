@@ -30,11 +30,11 @@ class DingTalkLinkMessage : AbstractDingTalkMessage() {
     override val type: MessageTypeEnum = MessageTypeEnum.LINK
 
     override fun put(params: DingTalkParams): DingTalkParams {
-        val link = DingTalkParams.Link().apply {
-            text = this@DingTalkLinkMessage.text
-            title = this@DingTalkLinkMessage.title
-            picUrl = this@DingTalkLinkMessage.picUrl
-            messageUrl = this@DingTalkLinkMessage.messageUrl
+        val link = DingTalkParams.Link().also {
+            it.text = text
+            it.title = title
+            it.picUrl = picUrl
+            it.messageUrl = messageUrl
         }
         params.link = link
         return params

@@ -49,10 +49,10 @@ class DingTalkActionCardMessage : AbstractDingTalkMessage() {
     override val type: MessageTypeEnum = MessageTypeEnum.ACTION_CARD
 
     override fun put(params: DingTalkParams): DingTalkParams {
-        val card = ActionCard().apply {
-            title = this@DingTalkActionCardMessage.title
-            text = markdown?.build() ?: ""
-            btnOrientation = orientation.value
+        val card = ActionCard().also {
+            it.title = title
+            it.text = markdown?.build() ?: ""
+            it.btnOrientation = orientation.value
         }
 
         // 当 单按钮的 文本和链接都不为空时
