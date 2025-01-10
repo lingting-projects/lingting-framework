@@ -37,7 +37,7 @@ class ElasticsearchProperties {
     }
 
     class Retry {
-        var isEnabled: Boolean = false
+        var enable: Boolean = false
 
         /**
          * 最大重试次数

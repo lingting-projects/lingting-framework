@@ -101,7 +101,7 @@ class ElasticsearchApi<T>(
     }
 
     fun <R> retry(supplier: ThrowingSupplier<R>): R {
-        if (!retryProperties.isEnabled) {
+        if (!retryProperties.enable) {
             return supplier.get()
         }
 
