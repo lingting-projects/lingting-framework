@@ -15,7 +15,7 @@ open class ElasticsearchRetry<T>(
     supplier,
     ElasticsearchRetryFunction(retry)
 ) {
-    class ElasticsearchRetryFunction(val retry: ElasticsearchProperties.Retry) : RetryFunction {
+    open class ElasticsearchRetryFunction(val retry: ElasticsearchProperties.Retry) : RetryFunction {
         var versionConflictCount: Int = 0
             protected set
 
@@ -23,10 +23,6 @@ open class ElasticsearchRetry<T>(
             protected set
 
         override fun allowRetry(retryCount: Int, e: Throwable): Boolean {
-            if (!retry.isEnabled) {
-                return false
-            }
-
             // 版本控制异常
             if (ElasticsearchUtils.isVersionConflictException(e)) {
                 return allowVersionConflictRetry()
