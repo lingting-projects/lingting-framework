@@ -73,5 +73,11 @@ open class Retry<T>(
         return value
     }
 
+    fun nonNull(): T {
+        val t = get()
+        checkNotNull(t) { "Retry value must not be null!" }
+        return t
+    }
+
 }
 
