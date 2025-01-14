@@ -5,12 +5,12 @@ package live.lingting.framework.ali.properties
  */
 class AliOssProperties : AliProperties() {
 
-    override fun host(): String {
-        return "$scheme://$bucket.oss-$region.$endpoint"
-    }
-
     override fun copy(): AliOssProperties {
         return AliOssProperties().also { fill(it) }
+    }
+
+    override fun host(): String {
+        return "$scheme://$bucket.oss-$region.$endpoint"
     }
 
 }

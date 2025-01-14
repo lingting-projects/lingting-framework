@@ -2,11 +2,11 @@ package live.lingting.framework.aws
 
 
 import live.lingting.framework.aws.policy.Acl
-import live.lingting.framework.aws.s3.AwsS3Properties
 import live.lingting.framework.aws.s3.AwsS3Request
 import live.lingting.framework.aws.s3.AwsS3Utils
 import live.lingting.framework.aws.s3.impl.AwsS3DefaultListener
 import live.lingting.framework.aws.s3.interfaces.AwsS3Listener
+import live.lingting.framework.aws.s3.properties.S3Properties
 import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.api.ApiClient
 import live.lingting.framework.http.body.BodySource
@@ -18,7 +18,7 @@ import live.lingting.framework.value.multi.StringMultiValue
 /**
  * @author lingting 2024-09-19 15:02
  */
-abstract class AwsS3Client protected constructor(val properties: AwsS3Properties) : ApiClient<AwsS3Request>(properties.host()) {
+abstract class AwsS3Client protected constructor(val properties: S3Properties) : ApiClient<AwsS3Request>(properties.host()) {
     @JvmField
     val ak: String = properties.ak
 

@@ -1,9 +1,8 @@
 package live.lingting.framework.aws
 
-import com.fasterxml.jackson.databind.JsonNode
 import java.util.function.Consumer
-import live.lingting.framework.aws.s3.AwsS3Properties
 import live.lingting.framework.aws.s3.interfaces.AwsS3BucketInterface
+import live.lingting.framework.aws.s3.properties.S3Properties
 import live.lingting.framework.aws.s3.request.AwsS3SimpleRequest
 import live.lingting.framework.aws.s3.response.AwsS3MultipartItem
 import live.lingting.framework.http.HttpMethod
@@ -12,7 +11,7 @@ import live.lingting.framework.jackson.JacksonUtils
 /**
  * @author lingting 2024-09-19 15:09
  */
-class AwsS3Bucket(properties: AwsS3Properties) : AwsS3Client(properties), AwsS3BucketInterface {
+class AwsS3Bucket(properties: S3Properties) : AwsS3Client(properties), AwsS3BucketInterface {
     override fun use(key: String): AwsS3Object {
         return AwsS3Object(properties, key)
     }
@@ -36,7 +35,7 @@ class AwsS3Bucket(properties: AwsS3Properties) : AwsS3Client(properties), AwsS3B
                 val node = JacksonUtils.xmlToNode(xml)
                 val tree = node["Upload"] ?: return@convert list
                 if (tree.isArray && !tree.isEmpty) {
-                    tree.forEach(Consumer { it ->
+                    tree.forEach(Consumer {
                         val key = it["Key"].asText()
                         val uploadId = it["UploadId"].asText()
                         list.add(AwsS3MultipartItem(key, uploadId))

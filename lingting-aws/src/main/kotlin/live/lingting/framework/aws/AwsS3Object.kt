@@ -4,10 +4,10 @@ import java.io.File
 import java.io.InputStream
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
-import live.lingting.framework.aws.s3.AwsS3Properties
 import live.lingting.framework.aws.s3.AwsS3Request
 import live.lingting.framework.aws.s3.AwsS3Utils
 import live.lingting.framework.aws.s3.interfaces.AwsS3ObjectInterface
+import live.lingting.framework.aws.s3.properties.S3Properties
 import live.lingting.framework.aws.s3.request.AwsS3MultipartMergeRequest
 import live.lingting.framework.aws.s3.request.AwsS3ObjectPutRequest
 import live.lingting.framework.aws.s3.request.AwsS3SimpleRequest
@@ -24,7 +24,7 @@ import live.lingting.framework.thread.Async
 /**
  * @author lingting 2024-09-19 15:09
  */
-class AwsS3Object(properties: AwsS3Properties, override val key: String) : AwsS3Client(properties), AwsS3ObjectInterface {
+class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Client(properties), AwsS3ObjectInterface {
     // endregion
     val publicUrl: String = HttpUrlBuilder.builder().https().host(host).uri(key).build()
 
