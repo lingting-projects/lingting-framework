@@ -46,6 +46,12 @@ abstract class AwsS3Client protected constructor(val properties: S3Properties) :
         if (StringUtils.hasText(token)) {
             headers.put(AwsS3Utils.HEADER_TOKEN, token!!)
         }
+
+        request.meta.forEach { k, vs ->
+            val key = if (k.startsWith(AwsS3Utils.HEADER_META_PREFIX)) k else "${AwsS3Utils.HEADER_META_PREFIX}$k"
+            headers.addAll(key, vs)
+        }
+
         listener.onAuthorization(request, headers, params, now)
     }
 
@@ -55,4 +61,5 @@ abstract class AwsS3Client protected constructor(val properties: S3Properties) :
         }
         return response
     }
+
 }

@@ -31,13 +31,15 @@ object AwsS3Utils {
 
     const val HEADER_PREFIX: String = "x-amz"
 
-    const val HEADER_DATE: String = HEADER_PREFIX + "-date"
+    const val HEADER_DATE: String = "$HEADER_PREFIX-date"
 
-    const val HEADER_CONTENT_SHA256: String = HEADER_PREFIX + "-content-sha256"
+    const val HEADER_CONTENT_SHA256: String = "$HEADER_PREFIX-content-sha256"
 
-    const val HEADER_TOKEN: String = HEADER_PREFIX + "-security-token"
+    const val HEADER_TOKEN: String = "$HEADER_PREFIX-security-token"
 
-    const val HEADER_ACL: String = HEADER_PREFIX + "-acl"
+    const val HEADER_ACL: String = "$HEADER_PREFIX-acl"
+
+    const val HEADER_META_PREFIX: String = "$HEADER_PREFIX-meta-"
 
     @JvmStatic
     fun format(dateTime: LocalDateTime, formatter: DateTimeFormatter): String {

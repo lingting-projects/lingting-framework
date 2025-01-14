@@ -14,7 +14,7 @@ import live.lingting.framework.util.StreamUtils
 /**
  * @author lingting 2024-09-12 23:37
  */
-class HttpResponse(
+open class HttpResponse(
     protected val request: HttpRequest,
     protected val code: Int,
     protected val headers: HttpHeaders,

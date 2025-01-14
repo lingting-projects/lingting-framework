@@ -9,15 +9,6 @@ import live.lingting.framework.util.EnumerationUtils.forEach
  * @author lingting 2022/10/28 17:54
  */
 object HttpUtils {
-    const val HEADER_HOST: String = "Host"
-
-    const val HEADER_ORIGIN: String = "Origin"
-
-    const val HEADER_USER_AGENT: String = "User-Agent"
-
-    const val HEADER_AUTHORIZATION: String = "Authorization"
-
-    const val HEADER_ACCEPT_LANGUAGE: String = "Accept-Language"
 
     const val PATTERN_REGEX: String = "^https?://(([a-zA-Z0-9.\\-]+)(:[0-9]+)?)(/.*)?\$"
 
