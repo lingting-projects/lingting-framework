@@ -55,7 +55,7 @@ abstract class ApiClient<R : ApiRequest> protected constructor(@JvmField protect
 
     protected abstract fun checkout(request: R, response: HttpResponse): HttpResponse
 
-    protected fun call(r: R): HttpResponse {
+    fun call(r: R): HttpResponse {
         r.onCall()
         customize(r)
 
