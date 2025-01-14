@@ -7,4 +7,4 @@ import live.lingting.framework.aws.s3.interfaces.AwsS3ObjectDelegation
 /**
  * @author lingting 2024-09-19 21:23
  */
-class AliOssObject(properties: AliOssProperties, key: String) : AliOss<AwsS3Object>(AwsS3Object(properties.s3(), key)), AwsS3ObjectDelegation
+class AliOssObject(properties: AliOssProperties, key: String) : AliOss<AwsS3Object>(AwsS3Object(properties, key)), AwsS3ObjectDelegation

@@ -1,52 +1,23 @@
 package live.lingting.framework.aws.s3
 
-import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.policy.Credential
+import live.lingting.framework.aws.s3.properties.S3Properties
 
 /**
  * @author lingting 2024-09-12 21:20
  */
-open class AwsS3Properties {
-    @JvmField
-    var scheme: String = "https"
+open class AwsS3Properties : S3Properties() {
 
-    @JvmField
-    var prefix: String = "s3"
-
-    @JvmField
-    var connector: String = "."
-
-    @JvmField
     var region: String = ""
 
-    @JvmField
-    var endpoint: String = "amazonaws.com"
-
-    @JvmField
-    var bucket: String = ""
-
-    @JvmField
-    var acl: Acl = Acl.PRIVATE
-
-    @JvmField
-    var ak: String = ""
-
-    @JvmField
-    var sk: String = ""
-
-    @JvmField
     var token: String? = ""
 
-    fun <T : AwsS3Properties> fill(properties: T): T {
-        properties.scheme = scheme
-        properties.region = region
-        properties.endpoint = endpoint
-        properties.bucket = bucket
-        properties.acl = acl
-        properties.ak = ak
-        properties.sk = sk
-        properties.token = token
-        return properties
+    override fun fill(properties: S3Properties) {
+        super.fill(properties)
+        if (properties is AwsS3Properties) {
+            properties.region = region
+            properties.token = token
+        }
     }
 
     open fun copy(): AwsS3Properties {
@@ -61,7 +32,7 @@ open class AwsS3Properties {
         token = credential.token
     }
 
-    fun host(): String {
-        return "$scheme://$bucket.$prefix$connector$region.$endpoint"
+    override fun host(): String {
+        return "$scheme://$bucket.s3.$region.$endpoint"
     }
 }

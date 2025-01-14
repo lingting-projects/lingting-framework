@@ -28,7 +28,7 @@ open class Retry<T>(
      */
     protected var count: Int = 0
 
-    protected val logs by lazy { run() }
+    val logs by lazy { run() }
 
     protected open fun run(): List<RetryLog<T>> {
         return mutableListOf<RetryLog<T>>().apply {
@@ -65,8 +65,10 @@ open class Retry<T>(
         }.toList()
     }
 
+    fun last() = logs.last()
+
     fun get(): T? {
-        val (value, ex) = logs.last()
+        val (value, ex) = last()
         if (ex != null) {
             throw ex
         }

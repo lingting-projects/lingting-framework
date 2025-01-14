@@ -28,16 +28,16 @@ internal class RetryTest {
         }
 
         var retry: Retry<Int> = Retry.simple(4, Duration.ZERO, supplier)
-        var value = retry.value()
-        assertTrue(value.success)
-        assertEquals(expected, value.get())
-        assertEquals(4, value.logs.size)
+        var log = retry.last()
+        assertTrue(log.ex == null)
+        assertEquals(expected, log.value)
+        assertEquals(4, retry.logs.size)
 
         atomic.set(0)
         retry = Retry.simple(2, Duration.ZERO, supplier)
-        value = retry.value()
-        assertFalse(value.success)
-        assertNull(value.value)
-        assertEquals(3, value.logs.size)
+        log = retry.last()
+        assertFalse(log.ex == null)
+        assertNull(log.value)
+        assertEquals(3, retry.logs.size)
     }
 }
