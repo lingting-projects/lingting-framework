@@ -2,8 +2,8 @@ package live.lingting.framework.thread
 
 import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
+import java.util.concurrent.ThreadPoolExecutor
 import java.util.function.Supplier
 import live.lingting.framework.function.ThrowableRunnable
 
@@ -12,7 +12,7 @@ import live.lingting.framework.function.ThrowableRunnable
  */
 interface ThreadService {
 
-    fun executor(): ExecutorService
+    fun executor(): ThreadPoolExecutor
 
     val isRunning: Boolean
         get() {
@@ -45,4 +45,5 @@ interface ThreadService {
         val executor = executor()
         return executor.submit(callable)
     }
+
 }

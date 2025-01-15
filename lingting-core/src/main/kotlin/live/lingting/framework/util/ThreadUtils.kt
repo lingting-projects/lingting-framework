@@ -2,8 +2,8 @@ package live.lingting.framework.util
 
 import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
+import java.util.concurrent.ThreadPoolExecutor
 import java.util.function.Supplier
 import live.lingting.framework.function.ThrowableRunnable
 import live.lingting.framework.thread.KeepRunnable
@@ -23,7 +23,7 @@ object ThreadUtils {
     }
 
     @JvmStatic
-    fun executor(): ExecutorService {
+    fun executor(): ThreadPoolExecutor {
         return instance().executor()
     }
 
