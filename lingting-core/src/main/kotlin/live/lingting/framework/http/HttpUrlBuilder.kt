@@ -56,13 +56,20 @@ open class HttpUrlBuilder {
     }
 
     fun host(host: String): HttpUrlBuilder {
-        if (host.contains("://")) {
-            val split: Array<String> = host.split("://".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            scheme(split[0])
-            this.host = split[1]
-        } else {
-            this.host = host
+        var v = host
+        val schemeSplit = v.split("://", limit = 2)
+        if (schemeSplit.size > 1) {
+            scheme(schemeSplit[0])
+            v = schemeSplit[1]
         }
+
+        val portSplit = v.split(":", limit = 2)
+        if (portSplit.size > 1) {
+            port(portSplit[1].toInt())
+            v = portSplit[0]
+        }
+
+        this.host = v
         return this
     }
 
@@ -191,7 +198,7 @@ open class HttpUrlBuilder {
         try {
             val path = buildPath()
             val query = buildQuery()
-            val p = if (port == null) -1 else port!!
+            val p = port.let { if (it == null || it < 1) -1 else it }
             val q = if (StringUtils.hasText(query)) query else null
             return URI(scheme, null, host, p, path, q, null)
         } catch (e: URISyntaxException) {
