@@ -24,12 +24,11 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
     }
 
     protected fun absent(key: K): C {
-        var key = key
+        var key = convert(key)
         if (!allowModify && !hasKey(key)) {
             throw UnsupportedOperationException()
         }
-        key = convert(key)
-        return map.computeIfAbsent(key) { k -> supplier.get() }
+        return map.computeIfAbsent(key) { _ -> supplier.get() }
     }
 
     override fun ifAbsent(key: K) {
@@ -88,13 +87,12 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
     }
 
     override fun putAll(key: K, values: Iterable<V>) {
-        var key = key
         if (!allowModify) {
             throw UnsupportedOperationException()
         }
+        var key = convert(key)
         val c = supplier.get()
         values.forEach(Consumer<V> { e -> c.add(e) })
-        key = convert(key)
         map.put(key, c)
     }
 
@@ -151,8 +149,7 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
     }
 
     override fun hasKey(key: K): Boolean {
-        var key = key
-        key = convert(key)
+        var key = convert(key)
         return map.containsKey(key)
     }
 

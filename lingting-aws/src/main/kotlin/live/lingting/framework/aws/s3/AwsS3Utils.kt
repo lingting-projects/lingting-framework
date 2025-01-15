@@ -39,7 +39,7 @@ object AwsS3Utils {
 
     const val HEADER_ACL: String = "$HEADER_PREFIX-acl"
 
-    const val HEADER_META_PREFIX: String = "$HEADER_PREFIX-meta-"
+    const val HEADER_PREFIX_META: String = "$HEADER_PREFIX-meta-"
 
     @JvmStatic
     fun format(dateTime: LocalDateTime, formatter: DateTimeFormatter): String {

@@ -1,8 +1,8 @@
 package live.lingting.framework.aws
 
-import java.io.File
 import java.io.InputStream
 import live.lingting.framework.aws.policy.Acl
+import live.lingting.framework.aws.s3.AwsS3Meta
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
 import live.lingting.framework.aws.s3.AwsS3Request
 import live.lingting.framework.aws.s3.AwsS3Utils
@@ -17,8 +17,6 @@ import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.jackson.JacksonUtils
 import live.lingting.framework.multipart.Multipart
 import live.lingting.framework.multipart.Part
-import live.lingting.framework.stream.CloneInputStream
-import live.lingting.framework.stream.FileCloneInputStream
 import live.lingting.framework.thread.Async
 
 /**
@@ -33,47 +31,19 @@ class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Cli
         request.setAclIfAbsent(acl)
     }
 
-    // region get
     override fun publicUrl(): String {
         return publicUrl
     }
 
-    override fun head(): HttpHeaders {
+    override fun head(): AwsS3Meta {
         val request = AwsS3SimpleRequest(HttpMethod.HEAD)
         val response = call(request)
-        return response.headers()
+        val headers = response.headers()
+        return AwsS3Meta(source = headers)
     }
 
-    // endregion
-    // region put
-
-    override fun put(file: File) {
-        put(file, null)
-    }
-
-    override fun put(file: File, acl: Acl?) {
-        put(FileCloneInputStream(file), acl)
-    }
-
-    override fun put(input: InputStream) {
-        put(input, null)
-    }
-
-    override fun put(input: InputStream, acl: Acl?) {
-        put(FileCloneInputStream(input), acl)
-    }
-
-    override fun put(input: CloneInputStream) {
-        put(input, null)
-    }
-
-    override fun put(input: CloneInputStream, acl: Acl?) {
-        input.use {
-            val request = AwsS3ObjectPutRequest()
-            request.stream = input
-            request.acl = acl
-            call(request)
-        }
+    override fun put(request: AwsS3ObjectPutRequest) {
+        call(request)
     }
 
     override fun delete() {
@@ -81,24 +51,15 @@ class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Cli
         call(request)
     }
 
-    // endregion
-    // region multipart
-    override fun multipartInit(): String {
-        return multipartInit(null)
-    }
-
-    override fun multipartInit(acl: Acl?): String {
+    override fun multipartInit(acl: Acl?, meta: HttpHeaders?): String {
         val request = AwsS3SimpleRequest(HttpMethod.POST)
         request.acl = acl
         request.params.add("uploads")
+        meta?.run { request.meta.addAll(this) }
         val response = call(request)
         val xml = response.string()
         val node = JacksonUtils.xmlToNode(xml)
         return node["UploadId"].asText()
-    }
-
-    override fun multipart(source: InputStream): AwsS3MultipartTask {
-        return multipart(source, AwsS3Utils.MULTIPART_DEFAULT_PART_SIZE, Async(20))
     }
 
     override fun multipart(source: InputStream, parSize: Long, async: Async): AwsS3MultipartTask {

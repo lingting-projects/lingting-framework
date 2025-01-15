@@ -11,10 +11,9 @@ import live.lingting.framework.value.multi.StringMultiValue
  * @author lingting 2024-09-14 15:33
  */
 abstract class ApiRequest {
-    @JvmField
+
     val headers: HttpHeaders = HttpHeaders.empty()
 
-    @JvmField
     val params: StringMultiValue = StringMultiValue()
 
     abstract fun method(): HttpMethod

@@ -1,6 +1,5 @@
 package live.lingting.framework.huawei.obs
 
-
 import java.time.LocalDateTime
 import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.http.HttpMethod
@@ -15,7 +14,7 @@ import live.lingting.framework.value.multi.StringMultiValue
 /**
  * @author lingting 2024/11/5 11:18
  */
-class HuaweiObsSing(
+open class HuaweiObsSing(
     protected val dateTime: LocalDateTime,
     protected val method: String,
     protected val path: String?,
@@ -25,6 +24,34 @@ class HuaweiObsSing(
     protected val sk: String,
     protected val bucket: String
 ) {
+    companion object {
+        /**
+         * 仅以下子资源参与前面
+         */
+        val RESOURCE_KEYS = listOf(
+            "CDNNotifyConfiguration", "acl", "append", "attname", "backtosource", "cors", "customdomain", "delete",
+            "deletebucket", "directcoldaccess", "encryption", "inventory", "length", "lifecycle", "location", "logging",
+            "metadata", "mirrorBackToSource", "modify", "name", "notification", "obscompresspolicy", "orchestration",
+            "partNumber", "policy", "position", "quota", "rename", "replication", "response-cache-control",
+            "response-content-disposition", "response-content-encoding", "response-content-language", "response-content-type",
+            "response-expires", "restore", "storageClass", "storagePolicy", "storageinfo", "tagging", "torrent", "truncate",
+            "uploadId", "uploads", "versionId", "versioning", "versions", "website", "x-image-process",
+            "x-image-save-bucket", "x-image-save-object", "x-obs-security-token", "object-lock", "retention"
+        )
+
+        @JvmStatic
+        fun builder(): HuaweiObsSingBuilder {
+            return HuaweiObsSingBuilder()
+        }
+    }
+
+    private val resources: StringMultiValue = StringMultiValue().also {
+        params.forEach { k, vs ->
+            if (RESOURCE_KEYS.contains(k)) {
+                it.addAll(k, vs)
+            }
+        }
+    }
 
     fun contentType(): String {
         return headers.contentType() ?: ""
@@ -47,7 +74,7 @@ class HuaweiObsSing(
     }
 
     fun query(): String {
-        return HttpUrlBuilder.buildQuery(params)
+        return HttpUrlBuilder.buildQuery(resources)
     }
 
     fun canonicalizedResource(): String {
@@ -82,13 +109,6 @@ class HuaweiObsSing(
         val mac = Mac.hmacBuilder().sha1().secret(sk).charset(HuaweiUtils.CHARSET).build()
         val base64 = mac.calculateBase64(source)
         return "OBS $ak:$base64"
-    }
-
-    companion object {
-        @JvmStatic
-        fun builder(): HuaweiObsSingBuilder {
-            return HuaweiObsSingBuilder()
-        }
     }
 
     class HuaweiObsSingBuilder {

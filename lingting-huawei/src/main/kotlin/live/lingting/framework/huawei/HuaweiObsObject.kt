@@ -13,4 +13,5 @@ class HuaweiObsObject(properties: HuaweiObsProperties, key: String) : HuaweiObs<
         val head = super<AwsS3ObjectDelegation>.head()
         return HuaweiObsHeaders(head)
     }
+
 }

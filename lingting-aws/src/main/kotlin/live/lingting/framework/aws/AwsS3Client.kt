@@ -48,7 +48,7 @@ abstract class AwsS3Client protected constructor(val properties: S3Properties) :
         }
 
         request.meta.forEach { k, vs ->
-            val key = if (k.startsWith(AwsS3Utils.HEADER_META_PREFIX)) k else "${AwsS3Utils.HEADER_META_PREFIX}$k"
+            val key = if (k.startsWith(AwsS3Utils.HEADER_PREFIX_META)) k else "${AwsS3Utils.HEADER_PREFIX_META}$k"
             headers.addAll(key, vs)
         }
 

@@ -2,7 +2,6 @@ package live.lingting.framework.huawei.obs
 
 
 import java.time.LocalDateTime
-import live.lingting.framework.time.DateTime
 import java.util.function.Consumer
 import live.lingting.framework.aws.AwsS3Client
 import live.lingting.framework.aws.s3.AwsS3Request
@@ -35,7 +34,7 @@ class HuaweiObsS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
                 headers.replace(name, newName)
             }
         })
-        val sing: HuaweiObsSing = HuaweiObsSing.builder()
+        val sing = HuaweiObsSing.builder()
             .dateTime(now)
             .method(request.method())
             .path(request.path())

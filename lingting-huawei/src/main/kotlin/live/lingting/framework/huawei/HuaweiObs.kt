@@ -8,15 +8,19 @@ import live.lingting.framework.huawei.obs.HuaweiObsS3Listener
  * @author lingting 2024-09-13 13:45
  */
 abstract class HuaweiObs<C : AwsS3Client> protected constructor(protected val client: C) : AwsS3Delegation<C> {
+
+    companion object {
+
+        const val HEADER_PREFIX: String = "x-obs"
+
+        const val HEADER_PREFIX_META: String = "x-obs-meta-"
+    }
+
     init {
         client.listener = HuaweiObsS3Listener(client)
     }
 
     override fun delegation(): C {
         return client
-    }
-
-    companion object {
-        const val HEADER_PREFIX: String = "x-obs"
     }
 }

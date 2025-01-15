@@ -6,7 +6,7 @@ package live.lingting.framework.ali.properties
 class AliOssProperties : AliProperties() {
 
     override fun copy(): AliOssProperties {
-        return AliOssProperties().also { fill(it) }
+        return AliOssProperties().also { it.from(this) }
     }
 
     override fun host(): String {

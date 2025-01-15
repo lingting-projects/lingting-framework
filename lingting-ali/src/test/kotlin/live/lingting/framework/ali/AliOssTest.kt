@@ -5,11 +5,13 @@ import java.nio.file.Files
 import java.util.function.Consumer
 import live.lingting.framework.ali.exception.AliException
 import live.lingting.framework.ali.properties.AliOssProperties
+import live.lingting.framework.aws.s3.AwsS3Meta
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
 import live.lingting.framework.aws.s3.AwsS3Utils
 import live.lingting.framework.http.download.HttpDownload
 import live.lingting.framework.id.Snowflake
 import live.lingting.framework.thread.Async
+import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StreamUtils
@@ -17,6 +19,7 @@ import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -112,6 +115,40 @@ internal class AliOssTest {
         assertEquals(source, string)
         assertEquals(hex, DigestUtils.md5Hex(string))
         ossObject.delete()
+    }
+
+    @Test
+    fun listAndMeta() {
+        val ossBucket = sts!!.ossBucket(properties!!)
+        val key = "ali/b_t_l_m"
+        val bo = ossBucket.use(key)
+        val source = "hello world"
+        val bytes = source.toByteArray()
+        val md5 = DigestUtils.md5Hex(bytes)
+        val meta = AwsS3Meta()
+        meta.add("md5", md5)
+        meta.add("timestamp", DateTime.millis().toString())
+        bo.put(ByteArrayInputStream(bytes), meta)
+
+        val lo = ossBucket.listObjects(key.substring(0, 4))
+        assertTrue { lo.keyCount > 0 }
+        val o = lo.contents?.any { it.key == key }
+        assertNotNull(o)
+        val lo2 = ossBucket.listObjects(key + "_21")
+        assertTrue { lo2.keyCount == 0 }
+        val o2 = lo2.contents?.any { it.key == key }
+        assertNull(o2)
+
+        val head = bo.head()
+        assertNotNull(head)
+        assertEquals(bytes.size.toLong(), head.contentLength())
+        assertEquals(md5, head.first("md5"))
+        assertEquals(meta.first("timestamp"), head.first("timestamp"))
+        val await: HttpDownload = HttpDownload.single(bo.publicUrl()).build().start().await()
+        val string = StreamUtils.toString(Files.newInputStream(await.file().toPath()))
+        assertEquals(source, string)
+        assertEquals(md5, DigestUtils.md5Hex(string))
+        bo.delete()
     }
 
 }

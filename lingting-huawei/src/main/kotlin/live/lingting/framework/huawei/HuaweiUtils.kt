@@ -3,9 +3,7 @@ package live.lingting.framework.huawei
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.time.Duration
-
 import java.time.LocalDateTime
-import live.lingting.framework.time.DateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import live.lingting.framework.aws.s3.AwsS3Utils
@@ -14,6 +12,7 @@ import live.lingting.framework.aws.s3.AwsS3Utils
  * @author lingting 2024-09-13 11:54
  */
 object HuaweiUtils {
+
     @JvmField
     val FORMATTER: DateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
 

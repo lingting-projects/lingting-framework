@@ -9,7 +9,7 @@ import live.lingting.framework.multipart.Part
 /**
  * @author lingting 2024-09-13 16:31
  */
-class AwsS3ObjectPutRequest : AwsS3Request() {
+open class AwsS3ObjectPutRequest : AwsS3Request() {
     var stream: InputStream? = null
 
     var uploadId: String? = null

@@ -31,7 +31,7 @@ abstract class S3Properties {
         token = credential.token
     }
 
-    open fun fill(properties: S3Properties) {
+    open fun from(properties: S3Properties) {
         scheme = properties.scheme
         region = properties.region
         endpoint = properties.endpoint
@@ -43,9 +43,7 @@ abstract class S3Properties {
     }
 
     open fun copy(): S3Properties {
-        val properties = AwsS3Properties()
-        fill(properties)
-        return properties
+        return AwsS3Properties().also { it.from(this) }
     }
 
     abstract fun host(): String

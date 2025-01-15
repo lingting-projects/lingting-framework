@@ -12,7 +12,7 @@ class HuaweiObsProperties : S3Properties() {
     }
 
     override fun copy(): HuaweiObsProperties {
-        return HuaweiObsProperties().also { fill(it) }
+        return HuaweiObsProperties().also { it.from(this) }
     }
 
     override fun host(): String {
