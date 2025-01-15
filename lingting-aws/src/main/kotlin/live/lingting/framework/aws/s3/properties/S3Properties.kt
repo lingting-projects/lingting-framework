@@ -3,13 +3,16 @@ package live.lingting.framework.aws.s3.properties
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.policy.Credential
 import live.lingting.framework.aws.s3.AwsS3Properties
+import live.lingting.framework.aws.s3.enums.HostStyle
 
 /**
  * @author lingting 2025/1/14 17:14
  */
 abstract class S3Properties {
 
-    var scheme: String = "https"
+    var ssl: Boolean = true
+
+    var hostStyle: HostStyle = HostStyle.VIRTUAL
 
     var region: String = ""
 
@@ -32,7 +35,7 @@ abstract class S3Properties {
     }
 
     open fun from(properties: S3Properties) {
-        scheme = properties.scheme
+        ssl = properties.ssl
         region = properties.region
         endpoint = properties.endpoint
         bucket = properties.bucket
@@ -46,6 +49,21 @@ abstract class S3Properties {
         return AwsS3Properties().also { it.from(this) }
     }
 
-    abstract fun host(): String
+    open fun host(): String {
+        if (hostStyle == HostStyle.VIRTUAL) {
+            return virtualHost()
+        }
+        return secondHost()
+    }
+
+    open fun virtualHost(): String {
+        val host = secondHost()
+        if (bucket.isNotBlank()) {
+            return "$bucket.$host"
+        }
+        return host
+    }
+
+    abstract fun secondHost(): String
 
 }

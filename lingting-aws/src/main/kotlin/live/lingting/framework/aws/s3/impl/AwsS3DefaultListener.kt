@@ -16,11 +16,10 @@ import live.lingting.framework.value.multi.StringMultiValue
  * @author lingting 2024/11/5 14:48
  */
 open class AwsS3DefaultListener(@JvmField protected val client: AwsS3Client) : AwsS3Listener {
+
     @JvmField
     protected val log = client.log
 
-    @JvmField
-    protected val region: String = client.properties.region
 
     override fun onFailed(request: AwsS3Request, response: HttpResponse) {
         val string = response.string()
@@ -32,6 +31,7 @@ open class AwsS3DefaultListener(@JvmField protected val client: AwsS3Client) : A
         val date: String = AwsS3Utils.format(now, AwsS3SingV4.DATETIME_FORMATTER)
         headers.put(AwsS3Utils.HEADER_DATE, date)
 
+        val properties = client.properties
         val sing: AwsS3SingV4 = AwsS3SingV4.builder()
             .dateTime(now)
             .method(request.method())
@@ -39,10 +39,10 @@ open class AwsS3DefaultListener(@JvmField protected val client: AwsS3Client) : A
             .headers(headers)
             .bodySha256(AwsS3Utils.PAYLOAD_UNSIGNED)
             .params(params)
-            .region(region)
-            .ak(client.ak)
-            .sk(client.sk)
-            .bucket(client.bucket)
+            .region(properties.region)
+            .ak(properties.ak)
+            .sk(properties.sk)
+            .bucket(properties.bucket)
             .build()
 
         val authorization = sing.calculate()

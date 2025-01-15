@@ -23,10 +23,11 @@ import live.lingting.framework.thread.Async
  * @author lingting 2024-09-19 15:09
  */
 class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Client(properties), AwsS3ObjectInterface {
-    // endregion
+
     val publicUrl: String = HttpUrlBuilder.builder().https().host(host).uri(key).build()
 
     override fun customize(request: AwsS3Request) {
+        super<AwsS3Client>.customize(request)
         request.key = key
         request.setAclIfAbsent(acl)
     }

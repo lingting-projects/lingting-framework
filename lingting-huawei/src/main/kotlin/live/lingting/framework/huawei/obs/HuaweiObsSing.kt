@@ -1,6 +1,7 @@
 package live.lingting.framework.huawei.obs
 
 import java.time.LocalDateTime
+import live.lingting.framework.aws.s3.enums.HostStyle
 import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.HttpUrlBuilder
@@ -15,18 +16,20 @@ import live.lingting.framework.value.multi.StringMultiValue
  * @author lingting 2024/11/5 11:18
  */
 open class HuaweiObsSing(
-    protected val dateTime: LocalDateTime,
-    protected val method: String,
-    protected val path: String?,
-    protected val headers: HttpHeaders,
-    protected val params: StringMultiValue,
-    protected val ak: String,
-    protected val sk: String,
-    protected val bucket: String
+    val dateTime: LocalDateTime,
+    val method: String,
+    val path: String?,
+    val headers: HttpHeaders,
+    val params: StringMultiValue,
+    val ak: String,
+    val sk: String,
+    val bucket: String,
+    val hostStyle: HostStyle,
 ) {
+
     companion object {
         /**
-         * 仅以下子资源参与前面
+         * 仅以下子资源参与签名
          */
         val RESOURCE_KEYS = listOf(
             "CDNNotifyConfiguration", "acl", "append", "attname", "backtosource", "cors", "customdomain", "delete",
@@ -83,8 +86,11 @@ open class HuaweiObsSing(
     }
 
     fun canonicalizedResource(query: String): String {
-        val builder = StringBuilder()
-        builder.append("/").append(bucket).append("/")
+        val builder = StringBuilder("/")
+        if (hostStyle == HostStyle.VIRTUAL) {
+            builder.append(bucket).append("/")
+        }
+
         if (StringUtils.hasText(path)) {
             builder.append(path, if (path!!.startsWith("/")) 1 else 0, path.length)
         }
@@ -127,6 +133,8 @@ open class HuaweiObsSing(
         private var sk: String? = null
 
         private var bucket: String? = null
+
+        private var hostStyle: HostStyle? = null
 
         fun dateTime(dateTime: LocalDateTime): HuaweiObsSingBuilder {
             this.dateTime = dateTime
@@ -172,10 +180,19 @@ open class HuaweiObsSing(
             return this
         }
 
+        fun hostStyle(hostStyle: HostStyle): HuaweiObsSingBuilder {
+            this.hostStyle = hostStyle
+            return this
+        }
+
         fun build(): HuaweiObsSing {
             val time = dateTime ?: DateTime.current()
             return HuaweiObsSing(
-                time, this.method!!, this.path, this.headers!!, this.params!!, this.ak!!, this.sk!!, this.bucket!!
+                time,
+                this.method!!, this.path,
+                this.headers!!, this.params!!,
+                this.ak!!, this.sk!!,
+                this.bucket!!, this.hostStyle!!
             )
         }
     }

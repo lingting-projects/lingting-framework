@@ -7,8 +7,8 @@ import live.lingting.framework.aws.s3.properties.S3Properties
  */
 open class AwsS3Properties : S3Properties() {
 
-    override fun host(): String {
-        return "$scheme://$bucket.s3.$region.$endpoint"
+    override fun secondHost(): String {
+        return "s3.$region.$endpoint"
     }
 
 }

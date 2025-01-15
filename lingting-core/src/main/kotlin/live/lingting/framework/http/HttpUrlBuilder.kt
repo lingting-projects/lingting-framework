@@ -11,7 +11,7 @@ import live.lingting.framework.value.multi.StringMultiValue
 /**
  * @author lingting 2024-01-29 16:13
  */
-class HttpUrlBuilder {
+open class HttpUrlBuilder {
     protected val params: StringMultiValue = StringMultiValue()
 
     protected var scheme: String = "https"

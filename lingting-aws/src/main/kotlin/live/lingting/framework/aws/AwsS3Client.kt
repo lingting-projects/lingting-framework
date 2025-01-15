@@ -4,6 +4,7 @@ package live.lingting.framework.aws
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3Request
 import live.lingting.framework.aws.s3.AwsS3Utils
+import live.lingting.framework.aws.s3.enums.HostStyle
 import live.lingting.framework.aws.s3.impl.AwsS3DefaultListener
 import live.lingting.framework.aws.s3.interfaces.AwsS3Listener
 import live.lingting.framework.aws.s3.properties.S3Properties
@@ -18,22 +19,26 @@ import live.lingting.framework.value.multi.StringMultiValue
 /**
  * @author lingting 2024-09-19 15:02
  */
-abstract class AwsS3Client protected constructor(val properties: S3Properties) : ApiClient<AwsS3Request>(properties.host()) {
-    @JvmField
+abstract class AwsS3Client protected constructor(val properties: S3Properties) :
+    ApiClient<AwsS3Request>(properties.host(), properties.ssl) {
+
     val ak: String = properties.ak
 
-    @JvmField
     val sk: String = properties.sk
 
     val token: String? = properties.token
 
     val acl: Acl = properties.acl
 
-    @JvmField
     val bucket: String = properties.bucket
 
-    @JvmField
     var listener: AwsS3Listener = AwsS3DefaultListener(this)
+
+    override fun customize(request: AwsS3Request) {
+        if (properties.hostStyle == HostStyle.SECOND) {
+            request.bucket = bucket
+        }
+    }
 
     override fun customize(request: AwsS3Request, headers: HttpHeaders, source: BodySource, params: StringMultiValue) {
         if (request.acl != null) {

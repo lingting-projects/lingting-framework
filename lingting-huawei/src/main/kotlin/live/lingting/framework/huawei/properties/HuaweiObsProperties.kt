@@ -15,8 +15,8 @@ class HuaweiObsProperties : S3Properties() {
         return HuaweiObsProperties().also { it.from(this) }
     }
 
-    override fun host(): String {
-        return "$scheme://$bucket.obs.$region.$endpoint"
+    override fun secondHost(): String {
+        return "obs.$region.$endpoint"
     }
 
 }

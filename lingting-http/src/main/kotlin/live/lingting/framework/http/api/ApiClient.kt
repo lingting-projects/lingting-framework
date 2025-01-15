@@ -13,7 +13,11 @@ import live.lingting.framework.value.multi.StringMultiValue
 /**
  * @author lingting 2024-09-14 15:33
  */
-abstract class ApiClient<R : ApiRequest> protected constructor(@JvmField protected val host: String) {
+abstract class ApiClient<R : ApiRequest> @JvmOverloads protected constructor(
+    @JvmField protected val host: String,
+    @JvmField protected val ssl: Boolean = true,
+) {
+
     companion object {
         @JvmStatic
         var defaultClient: HttpClient = HttpClient.builder()
@@ -55,6 +59,16 @@ abstract class ApiClient<R : ApiRequest> protected constructor(@JvmField protect
 
     protected abstract fun checkout(request: R, response: HttpResponse): HttpResponse
 
+    protected open fun urlBuilder(): HttpUrlBuilder {
+        return HttpUrlBuilder.builder().let {
+            if (ssl) {
+                it.https()
+            } else {
+                it.http()
+            }
+        }.host(host)
+    }
+
     fun call(r: R): HttpResponse {
         r.onCall()
         customize(r)
@@ -68,7 +82,7 @@ abstract class ApiClient<R : ApiRequest> protected constructor(@JvmField protect
 
         val path = r.path()
         r.onParams()
-        val urlBuilder = HttpUrlBuilder.builder().https().host(host).uri(path).addParams(r.params)
+        val urlBuilder = urlBuilder().uri(path).addParams(r.params)
         customize(urlBuilder)
 
         val builder: HttpRequest.Builder = HttpRequest.builder()

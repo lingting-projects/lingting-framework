@@ -34,15 +34,17 @@ class HuaweiObsS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
                 headers.replace(name, newName)
             }
         })
+        val properties = client.properties
         val sing = HuaweiObsSing.builder()
             .dateTime(now)
             .method(request.method())
             .path(request.path())
             .headers(headers)
             .params(params)
-            .ak(client.ak)
-            .sk(client.sk)
-            .bucket(client.bucket)
+            .ak(properties.ak)
+            .sk(properties.sk)
+            .bucket(properties.bucket)
+            .hostStyle(properties.hostStyle)
             .build()
 
         val authorization = sing.calculate()

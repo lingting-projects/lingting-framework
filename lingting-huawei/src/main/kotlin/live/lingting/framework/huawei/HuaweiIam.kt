@@ -21,7 +21,7 @@ import live.lingting.framework.value.WaitValue
 /**
  * @author lingting 2024-09-12 21:27
  */
-class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<HuaweiIamRequest>(properties.host) {
+class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<HuaweiIamRequest>(properties.host, true) {
     /**
      * token 提前多久过期
      */

@@ -18,7 +18,7 @@ import live.lingting.framework.value.multi.StringMultiValue
 /**
  * @author lingting 2024-09-19 17:01
  */
-class AwsS3SingV4(
+open class AwsS3SingV4(
     val dateTime: LocalDateTime,
     val method: String,
     val path: String,

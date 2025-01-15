@@ -26,7 +26,7 @@ import live.lingting.framework.value.multi.StringMultiValue
 /**
  * @author lingting 2024-09-14 11:52
  */
-class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsRequest>(properties) {
+open class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsRequest>(properties) {
 
     companion object {
         const val ALGORITHM: String = "ACS3-HMAC-SHA256"
@@ -85,7 +85,7 @@ class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsReque
             }
             signHeaderBuilder.append(k).append(";")
         })
-        if (!signHeaderBuilder.isEmpty()) {
+        if (signHeaderBuilder.isNotBlank()) {
             signHeaderBuilder.deleteCharAt(signHeaderBuilder.length - 1)
         }
         val header = headerBuilder.toString()

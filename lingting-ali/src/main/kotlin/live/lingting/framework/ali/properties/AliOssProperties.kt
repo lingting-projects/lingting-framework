@@ -9,8 +9,8 @@ class AliOssProperties : AliProperties() {
         return AliOssProperties().also { it.from(this) }
     }
 
-    override fun host(): String {
-        return "$scheme://$bucket.oss-$region.$endpoint"
+    override fun secondHost(): String {
+        return "oss-$region.$endpoint"
     }
 
 }
