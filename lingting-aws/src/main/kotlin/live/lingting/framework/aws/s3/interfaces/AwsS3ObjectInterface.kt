@@ -70,7 +70,9 @@ interface AwsS3ObjectInterface {
 
     fun multipartInit(acl: Acl?, meta: HttpHeaders?): String
 
-    fun multipart(source: InputStream) = multipart(source, AwsS3Utils.MULTIPART_DEFAULT_PART_SIZE, Async(20))
+    fun multipart(source: InputStream) = multipart(source, Async(20))
+
+    fun multipart(source: InputStream, async: Async) = multipart(source, AwsS3Utils.MULTIPART_DEFAULT_PART_SIZE, async)
 
     fun multipart(source: InputStream, parSize: Long, async: Async): AwsS3MultipartTask
 
