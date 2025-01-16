@@ -12,6 +12,63 @@ import live.lingting.framework.value.multi.StringMultiValue
  * @author lingting 2024-01-29 16:13
  */
 open class HttpUrlBuilder {
+
+    companion object {
+
+        @JvmStatic
+        fun builder(): HttpUrlBuilder {
+            return HttpUrlBuilder()
+        }
+
+        @JvmStatic
+        fun from(url: String): HttpUrlBuilder {
+            val u = URI.create(url)
+            return from(u)
+        }
+
+        @JvmStatic
+        fun from(u: URI): HttpUrlBuilder {
+            val builder = builder().scheme(u.scheme).host(u.host).port(u.port).uri(u.path)
+            val query = u.query
+            if (StringUtils.hasText(query)) {
+                query.split("&")
+                    .dropLastWhile { it.isBlank() }
+                    .forEach {
+                        it.split("=", limit = 2)
+                            .let { builder.addParam(it[0], if (it.size == 1) null else it[1]) }
+                    }
+            }
+            return builder
+        }
+
+        @JvmStatic
+        fun buildQuery(value: MultiValue<String, String, *>): String {
+            return buildQuery(value.map())
+        }
+
+        @JvmStatic
+        fun buildQuery(map: Map<String, Collection<String>>): String {
+            if (map.isEmpty()) {
+                return ""
+            }
+            val keys = map.keys.sorted().toList()
+
+            val builder = StringBuilder()
+            for (key in keys) {
+                val list = map[key]
+                if (list.isNullOrEmpty()) {
+                    builder.append(key).append("&")
+                } else {
+                    for (v in list) {
+                        builder.append(key).append("=").append(v).append("&")
+                    }
+                }
+            }
+
+            return StringUtils.deleteLast(builder).toString()
+        }
+    }
+
     protected val params: StringMultiValue = StringMultiValue()
 
     protected var scheme: String = "https"
@@ -217,59 +274,4 @@ open class HttpUrlBuilder {
         return builder
     }
 
-    companion object {
-
-        @JvmStatic
-        fun builder(): HttpUrlBuilder {
-            return HttpUrlBuilder()
-        }
-
-        @JvmStatic
-        fun from(url: String): HttpUrlBuilder {
-            val u = URI.create(url)
-            return from(u)
-        }
-
-        @JvmStatic
-        fun from(u: URI): HttpUrlBuilder {
-            val builder = builder().scheme(u.scheme).host(u.host).port(u.port).uri(u.path)
-            val query = u.query
-            if (StringUtils.hasText(query)) {
-                query.split("&")
-                    .dropLastWhile { it.isBlank() }
-                    .forEach {
-                        it.split("=", limit = 2)
-                            .let { builder.addParam(it[0], if (it.size == 1) null else it[1]) }
-                    }
-            }
-            return builder
-        }
-
-        @JvmStatic
-        fun buildQuery(value: MultiValue<String, String, *>): String {
-            return buildQuery(value.map())
-        }
-
-        @JvmStatic
-        fun buildQuery(map: Map<String, Collection<String>>): String {
-            if (map.isEmpty()) {
-                return ""
-            }
-            val keys = map.keys.sorted().toList()
-
-            val builder = StringBuilder()
-            for (key in keys) {
-                val list = map[key]
-                if (list.isNullOrEmpty()) {
-                    builder.append(key).append("&")
-                } else {
-                    for (v in list) {
-                        builder.append(key).append("=").append(v).append("&")
-                    }
-                }
-            }
-
-            return StringUtils.deleteLast(builder).toString()
-        }
-    }
 }
