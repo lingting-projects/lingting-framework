@@ -14,7 +14,7 @@ import live.lingting.framework.util.StreamUtils
 /**
  * @author lingting 2024-09-06 16:55
  */
-class DownloadFileMultipartTask(
+open class DownloadFileMultipartTask(
     multipart: Multipart, maxRetryCount: Long, async: Async, target: File,
     download: ThrowableFunction<Part, InputStream>
 ) : FileMultipartTask<DownloadFileMultipartTask>(multipart, async) {

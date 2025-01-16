@@ -27,12 +27,12 @@ abstract class FileMultipartTask<I : FileMultipartTask<I>> : MultipartTask<I> {
         if (failedNumber > 0) {
             log.debug("[{}] onCancel", id)
             onCancel()
-            log.debug("[{}] onCanceled", id)
+            log.trace("[{}] onCanceled", id)
             taskStatus = FileMultipartTaskStatus.CANCELED
         } else {
             log.debug("[{}] onMerge", id)
             onMerge()
-            log.debug("[{}] onMerged", id)
+            log.trace("[{}] onMerged", id)
             taskStatus = FileMultipartTaskStatus.MERGED
         }
         multipart.clear()

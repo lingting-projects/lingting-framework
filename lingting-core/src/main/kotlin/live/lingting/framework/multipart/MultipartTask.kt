@@ -129,9 +129,9 @@ abstract class MultipartTask<I : MultipartTask<I>> protected constructor(val mul
             task.status = PartTaskStatus.RUNNING
             var t: Throwable? = null
             try {
-                log.debug("[{}] onPart {}", id, index)
+                log.trace("[{}] onPart {}", id, index)
                 onPart(part)
-                log.debug("[{}] onPart completed {}", id, index)
+                log.trace("[{}] onPart completed {}", id, index)
                 task.status = PartTaskStatus.SUCCESSFUL
             } catch (throwable: Throwable) {
                 t = throwable
