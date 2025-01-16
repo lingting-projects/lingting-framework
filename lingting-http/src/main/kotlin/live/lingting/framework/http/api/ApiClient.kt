@@ -19,10 +19,13 @@ abstract class ApiClient<R : ApiRequest> @JvmOverloads protected constructor(
 ) {
 
     companion object {
+
         @JvmStatic
         var defaultClient: HttpClient = HttpClient.builder()
             .disableSsl()
-            .timeout(Duration.ofSeconds(15), Duration.ofSeconds(30))
+            .callTimeout(Duration.ofSeconds(10))
+            .connectTimeout(Duration.ofSeconds(15))
+            .readTimeout(Duration.ofSeconds(30))
             .build()
 
     }

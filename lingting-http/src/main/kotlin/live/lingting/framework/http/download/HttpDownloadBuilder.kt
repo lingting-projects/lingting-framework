@@ -1,18 +1,19 @@
 package live.lingting.framework.http.download
 
 import java.net.URI
-import java.time.Duration
 import live.lingting.framework.download.DownloadBuilder
 import live.lingting.framework.http.HttpClient
+import live.lingting.framework.http.api.ApiClient
 
 /**
  * @author lingting 2023-12-20 16:49
  */
 class HttpDownloadBuilder(url: String) : DownloadBuilder<HttpDownloadBuilder>(url) {
+
     /**
      * 客户端配置
      */
-    var client: HttpClient = DEFAULT_CLIENT
+    var client = ApiClient.defaultClient
 
     constructor(url: URI) : this(url.toString())
 
@@ -25,12 +26,4 @@ class HttpDownloadBuilder(url: String) : DownloadBuilder<HttpDownloadBuilder>(ur
         return HttpDownload(this)
     }
 
-    companion object {
-        val DEFAULT_CLIENT: HttpClient = HttpClient.okhttp()
-            .disableSsl()
-            .callTimeout(Duration.ofSeconds(10))
-            .connectTimeout(Duration.ofSeconds(10))
-            .readTimeout(Duration.ofSeconds(10))
-            .build()
-    }
 }

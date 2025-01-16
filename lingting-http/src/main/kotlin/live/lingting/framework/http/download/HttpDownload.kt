@@ -13,7 +13,40 @@ import live.lingting.framework.util.StreamUtils
 /**
  * @author lingting 2023-12-20 16:43
  */
-class HttpDownload(builder: HttpDownloadBuilder) : MultipartDownload<HttpDownload>(builder) {
+open class HttpDownload(builder: HttpDownloadBuilder) : MultipartDownload<HttpDownload>(builder) {
+
+    companion object {
+        @JvmStatic
+        fun builder(url: String): HttpDownloadBuilder {
+            return HttpDownloadBuilder(url)
+        }
+
+        @JvmStatic
+        fun single(url: String): HttpDownloadBuilder {
+            return HttpDownloadBuilder(url).single()
+        }
+
+        @JvmStatic
+        fun multi(url: String): HttpDownloadBuilder {
+            return HttpDownloadBuilder(url).multi()
+        }
+
+        @JvmStatic
+        fun builder(url: URI): HttpDownloadBuilder {
+            return HttpDownloadBuilder(url)
+        }
+
+        @JvmStatic
+        fun single(url: URI): HttpDownloadBuilder {
+            return HttpDownloadBuilder(url).single()
+        }
+
+        @JvmStatic
+        fun multi(url: URI): HttpDownloadBuilder {
+            return HttpDownloadBuilder(url).multi()
+        }
+    }
+
     protected val client: HttpClient = builder.client
 
     protected val uri: URI = URI.create(url)
@@ -53,35 +86,4 @@ class HttpDownload(builder: HttpDownloadBuilder) : MultipartDownload<HttpDownloa
         return response.body()
     }
 
-    companion object {
-        @JvmStatic
-        fun builder(url: String): HttpDownloadBuilder {
-            return HttpDownloadBuilder(url)
-        }
-
-        @JvmStatic
-        fun single(url: String): HttpDownloadBuilder {
-            return HttpDownloadBuilder(url).single()
-        }
-
-        @JvmStatic
-        fun multi(url: String): HttpDownloadBuilder {
-            return HttpDownloadBuilder(url).multi()
-        }
-
-        @JvmStatic
-        fun builder(url: URI): HttpDownloadBuilder {
-            return HttpDownloadBuilder(url)
-        }
-
-        @JvmStatic
-        fun single(url: URI): HttpDownloadBuilder {
-            return HttpDownloadBuilder(url).single()
-        }
-
-        @JvmStatic
-        fun multi(url: URI): HttpDownloadBuilder {
-            return HttpDownloadBuilder(url).multi()
-        }
-    }
 }

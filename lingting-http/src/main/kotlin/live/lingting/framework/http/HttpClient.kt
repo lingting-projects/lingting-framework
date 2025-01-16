@@ -209,7 +209,7 @@ abstract class HttpClient {
         @JvmStatic
         fun builder() = default()
 
-        fun default() = java()
+        fun default() = okhttp()
 
         @JvmStatic
         fun java(): JavaHttpClient.Builder {
