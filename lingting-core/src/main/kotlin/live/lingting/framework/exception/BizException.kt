@@ -7,6 +7,16 @@ import live.lingting.framework.api.ResultCode
  */
 class BizException : RuntimeException {
 
+    companion object {
+
+        @JvmStatic
+        @JvmOverloads
+        fun format(result: ResultCode, message: String? = null): String {
+            return "[${result.code}] ${message ?: result.i18nMessage()}"
+        }
+
+    }
+
     val result: ResultCode
 
     val code: Int
@@ -15,9 +25,11 @@ class BizException : RuntimeException {
 
     constructor(result: ResultCode, e: Exception? = null) : this(result, null, e)
 
-    constructor(result: ResultCode, message: String?, e: Exception? = null) : super("[${result.code}] ${message ?: result.i18nMessage()}", e) {
+    constructor(result: ResultCode, message: String?, e: Exception? = null) : super(format(result, message), e) {
         this.result = result
         this.code = result.code
     }
 
+    override val message: String
+        get() = super.message ?: format(result)
 }
