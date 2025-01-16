@@ -33,6 +33,9 @@ open class AwsS3ObjectPutRequest : AwsS3Request() {
 
     override fun onCall() {
         headers.contentType("application/octet-stream")
+        part?.run {
+            headers.contentLength(size)
+        }
     }
 
     override fun onParams() {
