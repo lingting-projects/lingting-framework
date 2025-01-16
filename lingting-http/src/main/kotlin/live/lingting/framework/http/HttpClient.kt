@@ -30,6 +30,74 @@ import live.lingting.framework.value.LazyValue
  */
 @Suppress("UNCHECKED_CAST")
 abstract class HttpClient {
+
+    companion object {
+        /**
+         * @see jdk.internal.net.http.common.Utils.getDisallowedHeaders
+         */
+        @JvmField
+        val HEADERS_DISABLED: Set<String> = setOf(
+            "connection", "content-length", "expect", "host",
+            "upgrade"
+        )
+
+        @JvmField
+        val TEMP_DIR: File = FileUtils.createTempDir("http")
+
+        /**
+         * 默认大小以内文件直接放内存里面, 单位: bytes
+         */
+        @JvmField
+        var defaultMaxBytes: Long = 1048576
+
+        @JvmStatic
+        fun builder() = default()
+
+        fun default() = okhttp()
+
+        @JvmStatic
+        fun java(): JavaHttpClient.Builder {
+            return JavaHttpClient.Builder()
+        }
+
+        @JvmStatic
+        fun okhttp(): OkHttpClient.Builder {
+            return OkHttpClient.Builder()
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        fun wrap(source: InputStream?, maxBytes: Long = defaultMaxBytes): InputStream {
+            if (source == null) {
+                return ByteArrayInputStream(ByteArray(0))
+            }
+            val size = AtomicLong(0)
+
+            val byteOut = ByteArrayOutputStream()
+            val fileOutValue = LazyValue<FileOutputStream?> { null }
+            val fileValue = LazyValue<File> {
+                val file = FileUtils.createTemp(".wrap", TEMP_DIR)
+                fileOutValue.set(FileOutputStream(file))
+                file
+            }
+            StreamUtils.read(source) { bytes, len ->
+                if (!fileValue.isFirst() || size.addAndGet(len.toLong()) > maxBytes) {
+                    if (fileValue.isFirst()) {
+                        fileValue.get()
+                        fileOutValue.get()!!.write(byteOut.toByteArray())
+                    }
+                    fileOutValue.get()!!.write(bytes, 0, len)
+                } else {
+                    byteOut.write(bytes, 0, len)
+                }
+            }
+            if (fileValue.isFirst()) {
+                return BytesInputStream(byteOut.toByteArray())
+            }
+            return FileCloneInputStream(fileValue.get()!!)
+        }
+    }
+
     protected var cookie: CookieStore? = null
 
     fun cookie(): CookieStore? {
@@ -70,6 +138,9 @@ abstract class HttpClient {
 
         protected var trustManager: X509TrustManager? = null
 
+        /**
+         * java 实现无效
+         */
         protected var callTimeout: Duration? = null
 
         protected var connectTimeout: Duration? = null
@@ -119,6 +190,10 @@ abstract class HttpClient {
             return ssl(manager).hostnameVerifier(verifier)
         }
 
+
+        /**
+         * java 实现无效
+         */
         fun callTimeout(callTimeout: Duration?): B {
             this.callTimeout = callTimeout
             return this as B
@@ -187,70 +262,4 @@ abstract class HttpClient {
         protected abstract fun doBuild(): C
     }
 
-    companion object {
-        /**
-         * @see jdk.internal.net.http.common.Utils.getDisallowedHeaders
-         */
-        @JvmField
-        val HEADERS_DISABLED: Set<String> = setOf(
-            "connection", "content-length", "expect", "host",
-            "upgrade"
-        )
-
-        @JvmField
-        val TEMP_DIR: File = FileUtils.createTempDir("http")
-
-        /**
-         * 默认大小以内文件直接放内存里面, 单位: bytes
-         */
-        @JvmField
-        var defaultMaxBytes: Long = 1048576
-
-        @JvmStatic
-        fun builder() = default()
-
-        fun default() = okhttp()
-
-        @JvmStatic
-        fun java(): JavaHttpClient.Builder {
-            return JavaHttpClient.Builder()
-        }
-
-        @JvmStatic
-        fun okhttp(): OkHttpClient.Builder {
-            return OkHttpClient.Builder()
-        }
-
-        @JvmStatic
-        @JvmOverloads
-        fun wrap(source: InputStream?, maxBytes: Long = defaultMaxBytes): InputStream {
-            if (source == null) {
-                return ByteArrayInputStream(ByteArray(0))
-            }
-            val size = AtomicLong(0)
-
-            val byteOut = ByteArrayOutputStream()
-            val fileOutValue = LazyValue<FileOutputStream?> { null }
-            val fileValue = LazyValue<File> {
-                val file = FileUtils.createTemp(".wrap", TEMP_DIR)
-                fileOutValue.set(FileOutputStream(file))
-                file
-            }
-            StreamUtils.read(source) { bytes, len ->
-                if (!fileValue.isFirst() || size.addAndGet(len.toLong()) > maxBytes) {
-                    if (fileValue.isFirst()) {
-                        fileValue.get()
-                        fileOutValue.get()!!.write(byteOut.toByteArray())
-                    }
-                    fileOutValue.get()!!.write(bytes, 0, len)
-                } else {
-                    byteOut.write(bytes, 0, len)
-                }
-            }
-            if (fileValue.isFirst()) {
-                return BytesInputStream(byteOut.toByteArray())
-            }
-            return FileCloneInputStream(fileValue.get()!!)
-        }
-    }
 }

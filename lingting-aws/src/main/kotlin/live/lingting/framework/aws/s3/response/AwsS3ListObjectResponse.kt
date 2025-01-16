@@ -13,6 +13,10 @@ class AwsS3ListObjectResponse(private val request: AwsS3ListObjectRequest) {
     var maxKeys: Int = 0
     var encodeType: String? = null
     var keyCount: Int = 0
+
+    /**
+     * 是否还有数据
+     */
     var isTruncated: Boolean = false
     var prefix: String? = null
     var nextToken: String? = null
@@ -57,7 +61,7 @@ class AwsS3ListObjectResponse(private val request: AwsS3ListObjectRequest) {
     }
 
     fun nextRequest(): AwsS3ListObjectRequest? {
-        if (isTruncated) {
+        if (!isTruncated) {
             return null
         }
         return request.copy().also {

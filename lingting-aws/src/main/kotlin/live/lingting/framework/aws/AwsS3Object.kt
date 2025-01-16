@@ -109,4 +109,5 @@ class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Cli
         request.params.add("uploadId", uploadId)
         call(request)
     }
+
 }
