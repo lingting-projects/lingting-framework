@@ -21,7 +21,6 @@ import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.ArrayUtils.containsIgnoreCase
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.StringUtils
-import live.lingting.framework.value.multi.StringMultiValue
 
 /**
  * @author lingting 2024-09-14 11:52
@@ -59,16 +58,15 @@ open class AliSts(protected val properties: AliStsProperties) : AliClient<AliSts
 
     override fun customize(
         request: AliStsRequest, headers: HttpHeaders, requestBody: BodySource,
-        params: StringMultiValue
+        url: HttpUrlBuilder
     ) {
         val now = DateTime.current()
         val date: String = AliUtils.format(now, DatePattern.FORMATTER_ISO_8601)
         headers.put("x-acs-date", date)
 
         val method = request.method().name
-        val path = request.uri()
-        val uri = if (StringUtils.hasText(path)) path else "/"
-        val query = HttpUrlBuilder.buildQuery(params)
+        val path = url.buildPath()
+        val query = url.buildQuery()
         val body = requestBody.string()
         val bodySha = DigestUtils.sha256Hex(body)
 
@@ -91,7 +89,7 @@ open class AliSts(protected val properties: AliStsProperties) : AliClient<AliSts
         val header = headerBuilder.toString()
         val signHeader = signHeaderBuilder.toString()
 
-        val requestString = "$method\n$uri\n$query\n$header\n$signHeader\n$bodySha"
+        val requestString = "$method\n$path\n$query\n$header\n$signHeader\n$bodySha"
         val requestSha = DigestUtils.sha256Hex(requestString)
 
         val source = "$ALGORITHM\n$requestSha"

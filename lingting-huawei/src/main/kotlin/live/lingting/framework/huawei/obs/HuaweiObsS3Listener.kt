@@ -8,11 +8,11 @@ import live.lingting.framework.aws.s3.AwsS3Request
 import live.lingting.framework.aws.s3.AwsS3Utils
 import live.lingting.framework.aws.s3.impl.AwsS3DefaultListener
 import live.lingting.framework.http.HttpResponse
+import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.huawei.HuaweiObs
 import live.lingting.framework.huawei.HuaweiUtils
 import live.lingting.framework.huawei.exception.HuaweiObsException
-import live.lingting.framework.value.multi.StringMultiValue
 
 /**
  * @author lingting 2024/11/5 14:54
@@ -24,7 +24,7 @@ class HuaweiObsS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
         throw HuaweiObsException("request error! code: " + response.code())
     }
 
-    override fun onAuthorization(request: AwsS3Request, headers: HttpHeaders, params: StringMultiValue, now: LocalDateTime) {
+    override fun onAuthorization(request: AwsS3Request, headers: HttpHeaders, url: HttpUrlBuilder, now: LocalDateTime) {
         val date: String = HuaweiUtils.format(now)
         headers.put(HuaweiUtils.HEADER_DATE, date)
 
@@ -38,9 +38,9 @@ class HuaweiObsS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
         val sing = HuaweiObsSing.builder()
             .dateTime(now)
             .method(request.method())
-            .path(request.uri())
+            .path(url.buildPath())
             .headers(headers)
-            .params(params)
+            .params(url.params())
             .ak(properties.ak)
             .sk(properties.sk)
             .bucket(properties.bucket)

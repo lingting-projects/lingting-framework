@@ -8,7 +8,6 @@ import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.util.Slf4jUtils.logger
-import live.lingting.framework.value.multi.StringMultiValue
 
 /**
  * @author lingting 2024-09-14 15:33
@@ -56,7 +55,7 @@ abstract class ApiClient<R : ApiRequest> @JvmOverloads protected constructor(
         //
     }
 
-    protected open fun customize(request: R, headers: HttpHeaders, source: BodySource, params: StringMultiValue) {
+    protected open fun customize(request: R, headers: HttpHeaders, source: BodySource, url: HttpUrlBuilder) {
         //
     }
 
@@ -83,9 +82,9 @@ abstract class ApiClient<R : ApiRequest> @JvmOverloads protected constructor(
         customize(headers)
         customize(r, headers)
 
-        val uri = r.uri()
+        val path = r.path()
         r.onParams()
-        val urlBuilder = urlBuilder().uriSegment(uri).addParams(r.params)
+        val urlBuilder = urlBuilder().pathSegment(path).addParams(r.params)
         customize(urlBuilder)
 
         val builder = HttpRequest.builder()
@@ -93,7 +92,7 @@ abstract class ApiClient<R : ApiRequest> @JvmOverloads protected constructor(
         headers.host(urlBuilder.headerHost())
 
         customize(r, builder)
-        customize(r, headers, body, urlBuilder.params())
+        customize(r, headers, body, urlBuilder)
         builder.headers(headers)
         builder.method(method.name).body(body)
 

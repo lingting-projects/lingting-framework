@@ -28,7 +28,7 @@ open class HttpUrlBuilder {
 
         @JvmStatic
         fun from(u: URI): HttpUrlBuilder {
-            val builder = builder().scheme(u.scheme).host(u.host).port(u.port).uri(u.path)
+            val builder = builder().scheme(u.scheme).host(u.host).port(u.port).path(u.path)
             val query = u.query
             if (StringUtils.hasText(query)) {
                 query.split("&")
@@ -77,7 +77,7 @@ open class HttpUrlBuilder {
 
     protected var port: Int? = null
 
-    protected var uri: StringBuilder = StringBuilder("/")
+    protected var path: StringBuilder = StringBuilder("/")
 
     fun params(): StringMultiValue {
         return params.unmodifiable()
@@ -105,8 +105,8 @@ open class HttpUrlBuilder {
         }
     }
 
-    fun uri(): String {
-        return uri.toString()
+    fun path(): String {
+        return path.toString()
     }
 
     fun scheme(scheme: String): HttpUrlBuilder {
@@ -145,9 +145,9 @@ open class HttpUrlBuilder {
         return this
     }
 
-    fun uri(string: String): HttpUrlBuilder {
+    fun path(string: String): HttpUrlBuilder {
         if (!StringUtils.hasText(string)) {
-            this.uri = StringBuilder("/")
+            this.path = StringBuilder("/")
             return this
         }
         val newUri: String
@@ -160,7 +160,7 @@ open class HttpUrlBuilder {
             newUri = string
             query = ""
         }
-        this.uri = StringBuilder(newUri)
+        this.path = StringBuilder(newUri)
         if (StringUtils.hasText(query)) {
             val split: Array<String> = query.split("&".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             for (kv in split) {
@@ -173,17 +173,17 @@ open class HttpUrlBuilder {
         return this
     }
 
-    fun uri(uri: StringBuilder): HttpUrlBuilder {
-        return uri(uri.toString())
+    fun path(path: StringBuilder): HttpUrlBuilder {
+        return path(path.toString())
     }
 
-    fun uriSegment(vararg segments: String): HttpUrlBuilder {
-        if (uri.isNotEmpty() && uri.substring(uri.length - 1) != "/") {
-            uri.append("/")
+    fun pathSegment(vararg segments: String): HttpUrlBuilder {
+        if (path.isNotEmpty() && path.substring(path.length - 1) != "/") {
+            path.append("/")
         }
 
         for (segment in segments) {
-            uri.append(segment).append("/")
+            this@HttpUrlBuilder.path.append(segment).append("/")
         }
 
         return this
@@ -244,11 +244,11 @@ open class HttpUrlBuilder {
     }
 
     fun buildPath(): String {
-        if (!StringUtils.hasText(uri)) {
+        if (!StringUtils.hasText(path)) {
             return ""
         }
         val builder = StringBuilder()
-        val string = uri.toString()
+        val string = path.toString()
         if (!string.startsWith("/")) {
             builder.append("/")
         }
@@ -278,7 +278,7 @@ open class HttpUrlBuilder {
     }
 
     fun copy(): HttpUrlBuilder {
-        val builder = builder().addParams(params).scheme(scheme).uri(uri)
+        val builder = builder().addParams(params).scheme(scheme).path(path)
         host?.let { builder.host(it) }
         port?.let { builder.port(it) }
         return builder

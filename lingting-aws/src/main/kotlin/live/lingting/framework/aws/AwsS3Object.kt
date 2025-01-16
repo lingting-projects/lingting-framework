@@ -23,7 +23,7 @@ import live.lingting.framework.thread.Async
  */
 class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Client(properties), AwsS3ObjectInterface {
 
-    val publicUrl: String = properties.urlBuilder().uriSegment(key).build()
+    val publicUrl: String = properties.urlBuilder().pathSegment(key).build()
 
     override fun customize(request: AwsS3Request) {
         request.key = key

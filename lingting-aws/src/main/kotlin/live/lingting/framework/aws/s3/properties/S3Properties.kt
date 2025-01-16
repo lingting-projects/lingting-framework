@@ -68,7 +68,7 @@ abstract class S3Properties {
         }
 
         if (hostStyle == HostStyle.SECOND) {
-            builder.uri(bucket)
+            builder.path(bucket)
         }
 
         return builder

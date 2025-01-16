@@ -18,7 +18,7 @@ abstract class AwsS3Request : ApiRequest() {
      */
     val meta: HttpHeaders = HttpHeaders.empty()
 
-    override fun uri(): String {
+    override fun path(): String {
         return key
     }
 

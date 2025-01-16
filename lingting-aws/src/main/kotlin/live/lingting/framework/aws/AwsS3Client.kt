@@ -14,7 +14,6 @@ import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.StringUtils
-import live.lingting.framework.value.multi.StringMultiValue
 
 /**
  * @author lingting 2024-09-19 15:02
@@ -38,7 +37,7 @@ abstract class AwsS3Client protected constructor(val properties: S3Properties) :
         return properties.urlBuilder()
     }
 
-    override fun customize(request: AwsS3Request, headers: HttpHeaders, source: BodySource, params: StringMultiValue) {
+    override fun customize(request: AwsS3Request, headers: HttpHeaders, source: BodySource, url: HttpUrlBuilder) {
         if (request.acl != null) {
             headers.put(AwsS3Utils.HEADER_ACL, request.acl!!.value)
         }
@@ -55,7 +54,7 @@ abstract class AwsS3Client protected constructor(val properties: S3Properties) :
             headers.addAll(key, vs)
         }
 
-        listener.onAuthorization(request, headers, params, now)
+        listener.onAuthorization(request, headers, url, now)
     }
 
     override fun checkout(request: AwsS3Request, response: HttpResponse): HttpResponse {

@@ -9,8 +9,8 @@ import live.lingting.framework.aws.s3.AwsS3SingV4
 import live.lingting.framework.aws.s3.AwsS3Utils
 import live.lingting.framework.aws.s3.interfaces.AwsS3Listener
 import live.lingting.framework.http.HttpResponse
+import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.header.HttpHeaders
-import live.lingting.framework.value.multi.StringMultiValue
 
 /**
  * @author lingting 2024/11/5 14:48
@@ -27,7 +27,7 @@ open class AwsS3DefaultListener(@JvmField protected val client: AwsS3Client) : A
         throw AwsS3Exception("request error! code: " + response.code())
     }
 
-    override fun onAuthorization(request: AwsS3Request, headers: HttpHeaders, params: StringMultiValue, now: LocalDateTime) {
+    override fun onAuthorization(request: AwsS3Request, headers: HttpHeaders, url: HttpUrlBuilder, now: LocalDateTime) {
         val date: String = AwsS3Utils.format(now, AwsS3SingV4.DATETIME_FORMATTER)
         headers.put(AwsS3Utils.HEADER_DATE, date)
 
@@ -35,10 +35,10 @@ open class AwsS3DefaultListener(@JvmField protected val client: AwsS3Client) : A
         val sing: AwsS3SingV4 = AwsS3SingV4.builder()
             .dateTime(now)
             .method(request.method())
-            .path(request.uri())
+            .path(url.buildPath())
             .headers(headers)
             .bodySha256(AwsS3Utils.PAYLOAD_UNSIGNED)
-            .params(params)
+            .params(url.params())
             .region(properties.region)
             .ak(properties.ak)
             .sk(properties.sk)
