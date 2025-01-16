@@ -24,7 +24,13 @@ import live.lingting.framework.thread.Async
  */
 class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Client(properties), AwsS3ObjectInterface {
 
-    val publicUrl: String = HttpUrlBuilder.builder().https().host(host).uri(key).build()
+    val publicUrl: String = HttpUrlBuilder.builder().host(host).uri(key).also {
+        if (properties.ssl) {
+            it.https()
+        } else {
+            it.http()
+        }
+    }.build()
 
     override fun customize(request: AwsS3Request) {
         super<AwsS3Client>.customize(request)
