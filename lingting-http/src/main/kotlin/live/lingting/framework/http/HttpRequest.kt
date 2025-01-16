@@ -172,7 +172,7 @@ class HttpRequest private constructor(
             // 不覆盖已有host
             val host = headers.host()
             if (host.isNullOrBlank()) {
-                urlBuilder.host(urlBuilder.headerHost())
+                headers.host(urlBuilder.headerHost())
             }
             // 不覆盖已有contentType
             val contentType = headers.contentType()
