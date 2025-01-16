@@ -43,6 +43,10 @@ class HttpRequest private constructor(
         return body
     }
 
+    override fun toString(): String {
+        return "[$method] $uri"
+    }
+
     class Builder {
         var method: HttpMethod = HttpMethod.GET
             private set

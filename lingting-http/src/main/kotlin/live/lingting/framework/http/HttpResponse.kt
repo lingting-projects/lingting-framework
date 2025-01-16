@@ -88,4 +88,8 @@ open class HttpResponse(
         }
         StreamUtils.close(body)
     }
+
+    override fun toString(): String {
+        return "[$code] ${request.uri()}"
+    }
 }
