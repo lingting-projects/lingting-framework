@@ -88,13 +88,6 @@ abstract class ApiClient<R : ApiRequest> @JvmOverloads protected constructor(
         val builder: HttpRequest.Builder = HttpRequest.builder()
         val uri = urlBuilder.buildUri()
         builder.url(uri)
-        headers.host(uri.port.let {
-            if (it < 1) {
-                uri.host
-            } else {
-                "${uri.host}:$it"
-            }
-        })
 
         customize(r, builder)
         customize(r, headers, body, urlBuilder.params())

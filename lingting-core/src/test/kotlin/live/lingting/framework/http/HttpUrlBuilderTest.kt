@@ -44,11 +44,13 @@ class HttpUrlBuilderTest {
         val builder = HttpUrlBuilder.builder().https().host("192.168.1.1")
         assertEquals("https://192.168.1.1", builder.build())
         assertEquals("https://192.168.1.1", builder.buildUri().toString())
+        assertEquals("192.168.1.1", builder.headerHost())
         builder.host("192.168.1.1:90")
         assertEquals(90, builder.port())
         assertEquals("https://192.168.1.1:90", builder.build())
         assertEquals("https://192.168.1.1:90", builder.buildUri().toString())
         assertEquals("https://192.168.1.1:90", builder.buildUrl().toString())
+        assertEquals("192.168.1.1:90", builder.headerHost())
     }
 
 }

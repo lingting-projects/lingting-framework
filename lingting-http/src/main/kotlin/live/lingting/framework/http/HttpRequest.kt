@@ -9,7 +9,6 @@ import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.body.MemoryBody
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.jackson.JacksonUtils
-import live.lingting.framework.util.StringUtils
 
 /**
  * @author lingting 2024-09-27 21:29
@@ -20,6 +19,14 @@ class HttpRequest private constructor(
     protected val headers: HttpHeaders,
     protected val body: Body
 ) {
+
+    companion object {
+        @JvmStatic
+        fun builder(): Builder {
+            return Builder()
+        }
+    }
+
     fun method(): HttpMethod {
         return method
     }
@@ -87,6 +94,7 @@ class HttpRequest private constructor(
         }
 
         // endregion
+
         // region url
         fun url(url: String): Builder {
             return url(URI.create(url))
@@ -108,6 +116,7 @@ class HttpRequest private constructor(
         }
 
         // endregion
+
         // region headers
         fun header(name: String, value: String): Builder {
             headers.add(name, value)
@@ -135,6 +144,7 @@ class HttpRequest private constructor(
         }
 
         // endregion
+
         // region body
         fun body(body: Body): Builder {
             this.body = body
@@ -156,17 +166,23 @@ class HttpRequest private constructor(
         }
 
         // endregion
+
         fun build(): HttpRequest {
             val requestBody = body
+            // 不覆盖已有host
+            val host = headers.host()
+            if (host.isNullOrBlank()) {
+                urlBuilder.host(urlBuilder.headerHost())
+            }
+            // 不覆盖已有contentType
             val contentType = headers.contentType()
-            if (!StringUtils.hasText(contentType)) {
+            if (contentType.isNullOrBlank()) {
                 val type = requestBody.contentType()
-                if (StringUtils.hasText(type)) {
+                if (!type.isNullOrBlank()) {
                     headers.contentType(type)
                 }
             }
             val uri = urlBuilder.buildUri()
-            headers.host(uri.host)
             return HttpRequest(method, uri, headers.unmodifiable(), requestBody)
         }
     }
@@ -215,10 +231,4 @@ class HttpRequest private constructor(
         }
     }
 
-    companion object {
-        @JvmStatic
-        fun builder(): Builder {
-            return Builder()
-        }
-    }
 }

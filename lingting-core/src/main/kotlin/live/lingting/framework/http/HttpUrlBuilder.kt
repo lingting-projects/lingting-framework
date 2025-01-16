@@ -95,6 +95,16 @@ open class HttpUrlBuilder {
         return port
     }
 
+    fun headerHost(): String {
+        return port.let {
+            if (it == null || it < 1) {
+                "$host"
+            } else {
+                "$host:$it"
+            }
+        }
+    }
+
     fun uri(): String {
         return uri.toString()
     }
