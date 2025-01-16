@@ -12,7 +12,6 @@ import live.lingting.framework.aws.s3.request.AwsS3MultipartMergeRequest
 import live.lingting.framework.aws.s3.request.AwsS3ObjectPutRequest
 import live.lingting.framework.aws.s3.request.AwsS3SimpleRequest
 import live.lingting.framework.http.HttpMethod
-import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.jackson.JacksonUtils
 import live.lingting.framework.multipart.Multipart
@@ -24,16 +23,9 @@ import live.lingting.framework.thread.Async
  */
 class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Client(properties), AwsS3ObjectInterface {
 
-    val publicUrl: String = HttpUrlBuilder.builder().host(host).uri(key).also {
-        if (properties.ssl) {
-            it.https()
-        } else {
-            it.http()
-        }
-    }.build()
+    val publicUrl: String = properties.urlBuilder().uriSegment(key).build()
 
     override fun customize(request: AwsS3Request) {
-        super<AwsS3Client>.customize(request)
         request.key = key
         request.setAclIfAbsent(acl)
     }

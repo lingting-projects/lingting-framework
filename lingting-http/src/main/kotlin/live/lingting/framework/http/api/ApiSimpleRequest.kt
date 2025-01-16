@@ -15,7 +15,7 @@ class ApiSimpleRequest @JvmOverloads constructor(
         return method
     }
 
-    override fun path(): String {
+    override fun uri(): String {
         return uri
     }
 

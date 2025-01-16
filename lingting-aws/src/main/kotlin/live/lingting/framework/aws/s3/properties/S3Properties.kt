@@ -4,6 +4,7 @@ import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.policy.Credential
 import live.lingting.framework.aws.s3.AwsS3Properties
 import live.lingting.framework.aws.s3.enums.HostStyle
+import live.lingting.framework.http.HttpUrlBuilder
 
 /**
  * @author lingting 2025/1/14 17:14
@@ -54,6 +55,23 @@ abstract class S3Properties {
             return virtualHost()
         }
         return secondHost()
+    }
+
+    open fun urlBuilder(): HttpUrlBuilder {
+        val builder = HttpUrlBuilder.builder()
+            .host(host())
+
+        if (ssl) {
+            builder.https()
+        } else {
+            builder.http()
+        }
+
+        if (hostStyle == HostStyle.SECOND) {
+            builder.uri(bucket)
+        }
+
+        return builder
     }
 
     open fun virtualHost(): String {

@@ -38,7 +38,7 @@ class HuaweiObsS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
         val sing = HuaweiObsSing.builder()
             .dateTime(now)
             .method(request.method())
-            .path(request.path())
+            .path(request.uri())
             .headers(headers)
             .params(params)
             .ak(properties.ak)

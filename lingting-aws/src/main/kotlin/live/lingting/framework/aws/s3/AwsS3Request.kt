@@ -9,8 +9,6 @@ import live.lingting.framework.http.header.HttpHeaders
  */
 abstract class AwsS3Request : ApiRequest() {
 
-    var bucket: String = ""
-
     var key: String = ""
 
     var acl: Acl? = null
@@ -20,14 +18,8 @@ abstract class AwsS3Request : ApiRequest() {
      */
     val meta: HttpHeaders = HttpHeaders.empty()
 
-    override fun path(): String {
-        if (bucket.isBlank()) {
-            return key
-        }
-        if (key.isBlank()) {
-            return bucket
-        }
-        return "$bucket/$key"
+    override fun uri(): String {
+        return key
     }
 
     fun setAclIfAbsent(acl: Acl) {

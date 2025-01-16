@@ -35,7 +35,7 @@ open class AwsS3DefaultListener(@JvmField protected val client: AwsS3Client) : A
         val sing: AwsS3SingV4 = AwsS3SingV4.builder()
             .dateTime(now)
             .method(request.method())
-            .path(request.path())
+            .path(request.uri())
             .headers(headers)
             .bodySha256(AwsS3Utils.PAYLOAD_UNSIGNED)
             .params(params)

@@ -28,7 +28,7 @@ class AliStsCredentialRequest : AliStsRequest() {
         return "2015-04-01"
     }
 
-    override fun path(): String {
+    override fun uri(): String {
         return ""
     }
 

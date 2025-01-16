@@ -4,11 +4,11 @@ package live.lingting.framework.aws
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3Request
 import live.lingting.framework.aws.s3.AwsS3Utils
-import live.lingting.framework.aws.s3.enums.HostStyle
 import live.lingting.framework.aws.s3.impl.AwsS3DefaultListener
 import live.lingting.framework.aws.s3.interfaces.AwsS3Listener
 import live.lingting.framework.aws.s3.properties.S3Properties
 import live.lingting.framework.http.HttpResponse
+import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.api.ApiClient
 import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.header.HttpHeaders
@@ -34,10 +34,8 @@ abstract class AwsS3Client protected constructor(val properties: S3Properties) :
 
     var listener: AwsS3Listener = AwsS3DefaultListener(this)
 
-    override fun customize(request: AwsS3Request) {
-        if (properties.hostStyle == HostStyle.SECOND) {
-            request.bucket = bucket
-        }
+    override fun urlBuilder(): HttpUrlBuilder {
+        return properties.urlBuilder()
     }
 
     override fun customize(request: AwsS3Request, headers: HttpHeaders, source: BodySource, params: StringMultiValue) {

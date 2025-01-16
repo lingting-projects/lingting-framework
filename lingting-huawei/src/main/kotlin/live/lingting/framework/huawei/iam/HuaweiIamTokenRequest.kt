@@ -17,7 +17,7 @@ class HuaweiIamTokenRequest : HuaweiIamRequest() {
         return false
     }
 
-    override fun path(): String {
+    override fun uri(): String {
         return "v3/auth/tokens"
     }
 

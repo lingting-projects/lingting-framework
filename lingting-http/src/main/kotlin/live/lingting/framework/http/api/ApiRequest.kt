@@ -18,7 +18,7 @@ abstract class ApiRequest {
 
     abstract fun method(): HttpMethod
 
-    abstract fun path(): String
+    abstract fun uri(): String
 
     open fun body(): BodySource {
         val json = JacksonUtils.toJson(this)

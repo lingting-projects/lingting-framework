@@ -66,7 +66,7 @@ open class AliSts(protected val properties: AliStsProperties) : AliClient<AliSts
         headers.put("x-acs-date", date)
 
         val method = request.method().name
-        val path = request.path()
+        val path = request.uri()
         val uri = if (StringUtils.hasText(path)) path else "/"
         val query = HttpUrlBuilder.buildQuery(params)
         val body = requestBody.string()

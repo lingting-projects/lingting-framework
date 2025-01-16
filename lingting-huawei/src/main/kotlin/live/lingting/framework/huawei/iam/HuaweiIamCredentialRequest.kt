@@ -15,7 +15,7 @@ class HuaweiIamCredentialRequest : HuaweiIamRequest() {
 
     var statements: Collection<HuaweiStatement> = emptyList()
 
-    override fun path(): String {
+    override fun uri(): String {
         return "v3.0/OS-CREDENTIAL/securitytokens"
     }
 

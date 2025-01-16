@@ -83,9 +83,9 @@ abstract class ApiClient<R : ApiRequest> @JvmOverloads protected constructor(
         customize(headers)
         customize(r, headers)
 
-        val path = r.path()
+        val uri = r.uri()
         r.onParams()
-        val urlBuilder = urlBuilder().uri(path).addParams(r.params)
+        val urlBuilder = urlBuilder().uriSegment(uri).addParams(r.params)
         customize(urlBuilder)
 
         val builder = HttpRequest.builder()
