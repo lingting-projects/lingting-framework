@@ -15,6 +15,12 @@ abstract class CloneInputStream(
      */
     protected val size: Long
 ) : InputStream() {
+
+    companion object {
+        @JvmField
+        val TEMP_DIR: File = FileUtils.createTempDir("clone")
+    }
+
     protected val lock: Any = ""
 
     protected var stream: InputStream? = null
@@ -91,8 +97,4 @@ abstract class CloneInputStream(
 
     abstract fun clear()
 
-    companion object {
-        @JvmField
-        val TEMP_DIR: File = FileUtils.createTempDir("clone")
-    }
 }
