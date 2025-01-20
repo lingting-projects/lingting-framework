@@ -18,10 +18,19 @@ abstract class StateKeepRunnable : KeepRunnable {
 
     protected constructor(name: String?) : super(name)
 
-    override fun process() {
+    private fun innerOnStart() {
         start = DateTime.millis()
         state = State.RUNNING
         thread = Thread.currentThread()
+    }
+
+    protected open fun onStart() {
+        //
+    }
+
+    override fun process() {
+        innerOnStart()
+        onStart()
         doProcess()
     }
 
@@ -30,6 +39,11 @@ abstract class StateKeepRunnable : KeepRunnable {
     override fun onFinally() {
         end = DateTime.millis()
         state = State.FINISH
+        onEnd()
+    }
+
+    protected open fun onEnd() {
+        //
     }
 
     val isFinish: Boolean
