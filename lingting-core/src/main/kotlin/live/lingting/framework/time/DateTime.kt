@@ -19,7 +19,6 @@ object DateTime {
         private set
 
     var clock: Clock = Clock.system(zoneId)
-        private set
 
     var zoneOffset = DatePattern.SYSTEM_ZONE_OFFSET
         set(value) {
