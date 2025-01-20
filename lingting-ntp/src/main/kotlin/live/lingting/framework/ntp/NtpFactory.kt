@@ -36,6 +36,10 @@ object NtpFactory {
     }
 
     fun create(hosts: Collection<String>): Ntp? {
+        return create(null, hosts)
+    }
+
+    fun create(duration: Duration?, hosts: Collection<String>): Ntp? {
         val async = Async()
         val list = CopyOnWriteArrayList<Ntp>()
         for (host in hosts) {
@@ -55,7 +59,7 @@ object NtpFactory {
             }
         }
 
-        ValueUtils.awaitTrue { list.isNotEmpty() || async.notCompletedCount() < 1 }
+        ValueUtils.awaitTrue(duration) { list.isNotEmpty() || async.notCompletedCount() < 1 }
         async.interruptAll()
         return list.firstOrNull()
     }
