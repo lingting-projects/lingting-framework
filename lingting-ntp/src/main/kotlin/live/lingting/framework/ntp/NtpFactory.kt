@@ -2,26 +2,30 @@ package live.lingting.framework.ntp
 
 import java.net.InetAddress
 import java.net.SocketTimeoutException
-import java.net.UnknownHostException
 import java.time.Duration
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
+import java.util.concurrent.CopyOnWriteArrayList
+import live.lingting.framework.thread.Async
 import live.lingting.framework.time.DateTime
+import live.lingting.framework.util.DurationUtils.millis
 import live.lingting.framework.util.IpUtils
 import live.lingting.framework.util.Slf4jUtils.logger
-import live.lingting.framework.util.ThreadUtils
-import live.lingting.framework.value.CycleValue
-import live.lingting.framework.value.StepValue
-import live.lingting.framework.value.cycle.StepCycleValue
-import live.lingting.framework.value.step.LongStepValue
+import live.lingting.framework.util.ValueUtils
 import org.apache.commons.net.ntp.NTPUDPClient
 
 /**
  * @author lingting 2023-12-27 15:47
  */
-class NtpFactory protected constructor() {
-    private val blockHosts: MutableSet<String> = HashSet()
+object NtpFactory {
+
+    @JvmField
+    val HOSTS = setOf(
+        "time.windows.com", "time.nist.gov", "time.apple.com",
+        "time.asia.apple.com", "cn.ntp.org.cn", "ntp.ntsc.ac.cn", "cn.pool.ntp.org", "ntp.aliyun.com",
+        "ntp1.aliyun.com", "ntp2.aliyun.com", "ntp3.aliyun.com", "ntp4.aliyun.com", "ntp5.aliyun.com",
+        "ntp6.aliyun.com", "ntp7.aliyun.com",
+    )
+
+    private val log = logger()
 
     fun create(): Ntp? {
         return create(HOSTS)
@@ -32,55 +36,34 @@ class NtpFactory protected constructor() {
     }
 
     fun create(hosts: Collection<String>): Ntp? {
-        val cycle: CycleValue<Long> = StepCycleValue(STEP_INIT)
+        val async = Async()
+        val list = CopyOnWriteArrayList<Ntp>()
         for (host in hosts) {
-            if (blockHosts.contains(host)) {
-                log.debug("[{}] is block host! skip", host)
-                continue
+            async.submit {
+                diff(host)?.let {
+                    list.add(Ntp(host, it.millis))
+                }
             }
-            try {
-                return createByFuture(cycle, host)
-            } catch (e: UnknownHostException) {
-                log.warn("[{}] host cannot be resolved!", host)
-                blockHosts.add(host)
-            } catch (e: InterruptedException) {
-                throw e
-            } catch (e: TimeoutException) {
-                log.warn("Ntp initialization timeout! host: {}", host)
-            } catch (e: Exception) {
-                log.error("Ntp initialization exception! host: {}", host)
+
+            async.submit {
+                val ip = IpUtils.resolve(host)
+                if (ip.isNotBlank()) {
+                    diff(ip)?.let {
+                        list.add(Ntp(ip, it.millis))
+                    }
+                }
             }
         }
-        return null
+
+        ValueUtils.awaitTrue { list.isNotEmpty() || async.notCompletedCount() < 1 }
+        async.interruptAll()
+        return list.firstOrNull()
     }
 
-    fun createByFuture(cycle: CycleValue<Long>, host: String): Ntp {
-        val ip = IpUtils.resolve(host)
-
-        var future: CompletableFuture<Ntp> = ThreadUtils.async {
-            val diff = diff(host)
-            Ntp(host, diff)
-        }
-        try {
-            val next = cycle.next()
-            val ntp = future[next, TimeUnit.SECONDS]
-            if (ntp != null) {
-                return ntp
-            }
-        } finally {
-            future.cancel(true)
-        }
-
-        future = ThreadUtils.async { Ntp(ip, diff(ip)) }
-        try {
-            val next = cycle.next()
-            return future[next, TimeUnit.SECONDS]
-        } finally {
-            future.cancel(true)
-        }
-    }
-
-    fun diff(host: String): Long {
+    /**
+     * 返回指定ntp服务的时间偏移量. 毫秒
+     */
+    fun diff(host: String): Long? {
         try {
             NTPUDPClient().use { client ->
                 client.setDefaultTimeout(Duration.ofSeconds(5))
@@ -91,28 +74,14 @@ class NtpFactory protected constructor() {
                 val ntp = time.message.transmitTimeStamp.time
                 return ntp - system
             }
+        } catch (_: InterruptedException) {
+            Thread.currentThread().interrupt()
         } catch (e: SocketTimeoutException) {
-            throw NtpException("Ntp get diff timeout! host: $host", e)
+            log.debug("Ntp get diff timeout! host: $host", e)
         } catch (e: Exception) {
-            throw NtpException("Ntp get diff error! host: $host", e)
+            log.debug("Ntp get diff exception! host: $host", e)
         }
+        return null
     }
 
-    companion object {
-        @JvmField
-        val STEP_INIT: StepValue<Long> = LongStepValue(1, null, 10)
-
-        @JvmField
-        val DEFAULT: NtpFactory = NtpFactory()
-
-        @JvmField
-        val HOSTS = setOf(
-            "time.windows.com", "time.nist.gov", "time.apple.com",
-            "time.asia.apple.com", "cn.ntp.org.cn", "ntp.ntsc.ac.cn", "cn.pool.ntp.org", "ntp.aliyun.com",
-            "ntp1.aliyun.com", "ntp2.aliyun.com", "ntp3.aliyun.com", "ntp4.aliyun.com", "ntp5.aliyun.com",
-            "ntp6.aliyun.com", "ntp7.aliyun.com",
-        )
-        private val log = logger()
-
-    }
 }
