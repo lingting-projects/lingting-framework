@@ -10,7 +10,6 @@ import live.lingting.framework.application.ApplicationHolder
 import live.lingting.framework.grpc.properties.GrpcServerProperties
 import live.lingting.framework.util.MdcUtils
 import live.lingting.framework.util.Slf4jUtils.logger
-import live.lingting.framework.util.StringUtils
 
 /**
  * 在服务器端，按照拦截器注册的顺序从后到前执行，先执行后面的拦截器，再执行前面的拦截器。
@@ -26,14 +25,9 @@ open class GrpcServerTraceIdInterceptor(val properties: GrpcServerProperties) : 
      * 从请求中获取traceId, 如果没有返回生成的traceId
      */
     protected fun traceId(headers: Metadata): String {
-        var traceId: String? = null
-        if (headers.containsKey(traceIdKey)) {
-            traceId = headers[traceIdKey]
-        }
-        if (StringUtils.hasText(traceId)) {
-            return traceId!!
-        }
-        return MdcUtils.traceId()
+        val traceId = headers[traceIdKey] ?: MdcUtils.traceId()
+        headers.put(traceIdKey, traceId)
+        return traceId
     }
 
     override fun <ReqT, RespT> interceptCall(
@@ -44,11 +38,9 @@ open class GrpcServerTraceIdInterceptor(val properties: GrpcServerProperties) : 
         val traceId = traceId(headers)
         MdcUtils.setTraceId(traceId)
         try {
-            // 返回traceId
-            headers.put(traceIdKey, traceId)
             if (ApplicationHolder.isStop && properties.rejectRequestOnStop) {
                 // 拒绝请求
-                call.close(Status.UNAVAILABLE, null)
+                call.close(Status.UNAVAILABLE, headers)
                 log.warn("reject request. uri: {}", call.methodDescriptor?.fullMethodName)
                 return object : ServerCall.Listener<ReqT>() {
                 }

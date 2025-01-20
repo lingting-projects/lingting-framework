@@ -22,11 +22,35 @@ open class GrpcThreadExecutorCustomizer @JvmOverloads constructor(val executor: 
     ClientCustomizer, ServerCustomizer, ThreadExecuteResolver {
 
     companion object {
-        @JvmField
-        val RUNNABLE_MAP = ConcurrentHashMap<Runnable, GrpcWorkerRunnable>()
 
-        @JvmField
-        val THREAD_MAP = ConcurrentHashMap<Thread, GrpcWorkerRunnable>()
+        private val runnableMap = ConcurrentHashMap<Runnable, GrpcWorkerRunnable>()
+
+        private val threadMap = ConcurrentHashMap<Long, GrpcWorkerRunnable>()
+
+        @JvmStatic
+        fun submit(command: Runnable): GrpcWorkerRunnable {
+            return runnableMap.computeIfAbsent(command) {
+                GrpcWorkerRunnable(it)
+            }.also { it.push(command) }
+        }
+
+        @JvmStatic
+        fun bind(runnable: GrpcWorkerRunnable, thread: Thread = Thread.currentThread()) {
+            val id = thread.threadId()
+            threadMap[id] = runnable
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        fun shutdown(thread: Thread = Thread.currentThread()) {
+            val id = thread.threadId()
+            val runnable = threadMap.remove(id)
+            runnable?.also {
+                runnableMap.remove(it.r)
+                it.interrupt()
+            }
+        }
+
     }
 
     val log = logger()
@@ -62,8 +86,7 @@ open class GrpcThreadExecutorCustomizer @JvmOverloads constructor(val executor: 
     }
 
     override fun wrapper(command: Runnable): Runnable? {
-        return RUNNABLE_MAP.computeIfAbsent(command) { GrpcWorkerRunnable(it) }
-            .also { it.push(command) }
+        return submit(command)
     }
 
 }

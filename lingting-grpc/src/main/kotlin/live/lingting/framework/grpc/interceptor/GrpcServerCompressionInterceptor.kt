@@ -28,6 +28,6 @@ class GrpcServerCompressionInterceptor private constructor(val compressor: Strin
         return next.startCall(call, headers)
     }
 
-    override val sequence: Int = Int.MIN_VALUE
+    override val sequence: Int = Int.MIN_VALUE + 2000
 
 }

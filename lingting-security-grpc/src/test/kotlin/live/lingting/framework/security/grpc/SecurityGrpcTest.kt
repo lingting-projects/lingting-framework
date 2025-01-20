@@ -3,6 +3,7 @@ package live.lingting.framework.security.grpc
 import com.google.protobuf.Empty
 import io.grpc.ManagedChannel
 import io.grpc.StatusRuntimeException
+import live.lingting.framework.application.ApplicationHolder
 import live.lingting.framework.grpc.GrpcClientProvide
 import live.lingting.framework.grpc.GrpcServer
 import live.lingting.framework.grpc.GrpcServerBuilder
@@ -57,6 +58,7 @@ internal class SecurityGrpcTest {
 
     @BeforeEach
     fun before() {
+        ApplicationHolder.start()
         val store = SecurityMemoryStore()
         val authorizationService = AuthorizationServiceImpl(store)
         val password = Password()
@@ -160,8 +162,6 @@ internal class SecurityGrpcTest {
                         .buildPartial()
                 )
             }
-            assertEquals(0, GrpcThreadExecutorCustomizer.RUNNABLE_MAP.size)
-            assertEquals(0, GrpcThreadExecutorCustomizer.THREAD_MAP.size)
         } finally {
             pop()
         }

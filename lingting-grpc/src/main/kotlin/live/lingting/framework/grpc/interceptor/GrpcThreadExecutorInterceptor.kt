@@ -21,15 +21,11 @@ object GrpcThreadExecutorInterceptor : ClientInterceptor, ServerInterceptor, Seq
 
     val log = logger()
 
-    fun clear() {
-        GrpcThreadExecutorCustomizer.THREAD_MAP.remove(Thread.currentThread())?.onFinally()
-    }
-
     override fun <ReqT : Any, RespT : Any> interceptCall(call: ServerCall<ReqT, RespT>, headers: io.grpc.Metadata, next: ServerCallHandler<ReqT, RespT>):
             ServerCall.Listener<ReqT> {
         return object : ForwardingServerOnCallListener<ReqT, RespT>(call, headers, next) {
             override fun onFinally() {
-                clear()
+                GrpcThreadExecutorCustomizer.shutdown()
             }
         }
     }
@@ -37,11 +33,11 @@ object GrpcThreadExecutorInterceptor : ClientInterceptor, ServerInterceptor, Seq
     override fun <ReqT, RespT> interceptCall(method: MethodDescriptor<ReqT, RespT>, callOptions: CallOptions, next: Channel): ClientCall<ReqT, RespT> {
         return object : ForwardingClientOnCall<ReqT, RespT>(method, callOptions, next) {
             override fun onFinally() {
-                clear()
+                GrpcThreadExecutorCustomizer.shutdown()
             }
         }
     }
 
-    override val sequence: Int = Int.MAX_VALUE
+    override val sequence: Int = Int.MIN_VALUE + 1000
 
 }

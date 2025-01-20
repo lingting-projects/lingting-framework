@@ -19,15 +19,14 @@ class GrpcWorkerRunnable(val r: Runnable) : WorkerRunnable() {
 
     override fun onStart() {
         val thread = Thread.currentThread()
-        GrpcThreadExecutorCustomizer.THREAD_MAP[thread] = this
         oldName = thread.name
         thread.name = "grpc-worker-${index}"
+        GrpcThreadExecutorCustomizer.bind(this)
     }
 
     override fun onFinally() {
-        oldName?.run { Thread.currentThread().name = this }
-        GrpcThreadExecutorCustomizer.THREAD_MAP.remove(Thread.currentThread())
-        GrpcThreadExecutorCustomizer.RUNNABLE_MAP.remove(r)
+        oldName?.also { Thread.currentThread().name = it }
+        GrpcThreadExecutorCustomizer.shutdown()
     }
 
 }

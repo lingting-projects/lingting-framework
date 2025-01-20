@@ -14,6 +14,9 @@ import live.lingting.framework.util.ArrayUtils.isEmpty
  * @author lingting 2023-03-29 20:45
  */
 open class SecurityAuthorize @JvmOverloads constructor(
+    /**
+     * @see live.lingting.framework.security.properties.SecurityProperties.order
+     */
     @JvmField val order: Int,
     @JvmField val customizers: List<SecurityAuthorizationCustomizer> = emptyList()
 ) {

@@ -2,7 +2,6 @@ package live.lingting.framework.thread
 
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.value.WaitValue
 
@@ -14,15 +13,14 @@ abstract class WorkerRunnable : Runnable {
 
     protected val queue = LinkedBlockingQueue<Runnable>()
 
-    /**
-     * 是否完成
-     */
-    protected val finish = AtomicBoolean(false)
-
     protected val threadValue = WaitValue.of<Thread>()
 
+    protected val lock = threadValue.lock
+
+    protected var finish = false
+
     open fun push(runnable: Runnable) {
-        check(!finish.get()) { "worker is finish!" }
+        check(!isFinish()) { "worker is finish!" }
         queue.add(runnable)
     }
 
@@ -33,19 +31,14 @@ abstract class WorkerRunnable : Runnable {
         }
         try {
             onStart()
-            threadValue.update(Thread.currentThread())
-            while (!finish.get()) {
-                val thread = threadValue.value
-                if (thread == null || thread.isInterrupted || !thread.isAlive) {
-                    break
-                }
-                queue.poll(10, TimeUnit.MINUTES)?.run()
+            val thread = Thread.currentThread()
+            threadValue.update(thread)
+            while (!isFinish()) {
+                val poll = queue.poll(10, TimeUnit.MINUTES)
+                poll?.run()
             }
         } finally {
-            if (finish.compareAndSet(false, true)) {
-                push { }
-                onFinally()
-            }
+            interrupt()
         }
     }
 
@@ -53,13 +46,24 @@ abstract class WorkerRunnable : Runnable {
 
     fun isRunning(): Boolean = isStarted() && !isFinish()
 
-    fun isFinish(): Boolean = finish.get()
+    fun isFinish(): Boolean = finish && threadValue.value.let { it == null || it.isInterrupted || !it.isAlive }
 
-    open fun onStart() {
+    fun interrupt() {
+        threadValue.compute {
+            if (finish == false) {
+                finish = true
+                queue.add { }
+                onFinally()
+            }
+            null
+        }
+    }
+
+    protected open fun onStart() {
         //
     }
 
-    open fun onFinally() {
+    protected open fun onFinally() {
         //
     }
 

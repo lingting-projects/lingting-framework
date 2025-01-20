@@ -23,9 +23,9 @@ class GrpcServerProperties {
 
     var traceIdKey: String = MdcUtils.traceIdKey
 
-    var traceOrder: Int = Int.MIN_VALUE + 100
+    var traceOrder: Int = Int.MIN_VALUE
 
-    var exceptionHandlerOrder: Int = Int.MIN_VALUE + 200
+    var exceptionHandlerOrder: Int = Int.MIN_VALUE + 2000
 
     /**
      * 当上下文在关闭阶段时, 是否拒绝请求
