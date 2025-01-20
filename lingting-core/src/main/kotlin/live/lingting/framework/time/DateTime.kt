@@ -18,15 +18,15 @@ object DateTime {
     var zoneId = DatePattern.SYSTEM_ZONE_ID
         private set
 
+    var clock: Clock = Clock.system(zoneId)
+        private set
+
     var zoneOffset = DatePattern.SYSTEM_ZONE_OFFSET
         set(value) {
             field = value
             zoneId = value.normalized()
-            clock = Clock.system(zoneId)
+            clock = clock.withZone(value)
         }
-
-    var clock: Clock = Clock.system(zoneId)
-        private set
 
     @JvmStatic
     fun millis(): Long {
