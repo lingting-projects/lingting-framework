@@ -5,7 +5,7 @@ import java.util.concurrent.BlockingQueue
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executor
 import java.util.concurrent.LinkedBlockingQueue
-import java.util.function.Supplier
+import java.util.concurrent.TimeoutException
 import live.lingting.framework.function.ThrowableRunnable
 import live.lingting.framework.lock.JavaReentrantLock
 import live.lingting.framework.util.ThreadUtils
@@ -47,22 +47,22 @@ open class Async @JvmOverloads constructor(
 
     }
 
-    protected val lock: JavaReentrantLock = JavaReentrantLock()
+    protected val lock = JavaReentrantLock()
 
     /**
      * 所有异步任务列表
      */
-    protected val all: MutableList<StateKeepRunnable> = CopyOnWriteArrayList()
+    protected val all = CopyOnWriteArrayList<StateKeepRunnable>()
 
     /**
      * 执行中任务列表
      */
-    protected val running: MutableList<StateKeepRunnable> = CopyOnWriteArrayList()
+    protected val running = CopyOnWriteArrayList<StateKeepRunnable>()
 
     /**
      * 已完成异步任务列表
      */
-    protected val completed: MutableList<StateKeepRunnable> = CopyOnWriteArrayList()
+    protected val completed = CopyOnWriteArrayList<StateKeepRunnable>()
 
     /**
      * 待执行任务队列
@@ -102,8 +102,7 @@ open class Async @JvmOverloads constructor(
                 runnable.run()
             }
 
-            override fun onFinally() {
-                super.onFinally()
+            override fun onEnd() {
                 lock.run {
                     completed.add(this)
                     running.remove(this)
@@ -122,12 +121,12 @@ open class Async @JvmOverloads constructor(
      */
     fun walk() {
         // 上锁确保不会多执行
-        lock.runByInterruptibly {
+        lock.runByTry {
             // 已满
             if (isFull) {
-                return@runByInterruptibly
+                return@runByTry
             }
-            val runnable = queue.poll() ?: return@runByInterruptibly
+            val runnable = queue.poll() ?: return@runByTry
             executor.execute(runnable)
             running.add(runnable)
         }
@@ -140,31 +139,29 @@ open class Async @JvmOverloads constructor(
      */
     @JvmOverloads
     fun await(duration: Duration? = null, forceInterrupt: Boolean = true) {
-        val supplier = Supplier {
-            val count = notCompletedCount()
-            if (count < 1) {
-                return@Supplier true
+        try {
+            ValueUtils.awaitTrue(duration) { notCompletedCount() < 1 }
+        } catch (e: TimeoutException) {
+            if (forceInterrupt) {
+                interruptAll()
             }
-
-            if (duration == null) {
-                return@Supplier false
-            }
-            val millis = duration.toMillis()
-            for (runnable in running) {
-                // 执行时间超时
-                if (runnable.time() >= millis && forceInterrupt) {
-                    runnable.interrupt()
-                }
-            }
-            false
+            throw e
         }
-        ValueUtils.awaitTrue(supplier)
     }
 
     /**
      * 等待可线程空闲, 此时可立即执行新任务
      */
     fun awaitIdle() = ValueUtils.awaitFalse { isFull }
+
+    /**
+     * 中断所有运行中任务
+     */
+    fun interruptAll() {
+        for (runnable in running) {
+            runnable.interrupt()
+        }
+    }
 
     /**
      * 执行中和待执行的任务数量
