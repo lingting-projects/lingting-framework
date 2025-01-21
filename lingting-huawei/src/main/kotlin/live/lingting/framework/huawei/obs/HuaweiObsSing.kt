@@ -67,11 +67,11 @@ open class HuaweiObsSing(
     fun canonicalizedHeaders(): String {
         val builder = StringBuilder()
         headers.keys().filter { k -> k.startsWith(HuaweiObs.HEADER_PREFIX) }.sorted().forEach { k ->
-            val vs = headers.get(k)
+            val vs = headers.get(k) as Collection<String>
             if (vs.isEmpty()) {
                 return@forEach
             }
-            builder.append(k).append(":").append(java.lang.String.join(",", vs)).append("\n")
+            builder.append(k).append(":").append(vs.joinToString(",")).append("\n")
         }
         return builder.toString()
     }

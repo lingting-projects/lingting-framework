@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test
 class DefaultDataScopeParseTest {
 
     companion object {
-        val TABLE_NAMES: MutableSet<String> = TreeSet(java.lang.String.CASE_INSENSITIVE_ORDER)
+        val TABLE_NAMES: MutableSet<String> = TreeSet(String.CASE_INSENSITIVE_ORDER)
 
         init {
             TABLE_NAMES.addAll(mutableListOf<String>("entity", "entity1", "entity2", "entity3", "t1", "t2"))

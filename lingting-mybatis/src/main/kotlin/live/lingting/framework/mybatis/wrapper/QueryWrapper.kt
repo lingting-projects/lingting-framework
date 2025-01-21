@@ -12,7 +12,7 @@ class QueryWrapper<T : Any> : LambdaWrapper<T, QueryWrapper<T>>() {
     }
 
     override fun getSafeSql(): String {
-        val builder = java.lang.StringBuilder()
+        val builder = StringBuilder()
 
         if (com.baomidou.mybatisplus.core.toolkit.StringUtils.isNotBlank(first)) {
             builder.append(first)

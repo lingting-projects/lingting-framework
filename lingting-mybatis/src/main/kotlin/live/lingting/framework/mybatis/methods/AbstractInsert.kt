@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.core.metadata.TableInfoHelper
 import com.baomidou.mybatisplus.core.toolkit.StringUtils
 import com.baomidou.mybatisplus.core.toolkit.sql.SqlInjectionUtils
 import com.baomidou.mybatisplus.core.toolkit.sql.SqlScriptUtils
-import java.lang.String.format
 import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator
 import org.apache.ibatis.executor.keygen.KeyGenerator
 import org.apache.ibatis.executor.keygen.NoKeyGenerator
@@ -21,7 +20,7 @@ abstract class AbstractInsert protected constructor(methodName: String) : Abstra
         val prepare = prepare(tableInfo)
         val key = key(tableInfo)
 
-        val sql: String = format(getSql(), tableInfo.tableName, prepare.columnSql, prepare.valueSql)
+        val sql: String = String.format(getSql(), tableInfo.tableName, prepare.columnSql, prepare.valueSql)
         val sqlSource = languageDriver.createSqlSource(configuration, sql, modelClass)
 
         return addInsertMappedStatement(
