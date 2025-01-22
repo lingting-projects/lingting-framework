@@ -142,6 +142,15 @@ interface Compare<E, B : Compare<E, B>> {
         return addMust(QueryUtils.should(queries))
     }
 
+    fun should(vararg queries: Compare<*, *>): B {
+        return should(queries.toList())
+    }
+
+    fun should(queries: Collection<Compare<*, *>>): B {
+        val should = QueryUtils.should(queries.map { it.buildQuery() })
+        return addMust(should)
+    }
+
     fun must(vararg queries: Query): B {
         return addMust(QueryUtils.must(*queries))
     }
