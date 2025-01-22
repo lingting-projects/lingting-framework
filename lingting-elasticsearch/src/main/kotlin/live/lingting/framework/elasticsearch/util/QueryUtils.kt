@@ -1,4 +1,4 @@
-package live.lingting.framework.elasticsearch.composer
+package live.lingting.framework.elasticsearch.util
 
 import co.elastic.clients.elasticsearch._types.FieldValue
 import co.elastic.clients.elasticsearch._types.query_dsl.Query
@@ -8,13 +8,13 @@ import co.elastic.clients.util.ObjectBuilder
 import java.util.Objects
 import java.util.function.Function
 import live.lingting.framework.elasticsearch.EFunction
-import live.lingting.framework.elasticsearch.ElasticsearchUtils
 import live.lingting.framework.elasticsearch.function.TermOperator
 
 /**
  * @author lingting 2024-03-06 17:33
  */
-object QueryComposer {
+object QueryUtils {
+
     // region basic
     @JvmStatic
     fun <T> term(field: String, obj: T?): Query {
@@ -156,6 +156,7 @@ object QueryComposer {
     }
 
     // endregion
+
     // region lambda
     @JvmStatic
     fun <T> term(func: EFunction<*, T>, obj: T?): Query {
@@ -230,5 +231,5 @@ object QueryComposer {
         val field: String = ElasticsearchUtils.fieldName(func)
         return wildcard(field, obj)
     } // endregion
-}
 
+}

@@ -7,8 +7,8 @@ import live.lingting.framework.elasticsearch.IndexInfo
  */
 class NonPolymerize : Polymerize {
 
-    override fun index(info: IndexInfo): String {
-        return info.index
+    override fun index(info: IndexInfo): List<String> {
+        return listOf(info.index)
     }
 
     override fun indices(info: IndexInfo): LinkedHashSet<String> {

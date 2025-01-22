@@ -20,7 +20,7 @@ interface Polymerize {
     /**
      * 查询时使用的索引
      */
-    fun index(info: IndexInfo): String = if (info.polymerizeLimit < 1) info.matchIndex else indices(info).joinToString(",")
+    fun index(info: IndexInfo): List<String> = if (info.polymerizeLimit < 1) listOf(info.matchIndex) else indices(info).toList()
 
     fun indices(info: IndexInfo): LinkedHashSet<String>
 

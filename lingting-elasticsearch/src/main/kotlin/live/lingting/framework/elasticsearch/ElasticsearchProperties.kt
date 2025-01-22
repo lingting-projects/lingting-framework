@@ -23,6 +23,7 @@ class ElasticsearchProperties {
     var scroll: Scroll = Scroll()
 
     class Index {
+
         /**
          * 索引前缀
          */
@@ -36,6 +37,7 @@ class ElasticsearchProperties {
     }
 
     class Retry {
+
         var enable: Boolean = false
 
         /**
@@ -58,6 +60,7 @@ class ElasticsearchProperties {
          * 版本冲突重试延迟, 未配置则按照 [Retry.getDelay] 进行
          */
         var versionConflictDelay: Duration? = null
+
     }
 
     class Scroll {
