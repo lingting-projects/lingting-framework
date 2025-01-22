@@ -6,10 +6,7 @@ import live.lingting.framework.function.ThrowingSupplier
 /**
  * @author lingting 2023-10-23 19:14
  */
-open class Retry<T>(
-    protected val supplier: ThrowingSupplier<T>,
-    protected val function: RetryFunction
-) {
+abstract class Retry<T>(protected val supplier: ThrowingSupplier<T>) {
 
     companion object {
         @JvmStatic
@@ -28,32 +25,37 @@ open class Retry<T>(
      */
     protected var count: Int = 0
 
-    val logs by lazy { run() }
+    val logs by lazy { buildLogs() }
 
-    protected open fun run(): List<RetryLog<T>> {
+    protected open fun log(t: T?, ex: Throwable?) = RetryLog(t, ex)
+
+    protected abstract fun allowRetry(ex: Throwable): Boolean
+
+    protected abstract fun delay(ex: Throwable)
+
+    protected open fun buildLogs(): List<RetryLog<T>> {
         return mutableListOf<RetryLog<T>>().apply {
             var ex: Throwable? = null
             while (true) {
                 try {
                     if (ex != null) {
-                        add(RetryLog(null, ex))
-                        val allowed = function.allowRetry(count, ex)
+                        val el = log(null, ex)
+                        add(el)
 
                         // 不允许重试
-                        if (!allowed) {
+                        if (!allowRetry(ex)) {
                             break
                         }
 
-                        // 重试休眠时间获取
-                        val delay = function.getDelay(count, ex)
+                        // 休眠
+                        delay(ex)
                         // 重试计数
                         count++
-                        // 休眠
-                        Thread.sleep(delay!!.toMillis())
                     }
 
                     val t = supplier.get()
-                    add(RetryLog(t, null))
+                    val tl = log(t, null)
+                    add(tl)
                     break
                 } catch (e: InterruptedException) {
                     Thread.currentThread().interrupt()

@@ -6,6 +6,7 @@ import java.time.Duration
  * @author lingting 2023-12-19 13:48
  */
 interface RetryFunction {
+
     /**
      * 是否允许重试
      * @param retryCount 已重试次数
@@ -21,4 +22,5 @@ interface RetryFunction {
      * @return 重试延迟时间
      */
     fun getDelay(retryCount: Int, e: Throwable): Duration?
+
 }

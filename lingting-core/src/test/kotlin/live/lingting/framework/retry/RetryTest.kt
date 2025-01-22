@@ -12,7 +12,8 @@ import org.junit.jupiter.api.Test
 /**
  * @author lingting 2023-10-24 14:33
  */
-internal class RetryTest {
+class RetryTest {
+
     @Test
     fun test() {
         val expected = 3
