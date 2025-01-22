@@ -3,6 +3,7 @@ package live.lingting.framework.system
 import java.io.File
 import java.io.OutputStream
 import java.nio.charset.Charset
+import java.time.Duration
 import java.util.StringTokenizer
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -14,7 +15,39 @@ import live.lingting.framework.util.SystemUtils
 /**
  * @author lingting 2022/6/25 11:55
  */
-class Command protected constructor(init: String, enter: String, exit: String, charset: Charset) {
+open class Command protected constructor(init: String, enter: String, exit: String, charset: Charset) {
+
+    companion object {
+
+        @JvmField
+        val TEMP_DIR: File = FileUtils.createTempDir("command")
+
+        @JvmField
+        val ENTER: String = SystemUtils.lineSeparator()
+
+        const val EXIT: String = "exit"
+
+        /**
+         * 推荐使用此实例
+         */
+        /**
+         * 获取命令操作实例. 此实例默认使用系统字符集, 如果发现部分带非英文字符和特殊符号命令执行异常, 建议使用
+         * [Command.of] 自定义对应的字符集
+         * @param init 初始命令
+         */
+        @JvmStatic
+        open fun of(init: String): Command = of(init, SystemUtils.charset())
+
+        @JvmStatic
+        open fun of(init: String, charset: Charset): Command {
+            return of(init, ENTER, EXIT, charset)
+        }
+
+        @JvmStatic
+        open fun of(init: String, enter: String, exit: String, charset: Charset): Command {
+            return Command(init, enter, exit, charset)
+        }
+    }
 
     val init: String
 
@@ -64,11 +97,11 @@ class Command protected constructor(init: String, enter: String, exit: String, c
         this.startTime = DateTime.millis()
     }
 
-    fun history(): List<String> {
+    open fun history(): List<String> {
         return history.toList()
     }
 
-    fun write(str: String): Command {
+    open fun write(str: String): Command {
         val bytes: ByteArray = str.toByteArray(charset)
         stdIn.write(bytes)
         stdIn.flush()
@@ -82,7 +115,7 @@ class Command protected constructor(init: String, enter: String, exit: String, c
      * 换到下一行
      */
 
-    fun enter(): Command {
+    open fun enter(): Command {
         return write(enter)
     }
 
@@ -90,7 +123,7 @@ class Command protected constructor(init: String, enter: String, exit: String, c
      * 写入通道退出指令
      */
 
-    fun exit(): Command {
+    open fun exit(): Command {
         write(exit)
         return enter()
     }
@@ -100,7 +133,7 @@ class Command protected constructor(init: String, enter: String, exit: String, c
      * @param str 单行指令
      */
 
-    fun exec(str: String): Command {
+    open fun exec(str: String): Command {
         write(str)
         return enter()
     }
@@ -111,11 +144,13 @@ class Command protected constructor(init: String, enter: String, exit: String, c
      * 例如: eg: exec("ssh ssh.lingting.live").exec("ssh ssh.lingting.live").exec("ssh
      * ssh.lingting.live")
      * 需要: eg: exit().exit().exit()
+     *
+     * @param exit 是否在线程被中断后退出
+     * @param force 是否强制退出
      */
-
-    fun waitFor(): CommandResult {
-        val i = process.waitFor()
-        return CommandResult(this, i)
+    @JvmOverloads
+    open fun waitFor(exit: Boolean = true, force: Boolean = false): CommandResult {
+        return waitFor(null, exit, force)
     }
 
     /**
@@ -124,28 +159,46 @@ class Command protected constructor(init: String, enter: String, exit: String, c
      * 具体原因如下</h3>
      * 终端缓冲区大小有限, 在缓冲区被写满之后, 会子线程会挂起,等待缓冲区内容被读, 然后才继续写. 如果此时主线程也在waitFor()等待子线程结束, 就卡死了
      * 即便是先读取返回结果在调用此方法也可能会导致卡死. 比如: 先读取标准输出流, 还没读完, 缓冲区被错误输出流写满了.
-     * @param millis 等待时间, 单位: 毫秒
+     * @param duration 等待时长
+     * @param exit 是否在线程被中断或超时后退出
+     * @param force 是否强制退出
      * @return live.lingting.tools.system.CommandResult
      */
+    @JvmOverloads
+    open fun waitFor(duration: Duration?, exit: Boolean = true, force: Boolean = false): CommandResult {
+        try {
+            if (duration == null || !duration.isPositive) {
+                val i = process.waitFor()
+                return CommandResult(this, i)
+            }
 
-    fun waitFor(millis: Long): CommandResult {
-        // 超时
-        if (!process.waitFor(millis, TimeUnit.MILLISECONDS)) {
-            throw TimeoutException()
+            // 超时
+            if (!process.waitFor(duration.toMillis(), TimeUnit.MILLISECONDS)) {
+                throw TimeoutException()
+            }
+            val i = process.exitValue()
+            return CommandResult(this, i)
+        } catch (e: TimeoutException) {
+            if (exit) destroy(force)
+            throw e
+        } catch (e: InterruptedException) {
+            if (exit) destroy(force)
+            throw e
         }
-        val i = process.exitValue()
-        return CommandResult(this, i)
     }
 
-    fun destroy() {
-        process.destroy()
+    @JvmOverloads
+    open fun destroy(force: Boolean = false) {
+        if (force) {
+            process.destroyForcibly()
+        } else {
+            process.destroy()
+        }
     }
 
-    fun destroyForcibly() {
-        process.destroyForcibly()
-    }
+    open fun destroyForcibly() = destroy(true)
 
-    fun clean() {
+    open fun clean() {
         FileUtils.delete(stdOut)
         FileUtils.delete(stdErr)
     }
@@ -154,40 +207,10 @@ class Command protected constructor(init: String, enter: String, exit: String, c
      * 清空历史记录
      * @return 返回被清除的数据
      */
-    fun cleanHistory(): List<String> {
+    open fun cleanHistory(): List<String> {
         val back: List<String> = ArrayList(history)
         history.clear()
         return back
     }
 
-    companion object {
-        @JvmField
-        val TEMP_DIR: File = FileUtils.createTempDir("command")
-
-        @JvmField
-        val ENTER: String = SystemUtils.lineSeparator()
-
-        const val EXIT: String = "exit"
-
-        /**
-         * 推荐使用此实例
-         */
-        /**
-         * 获取命令操作实例. 此实例默认使用系统字符集, 如果发现部分带非英文字符和特殊符号命令执行异常, 建议使用
-         * [Command.of] 自定义对应的字符集
-         * @param init 初始命令
-         */
-        @JvmStatic
-        fun of(init: String): Command = of(init, SystemUtils.charset())
-
-        @JvmStatic
-        fun of(init: String, charset: Charset): Command {
-            return of(init, ENTER, EXIT, charset)
-        }
-
-        @JvmStatic
-        fun of(init: String, enter: String, exit: String, charset: Charset): Command {
-            return Command(init, enter, exit, charset)
-        }
-    }
 }
