@@ -4,11 +4,10 @@ import java.time.Duration
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Supplier
+import live.lingting.framework.concurrent.Await
 import live.lingting.framework.lock.JavaReentrantLock
 import live.lingting.framework.thread.Async
 import live.lingting.framework.util.Slf4jUtils.logger
-import live.lingting.framework.util.ValueUtils
 
 /**
  * @author lingting 2024-09-05 14:48
@@ -64,7 +63,7 @@ abstract class MultipartTask<I : MultipartTask<I>> protected constructor(val mul
 
     fun await(duration: Duration? = null): I {
         if (isStarted) {
-            ValueUtils.awaitTrue(duration, Supplier<Boolean> { this.isCompleted })
+            Await.waitTrue(duration) { this.isCompleted }
         }
         return this as I
     }

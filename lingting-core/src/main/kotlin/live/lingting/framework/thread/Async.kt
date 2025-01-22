@@ -6,10 +6,11 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executor
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeoutException
+import live.lingting.framework.concurrent.Await
+import live.lingting.framework.function.StateKeepRunnable
 import live.lingting.framework.function.ThrowableRunnable
 import live.lingting.framework.lock.JavaReentrantLock
 import live.lingting.framework.util.ThreadUtils
-import live.lingting.framework.util.ValueUtils
 
 /**
  * @author lingting 2023-06-05 17:31
@@ -140,7 +141,7 @@ open class Async @JvmOverloads constructor(
     @JvmOverloads
     fun await(duration: Duration? = null, forceInterrupt: Boolean = true) {
         try {
-            ValueUtils.awaitTrue(duration) { notCompletedCount() < 1 }
+            Await.waitTrue(duration) { notCompletedCount() < 1 }
         } catch (e: TimeoutException) {
             if (forceInterrupt) {
                 interruptAll()
@@ -152,7 +153,7 @@ open class Async @JvmOverloads constructor(
     /**
      * 等待可线程空闲, 此时可立即执行新任务
      */
-    fun awaitIdle() = ValueUtils.awaitFalse { isFull }
+    fun awaitIdle() = Await.waitFalse { isFull }
 
     /**
      * 中断所有运行中任务

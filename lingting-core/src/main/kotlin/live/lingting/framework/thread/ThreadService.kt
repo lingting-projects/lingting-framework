@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.function.Supplier
+import live.lingting.framework.function.KeepRunnable
 import live.lingting.framework.function.ThrowableRunnable
 
 /**

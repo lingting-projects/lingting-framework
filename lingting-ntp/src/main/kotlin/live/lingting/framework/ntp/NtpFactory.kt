@@ -4,12 +4,12 @@ import java.net.InetAddress
 import java.net.SocketTimeoutException
 import java.time.Duration
 import java.util.concurrent.CopyOnWriteArrayList
+import live.lingting.framework.concurrent.Await
 import live.lingting.framework.thread.Async
 import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.DurationUtils.millis
 import live.lingting.framework.util.IpUtils
 import live.lingting.framework.util.Slf4jUtils.logger
-import live.lingting.framework.util.ValueUtils
 import org.apache.commons.net.ntp.NTPUDPClient
 
 /**
@@ -59,7 +59,7 @@ object NtpFactory {
             }
         }
 
-        ValueUtils.awaitTrue(duration) { list.isNotEmpty() || async.notCompletedCount() < 1 }
+        Await.waitTrue(duration) { list.isNotEmpty() || async.notCompletedCount() < 1 }
         async.interruptAll()
         return list.firstOrNull()
     }

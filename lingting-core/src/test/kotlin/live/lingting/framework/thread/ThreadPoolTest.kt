@@ -6,15 +6,15 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import live.lingting.framework.concurrent.Await
 import live.lingting.framework.util.MdcUtils
-import live.lingting.framework.util.ValueUtils
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 /**
  * @author lingting 2024-04-23 11:50
  */
-internal class ThreadPoolTest {
+class ThreadPoolTest {
     @Test
     fun testMdc() {
         val atomic = AtomicBoolean(false)
@@ -42,6 +42,6 @@ internal class ThreadPoolTest {
             assertEquals(traceId, MdcUtils.traceId)
         }
         assertEquals(traceId, MdcUtils.traceId)
-        ValueUtils.awaitTrue { atomic.get() }
+        Await.waitTrue { atomic.get() }
     }
 }

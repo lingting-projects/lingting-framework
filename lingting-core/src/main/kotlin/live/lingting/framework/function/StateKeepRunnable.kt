@@ -1,12 +1,14 @@
-package live.lingting.framework.thread
+package live.lingting.framework.function
 
 import live.lingting.framework.time.DateTime
 
 /**
  * @author lingting 2024-04-29 10:41
  */
-abstract class StateKeepRunnable : KeepRunnable {
-    protected var thread: Thread? = null
+abstract class StateKeepRunnable @JvmOverloads constructor(
+    name: String? = null,
+    mdc: Map<String, String>? = null
+) : KeepRunnable(name, mdc) {
 
     protected var start: Long = 0
 
@@ -14,14 +16,9 @@ abstract class StateKeepRunnable : KeepRunnable {
 
     protected var state: State = State.WAIT
 
-    protected constructor() : super()
-
-    protected constructor(name: String?) : super(name)
-
     private fun innerOnStart() {
         start = DateTime.millis()
         state = State.RUNNING
-        thread = Thread.currentThread()
     }
 
     protected open fun onStart() {
@@ -60,15 +57,6 @@ abstract class StateKeepRunnable : KeepRunnable {
             return end - start
         }
         return DateTime.millis() - start
-    }
-
-    /**
-     * 结束
-     */
-    fun interrupt() {
-        if (thread != null && !isFinish && !thread!!.isInterrupted) {
-            thread!!.interrupt()
-        }
     }
 
     enum class State {

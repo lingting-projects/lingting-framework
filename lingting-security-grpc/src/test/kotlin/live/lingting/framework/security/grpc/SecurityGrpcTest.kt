@@ -4,6 +4,7 @@ import com.google.protobuf.Empty
 import io.grpc.ManagedChannel
 import io.grpc.StatusRuntimeException
 import live.lingting.framework.application.ApplicationHolder
+import live.lingting.framework.concurrent.Await
 import live.lingting.framework.grpc.GrpcClientProvide
 import live.lingting.framework.grpc.GrpcServer
 import live.lingting.framework.grpc.GrpcServerBuilder
@@ -36,7 +37,6 @@ import live.lingting.framework.security.resolver.SecurityTokenDefaultResolver
 import live.lingting.framework.security.resolver.SecurityTokenResolver
 import live.lingting.framework.security.resource.SecurityDefaultResourceServiceImpl
 import live.lingting.framework.security.store.SecurityMemoryStore
-import live.lingting.framework.util.ValueUtils
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrowsExactly
@@ -47,7 +47,7 @@ import org.junit.jupiter.api.Test
 /**
  * @author lingting 2024-01-30 20:16
  */
-internal class SecurityGrpcTest {
+class SecurityGrpcTest {
     var convert: SecurityGrpcExpandConvert? = null
 
     var server: GrpcServer? = null
@@ -102,7 +102,7 @@ internal class SecurityGrpcTest {
             .interceptor(SecurityGrpcResourceServerInterceptor(authorizationKey, resourceService, authorize, convert!!))
             .build()
         server!!.onApplicationStart()
-        ValueUtils.awaitTrue { server!!.isRunning }
+        Await.waitTrue { server!!.isRunning }
 
         val clientInterceptors = listOf(
             gzipInterceptor,

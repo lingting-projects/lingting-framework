@@ -4,7 +4,7 @@ import java.io.File
 import java.io.InputStream
 import java.time.Duration
 import java.util.concurrent.ExecutorService
-import java.util.function.Supplier
+import live.lingting.framework.concurrent.Await
 import live.lingting.framework.exception.DownloadException
 import live.lingting.framework.multipart.Multipart
 import live.lingting.framework.multipart.Part
@@ -93,7 +93,7 @@ abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor
     override fun await(): D {
         check(isStart) { "download not start!" }
 
-        ValueUtils.awaitTrue(Supplier<Boolean> { this.isFinished })
+        Await.waitTrue { this.isFinished }
         return this as D
     }
 

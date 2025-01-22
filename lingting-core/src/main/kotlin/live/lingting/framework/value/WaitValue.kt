@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Predicate
+import live.lingting.framework.concurrent.Await
 import live.lingting.framework.function.InterruptedRunnable
 import live.lingting.framework.lock.JavaReentrantLock
 import live.lingting.framework.util.OptionalUtils.optional
@@ -63,27 +64,30 @@ class WaitValue<T> {
     }
 
     fun notNull(): T {
-        return wait { obj -> Objects.nonNull(obj) }
+        val t = wait { obj -> Objects.nonNull(obj) }
+        return t!!
     }
 
     fun notEmpty(): T {
-        return wait { ValueUtils.isPresent(it) }
+        val t = wait { ValueUtils.isPresent(it) }
+        return t!!
     }
 
     fun optional() = value.optional()
 
-    fun wait(predicate: Predicate<T?>): T {
+    fun wait(predicate: Predicate<T?>): T? {
         return wait(predicate) { lock.await(1, TimeUnit.HOURS) }
     }
 
-    fun wait(predicate: Predicate<T?>, sleep: InterruptedRunnable): T {
+    fun wait(predicate: Predicate<T?>, sleep: InterruptedRunnable): T? {
         lock.lockInterruptibly()
         try {
-            return ValueUtils.await(
-                { value },
-                { it != null && predicate.test(it) },
-                sleep
-            )!!
+            return Await.wait(
+                sleep = sleep,
+                supplier = { value },
+                predicate = { predicate.test(it) }
+            )
+
         } finally {
             lock.unlock()
         }

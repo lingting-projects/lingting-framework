@@ -5,12 +5,13 @@ import java.util.concurrent.ExecutorService
 import java.util.function.Consumer
 import live.lingting.framework.application.ApplicationComponent
 import live.lingting.framework.application.ApplicationHolder
+import live.lingting.framework.concurrent.Await
+import live.lingting.framework.function.KeepRunnable
 import live.lingting.framework.util.BooleanUtils.ifFalse
 import live.lingting.framework.util.DurationUtils.millis
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.util.ThreadUtils
-import live.lingting.framework.util.ValueUtils
 import live.lingting.framework.value.WaitValue
 
 /**
@@ -156,7 +157,7 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
     }
 
     fun awaitTerminated() {
-        ValueUtils.awaitTrue { threadValue.optional().map { Thread.State.TERMINATED == it.state }.orElse(true) }
+        Await.waitTrue { threadValue.optional().map { Thread.State.TERMINATED == it.state }.orElse(true) }
     }
 
 }
