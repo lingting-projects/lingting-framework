@@ -55,7 +55,7 @@ interface ElasticsearchApi<T> {
 
     // region basic
 
-    fun documentId(t: T): String?
+    fun documentId(t: T): String? = null
 
     fun index(): Collection<String>
 
