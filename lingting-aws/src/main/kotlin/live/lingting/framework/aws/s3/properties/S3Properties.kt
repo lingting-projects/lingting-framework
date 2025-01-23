@@ -15,7 +15,7 @@ abstract class S3Properties {
 
     var hostStyle: HostStyle = HostStyle.VIRTUAL
 
-    var region: String = ""
+    var region: String = "us-east-1"
 
     var endpoint: String = "amazonaws.com"
 
