@@ -106,11 +106,17 @@ open class Await<S> @JvmOverloads constructor(
         executor.submit(r)
         val watch = StopWatch()
         watch.start()
-        while (watch.timeMillis() <= millis) {
-            if (r.isFinish) {
-                return r.get()
+        try {
+            while (watch.timeMillis() <= millis) {
+                if (r.isFinish) {
+                    watch.stop()
+                    return r.get()
+                }
+                Thread.sleep(sleep)
             }
-            Thread.sleep(sleep)
+        } catch (e: InterruptedException) {
+            r.interrupt()
+            throw e
         }
         if (interruptOnTimeout) {
             r.interrupt()
