@@ -129,6 +129,7 @@ class ElasticsearchApiImpl<T>(
     override fun update(operator: UnaryOperator<UpdateRequest.Builder<T, T>>, documentId: String?): Boolean {
         val builder = operator.apply(
             UpdateRequest.Builder<T, T>()
+                .id(documentId)
                 // 刷新策略
                 .refresh(Refresh.WaitFor)
                 // 版本冲突时自动重试次数
