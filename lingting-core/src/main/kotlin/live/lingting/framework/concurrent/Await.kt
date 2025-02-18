@@ -8,8 +8,6 @@ import java.util.function.Predicate
 import java.util.function.Supplier
 import live.lingting.framework.function.AwaitRunnable
 import live.lingting.framework.function.InterruptedRunnable
-import live.lingting.framework.time.StopWatch
-import live.lingting.framework.util.DurationUtils.millis
 import live.lingting.framework.util.ThreadUtils
 import live.lingting.framework.util.ValueUtils
 
@@ -89,9 +87,8 @@ open class Await<S> @JvmOverloads constructor(
 
     var interruptOnTimeout = true
 
-    @JvmOverloads
     @Throws(TimeoutException::class)
-    fun await(checkSleep: Duration = 10.millis): S? {
+    fun await(): S? {
         val name = "await-${atomic.andIncrement}"
         val r = AwaitRunnable(supplier, predicate)
 
@@ -100,19 +97,16 @@ open class Await<S> @JvmOverloads constructor(
             return r.get()
         }
 
-        val millis = timeout.toMillis()
-        val sleep = checkSleep.toMillis()
         r.name = name
         executor.submit(r)
-        val watch = StopWatch()
-        watch.start()
+        var duration = Duration.ZERO
         try {
-            while (watch.timeMillis() <= millis) {
+            while (duration < timeout) {
                 if (r.isFinish) {
-                    watch.stop()
                     return r.get()
                 }
-                Thread.sleep(sleep)
+                sleep.run()
+                duration = r.duration()
             }
         } catch (e: InterruptedException) {
             r.interrupt()
@@ -121,7 +115,7 @@ open class Await<S> @JvmOverloads constructor(
         if (interruptOnTimeout) {
             r.interrupt()
         }
-        throw TimeoutException()
+        throw TimeoutException("current duration: $duration, timeout: $timeout, isFinish: ${r.isFinish}")
     }
 
 

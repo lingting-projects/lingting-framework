@@ -8,7 +8,7 @@ import java.time.Duration;
 @FunctionalInterface
 public interface InterruptedRunnable extends ThrowingRunnable {
 
-	InterruptedRunnable THREAD_SLEEP = () -> Thread.sleep(500);
+	InterruptedRunnable THREAD_SLEEP = () -> Thread.sleep(50);
 
 	static InterruptedRunnable threadSleep(Duration duration) {
 		return () -> Thread.sleep(duration.toMillis());

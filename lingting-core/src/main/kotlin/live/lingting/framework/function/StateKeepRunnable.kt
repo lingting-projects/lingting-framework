@@ -1,6 +1,8 @@
 package live.lingting.framework.function
 
+import java.time.Duration
 import live.lingting.framework.time.DateTime
+import live.lingting.framework.util.DurationUtils.millis
 
 /**
  * @author lingting 2024-04-29 10:41
@@ -49,14 +51,12 @@ abstract class StateKeepRunnable @JvmOverloads constructor(
     /**
      * 执行时长, 单位: 毫秒
      */
-    fun time(): Long {
+    fun duration(): Duration {
         if (state == State.WAIT) {
-            return 0
+            return Duration.ZERO
         }
-        if (state == State.FINISH) {
-            return end - start
-        }
-        return DateTime.millis() - start
+        val e = if (state == State.FINISH) end else DateTime.millis()
+        return (e - start).millis
     }
 
     enum class State {
