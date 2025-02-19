@@ -10,7 +10,10 @@ import live.lingting.framework.util.StreamUtils
 /**
  * @author lingting 2022/6/25 12:01
  */
-class CommandResult(val command: Command, val exitCode: Int) : Closeable {
+class CommandResult(
+    val command: AbstractCommand<*>,
+    val exitCode: Int
+) : Closeable {
     val end: Long = DateTime.millis()
 
     val duration: Duration = Duration.ofMillis(end - command.startTime)

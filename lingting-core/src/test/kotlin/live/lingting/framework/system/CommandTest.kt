@@ -13,16 +13,16 @@ import org.junit.jupiter.api.Test
 /**
  * @author lingting 2024-01-26 16:41
  */
-internal class CommandTest {
-    @Test
+class CommandTest {
 
+    @Test
     fun test() {
         val result = if (SystemUtils.isWindows) {
             testWindows()
         } else {
             testLinux()
         }
-        val command = result.command
+        val command = result.command as HistoryCommand
         assertTrue(StringUtils.hasText(command.init))
         for (c in command.history()) {
             Assertions.assertNotEquals(command.enter, c)
@@ -38,16 +38,17 @@ internal class CommandTest {
     }
 
     fun testLinux(): CommandResult {
-        val command = Command.of("sh", StandardCharsets.UTF_8)
+        val command = HistoryCommand.of("sh", StandardCharsets.UTF_8)
         command.exec("ls")
         command.exit()
         return command.waitFor()
     }
 
     fun testWindows(): CommandResult {
-        val command = Command.of("cmd", StandardCharsets.UTF_8)
+        val command = HistoryCommand.of("cmd", StandardCharsets.UTF_8)
         command.exec("dir")
         command.exit()
         return command.waitFor()
     }
+
 }
