@@ -16,9 +16,18 @@ class AwaitRunnable<S>(
 
     var ex: Throwable? = null
 
+    private var interrupt = false
+
+    override fun interrupt() {
+        super.interrupt()
+        interrupt = true
+    }
+
+    fun isRunning() = !interrupt && thread?.isAlive == true && thread?.isInterrupted == false
+
     override fun doProcess() {
         try {
-            while (thread?.isInterrupted == false && thread?.isAlive == true) {
+            while (isRunning()) {
                 val s = supplier.get()
                 if (predicate.test(s)) {
                     value = s
@@ -37,6 +46,5 @@ class AwaitRunnable<S>(
         }
         throw ex!!
     }
-
 
 }

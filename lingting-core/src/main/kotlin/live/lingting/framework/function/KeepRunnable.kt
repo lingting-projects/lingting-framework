@@ -54,7 +54,7 @@ abstract class KeepRunnable @JvmOverloads constructor(
     /**
      * 中断
      */
-    fun interrupt() {
+    open fun interrupt() {
         thread?.also {
             if (!it.isInterrupted) {
                 it.interrupt()
