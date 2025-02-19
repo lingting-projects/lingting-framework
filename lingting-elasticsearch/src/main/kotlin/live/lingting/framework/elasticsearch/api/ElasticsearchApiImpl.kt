@@ -126,7 +126,7 @@ class ElasticsearchApiImpl<T>(
         client.clearScroll { it.scrollId(scrollId) }
     }
 
-    override fun update(operator: UnaryOperator<UpdateRequest.Builder<T, T>>, documentId: String?): Boolean {
+    override fun update(documentId: String?, operator: UnaryOperator<UpdateRequest.Builder<T, T>>): Boolean {
         val builder = operator.apply(
             UpdateRequest.Builder<T, T>()
                 .id(documentId)

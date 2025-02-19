@@ -235,17 +235,39 @@ interface ElasticsearchApi<T> {
 
     // region update
 
-    fun update(t: T) = update({ it.doc(t).index(index(t)) }, documentId(t))
+    fun update(t: T) = update(t) { it }
 
-    fun upsert(t: T) = update({ it.upsert(t).index(index(t)) }, documentId(t))
+    fun update(t: T, operator: UnaryOperator<UpdateRequest.Builder<T, T>>) = update(documentId(t)) {
+        val builder = it.doc(t).index(index(t))
+        operator.apply(builder)
+    }
 
-    fun upsert(t: T, script: Script) = update({ it.doc(t).upsert(t).script(script).index(index(t)) }, documentId(t))
+    fun upsert(t: T) = upsert(t) { it }
 
-    fun update(documentId: String?, script: ScriptBuilder<T>) = update(documentId, script.build())
+    fun upsert(t: T, operator: UnaryOperator<UpdateRequest.Builder<T, T>>) = update(documentId(t)) {
+        val builder = it.upsert(t).index(index(t))
+        operator.apply(builder)
+    }
 
-    fun update(documentId: String?, script: Script) = update({ it.script(script) }, documentId)
+    fun upsert(t: T, script: Script) = upsert(t, script) { it }
 
-    fun update(operator: UnaryOperator<UpdateRequest.Builder<T, T>>, documentId: String?): Boolean
+    fun upsert(t: T, script: Script, operator: UnaryOperator<UpdateRequest.Builder<T, T>>) = update(documentId(t)) {
+        val builder = it.doc(t).upsert(t).script(script).index(index(t))
+        operator.apply(builder)
+    }
+
+    fun update(documentId: String?, script: ScriptBuilder<T>) = update(documentId, script) { it }
+
+    fun update(documentId: String?, script: ScriptBuilder<T>, operator: UnaryOperator<UpdateRequest.Builder<T, T>>) = update(documentId, script.build(), operator)
+
+    fun update(documentId: String?, script: Script) = update(documentId, script) { it }
+
+    fun update(documentId: String?, script: Script, operator: UnaryOperator<UpdateRequest.Builder<T, T>>) = update(documentId) {
+        val builder = it.script(script)
+        operator.apply(builder)
+    }
+
+    fun update(documentId: String?, operator: UnaryOperator<UpdateRequest.Builder<T, T>>): Boolean
 
     // endregion
 
