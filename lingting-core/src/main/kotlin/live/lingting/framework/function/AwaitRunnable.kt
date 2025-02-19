@@ -36,6 +36,9 @@ class AwaitRunnable<S>(
                 sleep.run()
             }
         } catch (t: Throwable) {
+            if (t is InterruptedException) {
+                interrupt()
+            }
             ex = t
         }
     }
