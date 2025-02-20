@@ -204,6 +204,9 @@ open class Command(
     open fun destroyForcibly() = destroy(true)
 
     override fun close() {
+        if (process.isAlive) {
+            process.destroy()
+        }
         out.close()
         err.close()
     }
