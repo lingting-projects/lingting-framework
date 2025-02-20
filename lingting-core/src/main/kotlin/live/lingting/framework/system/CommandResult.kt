@@ -2,50 +2,38 @@ package live.lingting.framework.system
 
 import java.io.Closeable
 import java.io.InputStream
-import java.nio.file.Files
-import java.time.Duration
+import java.nio.charset.Charset
+import java.time.LocalDateTime
 import live.lingting.framework.time.DateTime
-import live.lingting.framework.util.StreamUtils
 
 /**
- * @author lingting 2022/6/25 12:01
+ * @author lingting 2025/2/20 13:52
  */
-class CommandResult(
-    val command: AbstractCommand<*>,
-    val exitCode: Int
+open class CommandResult @JvmOverloads constructor(
+    protected val command: Command,
+    val pid: Long,
+    val startTime: LocalDateTime = command.startTime,
+    val endTime: LocalDateTime = DateTime.current(),
+    val code: Int,
+    val charset: Charset = command.charset,
+    private val outPipe: CommandPipe,
+    private val errPipe: CommandPipe,
 ) : Closeable {
-    val end: Long = DateTime.millis()
 
-    val duration: Duration = Duration.ofMillis(end - command.startTime)
+    open fun outStream(): InputStream = outPipe.stream()
 
-    val stdOut: String by lazy {
-        stdOut().use {
-            StreamUtils.toString(it, command.charset)
-        }
-    }
+    open fun errStream(): InputStream = errPipe.stream()
 
-    val stdErr: String by lazy {
-        stdErr().use {
-            StreamUtils.toString(it, command.charset)
-        }
-    }
+    open fun outBytes(): ByteArray = outStream().use { it.readAllBytes() }
 
-    fun stdOut(): InputStream {
-        return Files.newInputStream(command.stdOut.toPath())
-    }
+    open fun errBytes(): ByteArray = errStream().use { it.readAllBytes() }
 
-    fun stdErr(): InputStream {
-        return Files.newInputStream(command.stdErr.toPath())
-    }
+    open fun outString(): String = outBytes().toString(charset)
 
-    fun clean() {
-        command.clean()
-    }
+    open fun errString(): String = errBytes().toString(charset)
 
     override fun close() {
-        stdOut
-        stdErr
-        clean()
+        command.close()
     }
 
 }

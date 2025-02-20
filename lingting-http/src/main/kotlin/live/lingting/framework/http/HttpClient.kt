@@ -18,6 +18,7 @@ import javax.net.SocketFactory
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLContext
 import javax.net.ssl.X509TrustManager
+import live.lingting.framework.data.DataSize
 import live.lingting.framework.stream.BytesInputStream
 import live.lingting.framework.stream.FileCloneInputStream
 import live.lingting.framework.util.FileUtils
@@ -48,7 +49,7 @@ abstract class HttpClient {
          * 默认大小以内文件直接放内存里面, 单位: bytes
          */
         @JvmField
-        var defaultMaxBytes: Long = 1048576
+        var defaultMaxBytes: Long = DataSize.ofMb(5).bytes
 
         @JvmStatic
         fun builder() = default()

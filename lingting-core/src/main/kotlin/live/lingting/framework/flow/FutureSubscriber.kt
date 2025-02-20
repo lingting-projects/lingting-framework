@@ -10,7 +10,7 @@ import java.util.concurrent.Flow
 abstract class FutureSubscriber<R, T> : Flow.Subscriber<T> {
     private val future = CompletableFuture<R>()
 
-    private val list: MutableList<T> = ArrayList()
+    private val list = ArrayList<T>()
 
     override fun onSubscribe(subscription: Flow.Subscription) {
         subscription.request(Long.MAX_VALUE)

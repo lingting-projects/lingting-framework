@@ -15,8 +15,13 @@ import live.lingting.framework.util.Slf4jUtils.logger
  * @author lingting
  */
 object FileUtils {
+
+    @JvmField
+    val NULL = File(if (SystemUtils.isWindows) "NUL" else "/dev/null")
+
     @JvmField
     val TEMP_DIR: File = SystemUtils.tmpDirLingting()
+
     private val log = logger()
 
     /**
@@ -175,11 +180,14 @@ object FileUtils {
     @JvmStatic
     fun delete(file: File?): Boolean {
         try {
+            if (NULL == file) {
+                return false
+            }
             if (file != null) {
                 Files.delete(file.toPath())
             }
             return true
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             return false
         }
     }

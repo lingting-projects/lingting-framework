@@ -16,6 +16,46 @@ import live.lingting.framework.http.header.HttpHeaders
  * @author lingting 2024-09-02 15:33
  */
 class JavaHttpClient(protected val client: java.net.http.HttpClient) : HttpClient() {
+
+    companion object {
+        fun convert(request: HttpRequest, r: java.net.http.HttpResponse<InputStream>): HttpResponse {
+            val code = r.statusCode()
+            val map = r.headers().map()
+            val headers = HttpHeaders.of(map)
+            val body = r.body()
+            return HttpResponse(request, code, headers, body)
+        }
+
+        fun convert(request: HttpRequest): java.net.http.HttpRequest {
+            val method = request.method()
+            val uri = request.uri()
+            val headers = request.headers()
+            val body = request.body()
+
+            val builder = java.net.http.HttpRequest.newBuilder().uri(uri)
+            val publisher = convert(method, body)
+            builder.method(method.name, publisher)
+            headers.each { k, v ->
+                if (HEADERS_DISABLED.contains(k)) {
+                    return@each
+                }
+                builder.header(k, v)
+            }
+            return builder.build()
+        }
+
+        fun convert(method: HttpMethod, body: HttpRequest.Body?): BodyPublisher {
+            if (body == null || !method.allowBody()) {
+                return BodyPublishers.noBody()
+            }
+            val source = body.source()
+            if (source is MemoryBody) {
+                return BodyPublishers.ofByteArray(source.bytes())
+            }
+            return BodyPublishers.ofInputStream { source.openInput() }
+        }
+    }
+
     override fun client(): java.net.http.HttpClient {
         return client
     }
@@ -83,42 +123,4 @@ class JavaHttpClient(protected val client: java.net.http.HttpClient) : HttpClien
         }
     }
 
-    companion object {
-        fun convert(request: HttpRequest, r: java.net.http.HttpResponse<InputStream>): HttpResponse {
-            val code = r.statusCode()
-            val map = r.headers().map()
-            val headers: HttpHeaders = HttpHeaders.of(map)
-            val body = r.body()
-            return HttpResponse(request, code, headers, body)
-        }
-
-        fun convert(request: HttpRequest): java.net.http.HttpRequest {
-            val method = request.method()
-            val uri = request.uri()
-            val headers = request.headers()
-            val body = request.body()
-
-            val builder = java.net.http.HttpRequest.newBuilder().uri(uri)
-            val publisher = convert(method, body)
-            builder.method(method.name, publisher)
-            headers.each { k, v ->
-                if (HEADERS_DISABLED.contains(k)) {
-                    return@each
-                }
-                builder.header(k, v)
-            }
-            return builder.build()
-        }
-
-        fun convert(method: HttpMethod, body: HttpRequest.Body?): BodyPublisher {
-            if (body == null || !method.allowBody()) {
-                return BodyPublishers.noBody()
-            }
-            val source = body.source()
-            if (source is MemoryBody) {
-                return BodyPublishers.ofByteArray(source.bytes())
-            }
-            return BodyPublishers.ofInputStream { source.openInput() }
-        }
-    }
 }

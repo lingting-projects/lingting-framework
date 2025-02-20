@@ -75,6 +75,17 @@ interface HttpHeaders : MultiValue<String, String, MutableCollection<String>> {
         return first(ETAG)
     }
 
+    fun charset(): String? {
+        return contentType()?.lowercase()?.let {
+            val text = "charset="
+            if (it.contains(text)) {
+                it.substring(it.indexOf(text) + text.length + 1)
+            } else {
+                null
+            }
+        }
+    }
+
     // endregion
 
     // region set

@@ -71,7 +71,7 @@ open class HttpDownload(builder: HttpDownloadBuilder) : MultipartDownload<HttpDo
     }
 
     override fun download(part: Part): InputStream {
-        val builder: HttpRequest.Builder = HttpRequest.builder().get().url(uri)
+        val builder = HttpRequest.builder().get().url(uri)
         if (isMulti) {
             builder.header("Range", String.format("bytes=%d-%d", part.start, part.end))
         }
