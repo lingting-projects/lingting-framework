@@ -1,13 +1,14 @@
 package live.lingting.framework.value
 
+import java.time.Duration
 import java.util.Objects
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Predicate
-import live.lingting.framework.concurrent.Await
-import live.lingting.framework.function.InterruptedRunnable
 import live.lingting.framework.lock.JavaReentrantLock
+import live.lingting.framework.time.StopWatch
+import live.lingting.framework.util.DurationUtils.minutes
 import live.lingting.framework.util.OptionalUtils.optional
 import live.lingting.framework.util.ValueUtils
 
@@ -40,6 +41,8 @@ class WaitValue<T> {
     val isNull: Boolean
         get() = value == null
 
+    fun optional() = value.optional()
+
     fun update(t: T?) {
         compute { t }
     }
@@ -63,31 +66,47 @@ class WaitValue<T> {
         }
     }
 
-    fun notNull(): T {
-        val t = wait { obj -> Objects.nonNull(obj) }
+    @JvmOverloads
+    fun notNull(duration: Duration? = null): T {
+        val t = wait(duration) { obj -> Objects.nonNull(obj) }
         return t!!
     }
 
-    fun notEmpty(): T {
-        val t = wait { ValueUtils.isPresent(it) }
+    @JvmOverloads
+    fun notEmpty(duration: Duration? = null): T {
+        val t = wait(duration) { ValueUtils.isPresent(it) }
         return t!!
     }
 
-    fun optional() = value.optional()
-
-    fun wait(predicate: Predicate<T?>): T? {
-        return wait(predicate) { lock.await(1, TimeUnit.HOURS) }
-    }
-
-    fun wait(predicate: Predicate<T?>, sleep: InterruptedRunnable): T? {
+    @JvmOverloads
+    fun wait(duration: Duration? = null, sleep: Duration = 1.minutes, predicate: Predicate<T?>): T? {
         lock.lockInterruptibly()
         try {
-            return Await.wait(
-                sleep = sleep,
-                supplier = { value },
-                predicate = { predicate.test(it) }
-            )
+            val watch = StopWatch()
+            watch.start()
 
+            while (true) {
+                if (predicate.test(value)) {
+                    return value
+                }
+                val current = watch.duration()
+                // 超时检测
+                if (duration != null && current >= duration) {
+                    throw TimeoutException("wait timeout! current: $current, timeout: $duration")
+                }
+                // 剩余最大休眠时间
+                val sleepTime = if (duration != null) {
+                    val remain = duration - current
+                    if (remain > sleep) {
+                        sleep
+                    } else {
+                        remain
+                    }
+                } else {
+                    sleep
+                }
+                lock.await(sleepTime)
+            }
         } finally {
             lock.unlock()
         }

@@ -100,9 +100,7 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
                 }
             }
             executor.execute(runnable)
-            threadValue.wait({ it != null }) {
-                threadValue.lock.await(100.millis)
-            }
+            threadValue.wait(sleep = 100.millis) { it != null }
         }
     }
 
