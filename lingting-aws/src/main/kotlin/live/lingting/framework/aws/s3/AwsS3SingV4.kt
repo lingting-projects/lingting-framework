@@ -144,7 +144,7 @@ open class AwsS3SingV4(
     }
 
     /**
-     * 计算前面
+     * 计算签名
      */
     fun calculate(): String {
         val request = canonicalRequest()

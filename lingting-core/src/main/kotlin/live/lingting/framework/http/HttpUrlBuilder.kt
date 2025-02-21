@@ -136,7 +136,7 @@ open class HttpUrlBuilder {
             v = portSplit[0]
         }
 
-        this.host = v
+        this.host = if (v.endsWith("/")) v.substringBeforeLast("/") else v
         return this
     }
 
@@ -160,7 +160,12 @@ open class HttpUrlBuilder {
             newUri = string
             query = ""
         }
-        this.path = StringBuilder(newUri)
+        val builder = StringBuilder()
+        if (!newUri.startsWith("/")) {
+            builder.append("/")
+        }
+        builder.append(newUri)
+        this.path = builder
         if (StringUtils.hasText(query)) {
             val split: Array<String> = query.split("&".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             for (kv in split) {
@@ -182,8 +187,12 @@ open class HttpUrlBuilder {
             path.append("/")
         }
 
+        val builder = this.path
         for (segment in segments) {
-            this@HttpUrlBuilder.path.append(segment).append("/")
+            if (!builder.endsWith("/")) {
+                builder.append("/")
+            }
+            builder.append(if (segment.startsWith("/")) segment.substring(1) else segment)
         }
 
         return this

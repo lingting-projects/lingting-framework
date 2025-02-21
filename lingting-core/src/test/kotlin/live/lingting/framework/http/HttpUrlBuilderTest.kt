@@ -37,6 +37,8 @@ class HttpUrlBuilderTest {
         )
         val from = HttpUrlBuilder.from(uri)
         assertEquals("https://www.google.com:80/search/a/b/c?q1=q1&q2=q2&q3=q31&q3=q32&q4=s p a c e", from.build())
+        val repeat = HttpUrlBuilder.builder().host("https://www.baidu.com/").pathSegment("/a/").pathSegment("/b/")
+        assertEquals("https://www.baidu.com/a/b", repeat.build())
     }
 
     @Test
