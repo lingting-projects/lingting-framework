@@ -20,7 +20,6 @@ open class AwsS3DefaultListener(@JvmField protected val client: AwsS3Client) : A
     @JvmField
     protected val log = client.log
 
-
     override fun onFailed(request: AwsS3Request, response: HttpResponse) {
         val string = response.string()
         log.error("Call error! uri: {}; code: {}; body:\n{}", response.uri(), response.code(), string)

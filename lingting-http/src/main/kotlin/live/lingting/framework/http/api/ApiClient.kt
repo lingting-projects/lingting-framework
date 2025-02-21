@@ -39,7 +39,7 @@ abstract class ApiClient<R : ApiRequest> @JvmOverloads protected constructor(
         //
     }
 
-    protected fun customize(headers: HttpHeaders) {
+    protected open fun customize(headers: HttpHeaders) {
         //
     }
 
@@ -47,11 +47,11 @@ abstract class ApiClient<R : ApiRequest> @JvmOverloads protected constructor(
         //
     }
 
-    protected fun customize(builder: HttpUrlBuilder) {
+    protected open fun customize(builder: HttpUrlBuilder) {
         //
     }
 
-    protected fun customize(request: R, builder: HttpRequest.Builder) {
+    protected open fun customize(request: R, builder: HttpRequest.Builder) {
         //
     }
 
@@ -71,7 +71,7 @@ abstract class ApiClient<R : ApiRequest> @JvmOverloads protected constructor(
         }.host(host)
     }
 
-    fun call(r: R): HttpResponse {
+    protected open fun call(r: R): HttpResponse {
         r.onCall()
         customize(r)
 
