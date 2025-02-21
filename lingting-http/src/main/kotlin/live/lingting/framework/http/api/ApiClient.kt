@@ -39,7 +39,15 @@ abstract class ApiClient<R : ApiRequest> @JvmOverloads protected constructor(
         //
     }
 
+    protected open fun customize(body: BodySource) {
+        //
+    }
+
     protected open fun customize(headers: HttpHeaders) {
+        //
+    }
+
+    protected open fun customize(body: BodySource, headers: HttpHeaders) {
         //
     }
 
@@ -76,11 +84,13 @@ abstract class ApiClient<R : ApiRequest> @JvmOverloads protected constructor(
         customize(r)
 
         val method = r.method()
-        val headers: HttpHeaders = HttpHeaders.of(r.headers)
+        val headers = HttpHeaders.of(r.headers)
         val body = r.body()
 
+        customize(body)
         customize(headers)
         customize(r, headers)
+        customize(body, headers)
 
         val path = r.path()
         r.onParams()
