@@ -13,7 +13,7 @@ import live.lingting.framework.jackson.JacksonUtils
 /**
  * @author lingting 2024-09-27 21:29
  */
-class HttpRequest private constructor(
+open class HttpRequest private constructor(
     protected val method: HttpMethod,
     protected val uri: URI,
     protected val headers: HttpHeaders,

@@ -16,10 +16,17 @@ import okio.BufferedSink
 /**
  * @author lingting 2024-09-02 16:20
  */
-class OkHttpRequestBody(
+open class OkHttpRequestBody(
     protected val source: BodySource,
     protected val mediaType: MediaType?
 ) : RequestBody() {
+
+    companion object {
+
+        val MEDIA_STREAM: MediaType = "application/octet-stream".toMediaTypeOrNull()!!
+
+    }
+
     constructor(file: File) : this(FileCloneInputStream(file), MEDIA_STREAM)
 
     constructor(stream: InputStream) : this(stream, MEDIA_STREAM)
@@ -49,7 +56,4 @@ class OkHttpRequestBody(
         StreamUtils.read(source.openInput()) { buffer, len -> bufferedSink.write(buffer, 0, len) }
     }
 
-    companion object {
-        val MEDIA_STREAM: MediaType = "application/octet-stream".toMediaTypeOrNull()!!
-    }
 }

@@ -33,7 +33,7 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
         return threadValue.optional().map { it.threadId() }.orElse(-1L)
     }
 
-    fun interrupt() {
+    open fun interrupt() {
         threadValue.consumer {
             it?.isInterrupted?.ifFalse { it.interrupt() }
         }
@@ -118,7 +118,7 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
         interrupt()
     }
 
-    val simpleName: String
+    open val simpleName: String
         get() {
             val simpleName: String = javaClass.getSimpleName()
             if (StringUtils.hasText(simpleName)) {
@@ -150,11 +150,11 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
         log.warn("Class: {}; ThreadId: {}; shutdown!", simpleName, threadId())
     }
 
-    protected fun onError(e: Exception) {
+    protected open fun onError(e: Exception) {
         log.error("Class: {}; ThreadId: {}; error!", simpleName, threadId(), e)
     }
 
-    fun awaitTerminated() {
+    open fun awaitTerminated() {
         Await.waitTrue { threadValue.optional().map { Thread.State.TERMINATED == it.state }.orElse(true) }
     }
 

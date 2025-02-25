@@ -47,5 +47,6 @@ object OkHttpUtils {
     fun mediaType(contentType: String?): MediaType? {
         return if (StringUtils.hasText(contentType)) contentType?.toMediaTypeOrNull() else null
     }
+
 }
 
