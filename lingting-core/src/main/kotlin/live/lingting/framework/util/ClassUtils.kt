@@ -283,7 +283,7 @@ object ClassUtils {
     fun fields(cls: Class<*>): Array<Field> {
         return CACHE_FIELDS.computeIfAbsent(cls) {
             var k: Class<*>? = cls
-            val fields: MutableList<Field> = ArrayList()
+            val fields = ArrayList<Field>()
             while (k != null && !k.isAssignableFrom(Any::class.java)) {
                 fields.addAll(k.declaredFields)
                 k = k.superclass

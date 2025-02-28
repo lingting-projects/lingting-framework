@@ -23,7 +23,7 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
         else -> ""
     }
 
-    val valueType: Class<*> = field?.type ?: methodGet!!.returnType
+    val valueType: Class<*> = field?.type ?: (methodGet?.returnType ?: methodSet!!.parameterTypes[0])
 
     val hasField = field != null
 
