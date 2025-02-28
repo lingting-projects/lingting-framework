@@ -5,7 +5,6 @@ import java.util.concurrent.ExecutorService
 import java.util.function.Consumer
 import live.lingting.framework.application.ApplicationComponent
 import live.lingting.framework.application.ApplicationHolder
-import live.lingting.framework.function.KeepRunnable
 import live.lingting.framework.util.BooleanUtils.ifFalse
 import live.lingting.framework.util.DurationUtils.millis
 import live.lingting.framework.util.Slf4jUtils.logger
@@ -16,7 +15,7 @@ import live.lingting.framework.value.WaitValue
 /**
  * @author lingting 2023-04-22 10:40
  */
-abstract class AbstractThreadApplicationComponent : ApplicationComponent {
+abstract class AbstractThreadApplication : ApplicationComponent, Runnable {
 
     protected val log = logger()
 
@@ -86,19 +85,7 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
             }
 
             val executor = executor()
-            val name = simpleName
-            val runnable = object : KeepRunnable(name) {
-                override fun process() {
-                    val thread = Thread.currentThread()
-                    threadValue.value = thread
-                    try {
-                        this@AbstractThreadApplicationComponent.run()
-                    } finally {
-                        threadValue.update(null)
-                    }
-                }
-            }
-            executor.execute(runnable)
+            executor.execute(this)
             threadValue.wait(sleep = 100.millis) { it != null }
         }
     }
@@ -126,7 +113,10 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
             return javaClass.getName()
         }
 
-    fun run() {
+    override fun run() {
+        val thread = Thread.currentThread()
+        thread.name = simpleName
+        threadValue.value = thread
         init()
         while (isRun) {
             try {
@@ -138,6 +128,7 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
                 onError(e)
             }
         }
+        threadValue.update(null)
     }
 
     protected abstract fun doRun()

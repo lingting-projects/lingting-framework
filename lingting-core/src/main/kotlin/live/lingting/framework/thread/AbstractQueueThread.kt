@@ -7,7 +7,7 @@ import live.lingting.framework.time.StopWatch
  * 顶级队列线程类
  * @author lingting 2021/3/2 15:07
  */
-abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
+abstract class AbstractQueueThread<E> : AbstractThreadApplication() {
 
     companion object {
         /**

@@ -6,7 +6,7 @@ import live.lingting.framework.lock.JavaReentrantLock
 /**
  * @author lingting 2022/6/27 20:26
  */
-abstract class AbstractTimer : AbstractThreadApplicationComponent() {
+abstract class AbstractTimer : AbstractThreadApplication() {
 
     protected val lock: JavaReentrantLock = JavaReentrantLock()
 

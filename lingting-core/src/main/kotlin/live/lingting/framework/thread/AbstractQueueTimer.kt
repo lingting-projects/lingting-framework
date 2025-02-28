@@ -8,7 +8,7 @@ import live.lingting.framework.lock.JavaReentrantLock
 /**
  * @author lingting 2023-04-22 10:39
  */
-abstract class AbstractQueueTimer<T> : AbstractThreadApplicationComponent() {
+abstract class AbstractQueueTimer<T> : AbstractThreadApplication() {
     protected val lock = JavaReentrantLock()
 
     protected val queue: PriorityQueue<T> = PriorityQueue(comparator)
