@@ -5,7 +5,6 @@ import java.util.concurrent.ExecutorService
 import java.util.function.Consumer
 import live.lingting.framework.application.ApplicationComponent
 import live.lingting.framework.application.ApplicationHolder
-import live.lingting.framework.concurrent.Await
 import live.lingting.framework.function.KeepRunnable
 import live.lingting.framework.util.BooleanUtils.ifFalse
 import live.lingting.framework.util.DurationUtils.millis
@@ -44,11 +43,11 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
      */
     var safe: Boolean = false
 
-    fun safe() {
+    open fun safe() {
         safe = true
     }
 
-    fun unsafe() {
+    open fun unsafe() {
         safe = false
     }
 
@@ -155,7 +154,13 @@ abstract class AbstractThreadApplicationComponent : ApplicationComponent {
     }
 
     open fun awaitTerminated() {
-        Await.waitTrue { threadValue.optional().map { Thread.State.TERMINATED == it.state }.orElse(true) }
+        while (true) {
+            val thread = threadValue.optional().orElse(null)
+            if (thread == null || (!thread.isAlive || thread.isInterrupted || Thread.State.TERMINATED == thread.state)) {
+                break
+            }
+            Thread.sleep(100.millis)
+        }
     }
 
 }
