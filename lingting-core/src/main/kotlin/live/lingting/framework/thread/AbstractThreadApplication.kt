@@ -65,7 +65,7 @@ abstract class AbstractThreadApplication : ApplicationComponent, Runnable {
     }
 
     fun useThreadPool() {
-        executor = ThreadUtils.executor()
+        executor = ThreadPool.executor()
     }
 
     fun useThreadVirtual() {
