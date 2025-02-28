@@ -72,7 +72,7 @@ abstract class AbstractThreadApplication : ApplicationComponent, Runnable {
         executor = VirtualThread.executor()
     }
 
-    abstract fun wake();
+    abstract fun wake()
 
     override fun onApplicationStart() {
         threadValue.consumer {
@@ -128,7 +128,11 @@ abstract class AbstractThreadApplication : ApplicationComponent, Runnable {
                 onError(e)
             }
         }
-        threadValue.update(null)
+        val lock = threadValue.lock
+        lock.run {
+            threadValue.value = null
+            lock.signalAll()
+        }
     }
 
     protected abstract fun doRun()
