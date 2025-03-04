@@ -5,6 +5,7 @@ import java.util.concurrent.ExecutorService
 import java.util.function.Consumer
 import live.lingting.framework.application.ApplicationComponent
 import live.lingting.framework.application.ApplicationHolder
+import live.lingting.framework.concurrent.Await
 import live.lingting.framework.util.BooleanUtils.ifFalse
 import live.lingting.framework.util.DurationUtils.millis
 import live.lingting.framework.util.Slf4jUtils.logger
@@ -149,12 +150,9 @@ abstract class AbstractThreadApplication : ApplicationComponent, Runnable {
     }
 
     open fun awaitTerminated() {
-        while (true) {
+        Await.waitTrue {
             val thread = threadValue.optional().orElse(null)
-            if (thread == null || (!thread.isAlive || thread.isInterrupted || Thread.State.TERMINATED == thread.state)) {
-                break
-            }
-            Thread.sleep(100.millis)
+            thread == null || (!thread.isAlive || thread.isInterrupted || Thread.State.TERMINATED == thread.state)
         }
     }
 

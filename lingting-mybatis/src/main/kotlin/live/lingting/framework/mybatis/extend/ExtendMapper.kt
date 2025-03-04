@@ -34,11 +34,10 @@ interface ExtendMapper<T> : BaseMapper<T> {
         return toResult(tPage)
     }
 
-
     fun cursor(params: PaginationParams): CursorValue<T> = cursor(params, Wrappers.emptyWrapper())
 
     fun cursor(params: PaginationParams, wrapper: Wrapper<T>): CursorValue<T> {
-        return PaginationCursor<T>(params) { selectPage(params, wrapper) }
+        return PaginationCursor<T>(params) { selectPage(it, wrapper) }
     }
 
 }
