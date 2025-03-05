@@ -9,7 +9,6 @@ import live.lingting.framework.concurrent.Await
 import live.lingting.framework.util.BooleanUtils.ifFalse
 import live.lingting.framework.util.DurationUtils.millis
 import live.lingting.framework.util.Slf4jUtils.logger
-import live.lingting.framework.util.StringUtils
 import live.lingting.framework.util.ThreadUtils
 import live.lingting.framework.value.WaitValue
 
@@ -105,14 +104,14 @@ abstract class AbstractThreadApplication : ApplicationComponent, Runnable {
         interrupt()
     }
 
-    open val simpleName: String
-        get() {
-            val simpleName: String = javaClass.getSimpleName()
-            if (StringUtils.hasText(simpleName)) {
-                return simpleName
-            }
-            return javaClass.getName()
+    open val simpleName: String = javaClass.let { cls ->
+        val simple = cls.getSimpleName()
+        if (simple.isNullOrBlank()) {
+            cls.getName()
+        } else {
+            simple
         }
+    }
 
     override fun run() {
         val thread = Thread.currentThread()

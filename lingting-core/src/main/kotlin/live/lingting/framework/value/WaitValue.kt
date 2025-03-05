@@ -18,6 +18,7 @@ import live.lingting.framework.util.ValueUtils
 class WaitValue<T> {
 
     companion object {
+
         @JvmStatic
         fun <T> of(): WaitValue<T> {
             return WaitValue()
@@ -29,6 +30,7 @@ class WaitValue<T> {
             of.value = t
             return of
         }
+
     }
 
     val lock: JavaReentrantLock = JavaReentrantLock()
