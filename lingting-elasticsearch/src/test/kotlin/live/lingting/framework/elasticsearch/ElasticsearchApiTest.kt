@@ -4,6 +4,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient
 import co.elastic.clients.elasticsearch._types.query_dsl.Query
 import co.elastic.clients.json.JsonpMapper
 import co.elastic.clients.transport.ElasticsearchTransport
+import live.lingting.framework.datascope.HandlerType
 import live.lingting.framework.elasticsearch.ElasticsearchProvider.client
 import live.lingting.framework.elasticsearch.ElasticsearchProvider.jacksonMapper
 import live.lingting.framework.elasticsearch.ElasticsearchProvider.transport
@@ -47,9 +48,10 @@ internal class ElasticsearchApiTest {
 
         val scope = object : ElasticsearchDataScope {
             override val resource: String = "null"
-            override fun includes(p: String): Boolean = true
+            override fun includes(type: HandlerType?, p: String): Boolean = true
 
-            override fun handler(p: IndexInfo): Query? = if (allowDefault) QueryUtils.term("space.name", "default") else null
+            override fun handler(type: HandlerType?, p: IndexInfo): Query? =
+                if (allowDefault) QueryUtils.term("space.name", "default") else null
         }
         val scopes = listOf(scope)
         val interceptors = listOf(DataScopeInterceptor(scopes))

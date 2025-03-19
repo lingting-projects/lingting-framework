@@ -15,9 +15,8 @@ import co.elastic.clients.elasticsearch.core.SearchResponse
 import co.elastic.clients.elasticsearch.core.UpdateByQueryRequest
 import co.elastic.clients.elasticsearch.core.UpdateRequest
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation
-import java.util.function.Function
-import java.util.function.UnaryOperator
 import live.lingting.framework.api.ScrollResult
+import live.lingting.framework.datascope.HandlerType
 import live.lingting.framework.elasticsearch.ElasticsearchProperties
 import live.lingting.framework.elasticsearch.IndexInfo
 import live.lingting.framework.elasticsearch.builder.Compare
@@ -31,6 +30,8 @@ import live.lingting.framework.function.ThrowingSupplier
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StringUtils
 import org.slf4j.Logger
+import java.util.function.Function
+import java.util.function.UnaryOperator
 
 /**
  * @author lingting 2024-03-06 16:41
@@ -86,9 +87,9 @@ class ElasticsearchApiImpl<T>(
         return retry.get()
     }
 
-    override fun merge(builder: Compare<T, *>) {
+    override fun merge(type: HandlerType?, builder: Compare<T, *>) {
         interceptors.forEach {
-            it.intercept(info, builder)
+            it.intercept(type, info, builder)
         }
     }
 
@@ -98,7 +99,7 @@ class ElasticsearchApiImpl<T>(
     }
 
     override fun search(builder: SearchBuilder<T>, operator: UnaryOperator<SearchRequest.Builder>): SearchResponse<T> {
-        merge(builder)
+        merge(HandlerType.QUERY, builder)
         val request = operator.apply(builder.build())
             .index(index())
             .build()
@@ -144,7 +145,7 @@ class ElasticsearchApiImpl<T>(
     }
 
     override fun updateByQuery(builder: UpdateBuilder<T>, operator: UnaryOperator<UpdateByQueryRequest.Builder>): Long {
-        merge(builder)
+        merge(HandlerType.UPDATE, builder)
         val request = operator.apply(
             builder.build()
                 .refresh(false)
@@ -153,8 +154,11 @@ class ElasticsearchApiImpl<T>(
         return response.updated() ?: 0
     }
 
-    override fun deleteByQuery(builder: SearchBuilder<T>, operator: UnaryOperator<DeleteByQueryRequest.Builder>): DeleteByQueryResponse {
-        merge(builder)
+    override fun deleteByQuery(
+        builder: SearchBuilder<T>,
+        operator: UnaryOperator<DeleteByQueryRequest.Builder>
+    ): DeleteByQueryResponse {
+        merge(HandlerType.DELETE, builder)
         val request = operator.apply(
             DeleteByQueryRequest.Builder()
                 .refresh(false)

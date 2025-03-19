@@ -20,16 +20,13 @@ import co.elastic.clients.elasticsearch.core.bulk.CreateOperation
 import co.elastic.clients.elasticsearch.core.bulk.DeleteOperation
 import co.elastic.clients.elasticsearch.core.bulk.IndexOperation
 import co.elastic.clients.elasticsearch.core.bulk.UpdateOperation
-import java.io.IOException
-import java.util.function.Consumer
-import java.util.function.Function
-import java.util.function.UnaryOperator
 import live.lingting.framework.api.PaginationCursor
 import live.lingting.framework.api.PaginationParams
 import live.lingting.framework.api.PaginationResult
 import live.lingting.framework.api.ScrollCursor
 import live.lingting.framework.api.ScrollParams
 import live.lingting.framework.api.ScrollResult
+import live.lingting.framework.datascope.HandlerType
 import live.lingting.framework.elasticsearch.aggregate.AggregationWrapper
 import live.lingting.framework.elasticsearch.builder.AggBuilder
 import live.lingting.framework.elasticsearch.builder.Compare
@@ -41,6 +38,10 @@ import live.lingting.framework.elasticsearch.util.ElasticsearchUtils.toOptions
 import live.lingting.framework.function.ThrowingSupplier
 import live.lingting.framework.util.StringUtils
 import org.slf4j.Logger
+import java.io.IOException
+import java.util.function.Consumer
+import java.util.function.Function
+import java.util.function.UnaryOperator
 
 /**
  * @author lingting 2025/1/22 11:36
@@ -65,7 +66,7 @@ interface ElasticsearchApi<T> {
 
     fun <R> retry(properties: ElasticsearchRetryProperties?, supplier: ThrowingSupplier<R>): R?
 
-    fun merge(builder: Compare<T, *>)
+    fun merge(type: HandlerType?, builder: Compare<T, *>)
 
     fun search(): SearchBuilder<T> = SearchBuilder()
 
@@ -152,7 +153,11 @@ interface ElasticsearchApi<T> {
 
     fun scroll(params: ScrollParams<String>, builder: SearchBuilder<T>) = scroll(params, builder) { it }
 
-    fun scroll(params: ScrollParams<String>, builder: SearchBuilder<T>, operator: UnaryOperator<ScrollRequest.Builder>): ScrollResult<T, String> {
+    fun scroll(
+        params: ScrollParams<String>,
+        builder: SearchBuilder<T>,
+        operator: UnaryOperator<ScrollRequest.Builder>
+    ): ScrollResult<T, String> {
         var scrollId: String? = null
         if (params.cursor != null) {
             scrollId = params.cursor
@@ -202,7 +207,11 @@ interface ElasticsearchApi<T> {
         }
     }
 
-    fun aggs(operator: UnaryOperator<SearchRequest.Builder>, aggregationMap: Map<String, Aggregation>, builder: SearchBuilder<T>): SearchResponse<T> {
+    fun aggs(
+        operator: UnaryOperator<SearchRequest.Builder>,
+        aggregationMap: Map<String, Aggregation>,
+        builder: SearchBuilder<T>
+    ): SearchResponse<T> {
         return search(builder) {
             operator.apply(it).aggregations(aggregationMap).size(0)
         }
@@ -222,11 +231,17 @@ interface ElasticsearchApi<T> {
 
     fun scrollCursor(params: ScrollParams<String>, vararg queries: Query) = scrollCursor(params, queries.toList())
 
-    fun scrollCursor(params: ScrollParams<String>, queries: Collection<Query>) = scrollCursor(params, search().addMust(queries))
+    fun scrollCursor(params: ScrollParams<String>, queries: Collection<Query>) =
+        scrollCursor(params, search().addMust(queries))
 
-    fun scrollCursor(params: ScrollParams<String>, queries: SearchBuilder<T>) = scrollCursor(params, queries, UnaryOperator { it })
+    fun scrollCursor(params: ScrollParams<String>, queries: SearchBuilder<T>) =
+        scrollCursor(params, queries, UnaryOperator { it })
 
-    fun scrollCursor(params: ScrollParams<String>, queries: SearchBuilder<T>, operator: UnaryOperator<ScrollRequest.Builder>): ScrollCursor<T, String> {
+    fun scrollCursor(
+        params: ScrollParams<String>,
+        queries: SearchBuilder<T>,
+        operator: UnaryOperator<ScrollRequest.Builder>
+    ): ScrollCursor<T, String> {
         return ScrollCursor(params) { scroll(it, queries, operator) }
     }
 
@@ -258,14 +273,16 @@ interface ElasticsearchApi<T> {
 
     fun update(documentId: String?, script: ScriptBuilder<T>) = update(documentId, script) { it }
 
-    fun update(documentId: String?, script: ScriptBuilder<T>, operator: UnaryOperator<UpdateRequest.Builder<T, T>>) = update(documentId, script.build(), operator)
+    fun update(documentId: String?, script: ScriptBuilder<T>, operator: UnaryOperator<UpdateRequest.Builder<T, T>>) =
+        update(documentId, script.build(), operator)
 
     fun update(documentId: String?, script: Script) = update(documentId, script) { it }
 
-    fun update(documentId: String?, script: Script, operator: UnaryOperator<UpdateRequest.Builder<T, T>>) = update(documentId) {
-        val builder = it.script(script)
-        operator.apply(builder)
-    }
+    fun update(documentId: String?, script: Script, operator: UnaryOperator<UpdateRequest.Builder<T, T>>) =
+        update(documentId) {
+            val builder = it.script(script)
+            operator.apply(builder)
+        }
 
     fun update(documentId: String?, operator: UnaryOperator<UpdateRequest.Builder<T, T>>): Boolean
 
@@ -297,17 +314,26 @@ interface ElasticsearchApi<T> {
 
     fun deleteByQuery(builder: SearchBuilder<T>) = deleteByQuery(builder) { it }.deleted() ?: 0
 
-    fun deleteByQuery(builder: SearchBuilder<T>, operator: UnaryOperator<DeleteByQueryRequest.Builder>): DeleteByQueryResponse
+    fun deleteByQuery(
+        builder: SearchBuilder<T>,
+        operator: UnaryOperator<DeleteByQueryRequest.Builder>
+    ): DeleteByQueryResponse
 
     // endregion
 
     // region bulk
 
-    fun bulk(vararg collection: T, convert: Function<T, BulkOperationBase.AbstractBuilder<*>>) = bulk(collection.toList(), convert)
+    fun bulk(vararg collection: T, convert: Function<T, BulkOperationBase.AbstractBuilder<*>>) =
+        bulk(collection.toList(), convert)
 
-    fun bulk(collection: List<T>, convert: Function<T, BulkOperationBase.AbstractBuilder<*>>) = bulk(collection, convert) { it }
+    fun bulk(collection: List<T>, convert: Function<T, BulkOperationBase.AbstractBuilder<*>>) =
+        bulk(collection, convert) { it }
 
-    fun bulk(collection: Collection<T>, convert: Function<T, BulkOperationBase.AbstractBuilder<*>>, operator: UnaryOperator<BulkRequest.Builder>): BulkResponse {
+    fun bulk(
+        collection: Collection<T>,
+        convert: Function<T, BulkOperationBase.AbstractBuilder<*>>,
+        operator: UnaryOperator<BulkRequest.Builder>
+    ): BulkResponse {
         val operations = collection.map {
             val builder = BulkOperation.Builder()
             val apply = convert.apply(it)
@@ -350,11 +376,17 @@ interface ElasticsearchApi<T> {
         return response
     }
 
-    fun batch(vararg collection: T, convert: Function<T, BulkOperationBase.AbstractBuilder<*>>): BulkResponse = batch(collection.toList(), convert)
+    fun batch(vararg collection: T, convert: Function<T, BulkOperationBase.AbstractBuilder<*>>): BulkResponse =
+        batch(collection.toList(), convert)
 
-    fun batch(collection: List<T>, convert: Function<T, BulkOperationBase.AbstractBuilder<*>>) = batch(collection, convert) { it }
+    fun batch(collection: List<T>, convert: Function<T, BulkOperationBase.AbstractBuilder<*>>) =
+        batch(collection, convert) { it }
 
-    fun batch(collection: Collection<T>, convert: Function<T, BulkOperationBase.AbstractBuilder<*>>, operator: UnaryOperator<BulkRequest.Builder>): BulkResponse {
+    fun batch(
+        collection: Collection<T>,
+        convert: Function<T, BulkOperationBase.AbstractBuilder<*>>,
+        operator: UnaryOperator<BulkRequest.Builder>
+    ): BulkResponse {
         val response = bulk(collection, convert, operator)
         return batchThrow(collection, response)
     }

@@ -1,6 +1,6 @@
 package live.lingting.framework.mybatis.datascope
 
-import java.util.TreeSet
+import live.lingting.framework.datascope.HandlerType
 import live.lingting.framework.mybatis.datascope.SqlParseUtils.getAliasColumn
 import net.sf.jsqlparser.expression.Expression
 import net.sf.jsqlparser.expression.LongValue
@@ -8,6 +8,7 @@ import net.sf.jsqlparser.expression.operators.relational.EqualsTo
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.util.*
 
 /**
  * @author lingting 2024-01-30 10:43
@@ -27,7 +28,7 @@ class DefaultDataScopeParseTest {
 
     val factory = DefaultJSqlDataScopeParserFactory()
 
-    val parser = factory.get(scopes)
+    val parser = factory.get(null, scopes)
 
     @Test
     fun delete() {
@@ -424,11 +425,11 @@ class TenantDataScope : JSqlDataScope {
     override val resource: String
         get() = "tenant"
 
-    override fun includes(tableName: String): Boolean {
+    override fun includes(type: HandlerType?, tableName: String): Boolean {
         return DefaultDataScopeParseTest.TABLE_NAMES.contains(tableName)
     }
 
-    override fun handler(p: JSqlDataScopeParams): Expression? {
+    override fun handler(type: HandlerType?, p: JSqlDataScopeParams): Expression? {
         val tableName = p.name
         val tableAlias = p.alias
         val column = getAliasColumn(tableName, tableAlias, columnName)

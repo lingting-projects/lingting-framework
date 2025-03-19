@@ -1,9 +1,6 @@
 package live.lingting.framework.mybatis.datascope
 
-import java.util.Deque
-import java.util.LinkedList
-import java.util.function.Consumer
-import live.lingting.framework.util.CollectionUtils
+import live.lingting.framework.datascope.HandlerType
 import net.sf.jsqlparser.expression.BinaryExpression
 import net.sf.jsqlparser.expression.Expression
 import net.sf.jsqlparser.expression.NotExpression
@@ -23,11 +20,13 @@ import net.sf.jsqlparser.statement.select.PlainSelect
 import net.sf.jsqlparser.statement.select.Select
 import net.sf.jsqlparser.statement.select.SelectItem
 import net.sf.jsqlparser.statement.update.Update
+import java.util.*
+import java.util.function.Consumer
 
 /**
  * @author lingting 2024/11/25 14:40
  */
-class DefaultJSqlDataScopeParser(scopes: List<JSqlDataScope>) : JSqlDataScopeParser(scopes) {
+class DefaultJSqlDataScopeParser(type: HandlerType?, scopes: List<JSqlDataScope>) : JSqlDataScopeParser(type, scopes) {
 
     override fun insert(insert: Insert, index: Int, sql: String) {
         // 不处理
@@ -85,7 +84,7 @@ class DefaultJSqlDataScopeParser(scopes: List<JSqlDataScope>) : JSqlDataScopePar
         tables = processJoins(tables, plainSelect.joins)
 
         // 追加where条件
-        if (!tables.isNullOrEmpty()) {
+        if (tables.isNotEmpty()) {
             val expression = injectExpression(tables, plainSelect.where)
             plainSelect.where = expression
         }
@@ -109,20 +108,30 @@ class DefaultJSqlDataScopeParser(scopes: List<JSqlDataScope>) : JSqlDataScopePar
         // 有子查询
         if (isSelect) {
             // 比较符号 , and , or , 等等
-            if (expression is BinaryExpression) {
-                processExpression(expression.leftExpression)
-                processExpression(expression.rightExpression)
-            } else if (expression is InExpression) {
-                val right = expression.rightExpression
-                if (right is Select) {
-                    processSelect(right)
+            when (expression) {
+                is BinaryExpression -> {
+                    processExpression(expression.leftExpression)
+                    processExpression(expression.rightExpression)
                 }
-            } else if (expression is ExistsExpression) {
-                processExpression(expression.rightExpression)
-            } else if (expression is NotExpression) {
-                processExpression(expression.expression)
-            } else if (expression is Parenthesis) {
-                processExpression(expression.expression)
+
+                is InExpression -> {
+                    val right = expression.rightExpression
+                    if (right is Select) {
+                        processSelect(right)
+                    }
+                }
+
+                is ExistsExpression -> {
+                    processExpression(expression.rightExpression)
+                }
+
+                is NotExpression -> {
+                    processExpression(expression.expression)
+                }
+
+                is Parenthesis -> {
+                    processExpression(expression.expression)
+                }
             }
         }
     }
@@ -135,14 +144,20 @@ class DefaultJSqlDataScopeParser(scopes: List<JSqlDataScope>) : JSqlDataScopePar
      */
     fun processFromItem(item: FromItem, isDeep: Boolean): MutableList<Table> {
         val list: MutableList<Table> = ArrayList()
-        if (item is Table) {
-            list.add(item)
-        } else if (item is ParenthesedFromItem) {
-            val lefts = processFromItem(item.fromItem, isDeep)
-            val tables: List<Table> = processJoins(lefts, item.joins)
-            list.addAll(tables)
-        } else if (isDeep) {
-            processDeepFromItem(item)
+        when {
+            item is Table -> {
+                list.add(item)
+            }
+
+            item is ParenthesedFromItem -> {
+                val lefts = processFromItem(item.fromItem, isDeep)
+                val tables: List<Table> = processJoins(lefts, item.joins)
+                list.addAll(tables)
+            }
+
+            isDeep -> {
+                processDeepFromItem(item)
+            }
         }
         return list
     }
@@ -153,6 +168,7 @@ class DefaultJSqlDataScopeParser(scopes: List<JSqlDataScope>) : JSqlDataScopePar
         }
     }
 
+    @Suppress("kotlin:S3776")
     fun processJoins(tables: MutableList<Table>, joins: List<Join>?): MutableList<Table> {
         var tables = tables
         if (joins.isNullOrEmpty()) {
@@ -188,20 +204,28 @@ class DefaultJSqlDataScopeParser(scopes: List<JSqlDataScope>) : JSqlDataScopePar
 
                 var onTables: List<Table>? = null
                 // 如果不要忽略，且是右连接，则记录下当前表
-                if (join.isRight) {
-                    mainTable = joinTable
-                    if (leftTable != null) {
-                        onTables = listOf(leftTable)
+                when {
+                    join.isRight -> {
+                        mainTable = joinTable
+                        if (leftTable != null) {
+                            onTables = listOf(leftTable)
+                        }
                     }
-                } else if (join.isLeft) {
-                    onTables = listOf<Table>(joinTable)
-                } else if (join.isInner || join.astNode.jjtGetFirstToken().toString().equals("JOIN", ignoreCase = true)) {
-                    onTables = if (mainTable == null) {
-                        listOf<Table>(joinTable)
-                    } else {
-                        listOf(mainTable, joinTable)
+
+                    join.isLeft -> {
+                        onTables = listOf(joinTable)
                     }
-                    mainTable = null
+
+                    join.isInner || join.astNode.jjtGetFirstToken().toString()
+                        .equals("JOIN", ignoreCase = true)
+                        -> {
+                        onTables = if (mainTable == null) {
+                            listOf(joinTable)
+                        } else {
+                            listOf(mainTable, joinTable)
+                        }
+                        mainTable = null
+                    }
                 }
 
                 tables = ArrayList()
@@ -227,7 +251,7 @@ class DefaultJSqlDataScopeParser(scopes: List<JSqlDataScope>) : JSqlDataScopePar
                     val onExpressions: MutableCollection<Expression> = LinkedList()
                     for (originOnExpression in originOnExpressions) {
                         val currentTableList = onTableDeque.poll()!!
-                        if (currentTableList.isNullOrEmpty()) {
+                        if (currentTableList.isEmpty()) {
                             onExpressions.add(originOnExpression)
                         } else {
                             val injected = injectExpression(currentTableList, originOnExpression)
@@ -254,17 +278,16 @@ class DefaultJSqlDataScopeParser(scopes: List<JSqlDataScope>) : JSqlDataScopePar
             val tableName: String = SqlParseUtils.getTableName(table.name)
 
             // 进行 dataScope 的表名匹配
-            val matchDataScopes = scopes.filter { it.includes(tableName) }
+            val matchDataScopes = scopes.filter { it.includes(type, tableName) }
 
             // 存在匹配成功的
-            if (!matchDataScopes.isNullOrEmpty()) {
+            if (matchDataScopes.isNotEmpty()) {
                 // 计数
                 matchScopes.addAll(matchDataScopes)
                 // 参数构建
                 val params = JSqlDataScopeParams(tableName, table.alias)
                 // 获取到数据范围过滤的表达式
-                matchDataScopes.map { it.handler(params) }
-                    .filterNotNull()
+                matchDataScopes.mapNotNull { it.handler(type, params) }
                     .reduceOrNull { leftExpression, rightExpression -> AndExpression(leftExpression, rightExpression) }
                     ?.let { list.add(it) }
             }
@@ -292,7 +315,7 @@ class DefaultJSqlDataScopeParser(scopes: List<JSqlDataScope>) : JSqlDataScopePar
 
 class DefaultJSqlDataScopeParserFactory : JSqlDataScopeParserFactory() {
 
-    override fun create(scopes: List<JSqlDataScope>): JSqlDataScopeParser {
-        return DefaultJSqlDataScopeParser(scopes)
+    override fun create(type: HandlerType?, scopes: List<JSqlDataScope>): JSqlDataScopeParser {
+        return DefaultJSqlDataScopeParser(type, scopes)
     }
 }
