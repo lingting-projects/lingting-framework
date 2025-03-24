@@ -29,7 +29,12 @@ object ResourceUtils {
     fun get(loader: ClassLoader, name: String): Resource? {
         val url = loader.getResource(name) ?: return null
         val resources = resolver(url).filter {
-            it.name == name || it.link.endsWith(name)
+            // 普通文件
+            it.name == name
+                    // jar中的文件
+                    || it.link.endsWith(name)
+                    // jar中的文件
+                    || it.link.endsWith("$name/")
         }
         return resources.firstOrNull()
     }
