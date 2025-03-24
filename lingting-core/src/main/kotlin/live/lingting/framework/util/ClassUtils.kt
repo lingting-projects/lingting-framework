@@ -1,21 +1,21 @@
 package live.lingting.framework.util
 
+import live.lingting.framework.reflect.ClassField
+import live.lingting.framework.util.StringUtils.firstLower
+import live.lingting.framework.util.StringUtils.firstUpper
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
-import java.util.Objects
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.BiConsumer
 import java.util.function.BiFunction
 import java.util.function.Function
 import java.util.function.Predicate
 import kotlin.reflect.KClass
-import live.lingting.framework.reflect.ClassField
-import live.lingting.framework.util.StringUtils.firstLower
-import live.lingting.framework.util.StringUtils.firstUpper
 
 /**
  * @author lingting 2021/2/25 21:17
@@ -201,7 +201,7 @@ object ClassUtils {
         loaders: Set<ClassLoader> = classLoaders(),
         error: BiConsumer<String, Throwable> = BiConsumer { _, _ -> },
     ): Set<Class<T>> {
-        val path = Resource.convertPath(basePack).replace(".", "/")
+        val path = Resource.replace(basePack).replace(".", "/")
 
         val collection = ResourceUtils.scan(path) {
             !it.isDirectory && it.name.endsWith(".class")

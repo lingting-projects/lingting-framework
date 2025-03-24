@@ -73,7 +73,13 @@ object ResourceUtils {
         return result
     }
 
-    private fun fillByJar(url: URL, root: String, protocol: String, predicate: Predicate<Resource>, result: ArrayList<Resource>) {
+    private fun fillByJar(
+        url: URL,
+        root: String,
+        protocol: String,
+        predicate: Predicate<Resource>,
+        result: ArrayList<Resource>
+    ) {
         val connection = url.openConnection()
         if (connection is JarURLConnection) {
             val jarPaths = root.split(Resource.DELIMITER_JAR).dropLastWhile { it.isEmpty() }.dropLast(1)
@@ -98,11 +104,11 @@ object ResourceUtils {
     private fun fillByFile(url: URL, protocol: String, predicate: Predicate<Resource>, result: ArrayList<Resource>) {
         val uri = url.toURI()
         val source = File(uri)
-        val root = Resource.convertPath(source.absolutePath)
+        val root = source.absolutePath
         val files = if (source.isDirectory) {
             ArrayList<File>().apply {
                 Files.walk(source.toPath()).use {
-                    it.forEach { add(it.toFile()) }
+                    it.forEach { p -> add(p.toFile()) }
                 }
             }
         } else {
@@ -127,7 +133,7 @@ class Resource(
     /**
      * 资源路径(根路径下的相对路径)
      */
-    val path: String,
+    p: String,
     /**
      * 资源名称
      */
@@ -135,7 +141,7 @@ class Resource(
     /**
      * 资源根路径, 表示文件从哪个文件(夹)开始识别到的
      */
-    val root: String,
+    r: String,
     val isDirectory: Boolean
 ) {
 
@@ -152,15 +158,21 @@ class Resource(
         const val PROTOCOL_FILE: String = "file"
 
         @JvmStatic
-        fun convertPath(source: String): String {
+        fun replace(source: String): String {
             return source.replace("\\", DELIMITER_FILE)
         }
 
     }
 
     constructor(protocol: String, file: File, root: String) : this(
-        protocol, convertPath(file.absolutePath.substring(root.length)), file.name, root, file.isDirectory
+        protocol, file.absolutePath.substring(root.length), file.name, root, file.isDirectory
     )
+
+    constructor(protocol: String, file: File) : this(protocol, file, file.parentFile.absolutePath)
+
+    val path = replace(p)
+
+    val root = replace(r)
 
     /**
      * 资源本身是文件
