@@ -8,10 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import java.lang.reflect.Type
-import java.util.function.Consumer
-import kotlin.reflect.KClass
 import live.lingting.framework.jackson.module.BooleanModule
+import live.lingting.framework.jackson.module.DataSizeModule
 import live.lingting.framework.jackson.module.EnumModule
 import live.lingting.framework.jackson.module.JavaTimeModule
 import live.lingting.framework.jackson.module.MoneyModule
@@ -19,6 +17,9 @@ import live.lingting.framework.jackson.module.RModule
 import live.lingting.framework.jackson.provider.NullSerializerProvider
 import live.lingting.framework.jackson.sensitive.SensitiveModule
 import live.lingting.framework.jackson.wrapper.JacksonWrapper
+import java.lang.reflect.Type
+import java.util.function.Consumer
+import kotlin.reflect.KClass
 
 /**
  * @author lingting 2021/6/9 14:28
@@ -72,6 +73,8 @@ object JacksonUtils {
         mapper.registerModule(SensitiveModule())
         // 金额相关
         mapper.registerModule(MoneyModule())
+        // 数据大小
+        mapper.registerModule(DataSizeModule())
         return mapper
     }
 
