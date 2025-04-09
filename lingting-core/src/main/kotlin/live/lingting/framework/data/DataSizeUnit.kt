@@ -1,5 +1,7 @@
 package live.lingting.framework.data
 
+import java.math.BigDecimal
+
 /**
  * @author lingting 2024/12/19 15:47
  */
@@ -32,6 +34,12 @@ enum class DataSizeUnit(
 
     fun of(value: Long): DataSize {
         return DataSize(value * size)
+    }
+
+    fun of(decimal: BigDecimal): DataSize {
+        val s = BigDecimal(size)
+        val multiply = decimal.multiply(s)
+        return DataSize(multiply.toLong())
     }
 
 }

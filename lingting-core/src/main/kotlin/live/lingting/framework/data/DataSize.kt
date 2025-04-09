@@ -1,14 +1,14 @@
 package live.lingting.framework.data
 
-import java.io.Serializable
-import java.math.BigDecimal
-import java.math.RoundingMode
 import live.lingting.framework.data.DataSizeUnit.BYTES
 import live.lingting.framework.data.DataSizeUnit.GB
 import live.lingting.framework.data.DataSizeUnit.KB
 import live.lingting.framework.data.DataSizeUnit.MB
 import live.lingting.framework.data.DataSizeUnit.PB
 import live.lingting.framework.data.DataSizeUnit.TB
+import java.io.Serializable
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 /**
  * @author lingting 2024/11/26 10:22
@@ -21,6 +21,23 @@ data class DataSize @JvmOverloads constructor(
     companion object {
 
         const val STEP: Long = 1024L
+
+        private val pattern = Regex("""(\d+(?:\.\d+)?)\s*([A-Za-z]+)""")
+
+        @JvmStatic
+        fun of(source: String?): DataSize? {
+            if (source.isNullOrBlank()) {
+                return null
+            }
+            val matchResult = pattern.find(source.trim()) ?: return null
+            val (valueStr, unitStr) = matchResult.destructured
+
+            val value = valueStr.toBigDecimalOrNull() ?: return null
+            val unit = DataSizeUnit.entries.firstOrNull {
+                it.text.equals(unitStr, ignoreCase = true)
+            } ?: return null
+            return unit.of(value)
+        }
 
         @JvmStatic
         fun ofBytes(value: Long): DataSize {
