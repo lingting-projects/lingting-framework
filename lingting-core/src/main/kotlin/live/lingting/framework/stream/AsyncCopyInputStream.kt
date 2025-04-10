@@ -1,13 +1,15 @@
 package live.lingting.framework.stream
 
 import live.lingting.framework.function.StateKeepRunnable
-import live.lingting.framework.util.DurationUtils.millis
+import live.lingting.framework.lock.JavaReentrantLock
+import live.lingting.framework.util.DurationUtils.minutes
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StreamUtils
 import live.lingting.framework.util.ThreadUtils
 import java.io.InputStream
 import java.nio.charset.Charset
-import java.util.concurrent.ConcurrentLinkedQueue
+import java.nio.charset.StandardCharsets
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicLong
 
 /**
@@ -15,7 +17,7 @@ import java.util.concurrent.atomic.AtomicLong
  */
 class AsyncCopyInputStream(
     private val source: InputStream,
-    val charset: Charset,
+    val charset: Charset = StandardCharsets.UTF_8,
 ) : InputStream() {
 
     companion object {
@@ -23,42 +25,63 @@ class AsyncCopyInputStream(
         private val counter = AtomicLong()
     }
 
-    private val queue = ConcurrentLinkedQueue<Byte>()
+    private val queue = LinkedBlockingQueue<Byte>()
+
+    private val lock = JavaReentrantLock()
 
     private val r = object : StateKeepRunnable("aci-${counter.andIncrement}") {
 
         override fun doProcess() {
             try {
                 StreamUtils.read(source) { bytes, len ->
-                    for (i in 0..len) {
-                        queue.add(bytes[i])
+                    if (len > 0) {
+                        lock.runByInterruptibly {
+                            for (i in 0..(len - 1)) {
+                                queue.add(bytes[i])
+                            }
+                            lock.signal()
+                        }
                     }
                 }
             } catch (e: Exception) {
                 AsyncCopyInputStream.log.error("异步复制流时异常!", e)
+            } finally {
+                lock.runByTry { lock.signalAll() }
             }
         }
 
     }.also { ThreadUtils.execute(it) }
 
+    @Suppress("kotlin:S3776")
     override fun read(bytes: ByteArray, off: Int, len: Int): Int {
         var pos = 0
+        var stop: Boolean
 
-        while (true) {
-            val b = queue.poll()
-            if (b == null) {
-                if (r.isFinish) {
-                    return -1
+        do {
+            stop = lock.getByInterruptibly {
+                while (true) {
+                    val b = queue.poll()
+                    if (b == null) {
+                        if (pos < 1 && !r.isFinish) {
+                            lock.await(1.minutes)
+                            return@getByInterruptibly false
+                        }
+                        break
+                    }
+                    bytes[off + pos] = b
+                    pos += 1
+                    if (pos == len) {
+                        return@getByInterruptibly true
+                    }
                 }
-                if (pos > 0) {
-                    return pos
-                }
-                Thread.sleep(10.millis)
-                continue
+                pos > 0 || r.isFinish
             }
-            bytes[off + pos] = b
-            pos += 1
+        } while (!stop)
+
+        if (r.isFinish && pos < 1) {
+            return -1
         }
+        return pos
     }
 
     override fun read(): Int {
