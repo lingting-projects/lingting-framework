@@ -36,6 +36,7 @@ object StreamUtils {
         input: InputStream, size: Int,
         function: ThrowingBiFunctionE<ByteArray, Int, Boolean, IOException>
     ) {
+        check(size > 0) { "stream read size must be greater than 0" }
         val bytes = ByteArray(size)
         var len: Int
 
@@ -59,9 +60,10 @@ object StreamUtils {
     }
 
     @JvmStatic
-    fun read(input: InputStream): ByteArray {
+    @JvmOverloads
+    fun read(input: InputStream, size: Int = readSize): ByteArray {
         val out = ByteArrayOutputStream()
-        write(input, out)
+        write(input, out, size)
         try {
             return out.toByteArray()
         } finally {
