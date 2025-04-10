@@ -1,20 +1,21 @@
 package live.lingting.framework.system
 
 import live.lingting.framework.util.DurationUtils.seconds
+import live.lingting.framework.util.StreamUtils
 import live.lingting.framework.util.SystemUtils
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
-import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.ThrowingSupplier
+import kotlin.test.assertEquals
 
 /**
  * @author lingting 2024-01-26 16:41
  */
 @Suppress("UNCHECKED_CAST")
-class CommandTest {
+class ProcessStreamTest {
 
-    fun command(): Command {
+    fun stream(): ProcessStream {
         val init: String
         val exec: String
         if (SystemUtils.isWindows) {
@@ -25,8 +26,7 @@ class CommandTest {
             exec = "ls"
         }
 
-        return Command.builder(init)
-            .history()
+        return ProcessStream.builder(init)
             .charset(SystemUtils.charset())
             .build()
             .also { it.exec(exec) }
@@ -34,14 +34,12 @@ class CommandTest {
 
     @Test
     fun test() {
-        val command = command() as HistoryCommand
-        command.exit()
-        val result = assertDoesNotThrow(ThrowingSupplier { command.waitFor(1.seconds) })
-        assertTrue(command.init.isNotBlank())
-        for (c in command.history()) {
-            assertNotEquals(command.enter, c)
-        }
-        val out = result.outString()
+        val stream = stream()
+        stream.exit()
+        val code = assertDoesNotThrow(ThrowingSupplier { stream.waitFor(1.seconds) })
+        assertTrue(stream.init.isNotBlank())
+        assertEquals(code, stream.exitCode)
+        val out = stream.outStream().use { StreamUtils.toString(it, stream.charset) }
         print(out)
         assertTrue(out.isNotBlank())
     }

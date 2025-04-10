@@ -1,29 +1,31 @@
 package live.lingting.framework.system
 
-import java.io.Closeable
+import live.lingting.framework.stream.AsyncCopyInputStream
+import live.lingting.framework.stream.BytesInputStream
+import live.lingting.framework.util.FileUtils
+import live.lingting.framework.util.SystemUtils
 import java.io.File
+import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.time.LocalDateTime
-import java.util.StringTokenizer
+import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
-import live.lingting.framework.util.FileUtils
-import live.lingting.framework.util.SystemUtils
 
 /**
- * @author lingting 2025/2/20 11:37
+ * @author lingting 2025/4/10 20:53
  */
-open class Command(
+open class ProcessStream(
     val init: String,
     val enter: ByteArray,
     val exit: ByteArray,
     val charset: Charset,
     private val redirectOut: ProcessBuilder.Redirect,
     private val redirectErr: ProcessBuilder.Redirect,
-) : Closeable {
+) : AutoCloseable {
 
     companion object {
 
@@ -45,21 +47,23 @@ open class Command(
         val CHARSET: Charset = StandardCharsets.UTF_8
 
         @JvmStatic
-        fun builder(init: String): CommandBuilder {
-            return CommandBuilder(init)
+        fun builder(init: String): ProcessStreamBuilder {
+            return ProcessStreamBuilder(init)
         }
 
         @JvmStatic
-        fun of(init: String): Command = builder(init).build()
+        fun of(init: String): ProcessStream = builder(init).build()
 
         @JvmStatic
-        fun of(init: String, charset: Charset): Command = builder(init).charset(charset).build()
+        fun of(init: String, charset: Charset): ProcessStream = builder(init).charset(charset).build()
 
         @JvmStatic
-        fun of(init: String, enter: String, exit: String, charset: Charset): Command = of(init, enter.toByteArray(charset), exit.toByteArray(charset), charset)
+        fun of(init: String, enter: String, exit: String, charset: Charset): ProcessStream =
+            of(init, enter.toByteArray(charset), exit.toByteArray(charset), charset)
 
         @JvmStatic
-        fun of(init: String, enter: ByteArray, exit: ByteArray, charset: Charset): Command = builder(init).enter(enter).exit(exit).charset(charset).build()
+        fun of(init: String, enter: ByteArray, exit: ByteArray, charset: Charset): ProcessStream =
+            builder(init).enter(enter).exit(exit).charset(charset).build()
 
     }
 
@@ -71,9 +75,18 @@ open class Command(
 
     val startTime: LocalDateTime
 
-    protected val out: CommandPipe
+    /**
+     * null 表示未结束
+     */
+    val exitCode: Int?
+        get() = try {
+            process.exitValue()
+        } catch (_: IllegalThreadStateException) {
+            null
+        }
 
-    protected val err: CommandPipe
+    protected var out: InputStream? = null
+    protected var err: InputStream? = null
 
     init {
         check(init.isNotBlank()) { "init can not be blank" }
@@ -83,8 +96,21 @@ open class Command(
         pid = process.pid()
         startTime = LocalDateTime.now()
         stdIn = process.outputStream
-        out = CommandPipe(pid, redirectOut, process.inputStream, charset)
-        err = CommandPipe(pid, redirectErr, process.errorStream, charset)
+        if (redirectOut.file() == null) {
+            out = if (redirectOut.type() != ProcessBuilder.Redirect.Type.PIPE) {
+                BytesInputStream(byteArrayOf())
+            } else {
+                AsyncCopyInputStream(process.inputStream, charset)
+            }
+        }
+        if (redirectErr.file() == null) {
+            err = if (redirectErr.type() != ProcessBuilder.Redirect.Type.PIPE) {
+                BytesInputStream(byteArrayOf())
+            } else {
+                AsyncCopyInputStream(process.errorStream, charset)
+            }
+        }
+
     }
 
     protected open fun builder(): ProcessBuilder {
@@ -95,13 +121,14 @@ open class Command(
             array[i] = st.nextToken()
             i++
         }
-        return ProcessBuilder(*array).redirectOutput(redirectOut).redirectError(redirectErr)
+        return ProcessBuilder(*array)
+            .redirectOutput(redirectOut)
+            .redirectError(redirectErr)
     }
 
     protected open fun onBuild(builder: ProcessBuilder) {
         //
     }
-
 
     open fun write(str: String) {
         val bytes = str.toByteArray(charset)
@@ -153,7 +180,7 @@ open class Command(
      * @param force 是否强制退出
      */
     @JvmOverloads
-    open fun waitFor(exit: Boolean = true, force: Boolean = false): CommandResult {
+    open fun waitFor(exit: Boolean = true, force: Boolean = false): Int {
         return waitFor(null, exit, force)
     }
 
@@ -169,19 +196,16 @@ open class Command(
      * @return live.lingting.framework.system.CommandResult
      */
     @JvmOverloads
-    open fun waitFor(duration: Duration?, exit: Boolean = true, force: Boolean = false): CommandResult {
+    open fun waitFor(duration: Duration?, exit: Boolean = true, force: Boolean = false): Int {
         try {
             if (duration == null || !duration.isPositive) {
-                val i = process.waitFor()
-                return CommandResult(this, pid, code = i, outPipe = out, errPipe = err)
+                return process.waitFor()
             }
-
             // 超时
             if (!process.waitFor(duration.toMillis(), TimeUnit.MILLISECONDS)) {
                 throw TimeoutException()
             }
-            val i = process.exitValue()
-            return CommandResult(this, pid, code = i, outPipe = out, errPipe = err)
+            return process.exitValue()
         } catch (e: TimeoutException) {
             if (exit) destroy(force)
             throw e
@@ -203,11 +227,28 @@ open class Command(
 
     open fun destroyForcibly() = destroy(true)
 
+    @Synchronized
+    fun outStream(): InputStream {
+        val file = redirectOut.file()
+        if (file != null) {
+            return file.inputStream()
+        }
+        return out!!
+    }
+
+    @Synchronized
+    fun errStream(): InputStream {
+        val file = redirectErr.file()
+        if (file != null) {
+            return file.inputStream()
+        }
+        return err!!
+    }
+
     override fun close() {
         if (process.isAlive) {
-            process.destroy()
+            destroyForcibly()
         }
-        out.close()
-        err.close()
     }
+
 }
