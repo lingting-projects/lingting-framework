@@ -1,5 +1,12 @@
 package live.lingting.framework.util
 
+import live.lingting.framework.function.ThrowingBiConsumerE
+import live.lingting.framework.function.ThrowingBiFunctionE
+import live.lingting.framework.function.ThrowingConsumerE
+import live.lingting.framework.stream.CloneInputStream
+import live.lingting.framework.stream.FileCloneInputStream
+import live.lingting.framework.util.ByteUtils.isLine
+import live.lingting.framework.util.ByteUtils.trimEndLine
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.File
@@ -13,13 +20,6 @@ import java.nio.file.Files
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.BiConsumer
-import live.lingting.framework.function.ThrowingBiConsumerE
-import live.lingting.framework.function.ThrowingBiFunctionE
-import live.lingting.framework.function.ThrowingConsumerE
-import live.lingting.framework.stream.CloneInputStream
-import live.lingting.framework.stream.FileCloneInputStream
-import live.lingting.framework.util.ByteUtils.isLine
-import live.lingting.framework.util.ByteUtils.trimEndLine
 
 /**
  * @author lingting
@@ -42,9 +42,16 @@ object StreamUtils {
         input.use {
             while (true) {
                 len = input.read(bytes)
-                // 已读取长度小于1 或者 消费数据, 返回标志位为false
-                val isBreak = len < 1 || java.lang.Boolean.FALSE == function.apply(bytes, len)
-                if (isBreak) {
+                // -1表示文件读完了
+                if (len < 0) {
+                    break
+                }
+                // 没有数据. 继续
+                if (len == 0) {
+                    continue
+                }
+                // 要求中止读取
+                if (function.apply(bytes, len) == false) {
                     break
                 }
             }
