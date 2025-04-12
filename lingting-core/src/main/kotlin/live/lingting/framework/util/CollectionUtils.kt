@@ -1,6 +1,6 @@
 package live.lingting.framework.util
 
-import java.util.Collections
+import java.util.*
 
 /**
  * @author lingting
@@ -123,5 +123,34 @@ object CollectionUtils {
         }
         return map
     }
+
+    private fun flattenMap(value: Any?, key: String = ""): Map<String, Any> {
+        val result = HashMap<String, Any>()
+        when {
+            value is Map<*, *> -> {
+                value.forEach { k, v ->
+                    val newKey = if (key.isBlank()) "$k" else "$key.$k"
+                    val flatten = flattenMap(v, newKey)
+                    result.putAll(flatten)
+                }
+            }
+
+            value is Collection<*> -> {
+                value.forEachIndexed { i, v ->
+                    val newKey = "$key[$i]"
+                    val flatten = flattenMap(v, newKey)
+                    result.putAll(flatten)
+                }
+            }
+
+            value != null -> {
+                result.put(key, value)
+            }
+        }
+        return result
+    }
+
+    @JvmStatic
+    fun Map<*, *>.flatten(): Map<String, Any> = flattenMap(this)
 
 }
