@@ -5,6 +5,8 @@ import java.io.InputStream
 import java.net.JarURLConnection
 import java.net.URI
 import java.net.URL
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.util.function.Predicate
 
@@ -211,8 +213,9 @@ class Resource(
         return url.openStream()
     }
 
-    fun string(): String {
-        return StreamUtils.toString(stream())
+    @JvmOverloads
+    fun string(charset: Charset = StandardCharsets.UTF_8): String {
+        return StreamUtils.toString(stream(), charset)
     }
 
     override fun toString(): String {
