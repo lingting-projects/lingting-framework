@@ -11,13 +11,13 @@ import com.baomidou.mybatisplus.core.enums.SqlKeyword
 import com.baomidou.mybatisplus.core.enums.WrapperKeyword
 import com.baomidou.mybatisplus.core.toolkit.StringUtils
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache
+import live.lingting.framework.util.CollectionUtils
+import live.lingting.framework.util.ValueUtils
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 import java.util.function.Supplier
 import java.util.regex.Pattern
 import kotlin.reflect.KClass
-import live.lingting.framework.util.CollectionUtils
-import live.lingting.framework.util.ValueUtils
 
 @Suppress("UNCHECKED_CAST", "SYNTHETIC_PROPERTY_WITHOUT_JAVA_ORIGIN")
 abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
@@ -128,7 +128,12 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
         return c
     }
 
-    fun <E : Any> appendSql(condition: Boolean, field: String, keyword: SqlKeyword, consumer: Consumer<QueryWrapper<E>>): C {
+    fun <E : Any> appendSql(
+        condition: Boolean,
+        field: String,
+        keyword: SqlKeyword,
+        consumer: Consumer<QueryWrapper<E>>
+    ): C {
         if (!condition) {
             return c
         }
@@ -198,6 +203,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
         }
 
         val c = instance()
+        c.paramId = paramId
         consumer.accept(c)
         return appendCondition<C>(true, keyword, c)
     }
@@ -384,7 +390,12 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
         return c
     }
 
-    override fun <V> allEq(condition: Boolean, filter: java.util.function.BiPredicate<String, V>, params: MutableMap<String, V>, null2IsNull: Boolean): C {
+    override fun <V> allEq(
+        condition: Boolean,
+        filter: java.util.function.BiPredicate<String, V>,
+        params: MutableMap<String, V>,
+        null2IsNull: Boolean
+    ): C {
         if (condition && params.isNotEmpty()) {
             params.forEach { (k: String, v: V) ->
                 if (filter.test(k, v)) {

@@ -5,10 +5,9 @@ import com.baomidou.mybatisplus.core.toolkit.support.SFunction
 
 @Suppress("SYNTHETIC_PROPERTY_WITHOUT_JAVA_ORIGIN")
 class QueryWrapper<T : Any> : LambdaWrapper<T, QueryWrapper<T>>() {
+
     override fun instance(): QueryWrapper<T> {
-        val w = QueryWrapper<T>()
-        w.paramId = paramId
-        return w
+        return QueryWrapper<T>()
     }
 
     override fun getSafeSql(): String {
