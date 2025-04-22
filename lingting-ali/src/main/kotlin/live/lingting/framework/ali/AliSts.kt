@@ -1,26 +1,23 @@
 package live.lingting.framework.ali
 
-import java.time.Duration
-import java.time.LocalDateTime
-import java.util.function.BiConsumer
 import live.lingting.framework.ali.exception.AliStsException
 import live.lingting.framework.ali.properties.AliOssProperties
 import live.lingting.framework.ali.properties.AliStsProperties
 import live.lingting.framework.ali.sts.AliStsCredentialRequest
 import live.lingting.framework.ali.sts.AliStsCredentialResponse
 import live.lingting.framework.ali.sts.AliStsRequest
+import live.lingting.framework.ali.sts.AliStsSing
 import live.lingting.framework.aws.policy.Credential
 import live.lingting.framework.aws.policy.Statement
-import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.time.DatePattern
 import live.lingting.framework.time.DateTime
-import live.lingting.framework.util.ArrayUtils.containsIgnoreCase
-import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.StringUtils
+import java.time.Duration
+import java.time.LocalDateTime
 
 /**
  * @author lingting 2024-09-14 11:52
@@ -50,52 +47,34 @@ open class AliSts(protected val properties: AliStsProperties) : AliClient<AliSts
     override fun checkout(request: AliStsRequest, response: HttpResponse): HttpResponse {
         if (!response.is2xx) {
             val string = response.string()
-            log.error("AliSts call error! uri: {}; code: {}; body:\n{}", response.uri(), response.code(), string)
+            val headers = response.request().headers()
+            log.error("AliSts call error! uri: {}; sign: {}; code: {}; body:\n{}", response.uri(), headers.authorization(), response.code(), string)
             throw AliStsException("request error! code: " + response.code())
         }
         return response
     }
 
-    override fun customize(
-        request: AliStsRequest, headers: HttpHeaders, requestBody: BodySource,
-        url: HttpUrlBuilder
-    ) {
+    override fun customize(request: AliStsRequest, headers: HttpHeaders, requestBody: BodySource, url: HttpUrlBuilder) {
         val now = DateTime.current()
-        val date: String = AliUtils.format(now, DatePattern.FORMATTER_ISO_8601)
+        val date = AliUtils.format(now, DatePattern.FORMATTER_ISO_8601)
         headers.put("x-acs-date", date)
 
-        val method = request.method().name
-        val path = url.buildPath()
-        val query = url.buildQuery()
-        val body = requestBody.string()
-        val bodySha = DigestUtils.sha256Hex(body)
+
+        val sing = AliStsSing.builder()
+            .method(request.method().name)
+            .path(url.buildPath())
+            .headers(headers)
+            .params(url.params())
+            .body(requestBody.string())
+            .ak(ak)
+            .sk(sk)
+            .build()
+
+        val bodySha = sing.bodySha256
 
         headers.put("x-acs-content-sha256", bodySha)
 
-        val headerBuilder = StringBuilder()
-        val signHeaderBuilder = StringBuilder()
-        headers.forEachSorted(BiConsumer { k, vs ->
-            if (!k.startsWith(HEADER_PREFIX) && !HEADER_INCLUDE.containsIgnoreCase(k)) {
-                return@BiConsumer
-            }
-            for (v in vs) {
-                headerBuilder.append(k).append(":").append(v).append("\n")
-            }
-            signHeaderBuilder.append(k).append(";")
-        })
-        if (signHeaderBuilder.isNotBlank()) {
-            signHeaderBuilder.deleteCharAt(signHeaderBuilder.length - 1)
-        }
-        val header = headerBuilder.toString()
-        val signHeader = signHeaderBuilder.toString()
-
-        val requestString = "$method\n$path\n$query\n$header\n$signHeader\n$bodySha"
-        val requestSha = DigestUtils.sha256Hex(requestString)
-
-        val source = "$ALGORITHM\n$requestSha"
-        val sourceHmacSha = Mac.hmacBuilder().sha256().secret(sk).build().calculateHex(source)
-
-        val authorization = ("$ALGORITHM Credential=$ak,SignedHeaders=$signHeader,Signature=$sourceHmacSha")
+        val authorization = sing.calculate()
         headers.authorization(authorization)
     }
 

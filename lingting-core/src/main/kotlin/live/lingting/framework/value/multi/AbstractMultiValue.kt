@@ -1,11 +1,11 @@
 package live.lingting.framework.value.multi
 
+import live.lingting.framework.value.MultiValue
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.BiConsumer
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
-import live.lingting.framework.value.MultiValue
 
 /**
  * @author lingting 2024-09-05 20:33
@@ -90,7 +90,7 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
         if (!allowModify) {
             throw UnsupportedOperationException()
         }
-        var key = convert(key)
+        val key = convert(key)
         val c = supplier.get()
         values.forEach(Consumer<V> { e -> c.add(e) })
         map.put(key, c)

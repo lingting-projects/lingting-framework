@@ -11,8 +11,10 @@ abstract class AliClient<R : AliRequest> protected constructor(properties: AliPr
     ApiClient<R>(properties.host(), properties.ssl) {
 
     companion object {
+
         @JvmField
-        protected val HEADER_INCLUDE: Array<String> = arrayOf(HttpHeaderKeys.HOST, "content-type", "content-md5")
+        val HEADER_INCLUDE = arrayOf(HttpHeaderKeys.HOST, "content-type", "content-md5")
+
     }
 
     protected val ak: String = properties.ak

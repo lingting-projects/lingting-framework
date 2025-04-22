@@ -1,12 +1,12 @@
 package live.lingting.framework.http
 
-import java.net.URI
-import java.net.URISyntaxException
-import java.net.URL
 import live.lingting.framework.util.CollectionUtils
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.value.MultiValue
 import live.lingting.framework.value.multi.StringMultiValue
+import java.net.URI
+import java.net.URISyntaxException
+import java.net.URL
 
 /**
  * @author lingting 2024-01-29 16:13
@@ -254,7 +254,7 @@ open class HttpUrlBuilder {
 
     fun buildPath(): String {
         if (!StringUtils.hasText(path)) {
-            return ""
+            return "/"
         }
         val builder = StringBuilder()
         val string = path.toString()
@@ -262,7 +262,7 @@ open class HttpUrlBuilder {
             builder.append("/")
         }
         builder.append(string)
-        if (string.endsWith("/")) {
+        if (builder.length > 1 && string.endsWith("/")) {
             builder.deleteCharAt(builder.length - 1)
         }
         return builder.toString()

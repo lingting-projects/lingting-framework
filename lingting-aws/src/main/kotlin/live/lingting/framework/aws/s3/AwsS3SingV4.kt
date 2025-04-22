@@ -1,9 +1,6 @@
 package live.lingting.framework.aws.s3
 
 
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.util.function.BiConsumer
 import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.HttpRequest
@@ -11,9 +8,11 @@ import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.DigestUtils
-import live.lingting.framework.util.StringUtils
 import live.lingting.framework.util.StringUtils.deleteLast
 import live.lingting.framework.value.multi.StringMultiValue
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.function.BiConsumer
 
 /**
  * @author lingting 2024-09-19 17:01
@@ -55,11 +54,11 @@ open class AwsS3SingV4(
     }
 
     fun canonicalUri(): String {
-        val builder = StringBuilder("/")
-
-        if (StringUtils.hasText(path)) {
-            builder.append(path, if (path.startsWith("/")) 1 else 0, path.length)
+        val builder = StringBuilder()
+        if (!path.startsWith("/")) {
+            builder.append("/")
         }
+        builder.append(path)
 
         return builder.toString()
     }
