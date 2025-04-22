@@ -1,16 +1,16 @@
 package live.lingting.framework.jackson.sensitive
 
-import kotlin.reflect.full.isSuperclassOf
 import live.lingting.framework.sensitive.Sensitive
 import live.lingting.framework.sensitive.SensitiveProvider
 import live.lingting.framework.sensitive.SensitiveSerializer
+import live.lingting.framework.util.ClassUtils
 
 /**
  * @author lingting 2024-01-29 10:39
  */
 class SensitiveSpiProvider : SensitiveProvider {
     override fun find(sensitive: Sensitive): SensitiveSerializer? {
-        if (SensitiveSpiSerializer::class.isSuperclassOf(sensitive.value)) {
+        if (ClassUtils.isSuper(sensitive.value, SensitiveSpiSerializer::class)) {
             return SensitiveSpiSerializer()
         }
         return null
