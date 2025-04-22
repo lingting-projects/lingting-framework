@@ -1,49 +1,55 @@
 package live.lingting.framework.api
 
-import java.util.Locale
 import live.lingting.framework.i18n.I18nProvider
 import live.lingting.framework.i18n.I18nSource
 import live.lingting.framework.i18n.MapI18nSource
 import live.lingting.framework.util.LocaleUtils.parseLocale
+import live.lingting.framework.util.Resource
 import live.lingting.framework.util.ResourceUtils
 import live.lingting.framework.util.StreamUtils
+import java.util.Locale
 
 /**
  *
  * @author lingting 2024/12/2 15:25
  */
-class ApiI18nProviders : I18nProvider {
+object ApiI18nProviders : I18nProvider {
 
     val suffix = ".properties"
 
     val prefix = "api-"
 
-    val map: Map<Locale, I18nSource> by lazy {
-        HashMap<Locale, MapI18nSource>().apply {
-            val resources = ResourceUtils.scan("i18n") {
-                it.isFile && it.name.endsWith(suffix) && it.name.startsWith(prefix)
-            }
-            for (resource in resources) {
-                val tag = resource.name.substring(prefix.length, resource.name.length - suffix.length)
-                val locale = tag.parseLocale()
-                val lines = resource.stream().use { StreamUtils.toString(it) }.lines()
-                val kv = HashMap<String, String>()
-                for (line in lines) {
-                    val index = line.indexOf('=')
-                    if (index == -1) {
-                        continue
-                    }
-                    val key = line.substring(0, index)
-                    val value = line.substring(index + 1)
-                    kv[key] = value
-                }
-                // 合并同一语言数据
-                compute(locale) { _, v ->
-                    v?.putAll(kv) ?: MapI18nSource(locale, kv)
-                }
-            }
-        }
+    val map = HashMap<Locale, MapI18nSource>()
 
+    init {
+        ResourceUtils.scan("i18n") {
+            it.isFile && it.name.endsWith(suffix) && it.name.startsWith(prefix)
+        }.forEach { loadByResource(it) }
+    }
+
+    @Synchronized
+    fun put(locale: Locale, source: Map<String, String>) {
+        // 合并同一语言数据
+        map.compute(locale) { _, v ->
+            v?.putAll(source) ?: MapI18nSource(locale, source)
+        }
+    }
+
+    fun loadByResource(resource: Resource) {
+        val tag = resource.name.substring(prefix.length, resource.name.length - suffix.length)
+        val locale = tag.parseLocale()
+        val lines = resource.stream().use { StreamUtils.toString(it) }.lines()
+        val kv = HashMap<String, String>()
+        for (line in lines) {
+            val index = line.indexOf('=')
+            if (index == -1) {
+                continue
+            }
+            val key = line.substring(0, index)
+            val value = line.substring(index + 1)
+            kv[key] = value
+        }
+        put(locale, kv)
     }
 
     override fun find(locale: Locale): Collection<I18nSource>? {

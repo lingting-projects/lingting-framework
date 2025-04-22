@@ -1,14 +1,14 @@
 package live.lingting.framework.i18n
 
+import live.lingting.framework.Sequence
+import live.lingting.framework.api.ApiI18nProviders
+import live.lingting.framework.context.Context
+import live.lingting.framework.util.LocaleUtils.parseLocale
 import java.util.Collections
 import java.util.Locale
 import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
 import java.util.concurrent.ConcurrentHashMap
-import live.lingting.framework.Sequence
-import live.lingting.framework.api.ApiI18nProviders
-import live.lingting.framework.context.Context
-import live.lingting.framework.util.LocaleUtils.parseLocale
 
 /**
  * @author lingting 2024/11/30 18:26
@@ -26,7 +26,7 @@ object I18n {
     @JvmStatic
     val providers: List<I18nProvider> by lazy {
         ArrayList<I18nProvider>().let {
-            it.add(ApiI18nProviders())
+            it.add(ApiI18nProviders)
 
             try {
                 val loaders = ServiceLoader.load<I18nProvider>(I18nProvider::class.java)
@@ -62,9 +62,9 @@ object I18n {
      * 对应语言的替代品, 用于国际化依次查找, 这样子不用重复设置相同值
      */
     @JvmField
-    val replaceMap = ConcurrentHashMap<Locale, MutableList<Locale>>().apply {
-        put(Locale.CHINESE, mutableListOf(Locale.SIMPLIFIED_CHINESE))
-        put(Locale.ENGLISH, mutableListOf(Locale.US))
+    val replaceMap = ConcurrentHashMap<Locale, List<Locale>>().apply {
+        put(Locale.CHINESE, listOf(Locale.SIMPLIFIED_CHINESE))
+        put(Locale.ENGLISH, listOf(Locale.US))
     }
 
     private val context = Context<Locale>({ defaultLocal })
@@ -87,10 +87,6 @@ object I18n {
         val r = replaceMap[locale]
         if (!r.isNullOrEmpty()) {
             addAll(r)
-        }
-        if (locale != defaultLocal) {
-            // 添加默认语言的所有替代品
-            addAll(replaces(defaultLocal))
         }
     }
 
@@ -115,14 +111,18 @@ object I18n {
     @JvmOverloads
     fun find(key: String, locale: Locale = get()): String? {
         val local = local(locale)
-        return local.find(key)
+        val find = local.find(key)
+        if (find == null && locale != defaultLocal) {
+            return find(key, defaultLocal)
+        }
+        return find
     }
 
     @JvmStatic
     @JvmOverloads
-    fun find(key: String, value: String, locale: Locale = get()): String {
+    fun find(key: String, defaultValue: String, locale: Locale = get()): String {
         val local = local(locale)
-        return local.find(key, value)
+        return local.find(key, defaultValue)
     }
 
 }
