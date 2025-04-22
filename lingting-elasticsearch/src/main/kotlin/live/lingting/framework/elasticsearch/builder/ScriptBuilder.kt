@@ -69,6 +69,14 @@ open class ScriptBuilder<T> :
             return genIf(condition, script)
         }
 
+        @JvmStatic
+        fun genSetIfBlank(field: String): String {
+            val sourceField = genSourceField(field)
+            val condition = "$sourceField==null || $sourceField==''"
+            val script = genSetParams(field)
+            return genIf(condition, script)
+        }
+
     }
 
     protected val sourceBuilder = StringBuilder()

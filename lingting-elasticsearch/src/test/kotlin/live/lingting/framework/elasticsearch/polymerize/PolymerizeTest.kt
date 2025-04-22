@@ -1,11 +1,11 @@
 package live.lingting.framework.elasticsearch.polymerize
 
-import java.time.LocalDateTime
 import live.lingting.framework.elasticsearch.IndexInfo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
 
 /**
  * @author lingting 2024/12/18 19:21
@@ -30,9 +30,9 @@ class PolymerizeTest {
             false
         )
 
-        assertEquals(info.index, non.index(info))
-        assertEquals(info.matchIndex, month.index(info))
-        assertEquals(info.matchIndex, day.index(info))
+        assertEquals(info.index, non.index(info).first())
+        assertEquals(info.matchIndex, month.index(info).first())
+        assertEquals(info.matchIndex, day.index(info).first())
 
         val time = LocalDateTime.of(2024, 1, 1, 0, 0, 0, 0)
         assertEquals("${info.index}${info.separate}2024${info.separate}01", month.index(info, time))
