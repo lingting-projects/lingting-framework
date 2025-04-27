@@ -3,6 +3,7 @@ package live.lingting.framework.system
 import live.lingting.framework.stream.AsyncCopyInputStream
 import live.lingting.framework.stream.BytesInputStream
 import live.lingting.framework.util.FileUtils
+import live.lingting.framework.util.StreamUtils
 import live.lingting.framework.util.SystemUtils
 import java.io.File
 import java.io.InputStream
@@ -11,7 +12,7 @@ import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.time.LocalDateTime
-import java.util.*
+import java.util.StringTokenizer
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
@@ -236,6 +237,9 @@ open class ProcessStream(
         return out!!
     }
 
+    @JvmOverloads
+    fun outString(charset: Charset = this.charset) = outStream().use { StreamUtils.toString(it, charset) }
+
     @Synchronized
     fun errStream(): InputStream {
         val file = redirectErr.file()
@@ -244,6 +248,9 @@ open class ProcessStream(
         }
         return err!!
     }
+
+    @JvmOverloads
+    fun errString(charset: Charset = this.charset) = errStream().use { StreamUtils.toString(it, charset) }
 
     override fun close() {
         if (process.isAlive) {
