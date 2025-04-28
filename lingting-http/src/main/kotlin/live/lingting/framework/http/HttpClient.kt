@@ -1,6 +1,5 @@
 package live.lingting.framework.http
 
-import live.lingting.framework.data.DataSize
 import live.lingting.framework.util.FileUtils
 import live.lingting.framework.util.ThreadUtils
 import java.io.File
@@ -35,12 +34,6 @@ abstract class HttpClient {
 
         @JvmField
         val TEMP_DIR: File = FileUtils.createTempDir("http")
-
-        /**
-         * 默认大小以内文件直接放内存里面, 单位: bytes
-         */
-        @JvmField
-        var defaultMaxBytes = DataSize.ofMb(5)
 
         @JvmStatic
         fun builder() = default()
