@@ -2,6 +2,7 @@ package live.lingting.framework.stream
 
 import live.lingting.framework.thread.Async
 import live.lingting.framework.time.DateTime
+import live.lingting.framework.util.DataSizeUtils.bytes
 import live.lingting.framework.util.LocalDateTimeUtils.format
 import live.lingting.framework.util.StreamUtils
 import org.junit.jupiter.api.Test
@@ -27,7 +28,7 @@ class AsyncCopyInputStreamTest {
         for (i in 0..300) {
             async.submit {
                 val stream = AsyncCopyInputStream(source.copy())
-                val bytes = StreamUtils.read(stream, (i + 1) * 10)
+                val bytes = StreamUtils.read(stream, ((i + 1) * 10).bytes)
                 val text = bytes.toString(stream.charset)
                 if (array.size != bytes.size || text != raw) {
                     error.incrementAndGet()

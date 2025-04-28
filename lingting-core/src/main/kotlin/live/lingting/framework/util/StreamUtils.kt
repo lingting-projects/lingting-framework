@@ -1,8 +1,10 @@
 package live.lingting.framework.util
 
-import live.lingting.framework.function.ThrowingBiConsumerE
-import live.lingting.framework.function.ThrowingBiFunctionE
-import live.lingting.framework.function.ThrowingConsumerE
+import live.lingting.framework.data.DataSize
+import live.lingting.framework.function.StreamReadConsumer
+import live.lingting.framework.function.StreamReadCopyConsumer
+import live.lingting.framework.function.StreamReadFlagSupplier
+import live.lingting.framework.function.StreamReadLineConsumer
 import live.lingting.framework.stream.CloneInputStream
 import live.lingting.framework.stream.FileCloneInputStream
 import live.lingting.framework.util.ByteUtils.isLine
@@ -26,19 +28,16 @@ import java.util.function.BiConsumer
  */
 object StreamUtils {
 
-    var readSize: Int = 1024 * 1024 * 10
+    var readSize = DataSize.ofMb(10)
 
     /**
      * 读取流, 如果 function 返回 false 则结束读取
-     * @param function 消费读取到的数据, byte[] 数据, 读取长度. 返回false 则结束读取
+     * @param supplier 消费读取到的数据, byte[] 数据, 读取长度. 返回false 则结束读取
      */
     @JvmStatic
-    fun readByFlag(
-        input: InputStream, size: Int,
-        function: ThrowingBiFunctionE<ByteArray, Int, Boolean, IOException>
-    ) {
-        check(size > 0) { "stream read size must be greater than 0" }
-        val bytes = ByteArray(size)
+    fun readByFlag(input: InputStream, size: DataSize, supplier: StreamReadFlagSupplier) {
+        check(size.bytes > 0) { "stream read size must be greater than 0" }
+        val bytes = ByteArray(size.bytes.toInt())
         var len: Int
 
         input.use {
@@ -53,7 +52,7 @@ object StreamUtils {
                     continue
                 }
                 // 要求中止读取
-                if (function.apply(bytes, len) == false) {
+                if (!supplier.get(bytes, len)) {
                     break
                 }
             }
@@ -62,7 +61,7 @@ object StreamUtils {
 
     @JvmStatic
     @JvmOverloads
-    fun read(input: InputStream, size: Int = readSize): ByteArray {
+    fun read(input: InputStream, size: DataSize = readSize): ByteArray {
         val out = ByteArrayOutputStream()
         write(input, out, size)
         try {
@@ -73,34 +72,34 @@ object StreamUtils {
     }
 
     @JvmStatic
-    fun read(input: InputStream, consumer: ThrowingBiConsumerE<ByteArray, Int, IOException>) {
-        read(input, readSize, consumer)
+    fun read(input: InputStream, supplier: StreamReadConsumer) {
+        read(input, readSize, supplier)
     }
 
     /**
      * 读取流
-     * @param in       流
+     * @param input       流
      * @param size     缓冲区大小
-     * @param consumer 消费读取到的数据, byte[] 数据, 读取长度
+     * @param supplier 消费读取到的数据, byte[] 数据, 读取长度
      * @throws IOException 读取异常
      */
     @JvmStatic
-    fun read(input: InputStream, size: Int, consumer: ThrowingBiConsumerE<ByteArray, Int, IOException>) {
+    fun read(input: InputStream, size: DataSize, supplier: StreamReadConsumer) {
         readByFlag(input, size) { bytes, length ->
-            consumer.accept(bytes, length)
+            supplier.accept(bytes, length)
             true
         }
     }
 
     @JvmStatic
-    fun readCopy(input: InputStream, consumer: ThrowingConsumerE<ByteArray, IOException>) {
+    fun readCopy(input: InputStream, consumer: StreamReadCopyConsumer) {
         readCopy(input, readSize, consumer)
     }
 
     @JvmStatic
-    fun readCopy(input: InputStream, size: Int, consumer: ThrowingConsumerE<ByteArray, IOException>) {
+    fun readCopy(input: InputStream, size: DataSize, consumer: StreamReadCopyConsumer) {
         read(input, size) { bytes, length ->
-            val copy: ByteArray = bytes.copyOf(length)
+            val copy = bytes.copyOf(length)
             consumer.accept(copy)
         }
     }
@@ -114,8 +113,8 @@ object StreamUtils {
 
     @JvmStatic
     @JvmOverloads
-    fun write(input: InputStream, out: OutputStream, size: Int = readSize) {
-        read(input, size) { bytes, len -> out.write(bytes, 0, len!!) }
+    fun write(input: InputStream, out: OutputStream, size: DataSize = readSize) {
+        read(input, size) { bytes, len -> out.write(bytes, 0, len) }
     }
 
     @JvmStatic
@@ -124,13 +123,13 @@ object StreamUtils {
     }
 
     @JvmStatic
-    fun write(input: InputStream, out: OutputStream, size: Int, length: Long) {
+    fun write(input: InputStream, out: OutputStream, size: DataSize, length: Long) {
         val atomic = AtomicLong(0)
         readByFlag(input, size) { bytes, len ->
             // 计算剩余字节长度
             val remainLength = length - atomic.get()
             // 计算本次写入的字节长度, 不能大于剩余字节长度
-            val writeLength = if (len!! > remainLength) remainLength.toInt() else len
+            val writeLength = if (len > remainLength) remainLength.toInt() else len
             // 写入
             out.write(bytes, 0, writeLength)
             val existLength = atomic.addAndGet(len.toLong())
@@ -147,7 +146,7 @@ object StreamUtils {
     }
 
     @JvmStatic
-    fun toString(input: InputStream, size: Int, charset: Charset): String {
+    fun toString(input: InputStream, size: DataSize, charset: Charset): String {
         ByteArrayOutputStream().use { out ->
             write(input, out, size)
             return out.toString(charset)
@@ -174,7 +173,7 @@ object StreamUtils {
     fun close(closeable: AutoCloseable?) {
         try {
             closeable?.close()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             //
         }
     }
@@ -183,7 +182,7 @@ object StreamUtils {
     fun close(closeable: Closeable?) {
         try {
             closeable?.close()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             //
         }
     }
@@ -201,7 +200,7 @@ object StreamUtils {
     }
 
     @JvmStatic
-    fun clone(input: InputStream, size: Int): FileCloneInputStream {
+    fun clone(input: InputStream, size: DataSize): FileCloneInputStream {
         val file: File = FileUtils.createTemp(".clone", CloneInputStream.TEMP_DIR)
         FileOutputStream(file).use { output ->
             write(input, output, size)
@@ -211,35 +210,35 @@ object StreamUtils {
 
     /**
      * 读取流, 当读取完一行数据时, 消费该数据
-     * @param in       流
+     * @param input       流
      * @param charset  字符集
      * @param consumer 行数据消费, int: 行索引
      * @throws IOException 异常
      */
     @JvmStatic
-    fun readLine(input: InputStream, charset: Charset, consumer: BiConsumer<Int, String>) {
+    fun readLine(input: InputStream, charset: Charset, consumer: StreamReadLineConsumer) {
         readLine(input, charset, readSize, consumer)
     }
 
     /**
      * 读取流, 当读取完一行数据时, 消费该数据
-     * @param in       流
+     * @param input       流
      * @param charset  字符集
      * @param consumer 行数据消费, int: 行索引
      * @throws IOException 异常
      */
     @JvmStatic
-    fun readLine(input: InputStream, charset: Charset, size: Int, consumer: BiConsumer<Int, String>) {
+    fun readLine(input: InputStream, charset: Charset, size: DataSize, consumer: StreamReadLineConsumer) {
         readLine(input, size) { index, bytes ->
             val string = String(bytes, charset)
-            val clean: String = StringUtils.cleanBom(string)
-            consumer.accept(index, clean)
+            val text = StringUtils.cleanBom(string)
+            consumer.accept(text, index)
         }
     }
 
     /**
      * 读取流, 当读取完一行数据时, 消费该数据
-     * @param in       流
+     * @param input       流
      * @param consumer 行数据消费, int: 行索引
      * @throws IOException 异常
      */
@@ -250,13 +249,13 @@ object StreamUtils {
 
     /**
      * 读取流, 当读取完一行数据时, 消费该数据
-     * @param in       流
+     * @param input       流
      * @param size     一次读取数据大小
      * @param consumer 行数据消费, int: 行索引
      * @throws IOException 异常
      */
     @JvmStatic
-    fun readLine(input: InputStream, size: Int, consumer: BiConsumer<Int, ByteArray>) {
+    fun readLine(input: InputStream, size: DataSize, consumer: BiConsumer<Int, ByteArray>) {
         val doConsumer = BiConsumer<Int, List<Byte>> { index, list ->
             val bytes: ByteArray = trimEndLine(list)
             consumer.accept(index, bytes)
@@ -287,4 +286,3 @@ object StreamUtils {
         }
     }
 }
-

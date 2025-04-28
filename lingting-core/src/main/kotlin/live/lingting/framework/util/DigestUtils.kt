@@ -1,16 +1,16 @@
 package live.lingting.framework.util
 
-import java.io.IOException
+import live.lingting.framework.data.DataSize
+import live.lingting.framework.util.StringUtils.hex
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
-import live.lingting.framework.function.ThrowingBiConsumerE
-import live.lingting.framework.util.StringUtils.hex
 
 /**
  * @author lingting 2023-10-08 14:41
  */
 object DigestUtils {
+
     @JvmStatic
     fun md5(input: String): ByteArray {
         return md5(input.toByteArray(StandardCharsets.UTF_8))
@@ -24,9 +24,9 @@ object DigestUtils {
 
     @JvmStatic
     @JvmOverloads
-    fun md5(input: InputStream, size: Int = StreamUtils.readSize): ByteArray {
+    fun md5(input: InputStream, size: DataSize = StreamUtils.readSize): ByteArray {
         val digest = MessageDigest.getInstance("MD5")
-        StreamUtils.read(input, size, ThrowingBiConsumerE<ByteArray, Int, IOException> { buffer, len -> digest.update(buffer, 0, len!!) })
+        StreamUtils.read(input, size) { buffer, len -> digest.update(buffer, 0, len) }
         return digest.digest()
     }
 
@@ -43,7 +43,7 @@ object DigestUtils {
 
     @JvmStatic
     @JvmOverloads
-    fun md5Hex(input: InputStream, size: Int = StreamUtils.readSize): String {
+    fun md5Hex(input: InputStream, size: DataSize = StreamUtils.readSize): String {
         val bytes = md5(input, size)
         return bytes.hex()
     }
@@ -61,9 +61,9 @@ object DigestUtils {
 
     @JvmStatic
     @JvmOverloads
-    fun sha1(input: InputStream, size: Int = StreamUtils.readSize): ByteArray {
+    fun sha1(input: InputStream, size: DataSize = StreamUtils.readSize): ByteArray {
         val digest = MessageDigest.getInstance("SHA-1")
-        StreamUtils.read(input, size, ThrowingBiConsumerE<ByteArray, Int, IOException> { buffer, len -> digest.update(buffer, 0, len!!) })
+        StreamUtils.read(input, size) { buffer, len -> digest.update(buffer, 0, len) }
         return digest.digest()
     }
 
@@ -80,7 +80,7 @@ object DigestUtils {
 
     @JvmStatic
     @JvmOverloads
-    fun sha1Hex(input: InputStream, size: Int = StreamUtils.readSize): String {
+    fun sha1Hex(input: InputStream, size: DataSize = StreamUtils.readSize): String {
         val bytes = sha1(input, size)
         return bytes.hex()
     }
@@ -98,9 +98,9 @@ object DigestUtils {
 
     @JvmStatic
     @JvmOverloads
-    fun sha256(input: InputStream, size: Int = StreamUtils.readSize): ByteArray {
+    fun sha256(input: InputStream, size: DataSize = StreamUtils.readSize): ByteArray {
         val digest = MessageDigest.getInstance("SHA-256")
-        StreamUtils.read(input, size, ThrowingBiConsumerE<ByteArray, Int, IOException> { buffer, len -> digest.update(buffer, 0, len!!) })
+        StreamUtils.read(input, size) { buffer, len -> digest.update(buffer, 0, len) }
         return digest.digest()
     }
 
@@ -117,7 +117,7 @@ object DigestUtils {
 
     @JvmStatic
     @JvmOverloads
-    fun sha256Hex(input: InputStream, size: Int = StreamUtils.readSize): String {
+    fun sha256Hex(input: InputStream, size: DataSize = StreamUtils.readSize): String {
         val bytes = sha256(input, size)
         return bytes.hex()
     }

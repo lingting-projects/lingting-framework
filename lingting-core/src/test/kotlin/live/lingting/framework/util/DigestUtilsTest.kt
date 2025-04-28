@@ -1,8 +1,9 @@
 package live.lingting.framework.util
 
-import java.io.ByteArrayInputStream
+import live.lingting.framework.util.DataSizeUtils.bytes
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.io.ByteArrayInputStream
 
 /**
  * @author lingting 2024-09-05 19:48
@@ -18,7 +19,7 @@ class DigestUtilsTest {
         assertEquals(hex, DigestUtils.md5Hex(source))
         assertEquals(hex, DigestUtils.md5Hex(bytes))
         assertEquals(hex, DigestUtils.md5Hex(ByteArrayInputStream(bytes)))
-        assertEquals(hex, DigestUtils.md5Hex(ByteArrayInputStream(bytes), 1))
+        assertEquals(hex, DigestUtils.md5Hex(ByteArrayInputStream(bytes), 1.bytes))
     }
 
     @Test
@@ -31,7 +32,7 @@ class DigestUtilsTest {
         assertEquals(hex, DigestUtils.sha1Hex(source))
         assertEquals(hex, DigestUtils.sha1Hex(bytes))
         assertEquals(hex, DigestUtils.sha1Hex(ByteArrayInputStream(bytes)))
-        assertEquals(hex, DigestUtils.sha1Hex(ByteArrayInputStream(bytes), 1))
+        assertEquals(hex, DigestUtils.sha1Hex(ByteArrayInputStream(bytes), 1.bytes))
     }
 
     @Test
@@ -44,6 +45,6 @@ class DigestUtilsTest {
         assertEquals(hex, DigestUtils.sha256Hex(source))
         assertEquals(hex, DigestUtils.sha256Hex(bytes))
         assertEquals(hex, DigestUtils.sha256Hex(ByteArrayInputStream(bytes)))
-        assertEquals(hex, DigestUtils.sha256Hex(ByteArrayInputStream(bytes), 1))
+        assertEquals(hex, DigestUtils.sha256Hex(ByteArrayInputStream(bytes), 1.bytes))
     }
 }
