@@ -20,6 +20,9 @@ data class DataSize @JvmOverloads constructor(
 
     companion object {
 
+        @JvmField
+        val ZERO = ofBytes(0)
+
         const val STEP: Long = 1024L
 
         private val pattern = Regex("""(\d+(?:\.\d+)?)\s*([A-Za-z]+)""")
@@ -118,49 +121,35 @@ data class DataSize @JvmOverloads constructor(
 
     // region operator
 
-    operator fun plus(other: DataSize): DataSize {
-        return DataSize(bytes + other.bytes, scale)
-    }
+    operator fun plus(other: DataSize) = DataSize(bytes + other.bytes, scale)
 
-    operator fun plus(other: Number): DataSize {
-        return DataSize(bytes + other.toLong(), scale)
-    }
+    operator fun plus(other: Number) = DataSize(bytes + other.toLong(), scale)
 
-    operator fun minus(other: DataSize): DataSize {
-        return DataSize(bytes - other.bytes, scale)
-    }
+    operator fun minus(other: DataSize) = DataSize(bytes - other.bytes, scale)
 
-    operator fun minus(other: Number): DataSize {
-        return DataSize(bytes - other.toLong(), scale)
-    }
+    operator fun minus(other: Number) = DataSize(bytes - other.toLong(), scale)
 
-    operator fun times(other: DataSize): DataSize {
-        return DataSize(bytes * other.bytes, scale)
-    }
+    operator fun times(other: DataSize) = DataSize(bytes * other.bytes, scale)
 
-    operator fun times(other: Number): DataSize {
-        return DataSize(bytes * other.toLong(), scale)
-    }
+    operator fun times(other: Number) = DataSize(bytes * other.toLong(), scale)
 
-    operator fun div(other: DataSize): Double {
-        return this / other.bytes
-    }
+    operator fun div(other: DataSize) = this / other.bytes
 
-    operator fun div(other: Number): Double {
-        return bytes / other.toDouble()
-    }
+    operator fun div(other: Number) = bytes / other.toDouble()
 
-    operator fun rem(other: Byte): Long = bytes % other
+    operator fun rem(other: DataSize) = bytes % other.bytes
 
-    operator fun rem(other: Double): Double = bytes % other
+    operator fun rem(other: Byte) = bytes % other
 
-    operator fun rem(other: Float): Float = bytes % other
+    operator fun rem(other: Double) = bytes % other
 
-    operator fun rem(other: Int): Long = bytes % other
+    operator fun rem(other: Float) = bytes % other
 
-    operator fun rem(other: Long): Long = bytes % other
+    operator fun rem(other: Int) = bytes % other
 
-    operator fun rem(other: Short): Long = bytes % other
+    operator fun rem(other: Long) = bytes % other
+
+    operator fun rem(other: Short) = bytes % other
 
     // endregion
 
