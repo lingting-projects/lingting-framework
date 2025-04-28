@@ -1,5 +1,8 @@
 package live.lingting.framework.http
 
+import live.lingting.framework.http.body.MemoryBody
+import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.util.StreamUtils
 import java.io.InputStream
 import java.net.Authenticator
 import java.net.CookieManager
@@ -9,8 +12,6 @@ import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers
 import java.util.function.Consumer
 import java.util.function.Supplier
-import live.lingting.framework.http.body.MemoryBody
-import live.lingting.framework.http.header.HttpHeaders
 
 /**
  * @author lingting 2024-09-02 15:33
@@ -18,13 +19,6 @@ import live.lingting.framework.http.header.HttpHeaders
 class JavaHttpClient(protected val client: java.net.http.HttpClient) : HttpClient() {
 
     companion object {
-        fun convert(request: HttpRequest, r: java.net.http.HttpResponse<InputStream>): HttpResponse {
-            val code = r.statusCode()
-            val map = r.headers().map()
-            val headers = HttpHeaders.of(map)
-            val body = r.body()
-            return HttpResponse(request, code, headers, body)
-        }
 
         fun convert(request: HttpRequest): java.net.http.HttpRequest {
             val method = request.method()
@@ -54,6 +48,18 @@ class JavaHttpClient(protected val client: java.net.http.HttpClient) : HttpClien
             }
             return BodyPublishers.ofInputStream { source.openInput() }
         }
+
+    }
+
+    fun convert(request: HttpRequest, r: java.net.http.HttpResponse<InputStream>): HttpResponse {
+        val code = r.statusCode()
+        val map = r.headers().map()
+        val headers = HttpHeaders.of(map)
+        val body = if (memoryResponse) r.body() else createFile().let {
+            StreamUtils.write(r.body(), it)
+            it.inputStream()
+        }
+        return HttpResponse(request, code, headers, body)
     }
 
     override fun client(): java.net.http.HttpClient {

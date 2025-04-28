@@ -25,6 +25,7 @@ import java.util.function.BiConsumer
  * @author lingting
  */
 object StreamUtils {
+
     var readSize: Int = 1024 * 1024 * 10
 
     /**

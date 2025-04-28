@@ -18,8 +18,9 @@ import java.util.concurrent.ExecutorService
  * @author lingting 2024-09-06 16:39
  */
 @Suppress("UNCHECKED_CAST")
-abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor(builder: DownloadBuilder<*>) :
-    Download {
+abstract class MultipartDownload<D : MultipartDownload<D>>
+protected constructor(builder: DownloadBuilder<*>) : Download {
+
     protected val log = logger()
 
     val url: String = builder.url

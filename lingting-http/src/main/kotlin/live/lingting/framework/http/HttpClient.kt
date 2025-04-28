@@ -1,17 +1,9 @@
 package live.lingting.framework.http
 
 import live.lingting.framework.data.DataSize
-import live.lingting.framework.stream.BytesInputStream
-import live.lingting.framework.stream.FileCloneInputStream
 import live.lingting.framework.util.FileUtils
-import live.lingting.framework.util.StreamUtils
 import live.lingting.framework.util.ThreadUtils
-import live.lingting.framework.value.LazyValue
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
 import java.net.CookieManager
 import java.net.CookiePolicy
 import java.net.CookieStore
@@ -19,7 +11,6 @@ import java.net.ProxySelector
 import java.net.URI
 import java.time.Duration
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
 import javax.net.SocketFactory
 import javax.net.ssl.HostnameVerifier
@@ -49,7 +40,7 @@ abstract class HttpClient {
          * 默认大小以内文件直接放内存里面, 单位: bytes
          */
         @JvmField
-        var defaultMaxBytes: Long = DataSize.ofMb(5).bytes
+        var defaultMaxBytes = DataSize.ofMb(5)
 
         @JvmStatic
         fun builder() = default()
@@ -66,38 +57,11 @@ abstract class HttpClient {
             return OkHttpClient.Builder()
         }
 
-        @JvmStatic
-        @JvmOverloads
-        fun wrap(source: InputStream?, maxBytes: Long = defaultMaxBytes): InputStream {
-            if (source == null) {
-                return ByteArrayInputStream(ByteArray(0))
-            }
-            val size = AtomicLong(0)
+        fun createFile() = FileUtils.createTemp(".wrap", TEMP_DIR)
 
-            val byteOut = ByteArrayOutputStream()
-            val fileOutValue = LazyValue<FileOutputStream?> { null }
-            val fileValue = LazyValue<File> {
-                val file = FileUtils.createTemp(".wrap", TEMP_DIR)
-                fileOutValue.set(FileOutputStream(file))
-                file
-            }
-            StreamUtils.read(source) { bytes, len ->
-                if (!fileValue.isFirst() || size.addAndGet(len.toLong()) >= maxBytes) {
-                    if (fileValue.isFirst()) {
-                        fileValue.get()
-                        fileOutValue.get()!!.write(byteOut.toByteArray())
-                    }
-                    fileOutValue.get()!!.write(bytes, 0, len)
-                } else {
-                    byteOut.write(bytes, 0, len)
-                }
-            }
-            if (fileValue.isFirst()) {
-                return BytesInputStream(byteOut.toByteArray())
-            }
-            return FileCloneInputStream(fileValue.get()!!)
-        }
     }
+
+    var memoryResponse = true
 
     protected var cookie: CookieStore? = null
 
@@ -155,6 +119,8 @@ abstract class HttpClient {
 
         protected var cookie: CookieStore? = null
 
+        protected var memoryResponse: Boolean = true
+
         fun socketFactory(socketFactory: SocketFactory?): B {
             this.socketFactory = socketFactory
             return this as B
@@ -191,7 +157,6 @@ abstract class HttpClient {
             val verifier = Https.SSL_DISABLED_HOSTNAME_VERIFIER
             return ssl(manager).hostnameVerifier(verifier)
         }
-
 
         /**
          * java 实现无效
@@ -251,6 +216,16 @@ abstract class HttpClient {
         fun memoryCookie(): B {
             val manager = CookieManager(null, CookiePolicy.ACCEPT_ALL)
             return cookie(manager.cookieStore)
+        }
+
+        fun memoryResponse(): B {
+            memoryResponse = true
+            return this as B
+        }
+
+        fun fileResponse(): B {
+            memoryResponse = false
+            return this as B
         }
 
         protected fun <A> nonNull(a: A?, consumer: Consumer<A>) {

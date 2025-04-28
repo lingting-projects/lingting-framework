@@ -4,12 +4,11 @@ import live.lingting.framework.data.DataSize
 import live.lingting.framework.download.MultipartDownload
 import live.lingting.framework.exception.DownloadException
 import live.lingting.framework.http.HttpClient
+import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.HttpRequest
 import live.lingting.framework.multipart.Part
 import live.lingting.framework.util.DataSizeUtils.bytes
-import live.lingting.framework.util.StreamUtils
 import java.io.InputStream
-import java.io.OutputStream
 import java.net.URI
 
 /**
@@ -53,20 +52,11 @@ open class HttpDownload(builder: HttpDownloadBuilder) : MultipartDownload<HttpDo
 
     protected val uri: URI = URI.create(url)
 
-    fun write(request: HttpRequest, output: OutputStream) {
-        val response = client.request(request)
-
-        if (!response.is2xx) {
-            throw DownloadException(String.format("response status: %d", response.code()))
-        }
-
-        response.body().use { input ->
-            StreamUtils.write(input, output)
-        }
-    }
-
     override fun size(): DataSize {
-        val builder: HttpRequest.Builder = HttpRequest.builder().url(uri).header("Accept-Encoding", "identity")
+        val builder = HttpRequest.builder()
+            .method(HttpMethod.HEAD)
+            .url(uri)
+            .header("Accept-Encoding", "identity")
         val response = client.request(builder.build())
         val headers = response.headers()
         return headers.contentLength().bytes

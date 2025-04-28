@@ -5,6 +5,7 @@ import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.http.okhttp.OkHttpCookie
 import live.lingting.framework.http.okhttp.OkHttpRequestBody
 import live.lingting.framework.jackson.JacksonUtils
+import live.lingting.framework.util.StreamUtils
 import okhttp3.Authenticator
 import okhttp3.Call
 import okhttp3.Callback
@@ -13,7 +14,9 @@ import okhttp3.HttpUrl
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
+import java.io.ByteArrayInputStream
 import java.io.IOException
+import java.io.InputStream
 import java.util.function.Consumer
 import java.util.function.Supplier
 
@@ -44,20 +47,26 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
             return builder.build()
         }
 
-        fun convert(request: HttpRequest, response: Response, wrapFile: Boolean = false): HttpResponse {
-            val code = response.code
-            val body = response.body
-            val stream = wrap(body?.byteStream())
-            val map = response.headers.toMultimap()
-            val headers = HttpHeaders.of(map)
-            return HttpResponse(request, code, headers, stream)
-        }
     }
 
-    /**
-     * false 表示先用内存包装
-     */
-    var wrapFile = false
+    fun convert(request: HttpRequest, response: Response): HttpResponse {
+        val code = response.code
+        val body = response.body
+        val stream: InputStream
+        if (body == null) {
+            stream = ByteArrayInputStream(byteArrayOf())
+        } else if (memoryResponse) {
+            stream = ByteArrayInputStream(body.bytes())
+        } else {
+            val file = createFile()
+            StreamUtils.write(body.byteStream(), file)
+            stream = file.inputStream()
+        }
+
+        val map = response.headers.toMultimap()
+        val headers = HttpHeaders.of(map)
+        return HttpResponse(request, code, headers, stream)
+    }
 
     override fun client(): okhttp3.OkHttpClient {
         return client
