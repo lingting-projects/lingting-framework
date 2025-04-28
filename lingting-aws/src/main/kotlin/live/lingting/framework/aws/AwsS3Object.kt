@@ -1,6 +1,5 @@
 package live.lingting.framework.aws
 
-import java.io.InputStream
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3Meta
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
@@ -11,12 +10,14 @@ import live.lingting.framework.aws.s3.properties.S3Properties
 import live.lingting.framework.aws.s3.request.AwsS3MultipartMergeRequest
 import live.lingting.framework.aws.s3.request.AwsS3ObjectPutRequest
 import live.lingting.framework.aws.s3.request.AwsS3SimpleRequest
+import live.lingting.framework.data.DataSize
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.jackson.JacksonUtils
 import live.lingting.framework.multipart.Multipart
 import live.lingting.framework.multipart.Part
 import live.lingting.framework.thread.Async
+import java.io.InputStream
 
 /**
  * @author lingting 2024-09-19 15:09
@@ -61,7 +62,7 @@ class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Cli
         return node["UploadId"].asText()
     }
 
-    override fun multipart(source: InputStream, parSize: Long, async: Async): AwsS3MultipartTask {
+    override fun multipart(source: InputStream, parSize: DataSize, async: Async): AwsS3MultipartTask {
         val uploadId = multipartInit()
 
         val multipart = Multipart.builder()

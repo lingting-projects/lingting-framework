@@ -1,10 +1,6 @@
 package live.lingting.framework.huawei
 
-import java.io.ByteArrayInputStream
-import java.nio.file.Files
-import java.util.function.Consumer
 import live.lingting.framework.aws.s3.AwsS3Meta
-import live.lingting.framework.aws.s3.AwsS3MultipartTask
 import live.lingting.framework.aws.s3.AwsS3Utils.MULTIPART_MIN_PART_SIZE
 import live.lingting.framework.http.download.HttpDownload
 import live.lingting.framework.huawei.exception.HuaweiException
@@ -12,6 +8,7 @@ import live.lingting.framework.huawei.properties.HuaweiObsProperties
 import live.lingting.framework.id.Snowflake
 import live.lingting.framework.thread.Async
 import live.lingting.framework.time.DateTime
+import live.lingting.framework.util.DataSizeUtils.bytes
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StreamUtils
@@ -25,8 +22,10 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty
-import org.junit.jupiter.api.function.Executable
 import org.junit.jupiter.api.function.ThrowingSupplier
+import java.io.ByteArrayInputStream
+import java.nio.file.Files
+import java.util.function.Consumer
 
 /**
  * @author lingting 2024-09-13 17:13
@@ -51,11 +50,11 @@ internal class HuaweiObsTest {
         val snowflake = Snowflake(0, 0)
         val key = "huawei/obs/test/" + snowflake.nextId()
         val obsObject = iam!!.obsObject(properties!!, key)
-        assertThrows<HuaweiException>(HuaweiException::class.java, Executable { obsObject.head() })
+        assertThrows(HuaweiException::class.java) { obsObject.head() }
         val source = "hello world"
         val bytes = source.toByteArray()
         val hex = DigestUtils.md5Hex(bytes)
-        assertDoesNotThrow(Executable { obsObject.put(ByteArrayInputStream(bytes)) })
+        assertDoesNotThrow { obsObject.put(ByteArrayInputStream(bytes)) }
         val head = obsObject.head()
         assertNotNull(head)
         assertEquals(bytes.size.toLong(), head.contentLength())
@@ -82,12 +81,17 @@ internal class HuaweiObsTest {
         val snowflake = Snowflake(0, 1)
         val key = "huawei/obs/test/" + snowflake.nextId()
         val obsObject = iam!!.obsObject(properties!!, key)
-        assertThrows<HuaweiException>(HuaweiException::class.java, Executable { obsObject.head() })
+        assertThrows(HuaweiException::class.java) { obsObject.head() }
         val source = "hello world".repeat(90000)
         val bytes = source.toByteArray()
         val hex = DigestUtils.md5Hex(bytes)
-        val task = assertDoesNotThrow<AwsS3MultipartTask>(
-            ThrowingSupplier { obsObject.multipart(ByteArrayInputStream(bytes), 1, Async(10)) })
+        val task = assertDoesNotThrow(ThrowingSupplier {
+            obsObject.multipart(
+                ByteArrayInputStream(bytes),
+                1.bytes,
+                Async(10)
+            )
+        })
         assertTrue(task.isStarted)
         task.await()
         if (task.hasFailed()) {

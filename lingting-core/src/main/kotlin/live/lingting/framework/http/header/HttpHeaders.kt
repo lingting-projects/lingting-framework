@@ -108,8 +108,8 @@ interface HttpHeaders : MultiValue<String, String, MutableCollection<String>> {
         return this
     }
 
-    fun contentLength(contentLength: Long): HttpHeaders {
-        put(CONTENT_LENGTH, contentLength.toString())
+    fun contentLength(contentLength: Number): HttpHeaders {
+        put(CONTENT_LENGTH, contentLength.toLong().toString())
         return this
     }
 

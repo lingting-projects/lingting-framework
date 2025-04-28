@@ -1,11 +1,8 @@
 package live.lingting.framework.http.download
 
-import java.io.File
-import java.io.FileInputStream
-import java.net.URI
-import java.time.Duration
 import live.lingting.framework.http.HttpClient
 import live.lingting.framework.http.api.ApiClient
+import live.lingting.framework.util.DataSizeUtils.bytes
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.FileUtils
 import live.lingting.framework.util.Slf4jUtils.logger
@@ -15,6 +12,10 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrowsExactly
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.io.File
+import java.io.FileInputStream
+import java.net.URI
+import java.time.Duration
 
 /**
  * @author lingting 2024-01-29 16:43
@@ -88,7 +89,7 @@ internal class HttpDownloadTest {
     }
 
     fun testMulti() {
-        val download = HttpDownload.multi(url).partSize(50).client(client).build()
+        val download = HttpDownload.multi(url).partSize(50.bytes).client(client).build()
 
         assertFalse(download.isStart)
         assertFalse(download.isSuccess)

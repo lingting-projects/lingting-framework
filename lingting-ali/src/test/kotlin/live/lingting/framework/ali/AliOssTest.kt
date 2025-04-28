@@ -1,8 +1,5 @@
 package live.lingting.framework.ali
 
-import java.io.ByteArrayInputStream
-import java.nio.file.Files
-import java.util.function.Consumer
 import live.lingting.framework.ali.exception.AliException
 import live.lingting.framework.ali.properties.AliOssProperties
 import live.lingting.framework.aws.s3.AwsS3Meta
@@ -12,6 +9,7 @@ import live.lingting.framework.http.download.HttpDownload
 import live.lingting.framework.id.Snowflake
 import live.lingting.framework.thread.Async
 import live.lingting.framework.time.DateTime
+import live.lingting.framework.util.DataSizeUtils.bytes
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StreamUtils
@@ -25,6 +23,9 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty
+import java.io.ByteArrayInputStream
+import java.nio.file.Files
+import java.util.function.Consumer
 
 /**
  * @author lingting 2024-09-18 14:29
@@ -95,7 +96,13 @@ internal class AliOssTest {
         val source = "hello world\n".repeat(10000)
         val bytes = source.toByteArray()
         val hex = DigestUtils.md5Hex(bytes)
-        val task = assertDoesNotThrow<AwsS3MultipartTask> { ossObject.multipart(ByteArrayInputStream(bytes), 1, Async(10)) }
+        val task = assertDoesNotThrow<AwsS3MultipartTask> {
+            ossObject.multipart(
+                ByteArrayInputStream(bytes),
+                1.bytes,
+                Async(10)
+            )
+        }
         assertTrue(task.isStarted)
         task.await()
         if (task.hasFailed()) {

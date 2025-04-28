@@ -1,10 +1,11 @@
 package live.lingting.framework.aws.s3
 
+import live.lingting.framework.data.DataSize
+import live.lingting.framework.time.DatePattern
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import live.lingting.framework.time.DatePattern
 
 /**
  * @author lingting 2024-09-19 15:20
@@ -13,19 +14,19 @@ object AwsS3Utils {
     /**
      * 10M
      */
-    const val MULTIPART_DEFAULT_PART_SIZE: Long = 10485760
+    val MULTIPART_DEFAULT_PART_SIZE = DataSize.ofMb(10)
 
     /**
      * 5G
      */
-    const val MULTIPART_MAX_PART_SIZE: Long = 5368709120L
+    val MULTIPART_MAX_PART_SIZE = DataSize.ofGb(5)
 
     /**
      * 100K
      */
-    const val MULTIPART_MIN_PART_SIZE: Long = 102400
+    val MULTIPART_MIN_PART_SIZE = DataSize.ofKb(100)
 
-    const val MULTIPART_MAX_PART_COUNT: Long = 1000
+    const val MULTIPART_MAX_PART_COUNT = 1000L
 
     const val PAYLOAD_UNSIGNED: String = "UNSIGNED-PAYLOAD"
 

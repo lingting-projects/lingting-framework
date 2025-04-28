@@ -1,10 +1,7 @@
 package live.lingting.framework.download
 
-import java.io.File
-import java.io.InputStream
-import java.time.Duration
-import java.util.concurrent.ExecutorService
 import live.lingting.framework.concurrent.Await
+import live.lingting.framework.data.DataSize
 import live.lingting.framework.exception.DownloadException
 import live.lingting.framework.multipart.Multipart
 import live.lingting.framework.multipart.Part
@@ -12,12 +9,17 @@ import live.lingting.framework.thread.Async
 import live.lingting.framework.util.FileUtils
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.ValueUtils
+import java.io.File
+import java.io.InputStream
+import java.time.Duration
+import java.util.concurrent.ExecutorService
 
 /**
  * @author lingting 2024-09-06 16:39
  */
 @Suppress("UNCHECKED_CAST")
-abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor(builder: DownloadBuilder<*>) : Download {
+abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor(builder: DownloadBuilder<*>) :
+    Download {
     protected val log = logger()
 
     val url: String = builder.url
@@ -25,7 +27,7 @@ abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor
     /**
      * 文件大小. 不知道就写null. 为null或小于1时会调用 [MultipartDownload.size] 方法获取
      */
-    val size: Long? = builder.size
+    val size: DataSize? = builder.size
 
     /**
      * 是否存在多个分片.
@@ -34,7 +36,7 @@ abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor
 
     val threadLimit: Long = builder.threadLimit.toLong()
 
-    val partSize: Long = builder.partSize
+    val partSize: DataSize = builder.partSize
 
     val maxRetryCount: Long = builder.maxRetryCount
 
@@ -68,15 +70,14 @@ abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor
         val async = if (threadLimit == Async.UNLIMITED) Async() else Async(threadLimit + 1)
         async.submit("download-$id") {
             try {
-                val fileSize = if (size == null || size < 1) size() else size
-                val multipart: Multipart = Multipart.builder()
+                val fileSize = if (size == null || size.bytes < 1) size() else size
+                val multipart = Multipart.builder()
                     .id(id)
-                    .size(fileSize) // 不使用多分配下载时, 只设置一个分片
+                    // 不使用多分配下载时, 只设置一个分片
+                    .size(fileSize)
                     .partSize(if (isMulti) partSize else fileSize)
                     .build()
-                val task = DownloadFileMultipartTask(
-                    multipart, maxRetryCount, async, file
-                ) { part -> download(part) }
+                val task = DownloadFileMultipartTask(multipart, maxRetryCount, async, file) { part -> download(part) }
                 task.start().await(timeout)
                 if (task.hasFailed()) {
                     val t = task.tasksFailed()[0]
@@ -92,7 +93,6 @@ abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor
 
     override fun await(): D {
         check(isStart) { "download not start!" }
-
         Await.waitTrue { this.isFinished }
         return this as D
     }
@@ -115,7 +115,7 @@ abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor
     override val isSuccess: Boolean
         get() = isFinished && ex == null
 
-    abstract fun size(): Long
+    abstract fun size(): DataSize
 
     abstract fun download(part: Part): InputStream
 
@@ -123,4 +123,5 @@ abstract class MultipartDownload<D : MultipartDownload<D>> protected constructor
         @JvmField
         val TEMP_DIR: File = FileUtils.createTempDir("download")
     }
+
 }

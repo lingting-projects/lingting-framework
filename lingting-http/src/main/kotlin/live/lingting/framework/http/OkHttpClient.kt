@@ -1,8 +1,5 @@
 package live.lingting.framework.http
 
-import java.io.IOException
-import java.util.function.Consumer
-import java.util.function.Supplier
 import live.lingting.framework.function.ThrowingFunction
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.http.okhttp.OkHttpCookie
@@ -16,6 +13,9 @@ import okhttp3.HttpUrl
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
+import java.io.IOException
+import java.util.function.Consumer
+import java.util.function.Supplier
 
 /**
  * @author lingting 2024-09-02 15:36
@@ -44,7 +44,7 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
             return builder.build()
         }
 
-        fun convert(request: HttpRequest, response: Response): HttpResponse {
+        fun convert(request: HttpRequest, response: Response, wrapFile: Boolean = false): HttpResponse {
             val code = response.code
             val body = response.body
             val stream = wrap(body?.byteStream())
@@ -53,6 +53,11 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
             return HttpResponse(request, code, headers, stream)
         }
     }
+
+    /**
+     * false 表示先用内存包装
+     */
+    var wrapFile = false
 
     override fun client(): okhttp3.OkHttpClient {
         return client

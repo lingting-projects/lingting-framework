@@ -1,5 +1,12 @@
 package live.lingting.framework.http
 
+import live.lingting.framework.data.DataSize
+import live.lingting.framework.stream.BytesInputStream
+import live.lingting.framework.stream.FileCloneInputStream
+import live.lingting.framework.util.FileUtils
+import live.lingting.framework.util.StreamUtils
+import live.lingting.framework.util.ThreadUtils
+import live.lingting.framework.value.LazyValue
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -18,13 +25,6 @@ import javax.net.SocketFactory
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLContext
 import javax.net.ssl.X509TrustManager
-import live.lingting.framework.data.DataSize
-import live.lingting.framework.stream.BytesInputStream
-import live.lingting.framework.stream.FileCloneInputStream
-import live.lingting.framework.util.FileUtils
-import live.lingting.framework.util.StreamUtils
-import live.lingting.framework.util.ThreadUtils
-import live.lingting.framework.value.LazyValue
 
 /**
  * @author lingting 2024-09-02 15:28
@@ -82,7 +82,7 @@ abstract class HttpClient {
                 file
             }
             StreamUtils.read(source) { bytes, len ->
-                if (!fileValue.isFirst() || size.addAndGet(len.toLong()) > maxBytes) {
+                if (!fileValue.isFirst() || size.addAndGet(len.toLong()) >= maxBytes) {
                     if (fileValue.isFirst()) {
                         fileValue.get()
                         fileOutValue.get()!!.write(byteOut.toByteArray())
@@ -121,6 +121,7 @@ abstract class HttpClient {
     }
 
     abstract class Builder<C : HttpClient, B : Builder<C, B>> {
+
         protected var executor: ExecutorService? = ThreadUtils.executor()
 
         protected var redirects: Boolean = true
@@ -226,7 +227,12 @@ abstract class HttpClient {
             return connectTimeout(connectTimeout).readTimeout(readTimeout)
         }
 
-        fun timeout(callTimeout: Duration?, connectTimeout: Duration?, readTimeout: Duration?, writeTimeout: Duration?): B {
+        fun timeout(
+            callTimeout: Duration?,
+            connectTimeout: Duration?,
+            readTimeout: Duration?,
+            writeTimeout: Duration?
+        ): B {
             return callTimeout(callTimeout).connectTimeout(connectTimeout)
                 .readTimeout(readTimeout)
                 .writeTimeout(writeTimeout)

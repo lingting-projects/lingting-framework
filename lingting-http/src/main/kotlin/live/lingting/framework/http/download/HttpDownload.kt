@@ -1,14 +1,16 @@
 package live.lingting.framework.http.download
 
-import java.io.InputStream
-import java.io.OutputStream
-import java.net.URI
+import live.lingting.framework.data.DataSize
 import live.lingting.framework.download.MultipartDownload
 import live.lingting.framework.exception.DownloadException
 import live.lingting.framework.http.HttpClient
 import live.lingting.framework.http.HttpRequest
 import live.lingting.framework.multipart.Part
+import live.lingting.framework.util.DataSizeUtils.bytes
 import live.lingting.framework.util.StreamUtils
+import java.io.InputStream
+import java.io.OutputStream
+import java.net.URI
 
 /**
  * @author lingting 2023-12-20 16:43
@@ -63,17 +65,17 @@ open class HttpDownload(builder: HttpDownloadBuilder) : MultipartDownload<HttpDo
         }
     }
 
-    override fun size(): Long {
+    override fun size(): DataSize {
         val builder: HttpRequest.Builder = HttpRequest.builder().url(uri).header("Accept-Encoding", "identity")
         val response = client.request(builder.build())
         val headers = response.headers()
-        return headers.contentLength()
+        return headers.contentLength().bytes
     }
 
     override fun download(part: Part): InputStream {
         val builder = HttpRequest.builder().get().url(uri)
         if (isMulti) {
-            builder.header("Range", String.format("bytes=%d-%d", part.start, part.end))
+            builder.header("Range", String.format("bytes=%d-%d", part.start.bytes, part.end.bytes))
         }
 
         val request = builder.build()

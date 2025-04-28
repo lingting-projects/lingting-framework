@@ -1,14 +1,15 @@
 package live.lingting.framework.aws.s3.interfaces
 
-import java.io.InputStream
 import live.lingting.framework.aws.AwsS3Object
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3Meta
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
 import live.lingting.framework.aws.s3.request.AwsS3ObjectPutRequest
+import live.lingting.framework.data.DataSize
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.multipart.Part
 import live.lingting.framework.thread.Async
+import java.io.InputStream
 
 /**
  * @author lingting 2024-09-19 21:59
@@ -36,7 +37,7 @@ interface AwsS3ObjectDelegation : AwsS3ObjectInterface, AwsS3Delegation<AwsS3Obj
         return delegation().multipartInit(acl, meta)
     }
 
-    override fun multipart(source: InputStream, parSize: Long, async: Async): AwsS3MultipartTask {
+    override fun multipart(source: InputStream, parSize: DataSize, async: Async): AwsS3MultipartTask {
         return delegation().multipart(source, parSize, async)
     }
 

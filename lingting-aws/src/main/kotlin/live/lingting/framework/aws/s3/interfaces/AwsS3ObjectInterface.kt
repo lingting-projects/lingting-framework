@@ -1,17 +1,18 @@
 package live.lingting.framework.aws.s3.interfaces
 
-import java.io.File
-import java.io.InputStream
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3Meta
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
 import live.lingting.framework.aws.s3.AwsS3Utils
 import live.lingting.framework.aws.s3.request.AwsS3ObjectPutRequest
+import live.lingting.framework.data.DataSize
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.multipart.Part
 import live.lingting.framework.stream.CloneInputStream
 import live.lingting.framework.stream.FileCloneInputStream
 import live.lingting.framework.thread.Async
+import java.io.File
+import java.io.InputStream
 
 /**
  * @author lingting 2024-09-19 21:59
@@ -74,7 +75,7 @@ interface AwsS3ObjectInterface {
 
     fun multipart(source: InputStream, async: Async) = multipart(source, AwsS3Utils.MULTIPART_DEFAULT_PART_SIZE, async)
 
-    fun multipart(source: InputStream, parSize: Long, async: Async): AwsS3MultipartTask
+    fun multipart(source: InputStream, parSize: DataSize, async: Async): AwsS3MultipartTask
 
     fun multipartUpload(uploadId: String, part: Part, input: InputStream): String
 

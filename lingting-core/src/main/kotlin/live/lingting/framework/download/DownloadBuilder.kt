@@ -1,8 +1,9 @@
 package live.lingting.framework.download
 
+import live.lingting.framework.data.DataSize
+import live.lingting.framework.util.ThreadUtils
 import java.time.Duration
 import java.util.concurrent.ExecutorService
-import live.lingting.framework.util.ThreadUtils
 
 /**
  * @author lingting 2024-01-16 19:33
@@ -22,7 +23,7 @@ abstract class DownloadBuilder<B : DownloadBuilder<B>> protected constructor(
      * 文件大小, 用于多线程下载时进行分片. 单位: bytes
      * 设置为null或者小于1时调用size方法解析
      */
-    var size: Long? = null
+    var size: DataSize? = null
 
     /**
      * 最大启动线程数
@@ -32,7 +33,7 @@ abstract class DownloadBuilder<B : DownloadBuilder<B>> protected constructor(
     /**
      * 每个分片的最大大小, 单位: bytes
      */
-    var partSize: Long = DEFAULT_PART_SIZE
+    var partSize: DataSize = DEFAULT_PART_SIZE
 
     var maxRetryCount: Long = DEFAULT_MAX_RETRY_COUNT
 
@@ -53,7 +54,7 @@ abstract class DownloadBuilder<B : DownloadBuilder<B>> protected constructor(
         return this as B
     }
 
-    fun size(size: Long): B {
+    fun size(size: DataSize): B {
         this.size = size
         return this as B
     }
@@ -63,7 +64,7 @@ abstract class DownloadBuilder<B : DownloadBuilder<B>> protected constructor(
         return this as B
     }
 
-    fun partSize(partSize: Long): B {
+    fun partSize(partSize: DataSize): B {
         this.partSize = safeDefault(partSize, DEFAULT_PART_SIZE)
         return this as B
     }
@@ -102,10 +103,7 @@ abstract class DownloadBuilder<B : DownloadBuilder<B>> protected constructor(
     companion object {
         protected const val DEFAULT_THREAD_LIMIT: Int = 20
 
-        /**
-         * 默认10M
-         */
-        protected const val DEFAULT_PART_SIZE: Long = 10485760
+        protected val DEFAULT_PART_SIZE = DataSize.ofMb(10)
 
         protected const val DEFAULT_MAX_RETRY_COUNT: Long = 3
 
