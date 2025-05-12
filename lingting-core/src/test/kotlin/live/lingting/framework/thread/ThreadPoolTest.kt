@@ -16,7 +16,7 @@ class ThreadPoolTest {
 
     @Test
     fun testPool() {
-        ThreadUtils.delegator = PlatformThread.delegator
+        ThreadUtils.delegator = PlatformThread
         testMdc()
     }
 
@@ -25,7 +25,7 @@ class ThreadPoolTest {
         if (!VirtualThread.isSupport) {
             return
         }
-        ThreadUtils.delegator = VirtualThread.delegator
+        ThreadUtils.delegator = VirtualThread
         testMdc()
     }
 

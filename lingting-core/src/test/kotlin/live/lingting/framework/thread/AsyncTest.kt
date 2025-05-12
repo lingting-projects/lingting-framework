@@ -1,5 +1,6 @@
 package live.lingting.framework.thread
 
+import live.lingting.framework.thread.platform.PlatformThread
 import live.lingting.framework.thread.virtual.VirtualThread
 import live.lingting.framework.time.StopWatch
 import live.lingting.framework.util.Slf4jUtils.logger
@@ -26,7 +27,7 @@ class AsyncTest {
 
     @Test
     fun test() {
-        executor = ThreadUtils
+        executor = PlatformThread
         doTest()
         executor = VirtualThread
         doTest()

@@ -2,8 +2,8 @@ package live.lingting.framework.thread
 
 import live.lingting.framework.application.ApplicationHolder.start
 import live.lingting.framework.concurrent.Await
+import live.lingting.framework.thread.platform.PlatformThread
 import live.lingting.framework.thread.virtual.VirtualThread
-import live.lingting.framework.util.ThreadUtils
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -22,7 +22,7 @@ class AbstractTimerTest {
 
     @Test
     fun test() {
-        executor = ThreadUtils
+        executor = PlatformThread
         doTest()
 
         executor = VirtualThread
