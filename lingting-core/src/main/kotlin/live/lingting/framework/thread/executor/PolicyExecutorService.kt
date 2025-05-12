@@ -1,25 +1,16 @@
 package live.lingting.framework.thread.executor
 
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.function.Function
 import live.lingting.framework.thread.WorkerRunnable
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.value.WaitValue
+import java.util.concurrent.ExecutorService
+import java.util.function.Function
 
 /**
  * @author lingting 2024/12/19 23:24
  */
-open class PolicyThreadPoolExecutor(
-    val properties: PolicyThreadPoolProperties
-) : ThreadPoolExecutor(
-    properties.corePoolSize,
-    properties.maximumPoolSize,
-    properties.keepAliveTime,
-    properties.unit,
-    properties.workQueue,
-    properties.threadFactory,
-    properties.handler
-) {
+open class PolicyExecutorService(delegator: ExecutorService) : DelegationExecutorService(delegator) {
+
     val log = logger()
 
     private val resolvers = WaitValue<MutableList<ThreadExecuteResolver>>()
