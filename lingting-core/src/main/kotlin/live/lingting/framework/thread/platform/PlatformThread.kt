@@ -10,12 +10,17 @@ import java.util.concurrent.ThreadPoolExecutor
 /**
  * @author lingting 2025/5/12 10:20
  */
-object PlatformThread : DelegationExecutorService(PolicyExecutorService(StateKeepExecutorService(newExecutor()))) {
-
-    @JvmStatic
-    fun newExecutor(): ThreadPoolExecutor {
-        return newExecutor(AtomicPlatformThreadFactory("t-"))
-    }
+object PlatformThread : DelegationExecutorService(
+    PolicyExecutorService(
+        StateKeepExecutorService(
+            newExecutor(
+                Thread.ofPlatform()
+                    .name("t-", 0)
+                    .factory()
+            )
+        )
+    )
+) {
 
     @JvmStatic
     fun newExecutor(factory: ThreadFactory): ThreadPoolExecutor {
