@@ -8,7 +8,8 @@ import io.grpc.ServerCall
 import io.grpc.ServerCallExecutorSupplier
 import io.grpc.ServerInterceptor
 import live.lingting.framework.grpc.interceptor.GrpcThreadExecutorInterceptor
-import live.lingting.framework.thread.executor.PolicyThreadPoolExecutor
+import live.lingting.framework.thread.executor.DelegationExecutorService
+import live.lingting.framework.thread.executor.PolicyExecutorService
 import live.lingting.framework.thread.executor.ThreadExecuteResolver
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.ThreadUtils
@@ -56,11 +57,14 @@ open class GrpcThreadExecutorCustomizer @JvmOverloads constructor(val executor: 
     val log = logger()
 
     fun register() {
-        if (executor !is PolicyThreadPoolExecutor) {
+        val target = executor as? PolicyExecutorService
+            ?: if (executor is DelegationExecutorService) executor.find(PolicyExecutorService::class.java)
+            else null
+        if (target == null) {
             log.warn("This thread pool may cause context exceptions through ThreadLocal! Please use PolicyThreadPoolExecutor.")
             return
         }
-        executor.register(this)
+        target.register(this)
     }
 
     override fun customize(builder: ManagedChannelBuilder<*>): Collection<ClientInterceptor> {

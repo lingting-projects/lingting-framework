@@ -19,7 +19,7 @@ class GrpcWorkerRunnable(val r: Runnable) : WorkerRunnable() {
     override fun onStart() {
         val thread = Thread.currentThread()
         oldName = thread.name
-        thread.name = "grpc-worker-${index}"
+        thread.name = "gw-${index}"
         GrpcThreadExecutorCustomizer.bind(this)
     }
 

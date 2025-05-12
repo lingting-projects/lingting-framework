@@ -109,10 +109,12 @@ class SecurityGrpcTest {
             GrpcClientTraceIdInterceptor(clientProperties),
             SecurityGrpcRemoteResourceClientInterceptor(properties),
         )
-        val provide = GrpcClientProvide(clientProperties, clientInterceptors, customizers = clientCustomizers)
+        val provide = GrpcClientProvide(clientProperties, clientInterceptors, clientCustomizers)
 
         channel = provide.channel("127.0.0.1", server!!.port())
-        blocking = provide.blocking(channel!!) { channel -> SecurityGrpcAuthorizationServiceGrpc.newBlockingStub(channel) }
+        blocking = provide.blocking(channel!!) { channel ->
+            SecurityGrpcAuthorizationServiceGrpc.newBlockingStub(channel)
+        }
     }
 
     @AfterEach
@@ -134,7 +136,9 @@ class SecurityGrpcTest {
         assertEquals("admin", admin.userId)
         assertTrue(admin.isExpand)
         // 无token解析
-        assertThrowsExactly(StatusRuntimeException::class.java) { blocking!!.resolve(SecurityGrpcAuthorization.TokenPO.newBuilder().buildPartial()) }
+        assertThrowsExactly(StatusRuntimeException::class.java) {
+            blocking!!.resolve(SecurityGrpcAuthorization.TokenPO.newBuilder().buildPartial())
+        }
         // token解析
         put(SecurityToken.ofDelimiter(admin.authorization, " "))
         try {
