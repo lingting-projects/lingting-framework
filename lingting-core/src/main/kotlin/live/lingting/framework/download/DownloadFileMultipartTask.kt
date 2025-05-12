@@ -55,6 +55,4 @@ open class DownloadFileMultipartTask(
         return task.retryCount < maxRetryCount
     }
 
-    companion object {
-    }
 }

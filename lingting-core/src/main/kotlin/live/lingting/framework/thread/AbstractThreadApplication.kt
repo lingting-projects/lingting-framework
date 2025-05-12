@@ -1,8 +1,5 @@
 package live.lingting.framework.thread
 
-import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
-import java.util.function.Consumer
 import live.lingting.framework.application.ApplicationComponent
 import live.lingting.framework.application.ApplicationHolder
 import live.lingting.framework.concurrent.Await
@@ -11,6 +8,9 @@ import live.lingting.framework.util.DurationUtils.millis
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.ThreadUtils
 import live.lingting.framework.value.WaitValue
+import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
+import java.util.function.Consumer
 
 /**
  * @author lingting 2023-04-22 10:40
@@ -19,9 +19,9 @@ abstract class AbstractThreadApplication : ApplicationComponent, Runnable {
 
     protected val log = logger()
 
-    val threadValue: WaitValue<Thread> = WaitValue.of<Thread>()
+    val threadValue: WaitValue<Thread> = WaitValue.of()
 
-    private var executor: ExecutorService = ThreadUtils.executor()
+    var executor: ExecutorService = ThreadUtils
 
     fun thread(consumer: Consumer<Thread>) {
         threadValue.optional().ifPresent { consumer.accept(it) }
@@ -62,14 +62,6 @@ abstract class AbstractThreadApplication : ApplicationComponent, Runnable {
 
     open fun executor(): Executor {
         return executor
-    }
-
-    fun useThreadPool() {
-        executor = ThreadPool.executor()
-    }
-
-    fun useThreadVirtual() {
-        executor = VirtualThread.executor()
     }
 
     abstract fun wake()

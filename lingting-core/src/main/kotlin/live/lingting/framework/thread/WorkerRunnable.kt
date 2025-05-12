@@ -1,14 +1,15 @@
 package live.lingting.framework.thread
 
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.TimeUnit
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.value.WaitValue
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
 
 /**
  * @author lingting 2024/12/23 17:25
  */
 abstract class WorkerRunnable : Runnable {
+
     protected val log = logger()
 
     protected val queue = LinkedBlockingQueue<Runnable>()
@@ -50,7 +51,7 @@ abstract class WorkerRunnable : Runnable {
 
     fun interrupt() {
         threadValue.compute {
-            if (finish == false) {
+            if (!finish) {
                 finish = true
                 queue.add { }
                 onFinally()

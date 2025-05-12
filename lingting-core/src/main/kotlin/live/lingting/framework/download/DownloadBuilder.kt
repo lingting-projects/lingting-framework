@@ -17,7 +17,7 @@ abstract class DownloadBuilder<B : DownloadBuilder<B>> protected constructor(
 ) {
     var isMulti: Boolean = false
 
-    var executor: ExecutorService = ThreadUtils.executor()
+    var executor: ExecutorService = ThreadUtils
 
     /**
      * 文件大小, 用于多线程下载时进行分片. 单位: bytes

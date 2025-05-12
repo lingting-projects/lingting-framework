@@ -1,31 +1,37 @@
 package live.lingting.framework.thread
 
-import java.time.Duration
-import kotlin.test.assertNotEquals
+import live.lingting.framework.thread.platform.PlatformThread
+import live.lingting.framework.thread.virtual.VirtualThread
 import live.lingting.framework.util.MdcUtils
 import live.lingting.framework.util.ThreadUtils
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.time.Duration
+import kotlin.test.assertNotEquals
 
 /**
  * @author lingting 2024-04-23 11:50
  */
 class ThreadPoolTest {
+
     @Test
     fun testPool() {
-        ThreadUtils.instance = ThreadPool.instance
+        ThreadUtils.delegator = PlatformThread.delegator
         testMdc()
     }
 
     @Test
     fun testVirtual() {
-        ThreadUtils.instance = VirtualThread.instance
+        if (!VirtualThread.isSupport) {
+            return
+        }
+        ThreadUtils.delegator = VirtualThread.delegator
         testMdc()
     }
 
     fun testMdc() {
-        val instance = ThreadUtils.instance
-        val async = Async(instance.executor())
+        val instance = ThreadUtils.delegator
+        val async = Async(instance)
         val traceId = MdcUtils.setTraceId()
         val currentName = Thread.currentThread().name
 

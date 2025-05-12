@@ -43,6 +43,8 @@ protected constructor(builder: DownloadBuilder<*>) : Download {
 
     val timeout: Duration? = builder.timeout
 
+    val async = if (threadLimit == Async.UNLIMITED) Async() else Async(threadLimit + 1)
+
     protected val executor: ExecutorService = builder.executor
 
     protected val id: String = ValueUtils.simpleUuid()
@@ -68,7 +70,6 @@ protected constructor(builder: DownloadBuilder<*>) : Download {
     }
 
     protected fun doStart() {
-        val async = if (threadLimit == Async.UNLIMITED) Async() else Async(threadLimit + 1)
         async.submit("download-$id") {
             try {
                 val fileSize = if (size == null || size.bytes < 1) size() else size

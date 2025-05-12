@@ -79,7 +79,7 @@ abstract class HttpClient {
 
     abstract class Builder<C : HttpClient, B : Builder<C, B>> {
 
-        protected var executor: ExecutorService? = ThreadUtils.executor()
+        protected var executor: ExecutorService? = ThreadUtils
 
         protected var redirects: Boolean = true
 

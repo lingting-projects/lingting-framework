@@ -1,15 +1,15 @@
 package live.lingting.framework.concurrent
 
+import live.lingting.framework.function.AwaitRunnable
+import live.lingting.framework.function.InterruptedRunnable
+import live.lingting.framework.util.ThreadUtils
+import live.lingting.framework.util.ValueUtils
 import java.time.Duration
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Predicate
 import java.util.function.Supplier
-import live.lingting.framework.function.AwaitRunnable
-import live.lingting.framework.function.InterruptedRunnable
-import live.lingting.framework.util.ThreadUtils
-import live.lingting.framework.util.ValueUtils
 
 /**
  * @author lingting 2025/1/22 17:33
@@ -19,7 +19,7 @@ open class Await<S> @JvmOverloads constructor(
     val supplier: Supplier<S?>,
     val predicate: Predicate<S?>,
     val sleep: InterruptedRunnable = SLEEP,
-    val executor: ExecutorService = ThreadUtils.executor()
+    val executor: ExecutorService = ThreadUtils
 ) {
 
     companion object {

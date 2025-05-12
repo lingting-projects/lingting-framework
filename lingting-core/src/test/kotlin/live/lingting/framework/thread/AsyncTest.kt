@@ -1,26 +1,34 @@
 package live.lingting.framework.thread
 
-import java.util.concurrent.Executor
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.locks.LockSupport
+import live.lingting.framework.thread.virtual.VirtualThread
 import live.lingting.framework.time.StopWatch
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.ThreadUtils
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.util.concurrent.Executor
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.LockSupport
 
 /**
  * @author lingting 2024-01-26 17:07
  */
 class AsyncTest {
+
+    companion object {
+
+        private val log = logger()
+
+    }
+
     var executor: Executor? = null
 
     @Test
     fun test() {
-        executor = ThreadUtils.executor()
+        executor = ThreadUtils
         doTest()
-        executor = VirtualThread.executor()
+        executor = VirtualThread
         doTest()
     }
 
@@ -44,9 +52,9 @@ class AsyncTest {
 
     @Test
     fun testLimit() {
-        executor = ThreadUtils.executor()
+        executor = ThreadUtils
         doTestLimit()
-        executor = VirtualThread.executor()
+        executor = VirtualThread
         doTestLimit()
     }
 
@@ -69,9 +77,9 @@ class AsyncTest {
 
     @Test
     fun testMulti() {
-        executor = ThreadUtils.executor()
+        executor = ThreadUtils
         doTestMulti()
-        executor = VirtualThread.executor()
+        executor = VirtualThread
         doTestMulti()
     }
 
@@ -85,9 +93,5 @@ class AsyncTest {
 
         assertEquals(0, async.notCompletedCount())
         assertEquals(max.toLong(), async.allCount())
-    }
-
-    companion object {
-        private val log = logger()
     }
 }

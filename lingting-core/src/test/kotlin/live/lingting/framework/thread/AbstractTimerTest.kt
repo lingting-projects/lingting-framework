@@ -1,29 +1,31 @@
 package live.lingting.framework.thread
 
-import java.time.Duration
-import java.util.concurrent.Executor
-import java.util.concurrent.atomic.AtomicInteger
 import live.lingting.framework.application.ApplicationHolder.start
 import live.lingting.framework.concurrent.Await
+import live.lingting.framework.thread.virtual.VirtualThread
 import live.lingting.framework.util.ThreadUtils
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.time.Duration
+import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * @author lingting 2023-12-20 21:53
  */
 class AbstractTimerTest {
+
     var executor: Executor? = null
 
     @Test
-
     fun test() {
-        executor = ThreadUtils.executor()
+        executor = ThreadUtils
         doTest()
-        executor = VirtualThread.executor()
+
+        executor = VirtualThread
         doTest()
     }
 
@@ -33,7 +35,7 @@ class AbstractTimerTest {
 
         val timer: AbstractTimer = object : AbstractTimer() {
             override fun executor(): Executor {
-                return executor!!
+                return executor
             }
 
             override val interval: Duration
@@ -57,4 +59,5 @@ class AbstractTimerTest {
         timer.interrupt()
         assertTrue(thread.isInterrupted)
     }
+
 }

@@ -1,16 +1,17 @@
 package live.lingting.framework.thread
 
+import live.lingting.framework.concurrent.Await
+import live.lingting.framework.function.StateKeepRunnable
+import live.lingting.framework.function.ThrowableRunnable
+import live.lingting.framework.lock.JavaReentrantLock
+import live.lingting.framework.thread.platform.PlatformThread
+import live.lingting.framework.thread.virtual.VirtualThread
 import java.time.Duration
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executor
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeoutException
-import live.lingting.framework.concurrent.Await
-import live.lingting.framework.function.StateKeepRunnable
-import live.lingting.framework.function.ThrowableRunnable
-import live.lingting.framework.lock.JavaReentrantLock
-import live.lingting.framework.util.ThreadUtils
 
 /**
  * @author lingting 2023-06-05 17:31
@@ -27,23 +28,22 @@ open class Async @JvmOverloads constructor(
 ) {
 
     companion object {
+
         @JvmStatic
-        var defaultExecutor: Executor = VirtualThread.executor()
+        var defaultExecutor: Executor = VirtualThread
 
         const val UNLIMITED: Long = -1
 
         @JvmStatic
         @JvmOverloads
-        fun pool(limit: Long = UNLIMITED): Async {
-            val e: Executor = ThreadUtils.executor()
-            return Async(e, limit)
+        fun platform(limit: Long = UNLIMITED): Async {
+            return Async(PlatformThread, limit)
         }
 
         @JvmStatic
         @JvmOverloads
         fun virtual(limit: Long = UNLIMITED): Async {
-            val e: Executor = VirtualThread.executor()
-            return Async(e, limit)
+            return Async(VirtualThread, limit)
         }
 
     }

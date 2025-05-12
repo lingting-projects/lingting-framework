@@ -1,8 +1,8 @@
 package live.lingting.framework.function
 
-import java.time.Duration
 import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.DurationUtils.millis
+import java.time.Duration
 
 /**
  * @author lingting 2024-04-29 10:41
@@ -66,4 +66,5 @@ abstract class StateKeepRunnable @JvmOverloads constructor(
 
         FINISH,
     }
+
 }

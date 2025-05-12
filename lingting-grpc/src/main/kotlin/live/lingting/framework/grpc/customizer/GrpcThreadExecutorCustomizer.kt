@@ -7,18 +7,18 @@ import io.grpc.ServerBuilder
 import io.grpc.ServerCall
 import io.grpc.ServerCallExecutorSupplier
 import io.grpc.ServerInterceptor
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Executor
 import live.lingting.framework.grpc.interceptor.GrpcThreadExecutorInterceptor
 import live.lingting.framework.thread.executor.PolicyThreadPoolExecutor
 import live.lingting.framework.thread.executor.ThreadExecuteResolver
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.ThreadUtils
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executor
 
 /**
  * @author lingting 2024/12/19 22:44
  */
-open class GrpcThreadExecutorCustomizer @JvmOverloads constructor(val executor: Executor = ThreadUtils.executor()) :
+open class GrpcThreadExecutorCustomizer @JvmOverloads constructor(val executor: Executor = ThreadUtils) :
     ClientCustomizer, ServerCustomizer, ThreadExecuteResolver {
 
     companion object {
