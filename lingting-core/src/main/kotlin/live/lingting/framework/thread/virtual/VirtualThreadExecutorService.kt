@@ -19,7 +19,8 @@ class VirtualThreadExecutorService : StateKeepExecutorService {
 
     constructor() : super(
         if (isSupport) {
-            Executors.newVirtualThreadPerTaskExecutor()
+            val factory = Thread.ofVirtual().name("vt-", 0).factory()
+            Executors.newThreadPerTaskExecutor(factory)
         } else {
             PlatformThread.delegator
         }
