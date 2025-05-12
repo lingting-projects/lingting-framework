@@ -4,12 +4,15 @@ import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
+import java.util.concurrent.ThreadFactory
+import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
 
 /**
  * @author lingting 2025/5/12 10:14
  */
+@Suppress("UNCHECKED_CAST")
 open class DelegationExecutorService(open var delegator: ExecutorService) : ExecutorService {
 
     val isRunning
@@ -17,6 +20,31 @@ open class DelegationExecutorService(open var delegator: ExecutorService) : Exec
 
     fun <T> async(supplier: Supplier<T>): CompletableFuture<T> {
         return CompletableFuture.supplyAsync(supplier, delegator)
+    }
+
+    fun threadFactory(): ThreadFactory? {
+        if (delegator is DelegationExecutorService) {
+            return (delegator as DelegationExecutorService).threadFactory()
+        }
+        if (delegator is ThreadPoolExecutor) {
+            return (delegator as ThreadPoolExecutor).threadFactory
+        }
+        return null
+    }
+
+    fun <T : ExecutorService> find(clz: Class<T>): T? {
+        if (clz.isAssignableFrom(javaClass)) {
+            return this as T
+        }
+
+        if (delegator is DelegationExecutorService) {
+            return (delegator as DelegationExecutorService).find(clz)
+        }
+
+        if (clz.isAssignableFrom(delegator.javaClass)) {
+            return delegator as T
+        }
+        return null
     }
 
     override fun shutdown() {
