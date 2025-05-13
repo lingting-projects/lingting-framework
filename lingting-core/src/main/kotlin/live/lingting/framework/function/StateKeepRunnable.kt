@@ -18,24 +18,21 @@ abstract class StateKeepRunnable @JvmOverloads constructor(
 
     protected var state: State = State.WAIT
 
-    private fun innerOnStart() {
-        start = DateTime.millis()
-        state = State.RUNNING
-    }
-
     protected open fun onStart() {
         //
     }
 
-    override fun process() {
-        innerOnStart()
+    final override fun process() {
+        check(state == State.WAIT) { "runnable running." }
+        start = DateTime.millis()
+        state = State.RUNNING
         onStart()
         doProcess()
     }
 
     protected abstract fun doProcess()
 
-    override fun onFinally() {
+    final override fun onFinally() {
         end = DateTime.millis()
         state = State.FINISH
         onEnd()
@@ -60,11 +57,13 @@ abstract class StateKeepRunnable @JvmOverloads constructor(
     }
 
     enum class State {
+
         WAIT,
 
         RUNNING,
 
         FINISH,
+
     }
 
 }

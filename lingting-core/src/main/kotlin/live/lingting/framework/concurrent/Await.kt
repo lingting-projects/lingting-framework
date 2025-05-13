@@ -1,32 +1,33 @@
 package live.lingting.framework.concurrent
 
-import live.lingting.framework.function.AwaitRunnable
-import live.lingting.framework.function.InterruptedRunnable
-import live.lingting.framework.util.ThreadUtils
+import live.lingting.framework.concurrent.await.AwaitBuilder
+import live.lingting.framework.concurrent.await.AwaitBuilder.Companion.defaultExecutor
+import live.lingting.framework.concurrent.await.AwaitBuilder.Companion.defaultSleep
+import live.lingting.framework.concurrent.await.AwaitOnTimeout
+import live.lingting.framework.concurrent.await.AwaitPredicate
+import live.lingting.framework.concurrent.await.AwaitRunnable
+import live.lingting.framework.concurrent.await.AwaitWorker
 import live.lingting.framework.util.ValueUtils
 import java.time.Duration
-import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executor
 import java.util.concurrent.TimeoutException
-import java.util.concurrent.atomic.AtomicLong
-import java.util.function.Predicate
-import java.util.function.Supplier
 
 /**
  * @author lingting 2025/1/22 17:33
  */
-open class Await<S> @JvmOverloads constructor(
+open class Await<R>(
     val timeout: Duration?,
-    val supplier: Supplier<S?>,
-    val predicate: Predicate<S?>,
-    val sleep: InterruptedRunnable = SLEEP,
-    val executor: ExecutorService = ThreadUtils
+    val worker: AwaitWorker<R>,
+    val predicate: AwaitPredicate<R>,
+    val name: String,
+    val sleep: Runnable,
+    val onTimeout: AwaitOnTimeout<R>,
+    val executor: Executor,
 ) {
 
     companion object {
 
-        val SLEEP: InterruptedRunnable = InterruptedRunnable.THREAD_SLEEP
-
-        private val atomic = AtomicLong()
+        fun <R> builder() = AwaitBuilder<R>()
 
         @JvmStatic
         fun wait(duration: Duration) {
@@ -36,86 +37,175 @@ open class Await<S> @JvmOverloads constructor(
         @JvmStatic
         @JvmOverloads
         @Throws(TimeoutException::class)
-        fun waitTrue(timeout: Duration? = null, sleep: InterruptedRunnable = SLEEP, supplier: Supplier<Boolean?>): Boolean {
-            wait(timeout, sleep, supplier) { it == true }
-            return true
+        fun waitTrue(
+            timeout: Duration? = null,
+            sleep: Runnable = defaultSleep,
+            executor: Executor = defaultExecutor,
+            worker: AwaitWorker<Boolean>
+        ) {
+            waitTrueBuilder(timeout, sleep, executor, worker).build().await()
         }
 
         @JvmStatic
         @JvmOverloads
         @Throws(TimeoutException::class)
-        fun waitFalse(timeout: Duration? = null, sleep: InterruptedRunnable = SLEEP, supplier: Supplier<Boolean?>): Boolean {
-            wait(timeout, sleep, supplier) { it == false }
-            return false
+        fun waitTrueBuilder(
+            timeout: Duration? = null,
+            sleep: Runnable = defaultSleep,
+            executor: Executor = defaultExecutor,
+            worker: AwaitWorker<Boolean>
+        ): AwaitBuilder<Boolean> {
+            return waitBuilder(timeout, sleep, executor, worker) { _, r -> r == true }
         }
 
         @JvmStatic
         @JvmOverloads
         @Throws(TimeoutException::class)
-        fun <S> waitNull(timeout: Duration? = null, sleep: InterruptedRunnable = SLEEP, supplier: Supplier<S?>): S? {
-            wait(timeout, sleep, supplier) { it == null }
-            return null
+        fun waitFalse(
+            timeout: Duration? = null,
+            sleep: Runnable = defaultSleep,
+            executor: Executor = defaultExecutor,
+            worker: AwaitWorker<Boolean>
+        ) {
+            waitFalseBuilder(timeout, sleep, executor, worker).build().await()
         }
 
         @JvmStatic
         @JvmOverloads
         @Throws(TimeoutException::class)
-        fun <S> waitNotNull(timeout: Duration? = null, sleep: InterruptedRunnable = SLEEP, supplier: Supplier<S?>): S {
-            val s = wait(timeout, sleep, supplier) { it != null }
-            return s!!
+        fun waitFalseBuilder(
+            timeout: Duration? = null,
+            sleep: Runnable = defaultSleep,
+            executor: Executor = defaultExecutor,
+            worker: AwaitWorker<Boolean>
+        ): AwaitBuilder<Boolean> {
+            return waitBuilder(timeout, sleep, executor, worker) { _, r -> r == false }
         }
 
         @JvmStatic
         @JvmOverloads
         @Throws(TimeoutException::class)
-        fun <S> waitPresent(timeout: Duration? = null, sleep: InterruptedRunnable = SLEEP, supplier: Supplier<S?>): S {
-            val s = wait(timeout, sleep, supplier) { ValueUtils.isPresent(it) }
-            return s!!
+        fun <R> waitNull(
+            timeout: Duration? = null,
+            sleep: Runnable = defaultSleep,
+            executor: Executor = defaultExecutor,
+            worker: AwaitWorker<R>
+        ) {
+            waitNullBuilder(timeout, sleep, executor, worker).build().await()
         }
 
         @JvmStatic
         @JvmOverloads
         @Throws(TimeoutException::class)
-        fun <S> wait(
-            timeout: Duration? = null, sleep: InterruptedRunnable = SLEEP,
-            supplier: Supplier<S?>, predicate: Predicate<S?>
-        ): S? {
-            return Await(timeout, supplier, predicate, sleep).await()
+        fun <R> waitNullBuilder(
+            timeout: Duration? = null,
+            sleep: Runnable = defaultSleep,
+            executor: Executor = defaultExecutor,
+            worker: AwaitWorker<R>
+        ): AwaitBuilder<R> {
+            return waitBuilder(timeout, sleep, executor, worker) { _, r -> r == null }
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        @Throws(TimeoutException::class)
+        fun <R> waitNotNull(
+            timeout: Duration? = null,
+            sleep: Runnable = defaultSleep,
+            executor: Executor = defaultExecutor,
+            worker: AwaitWorker<R>
+        ): R {
+            return waitNotNullBuilder(timeout, sleep, executor, worker).build().await()!!
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        @Throws(TimeoutException::class)
+        fun <R> waitNotNullBuilder(
+            timeout: Duration? = null,
+            sleep: Runnable = defaultSleep,
+            executor: Executor = defaultExecutor,
+            worker: AwaitWorker<R>
+        ): AwaitBuilder<R> {
+            return waitBuilder(timeout, sleep, executor, worker) { _, r -> r != null }
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        @Throws(TimeoutException::class)
+        fun <R> waitPresent(
+            timeout: Duration? = null,
+            sleep: Runnable = defaultSleep,
+            executor: Executor = defaultExecutor,
+            worker: AwaitWorker<R>
+        ): R {
+            return waitPresentBuilder(timeout, sleep, executor, worker).build().await()!!
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        @Throws(TimeoutException::class)
+        fun <R> waitPresentBuilder(
+            timeout: Duration? = null,
+            sleep: Runnable = defaultSleep,
+            executor: Executor = defaultExecutor,
+            worker: AwaitWorker<R>
+        ): AwaitBuilder<R> {
+            return waitBuilder(timeout, sleep, executor, worker) { _, r -> ValueUtils.isPresent(r) }
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        @Throws(TimeoutException::class)
+        fun <R> wait(
+            timeout: Duration? = null,
+            sleep: Runnable = defaultSleep,
+            executor: Executor = defaultExecutor,
+            worker: AwaitWorker<R>,
+            predicate: AwaitPredicate<R>
+        ): R? {
+            return waitBuilder(timeout, sleep, executor, worker, predicate).build().await()
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        @Throws(TimeoutException::class)
+        fun <R> waitBuilder(
+            timeout: Duration? = null,
+            sleep: Runnable = defaultSleep,
+            executor: Executor = defaultExecutor,
+            worker: AwaitWorker<R>,
+            predicate: AwaitPredicate<R>
+        ): AwaitBuilder<R> {
+            return builder<R>().timeout(timeout).sleep(sleep).executor(executor).worker(worker, predicate)
         }
 
     }
 
-    var interruptOnTimeout = true
-
     @Throws(TimeoutException::class)
-    fun await(): S? {
-        val name = "await-${atomic.andIncrement}"
-        val r = AwaitRunnable(supplier, predicate)
+    fun await(): R? {
+        val r = AwaitRunnable(worker, predicate, sleep)
+        r.name = name
 
         if (timeout == null || !timeout.isPositive) {
             r.run()
             return r.get()
         }
 
-        r.name = name
-        executor.submit(r)
-        var duration = Duration.ZERO
+        executor.execute(r)
         try {
-            while (duration < timeout) {
+            while (r.duration() < timeout) {
                 if (r.isFinish) {
                     return r.get()
                 }
                 sleep.run()
-                duration = r.duration()
             }
         } catch (e: InterruptedException) {
             r.interrupt()
             throw e
         }
-        if (interruptOnTimeout) {
-            r.interrupt()
-        }
-        throw TimeoutException("current duration: $duration, timeout: $timeout, isFinish: ${r.isFinish}")
+        onTimeout.on(timeout, r)
+        throw TimeoutException("await timeout. expect: $timeout; duration: ${r.duration()}; isFinish: ${r.isFinish} ")
     }
 
 

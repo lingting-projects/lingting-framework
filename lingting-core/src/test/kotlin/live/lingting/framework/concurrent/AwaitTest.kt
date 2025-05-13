@@ -1,14 +1,12 @@
 package live.lingting.framework.concurrent
 
-import java.util.concurrent.TimeoutException
-import kotlin.test.assertEquals
 import live.lingting.framework.util.DurationUtils.millis
 import live.lingting.framework.value.WaitValue
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.util.concurrent.TimeoutException
+import kotlin.test.assertEquals
 
 /**
  * @author lingting 2025/1/22 18:54
@@ -17,8 +15,8 @@ class AwaitTest {
 
     @Test
     fun test() {
-        assertTrue(Await.waitTrue { true })
-        assertFalse(Await.waitFalse { false })
+        assertDoesNotThrow { Await.waitTrue { true } }
+        assertDoesNotThrow { Await.waitFalse { false } }
         assertThrows(TimeoutException::class.java) { Await.waitFalse(100.millis) { true } }
         assertDoesNotThrow { Await.waitFalse(100.millis) { false } }
 
