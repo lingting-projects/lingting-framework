@@ -17,7 +17,7 @@ import java.util.function.BiConsumer
 /**
  * @author lingting 2025/4/22 19:44
  */
-class AliStsSing(
+class AliStsSign(
     val method: String,
     val path: String,
     val headers: HttpHeaders,
@@ -30,7 +30,7 @@ class AliStsSing(
     companion object {
 
         @JvmStatic
-        fun builder() = AliStsSingBuilder()
+        fun builder() = Builder()
 
     }
 
@@ -112,7 +112,7 @@ class AliStsSing(
         return "${AliSts.ALGORITHM} Credential=$ak,SignedHeaders=$signedHeaders,Signature=$sourceHmacSha"
     }
 
-    class AliStsSingBuilder internal constructor() {
+    class Builder internal constructor() {
 
         private var method: String? = null
 
@@ -128,60 +128,60 @@ class AliStsSing(
 
         private var sk: String? = null
 
-        fun method(method: HttpMethod): AliStsSingBuilder {
+        fun method(method: HttpMethod): Builder {
             return method(method.name)
         }
 
-        fun method(method: String): AliStsSingBuilder {
+        fun method(method: String): Builder {
             this.method = method.uppercase()
             return this
         }
 
-        fun path(path: String): AliStsSingBuilder {
+        fun path(path: String): Builder {
             this.path = path
             return this
         }
 
-        fun headers(headers: HttpHeaders): AliStsSingBuilder {
+        fun headers(headers: HttpHeaders): Builder {
             this.headers = headers
             return this
         }
 
-        fun body(body: HttpRequest.Body): AliStsSingBuilder {
+        fun body(body: HttpRequest.Body): Builder {
             return body(body.string())
         }
 
-        fun body(body: BodySource): AliStsSingBuilder {
+        fun body(body: BodySource): Builder {
             return body(body.string())
         }
 
-        fun body(body: String): AliStsSingBuilder {
+        fun body(body: String): Builder {
             val hex = DigestUtils.sha256Hex(body)
             return bodySha256(hex)
         }
 
-        fun bodySha256(bodySha256: String): AliStsSingBuilder {
+        fun bodySha256(bodySha256: String): Builder {
             this.bodySha256 = bodySha256
             return this
         }
 
-        fun params(params: StringMultiValue): AliStsSingBuilder {
+        fun params(params: StringMultiValue): Builder {
             this.params = params
             return this
         }
 
-        fun ak(ak: String): AliStsSingBuilder {
+        fun ak(ak: String): Builder {
             this.ak = ak
             return this
         }
 
-        fun sk(sk: String): AliStsSingBuilder {
+        fun sk(sk: String): Builder {
             this.sk = sk
             return this
         }
 
-        fun build(): AliStsSing {
-            return AliStsSing(
+        fun build(): AliStsSign {
+            return AliStsSign(
                 this.method!!,
                 this.path!!,
                 this.headers!!,

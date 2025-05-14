@@ -1,8 +1,6 @@
 package live.lingting.framework.huawei.obs
 
 
-import java.time.LocalDateTime
-import java.util.function.Consumer
 import live.lingting.framework.aws.AwsS3Client
 import live.lingting.framework.aws.s3.AwsS3Request
 import live.lingting.framework.aws.s3.AwsS3Utils
@@ -13,6 +11,8 @@ import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.huawei.HuaweiObs
 import live.lingting.framework.huawei.HuaweiUtils
 import live.lingting.framework.huawei.exception.HuaweiObsException
+import java.time.LocalDateTime
+import java.util.function.Consumer
 
 /**
  * @author lingting 2024/11/5 14:54
@@ -35,7 +35,7 @@ class HuaweiObsS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
             }
         })
         val properties = client.properties
-        val sing = HuaweiObsSing.builder()
+        val sing = HuaweiObsSign.builder()
             .dateTime(now)
             .method(request.method())
             .path(url.buildPath())

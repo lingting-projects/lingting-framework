@@ -1,16 +1,16 @@
 package live.lingting.framework.aws.s3.impl
 
 
-import java.time.LocalDateTime
 import live.lingting.framework.aws.AwsS3Client
 import live.lingting.framework.aws.exception.AwsS3Exception
 import live.lingting.framework.aws.s3.AwsS3Request
-import live.lingting.framework.aws.s3.AwsS3SingV4
+import live.lingting.framework.aws.s3.AwsS3SignV4
 import live.lingting.framework.aws.s3.AwsS3Utils
 import live.lingting.framework.aws.s3.interfaces.AwsS3Listener
 import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.header.HttpHeaders
+import java.time.LocalDateTime
 
 /**
  * @author lingting 2024/11/5 14:48
@@ -27,11 +27,11 @@ open class AwsS3DefaultListener(@JvmField protected val client: AwsS3Client) : A
     }
 
     override fun onAuthorization(request: AwsS3Request, headers: HttpHeaders, url: HttpUrlBuilder, now: LocalDateTime) {
-        val date: String = AwsS3Utils.format(now, AwsS3SingV4.DATETIME_FORMATTER)
+        val date: String = AwsS3Utils.format(now, AwsS3SignV4.DATETIME_FORMATTER)
         headers.put(AwsS3Utils.HEADER_DATE, date)
 
         val properties = client.properties
-        val sing: AwsS3SingV4 = AwsS3SingV4.builder()
+        val sing: AwsS3SignV4 = AwsS3SignV4.builder()
             .dateTime(now)
             .method(request.method())
             .path(url.buildPath())

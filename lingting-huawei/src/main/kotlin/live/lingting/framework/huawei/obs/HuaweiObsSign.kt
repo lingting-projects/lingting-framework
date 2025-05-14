@@ -1,6 +1,5 @@
 package live.lingting.framework.huawei.obs
 
-import java.time.LocalDateTime
 import live.lingting.framework.aws.s3.enums.HostStyle
 import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.http.HttpMethod
@@ -11,11 +10,12 @@ import live.lingting.framework.huawei.HuaweiUtils
 import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.value.multi.StringMultiValue
+import java.time.LocalDateTime
 
 /**
  * @author lingting 2024/11/5 11:18
  */
-open class HuaweiObsSing(
+open class HuaweiObsSign(
     val dateTime: LocalDateTime,
     val method: String,
     val path: String?,
@@ -43,8 +43,8 @@ open class HuaweiObsSing(
         )
 
         @JvmStatic
-        fun builder(): HuaweiObsSingBuilder {
-            return HuaweiObsSingBuilder()
+        fun builder(): Builder {
+            return Builder()
         }
     }
 
@@ -117,7 +117,7 @@ open class HuaweiObsSing(
         return "OBS $ak:$base64"
     }
 
-    class HuaweiObsSingBuilder {
+    class Builder {
         private var dateTime: LocalDateTime? = null
 
         private var method: String? = null
@@ -136,58 +136,58 @@ open class HuaweiObsSing(
 
         private var hostStyle: HostStyle? = null
 
-        fun dateTime(dateTime: LocalDateTime): HuaweiObsSingBuilder {
+        fun dateTime(dateTime: LocalDateTime): Builder {
             this.dateTime = dateTime
             return this
         }
 
-        fun method(method: HttpMethod): HuaweiObsSingBuilder {
+        fun method(method: HttpMethod): Builder {
             return method(method.name)
         }
 
-        fun method(method: String): HuaweiObsSingBuilder {
+        fun method(method: String): Builder {
             this.method = method.uppercase()
             return this
         }
 
-        fun path(path: String): HuaweiObsSingBuilder {
+        fun path(path: String): Builder {
             this.path = path
             return this
         }
 
-        fun headers(headers: HttpHeaders): HuaweiObsSingBuilder {
+        fun headers(headers: HttpHeaders): Builder {
             this.headers = headers
             return this
         }
 
-        fun params(params: StringMultiValue): HuaweiObsSingBuilder {
+        fun params(params: StringMultiValue): Builder {
             this.params = params
             return this
         }
 
-        fun ak(ak: String): HuaweiObsSingBuilder {
+        fun ak(ak: String): Builder {
             this.ak = ak
             return this
         }
 
-        fun sk(sk: String): HuaweiObsSingBuilder {
+        fun sk(sk: String): Builder {
             this.sk = sk
             return this
         }
 
-        fun bucket(bucket: String): HuaweiObsSingBuilder {
+        fun bucket(bucket: String): Builder {
             this.bucket = bucket
             return this
         }
 
-        fun hostStyle(hostStyle: HostStyle): HuaweiObsSingBuilder {
+        fun hostStyle(hostStyle: HostStyle): Builder {
             this.hostStyle = hostStyle
             return this
         }
 
-        fun build(): HuaweiObsSing {
+        fun build(): HuaweiObsSign {
             val time = dateTime ?: DateTime.current()
-            return HuaweiObsSing(
+            return HuaweiObsSign(
                 time,
                 this.method!!, this.path,
                 this.headers!!, this.params!!,

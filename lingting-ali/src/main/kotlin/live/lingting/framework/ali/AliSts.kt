@@ -6,7 +6,7 @@ import live.lingting.framework.ali.properties.AliStsProperties
 import live.lingting.framework.ali.sts.AliStsCredentialRequest
 import live.lingting.framework.ali.sts.AliStsCredentialResponse
 import live.lingting.framework.ali.sts.AliStsRequest
-import live.lingting.framework.ali.sts.AliStsSing
+import live.lingting.framework.ali.sts.AliStsSign
 import live.lingting.framework.aws.policy.Credential
 import live.lingting.framework.aws.policy.Statement
 import live.lingting.framework.http.HttpResponse
@@ -60,7 +60,7 @@ open class AliSts(protected val properties: AliStsProperties) : AliClient<AliSts
         headers.put("x-acs-date", date)
 
 
-        val sing = AliStsSing.builder()
+        val sing = AliStsSign.builder()
             .method(request.method().name)
             .path(url.buildPath())
             .headers(headers)

@@ -3,7 +3,7 @@ package live.lingting.framework.huawei.obs
 import live.lingting.framework.aws.s3.AwsS3Utils.PAYLOAD_UNSIGNED
 import live.lingting.framework.http.header.HttpHeaders.Companion.empty
 import live.lingting.framework.huawei.HuaweiUtils.parse
-import live.lingting.framework.huawei.obs.HuaweiObsSing.Companion.builder
+import live.lingting.framework.huawei.obs.HuaweiObsSign.Companion.builder
 import live.lingting.framework.value.multi.StringMultiValue
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -13,7 +13,8 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty
  * @author lingting 2024/11/5 13:53
  */
 @EnabledIfSystemProperty(named = "framework.huawei.obs.test", matches = "true")
-internal class HuaweiObsSingTest {
+class HuaweiObsSignTest {
+
     @Test
     fun test() {
         val eHeaders = empty()

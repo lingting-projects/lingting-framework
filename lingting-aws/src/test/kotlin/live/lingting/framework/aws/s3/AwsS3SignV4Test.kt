@@ -9,7 +9,8 @@ import org.junit.jupiter.api.Test
 /**
  * @author lingting 2024-09-19 20:37
  */
-internal class AwsS3SingV4Test {
+class AwsS3SignV4Test {
+
     @Test
     fun test() {
         val headers = HttpHeaders.empty()
@@ -19,11 +20,11 @@ internal class AwsS3SingV4Test {
         headers.put("x-amz-date", "20130524T000000Z")
 
         val bodySha256 = headers.first(AwsS3Utils.HEADER_CONTENT_SHA256)!!
-        val dateTime = parse(headers.first(AwsS3Utils.HEADER_DATE)!!, AwsS3SingV4.DATETIME_FORMATTER)
+        val dateTime = parse(headers.first(AwsS3Utils.HEADER_DATE)!!, AwsS3SignV4.DATETIME_FORMATTER)
 
         val params = StringMultiValue()
 
-        val sing = AwsS3SingV4.builder()
+        val sing = AwsS3SignV4.builder()
             .dateTime(dateTime)
             .method("GET")
             .path("/test.txt")

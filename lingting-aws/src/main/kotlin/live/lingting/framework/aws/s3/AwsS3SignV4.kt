@@ -17,7 +17,7 @@ import java.util.function.BiConsumer
 /**
  * @author lingting 2024-09-19 17:01
  */
-open class AwsS3SingV4(
+open class AwsS3SignV4(
     val dateTime: LocalDateTime,
     val method: String,
     val path: String,
@@ -44,8 +44,8 @@ open class AwsS3SingV4(
         const val SCOPE_SUFFIX: String = "aws4_request"
 
         @JvmStatic
-        fun builder(): S3SingV4Builder {
-            return S3SingV4Builder()
+        fun builder(): Builder {
+            return Builder()
         }
     }
 
@@ -160,7 +160,7 @@ open class AwsS3SingV4(
                 + "Signature=" + sourceHmacSha)
     }
 
-    class S3SingV4Builder internal constructor() {
+    class Builder internal constructor() {
         private var dateTime: LocalDateTime? = null
 
         private var method: String? = null
@@ -181,43 +181,43 @@ open class AwsS3SingV4(
 
         private var bucket: String? = null
 
-        fun dateTime(dateTime: LocalDateTime): S3SingV4Builder {
+        fun dateTime(dateTime: LocalDateTime): Builder {
             this.dateTime = dateTime
             return this
         }
 
-        fun method(method: HttpMethod): S3SingV4Builder {
+        fun method(method: HttpMethod): Builder {
             return method(method.name)
         }
 
-        fun method(method: String): S3SingV4Builder {
+        fun method(method: String): Builder {
             this.method = method.uppercase()
             return this
         }
 
-        fun path(path: String): S3SingV4Builder {
+        fun path(path: String): Builder {
             this.path = path
             return this
         }
 
-        fun headers(headers: HttpHeaders): S3SingV4Builder {
+        fun headers(headers: HttpHeaders): Builder {
             this.headers = headers
             return this
         }
 
-        fun bodyUnsigned(): S3SingV4Builder {
+        fun bodyUnsigned(): Builder {
             return body(AwsS3Utils.PAYLOAD_UNSIGNED)
         }
 
-        fun body(body: HttpRequest.Body): S3SingV4Builder {
+        fun body(body: HttpRequest.Body): Builder {
             return body(body.string())
         }
 
-        fun body(body: BodySource): S3SingV4Builder {
+        fun body(body: BodySource): Builder {
             return body(body.string())
         }
 
-        fun body(body: String): S3SingV4Builder {
+        fun body(body: String): Builder {
             if (AwsS3Utils.PAYLOAD_UNSIGNED == body) {
                 return bodySha256(AwsS3Utils.PAYLOAD_UNSIGNED)
             }
@@ -225,39 +225,39 @@ open class AwsS3SingV4(
             return bodySha256(hex)
         }
 
-        fun bodySha256(bodySha256: String): S3SingV4Builder {
+        fun bodySha256(bodySha256: String): Builder {
             this.bodySha256 = bodySha256
             return this
         }
 
-        fun params(params: StringMultiValue): S3SingV4Builder {
+        fun params(params: StringMultiValue): Builder {
             this.params = params
             return this
         }
 
-        fun region(region: String): S3SingV4Builder {
+        fun region(region: String): Builder {
             this.region = region
             return this
         }
 
-        fun ak(ak: String): S3SingV4Builder {
+        fun ak(ak: String): Builder {
             this.ak = ak
             return this
         }
 
-        fun sk(sk: String): S3SingV4Builder {
+        fun sk(sk: String): Builder {
             this.sk = sk
             return this
         }
 
-        fun bucket(bucket: String): S3SingV4Builder {
+        fun bucket(bucket: String): Builder {
             this.bucket = bucket
             return this
         }
 
-        fun build(): AwsS3SingV4 {
+        fun build(): AwsS3SignV4 {
             val time = dateTime ?: DateTime.current()
-            return AwsS3SingV4(
+            return AwsS3SignV4(
                 time, this.method!!, this.path!!, this.headers!!, this.bodySha256!!, this.params,
                 this.region!!, this.ak!!, this.sk!!, this.bucket!!
             )
