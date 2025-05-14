@@ -29,6 +29,9 @@ open class DelegationExecutorService(open var delegator: ExecutorService) : Exec
         if (delegator is ThreadPoolExecutor) {
             return (delegator as ThreadPoolExecutor).threadFactory
         }
+        if (delegator is PerThreadExecutor) {
+            return (delegator as PerThreadExecutor).factory
+        }
         return null
     }
 

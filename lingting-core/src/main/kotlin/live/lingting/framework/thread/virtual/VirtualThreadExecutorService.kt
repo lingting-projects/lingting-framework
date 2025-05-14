@@ -1,9 +1,9 @@
 package live.lingting.framework.thread.virtual
 
+import live.lingting.framework.thread.executor.PerThreadExecutor
 import live.lingting.framework.thread.executor.StateKeepExecutorService
 import live.lingting.framework.thread.platform.PlatformThread
 import live.lingting.framework.util.ClassUtils
-import java.util.concurrent.Executors
 
 /**
  * @author lingting 2025/5/12 10:11
@@ -20,7 +20,7 @@ class VirtualThreadExecutorService : StateKeepExecutorService {
     constructor() : super(
         if (isSupport) {
             val factory = Thread.ofVirtual().name("vt-", 0).factory()
-            Executors.newThreadPerTaskExecutor(factory)
+            PerThreadExecutor(factory)
         } else {
             PlatformThread.delegator
         }

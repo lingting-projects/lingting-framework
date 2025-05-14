@@ -15,15 +15,12 @@ abstract class KeepRunnable @JvmOverloads constructor(
 
     protected val log = logger()
 
-    protected var thread: Thread? = null
-
     var name: String = name ?: ""
 
     val mdc: Map<String, String> = mdc ?: MdcUtils.copyContext()
 
     override fun run() {
         val thread = Thread.currentThread()
-        this.thread = thread
         val oldName = thread.name
         if (StringUtils.hasText(name)) {
             thread.name = name
@@ -31,34 +28,29 @@ abstract class KeepRunnable @JvmOverloads constructor(
 
         MdcUtils.useContext(mdc) {
             try {
-                process()
+                onStart()
+                doProcess()
             } catch (_: InterruptedException) {
-                interrupt()
+                thread.interrupt()
                 log.warn("Thread interrupted inside thread pool")
             } catch (throwable: Throwable) {
                 log.error("Thread exception inside thread pool!", throwable)
             } finally {
                 onFinally()
                 thread.name = oldName
-                this.thread = null
             }
         }
     }
 
-    protected abstract fun process()
+    protected open fun onStart() {
+        //
+    }
+
+    protected abstract fun doProcess()
 
     protected open fun onFinally() {
         //
     }
 
-    /**
-     * 中断
-     */
-    open fun interrupt() {
-        thread?.also {
-            if (!it.isInterrupted) {
-                it.interrupt()
-            }
-        }
-    }
+
 }

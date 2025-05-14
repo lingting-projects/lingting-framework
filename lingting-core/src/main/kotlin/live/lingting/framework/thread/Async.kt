@@ -97,13 +97,13 @@ open class Async @JvmOverloads constructor(
     }
 
     fun submit(name: String?, runnable: ThrowableRunnable) {
-        val keepRunnable: StateKeepRunnable = object : StateKeepRunnable(name) {
+        val keepRunnable = object : StateKeepRunnable(name) {
 
             override fun doProcess() {
                 runnable.run()
             }
 
-            override fun onEnd() {
+            override fun onFinally() {
                 lock.run {
                     completed.add(this)
                     running.remove(this)
