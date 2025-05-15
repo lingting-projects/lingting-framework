@@ -3,7 +3,6 @@ package live.lingting.framework.aws
 
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3Request
-import live.lingting.framework.aws.s3.AwsS3Utils
 import live.lingting.framework.aws.s3.impl.AwsS3DefaultListener
 import live.lingting.framework.aws.s3.interfaces.AwsS3Listener
 import live.lingting.framework.aws.s3.properties.S3Properties
@@ -39,18 +38,18 @@ abstract class AwsS3Client protected constructor(val properties: S3Properties) :
 
     override fun customize(request: AwsS3Request, headers: HttpHeaders, source: BodySource, url: HttpUrlBuilder) {
         if (request.acl != null) {
-            headers.put(AwsS3Utils.HEADER_ACL, request.acl!!.value)
+            headers.put(AwsUtils.HEADER_ACL, request.acl!!.value)
         }
 
         val now = DateTime.current()
-        headers.put(AwsS3Utils.HEADER_CONTENT_SHA256, AwsS3Utils.PAYLOAD_UNSIGNED)
+        headers.put(AwsUtils.HEADER_CONTENT_SHA256, AwsUtils.PAYLOAD_UNSIGNED)
 
         if (StringUtils.hasText(token)) {
-            headers.put(AwsS3Utils.HEADER_TOKEN, token!!)
+            headers.put(AwsUtils.HEADER_TOKEN, token!!)
         }
 
         request.meta.forEach { k, vs ->
-            val key = if (k.startsWith(AwsS3Utils.HEADER_PREFIX_META)) k else "${AwsS3Utils.HEADER_PREFIX_META}$k"
+            val key = if (k.startsWith(AwsUtils.HEADER_PREFIX_META)) k else "${AwsUtils.HEADER_PREFIX_META}$k"
             headers.addAll(key, vs)
         }
 

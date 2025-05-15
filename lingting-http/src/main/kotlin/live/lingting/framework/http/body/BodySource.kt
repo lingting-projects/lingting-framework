@@ -1,16 +1,33 @@
 package live.lingting.framework.http.body
 
+import live.lingting.framework.stream.BytesInputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.channels.WritableByteChannel
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
-import live.lingting.framework.stream.BytesInputStream
 
 /**
  * @author lingting 2024-09-28 14:04
  */
 abstract class BodySource {
+
+    companion object {
+
+        @JvmStatic
+        fun empty(): MemoryBody {
+            return EmptyBody
+        }
+
+        @JvmStatic
+        fun of(stream: InputStream): BodySource {
+            if (stream is BytesInputStream) {
+                return MemoryBody(stream.source())
+            }
+            return FileBody(stream)
+        }
+
+    }
 
     abstract fun length(): Long
 
@@ -28,19 +45,4 @@ abstract class BodySource {
 
     abstract fun transferTo(channel: WritableByteChannel): Long
 
-    companion object {
-        @JvmStatic
-        fun empty(): MemoryBody {
-            return EmptyBody
-        }
-
-        @JvmStatic
-        fun of(stream: InputStream): BodySource {
-            if (stream is BytesInputStream) {
-                return MemoryBody(stream.source())
-            }
-            return FileBody(stream)
-        }
-
-    }
 }

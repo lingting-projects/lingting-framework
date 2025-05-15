@@ -1,5 +1,6 @@
 package live.lingting.framework.aws.s3
 
+import live.lingting.framework.aws.AwsUtils
 import live.lingting.framework.http.header.CollectionHttpHeaders
 import live.lingting.framework.http.header.HttpHeaders
 
@@ -7,7 +8,7 @@ import live.lingting.framework.http.header.HttpHeaders
  * @author lingting 2025/1/15 11:03
  */
 open class AwsS3Meta @JvmOverloads constructor(
-    prefix: String = AwsS3Utils.HEADER_PREFIX_META,
+    prefix: String = AwsUtils.HEADER_PREFIX_META,
     source: HttpHeaders? = null,
 ) : CollectionHttpHeaders() {
 

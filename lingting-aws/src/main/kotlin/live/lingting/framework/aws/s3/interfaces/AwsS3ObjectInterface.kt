@@ -1,9 +1,9 @@
 package live.lingting.framework.aws.s3.interfaces
 
+import live.lingting.framework.aws.AwsUtils
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3Meta
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
-import live.lingting.framework.aws.s3.AwsS3Utils
 import live.lingting.framework.aws.s3.request.AwsS3ObjectPutRequest
 import live.lingting.framework.data.DataSize
 import live.lingting.framework.http.header.HttpHeaders
@@ -73,7 +73,7 @@ interface AwsS3ObjectInterface {
 
     fun multipart(source: InputStream) = multipart(source, Async(20))
 
-    fun multipart(source: InputStream, async: Async) = multipart(source, AwsS3Utils.MULTIPART_DEFAULT_PART_SIZE, async)
+    fun multipart(source: InputStream, async: Async) = multipart(source, AwsUtils.MULTIPART_DEFAULT_PART_SIZE, async)
 
     fun multipart(source: InputStream, parSize: DataSize, async: Async): AwsS3MultipartTask
 

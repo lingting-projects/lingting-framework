@@ -1,7 +1,7 @@
 package live.lingting.framework.huawei
 
+import live.lingting.framework.aws.AwsUtils.MULTIPART_MIN_PART_SIZE
 import live.lingting.framework.aws.s3.AwsS3Meta
-import live.lingting.framework.aws.s3.AwsS3Utils.MULTIPART_MIN_PART_SIZE
 import live.lingting.framework.http.download.HttpDownload
 import live.lingting.framework.huawei.exception.HuaweiException
 import live.lingting.framework.huawei.properties.HuaweiObsProperties

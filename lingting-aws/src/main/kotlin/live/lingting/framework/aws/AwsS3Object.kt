@@ -4,7 +4,6 @@ import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3Meta
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
 import live.lingting.framework.aws.s3.AwsS3Request
-import live.lingting.framework.aws.s3.AwsS3Utils
 import live.lingting.framework.aws.s3.interfaces.AwsS3ObjectInterface
 import live.lingting.framework.aws.s3.properties.S3Properties
 import live.lingting.framework.aws.s3.request.AwsS3MultipartMergeRequest
@@ -69,9 +68,9 @@ class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Cli
             .id(uploadId)
             .source(source)
             .partSize(parSize)
-            .maxPartCount(AwsS3Utils.MULTIPART_MAX_PART_COUNT)
-            .maxPartSize(AwsS3Utils.MULTIPART_MAX_PART_SIZE)
-            .minPartSize(AwsS3Utils.MULTIPART_MIN_PART_SIZE)
+            .maxPartCount(AwsUtils.MULTIPART_MAX_PART_COUNT)
+            .maxPartSize(AwsUtils.MULTIPART_MAX_PART_SIZE)
+            .minPartSize(AwsUtils.MULTIPART_MIN_PART_SIZE)
             .build()
 
         val task = AwsS3MultipartTask(multipart, async, this)

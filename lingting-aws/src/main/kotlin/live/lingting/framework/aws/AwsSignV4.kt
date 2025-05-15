@@ -1,4 +1,4 @@
-package live.lingting.framework.aws.s3
+package live.lingting.framework.aws
 
 
 import live.lingting.framework.crypto.mac.Mac
@@ -17,7 +17,7 @@ import java.util.function.BiConsumer
 /**
  * @author lingting 2024-09-19 17:01
  */
-open class AwsS3SignV4(
+open class AwsSignV4(
     val dateTime: LocalDateTime,
     val method: String,
     val path: String,
@@ -27,9 +27,12 @@ open class AwsS3SignV4(
     val region: String,
     val ak: String,
     val sk: String,
-    val bucket: String
+    val bucket: String,
+    val service: String,
 ) {
+
     companion object {
+
         @JvmField
         val DATETIME_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'")
 
@@ -50,7 +53,7 @@ open class AwsS3SignV4(
     }
 
     fun date(): String {
-        return AwsS3Utils.format(dateTime, DATE_FORMATTER)
+        return AwsUtils.format(dateTime, DATE_FORMATTER)
     }
 
     fun canonicalUri(): String {
@@ -67,13 +70,13 @@ open class AwsS3SignV4(
         val builder = StringBuilder()
         if (params != null && !params.isEmpty) {
             params.forEachSorted { k, vs ->
-                val name: String = AwsS3Utils.encode(k)
+                val name: String = AwsUtils.encode(k)
                 if (vs.isEmpty()) {
                     builder.append(name).append("=").append("&")
                     return@forEachSorted
                 }
                 vs.sorted().forEach { v ->
-                    val value: String = AwsS3Utils.encode(v)
+                    val value: String = AwsUtils.encode(v)
                     builder.append(name).append("=").append(value).append("&")
                 }
             }
@@ -83,7 +86,7 @@ open class AwsS3SignV4(
 
     fun headersForEach(consumer: BiConsumer<String, Collection<String>>) {
         headers.forEachSorted { k, vs ->
-            if (!k.startsWith(AwsS3Utils.HEADER_PREFIX) && !HEADER_INCLUDE.contains(k)) {
+            if (!k.startsWith(AwsUtils.HEADER_PREFIX) && !HEADER_INCLUDE.contains(k)) {
                 return@forEachSorted
             }
             consumer.accept(k, vs)
@@ -124,7 +127,7 @@ open class AwsS3SignV4(
     }
 
     fun scope(date: String): String {
-        return "$date/$region/s3/$SCOPE_SUFFIX"
+        return "$date/$region/$service/$SCOPE_SUFFIX"
     }
 
     fun source(date: String, scope: String, request: String): String {
@@ -136,7 +139,7 @@ open class AwsS3SignV4(
         val mac = Mac.hmacBuilder().sha256().secret("AWS4$sk").build()
         val sourceKey1 = mac.calculate(scopeDate)
         val sourceKey2 = mac.useSecret(sourceKey1).calculate(region)
-        val sourceKey3 = mac.useSecret(sourceKey2).calculate("s3")
+        val sourceKey3 = mac.useSecret(sourceKey2).calculate(service)
         val sourceKey4 = mac.useSecret(sourceKey3).calculate(SCOPE_SUFFIX)
 
         return mac.useSecret(sourceKey4).calculateHex(source)
@@ -151,7 +154,7 @@ open class AwsS3SignV4(
         val scopeDate = date()
         val scope = scope(scopeDate)
 
-        val date = headers.first(AwsS3Utils.HEADER_DATE)!!
+        val date = headers.first(AwsUtils.HEADER_DATE)!!
         val source = source(date, scope, request)
         val sourceHmacSha = sourceHmacSha(source, scopeDate)
 
@@ -181,6 +184,8 @@ open class AwsS3SignV4(
 
         private var bucket: String? = null
 
+        private var service: String? = null
+
         fun dateTime(dateTime: LocalDateTime): Builder {
             this.dateTime = dateTime
             return this
@@ -206,7 +211,7 @@ open class AwsS3SignV4(
         }
 
         fun bodyUnsigned(): Builder {
-            return body(AwsS3Utils.PAYLOAD_UNSIGNED)
+            return body(AwsUtils.PAYLOAD_UNSIGNED)
         }
 
         fun body(body: HttpRequest.Body): Builder {
@@ -218,8 +223,8 @@ open class AwsS3SignV4(
         }
 
         fun body(body: String): Builder {
-            if (AwsS3Utils.PAYLOAD_UNSIGNED == body) {
-                return bodySha256(AwsS3Utils.PAYLOAD_UNSIGNED)
+            if (AwsUtils.PAYLOAD_UNSIGNED == body) {
+                return bodySha256(AwsUtils.PAYLOAD_UNSIGNED)
             }
             val hex = DigestUtils.sha256Hex(body)
             return bodySha256(hex)
@@ -255,11 +260,16 @@ open class AwsS3SignV4(
             return this
         }
 
-        fun build(): AwsS3SignV4 {
+        fun service(service: String): Builder {
+            this.service = service
+            return this
+        }
+
+        fun build(): AwsSignV4 {
             val time = dateTime ?: DateTime.current()
-            return AwsS3SignV4(
-                time, this.method!!, this.path!!, this.headers!!, this.bodySha256!!, this.params,
-                this.region!!, this.ak!!, this.sk!!, this.bucket!!
+            return AwsSignV4(
+                time, method!!, path!!, headers!!, bodySha256!!, params,
+                region!!, ak!!, sk!!, bucket!!, service!!
             )
         }
     }

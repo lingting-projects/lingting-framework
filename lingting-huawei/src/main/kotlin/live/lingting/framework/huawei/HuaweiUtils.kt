@@ -1,12 +1,12 @@
 package live.lingting.framework.huawei
 
+import live.lingting.framework.aws.AwsUtils
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import live.lingting.framework.aws.s3.AwsS3Utils
 
 /**
  * @author lingting 2024-09-13 11:54
@@ -35,12 +35,12 @@ object HuaweiUtils {
 
     @JvmStatic
     fun format(dateTime: LocalDateTime): String {
-        return AwsS3Utils.format(dateTime, DateTimeFormatter.RFC_1123_DATE_TIME)
+        return AwsUtils.format(dateTime, DateTimeFormatter.RFC_1123_DATE_TIME)
     }
 
     @JvmStatic
     fun parse(string: String): LocalDateTime {
-        return AwsS3Utils.parse(string, DateTimeFormatter.RFC_1123_DATE_TIME)
+        return AwsUtils.parse(string, DateTimeFormatter.RFC_1123_DATE_TIME)
     }
 
 }

@@ -2,9 +2,9 @@ package live.lingting.framework.ali
 
 import live.lingting.framework.ali.exception.AliException
 import live.lingting.framework.ali.properties.AliOssProperties
+import live.lingting.framework.aws.AwsUtils
 import live.lingting.framework.aws.s3.AwsS3Meta
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
-import live.lingting.framework.aws.s3.AwsS3Utils
 import live.lingting.framework.http.download.HttpDownload
 import live.lingting.framework.id.Snowflake
 import live.lingting.framework.thread.Async
@@ -113,7 +113,7 @@ internal class AliOssTest {
         assertTrue(task.isCompleted)
         assertFalse(task.hasFailed())
         val multipart = task.multipart
-        assertTrue(multipart.partSize >= AwsS3Utils.MULTIPART_MIN_PART_SIZE)
+        assertTrue(multipart.partSize >= AwsUtils.MULTIPART_MIN_PART_SIZE)
         val head = ossObject.head()
         assertNotNull(head)
         assertEquals(bytes.size.toLong(), head.contentLength())

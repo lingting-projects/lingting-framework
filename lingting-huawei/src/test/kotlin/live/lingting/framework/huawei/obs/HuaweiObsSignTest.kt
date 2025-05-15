@@ -1,6 +1,6 @@
 package live.lingting.framework.huawei.obs
 
-import live.lingting.framework.aws.s3.AwsS3Utils.PAYLOAD_UNSIGNED
+import live.lingting.framework.aws.AwsUtils.PAYLOAD_UNSIGNED
 import live.lingting.framework.http.header.HttpHeaders.Companion.empty
 import live.lingting.framework.huawei.HuaweiUtils.parse
 import live.lingting.framework.huawei.obs.HuaweiObsSign.Companion.builder

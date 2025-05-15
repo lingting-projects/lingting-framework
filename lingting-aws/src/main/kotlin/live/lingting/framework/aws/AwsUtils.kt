@@ -1,4 +1,4 @@
-package live.lingting.framework.aws.s3
+package live.lingting.framework.aws
 
 import live.lingting.framework.data.DataSize
 import live.lingting.framework.time.DatePattern
@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter
 /**
  * @author lingting 2024-09-19 15:20
  */
-object AwsS3Utils {
+object AwsUtils {
     /**
      * 10M
      */

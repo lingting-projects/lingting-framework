@@ -2,8 +2,8 @@ package live.lingting.framework.huawei.obs
 
 
 import live.lingting.framework.aws.AwsS3Client
+import live.lingting.framework.aws.AwsUtils
 import live.lingting.framework.aws.s3.AwsS3Request
-import live.lingting.framework.aws.s3.AwsS3Utils
 import live.lingting.framework.aws.s3.impl.AwsS3DefaultListener
 import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.HttpUrlBuilder
@@ -29,8 +29,8 @@ class HuaweiObsS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
         headers.put(HuaweiUtils.HEADER_DATE, date)
 
         headers.keys().forEach(Consumer<String> { name ->
-            if (name.startsWith(AwsS3Utils.HEADER_PREFIX)) {
-                val newName = name.replace(AwsS3Utils.HEADER_PREFIX, HuaweiObs.HEADER_PREFIX)
+            if (name.startsWith(AwsUtils.HEADER_PREFIX)) {
+                val newName = name.replace(AwsUtils.HEADER_PREFIX, HuaweiObs.HEADER_PREFIX)
                 headers.replace(name, newName)
             }
         })

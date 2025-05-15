@@ -24,6 +24,9 @@ abstract class ApiRequest {
     abstract fun path(): String
 
     open fun body(): BodySource {
+        if (!method().allowBody()) {
+            return BodySource.empty()
+        }
         val json = JacksonUtils.toJson(this)
         return MemoryBody(json)
     }
