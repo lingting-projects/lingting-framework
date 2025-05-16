@@ -8,22 +8,18 @@ import java.util.concurrent.ExecutorService
  */
 open class StateKeepExecutorService(instance: ExecutorService) : DelegationExecutorService(instance) {
 
-    fun execute(name: String?, command: Runnable) {
+    override fun execute(command: Runnable) {
         if (command is StateKeepRunnable) {
             super.execute(command)
             return
         }
 
-        val runnable = object : StateKeepRunnable(name) {
+        val runnable = object : StateKeepRunnable() {
             override fun doProcess() {
                 command.run()
             }
         }
         super.execute(runnable)
-    }
-
-    override fun execute(command: Runnable) {
-        execute(null, command)
     }
 
 }

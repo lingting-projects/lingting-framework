@@ -159,8 +159,7 @@ open class AwsSignV4(
         val sourceHmacSha = sourceHmacSha(source, scopeDate)
 
         val signedHeaders = signedHeaders()
-        return (ALGORITHM + " Credential=" + ak + "/" + scope + "," + "SignedHeaders=" + signedHeaders + ","
-                + "Signature=" + sourceHmacSha)
+        return ("$ALGORITHM Credential=$ak/$scope,SignedHeaders=$signedHeaders,Signature=$sourceHmacSha")
     }
 
     class Builder internal constructor() {

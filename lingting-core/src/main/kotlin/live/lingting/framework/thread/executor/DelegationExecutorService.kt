@@ -1,5 +1,6 @@
 package live.lingting.framework.thread.executor
 
+import live.lingting.framework.function.StateKeepRunnable
 import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
@@ -105,6 +106,21 @@ open class DelegationExecutorService(open var delegator: ExecutorService) : Exec
 
     override fun close() {
         delegator.close()
+    }
+
+    fun execute(name: String?, command: Runnable) {
+        if (command is StateKeepRunnable) {
+            command.name = name ?: ""
+            execute(command)
+            return
+        }
+
+        val runnable = object : StateKeepRunnable(name) {
+            override fun doProcess() {
+                command.run()
+            }
+        }
+        execute(runnable)
     }
 
     override fun execute(command: Runnable) {
