@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.core.toolkit.support.SFunction
 class QueryWrapper<T : Any> : LambdaWrapper<T, QueryWrapper<T>>() {
 
     override fun instance(): QueryWrapper<T> {
-        return QueryWrapper<T>()
+        return QueryWrapper()
     }
 
     override fun getSafeSql(): String {

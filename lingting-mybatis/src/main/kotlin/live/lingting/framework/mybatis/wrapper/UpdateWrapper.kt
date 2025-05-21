@@ -8,7 +8,7 @@ class UpdateWrapper<T : Any> : LambdaWrapper<T, UpdateWrapper<T>>(), Update<Upda
     private val sets = ArrayList<String>()
 
     override fun instance(): UpdateWrapper<T> {
-        return UpdateWrapper<T>()
+        return UpdateWrapper()
     }
 
     override fun getSafeSql(): String {
