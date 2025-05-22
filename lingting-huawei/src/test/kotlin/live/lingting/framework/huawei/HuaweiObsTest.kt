@@ -31,7 +31,7 @@ import java.util.function.Consumer
  * @author lingting 2024-09-13 17:13
  */
 @EnabledIfSystemProperty(named = "framework.huawei.obs.test", matches = "true")
-internal class HuaweiObsTest {
+class HuaweiObsTest {
 
     private val log = logger()
 

@@ -4,12 +4,12 @@ package live.lingting.framework.huawei.obs
 import live.lingting.framework.aws.AwsS3Client
 import live.lingting.framework.aws.AwsUtils
 import live.lingting.framework.aws.s3.AwsS3Request
+import live.lingting.framework.aws.s3.enums.HostStyle
 import live.lingting.framework.aws.s3.impl.AwsS3DefaultListener
 import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.huawei.HuaweiObs
-import live.lingting.framework.huawei.HuaweiUtils
 import live.lingting.framework.huawei.exception.HuaweiObsException
 import java.time.LocalDateTime
 import java.util.function.Consumer
@@ -25,29 +25,33 @@ class HuaweiObsS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
     }
 
     override fun onAuthorization(request: AwsS3Request, headers: HttpHeaders, url: HttpUrlBuilder, now: LocalDateTime) {
-        val date: String = HuaweiUtils.format(now)
-        headers.put(HuaweiUtils.HEADER_DATE, date)
-
-        headers.keys().forEach(Consumer<String> { name ->
+        headers.keys().forEach(Consumer { name ->
             if (name.startsWith(AwsUtils.HEADER_PREFIX)) {
                 val newName = name.replace(AwsUtils.HEADER_PREFIX, HuaweiObs.HEADER_PREFIX)
                 headers.replace(name, newName)
             }
         })
-        val properties = client.properties
-        val sing = HuaweiObsSign.builder()
-            .dateTime(now)
-            .method(request.method())
-            .path(url.buildPath())
-            .headers(headers)
-            .params(url.params())
-            .ak(properties.ak)
-            .sk(properties.sk)
-            .bucket(properties.bucket)
-            .hostStyle(properties.hostStyle)
-            .build()
 
-        val authorization = sing.calculate()
-        headers.authorization(authorization)
+        val properties = client.properties
+        val path = if (properties.hostStyle != HostStyle.VIRTUAL) url.buildPath()
+        else url.buildPath().let { s ->
+            HttpUrlBuilder().path(properties.bucket).pathSegment(s).buildPath()
+                .let {
+                    if (s == "/" && !it.endsWith(s)) "$it/" else it
+                }
+        }
+
+        val signed = HuaweiObsSigner(
+            request.method(),
+            path,
+            headers,
+            null,
+            url.params(),
+            properties.ak,
+            properties.sk
+        ).signed()
+
+        headers.putAll(signed.headers)
+        headers.authorization(signed.authorization)
     }
 }

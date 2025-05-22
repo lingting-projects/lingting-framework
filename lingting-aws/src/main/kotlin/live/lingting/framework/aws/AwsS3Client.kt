@@ -61,4 +61,14 @@ abstract class AwsS3Client protected constructor(val properties: S3Properties) :
         return response
     }
 
+    override fun call(
+        urlBuilder: HttpUrlBuilder,
+        r: AwsS3Request,
+        headers: HttpHeaders,
+        body: BodySource
+    ): HttpResponse {
+
+        return super.call(urlBuilder, r, headers, body)
+    }
+
 }

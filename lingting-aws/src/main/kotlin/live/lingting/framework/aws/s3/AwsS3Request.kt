@@ -9,6 +9,11 @@ import live.lingting.framework.http.header.HttpHeaders
  */
 abstract class AwsS3Request : ApiRequest() {
 
+    /**
+     * 是否为预签名操作
+     */
+    var pre: Boolean = false
+
     var key: String = ""
 
     var acl: Acl? = null

@@ -42,25 +42,25 @@ open class HttpUrlBuilder {
         }
 
         @JvmStatic
-        fun buildQuery(value: MultiValue<String, String, *>): String {
-            return buildQuery(value.map())
+        fun buildQuery(value: MultiValue<String, String, *>?): String {
+            return buildQuery(value?.map())
         }
 
         @JvmStatic
-        fun buildQuery(map: Map<String, Collection<String>>): String {
-            if (map.isEmpty()) {
+        fun buildQuery(map: Map<String, Collection<String>>?): String {
+            if (map.isNullOrEmpty()) {
                 return ""
             }
             val keys = map.keys.sorted().toList()
 
             val builder = StringBuilder()
-            for (key in keys) {
-                val list = map[key]
-                if (list.isNullOrEmpty()) {
-                    builder.append(key).append("&")
+            for (k in keys) {
+                val vs = map[k]
+                if (vs.isNullOrEmpty()) {
+                    builder.append(k).append("&")
                 } else {
-                    for (v in list) {
-                        builder.append(key).append("=").append(v).append("&")
+                    vs.sorted().forEach { v ->
+                        builder.append(k).append("=").append(v).append("&")
                     }
                 }
             }
@@ -223,7 +223,7 @@ open class HttpUrlBuilder {
     }
 
     fun addParams(params: MultiValue<String, *, *>): HttpUrlBuilder {
-        params.forEach { name, value -> addParam(name!!.toString(), value) }
+        params.forEach { name, value -> addParam(name, value) }
         return this
     }
 

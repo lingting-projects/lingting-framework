@@ -30,10 +30,10 @@ open class AwsS3DefaultListener(@JvmField protected val client: AwsS3Client) : A
 
         val signed = AwsV4Signer(
             request.method(),
-            request.path(),
+            url.buildPath(),
             request.headers,
             null,
-            request.params,
+            url.params(),
             properties.region,
             properties.ak,
             properties.sk,

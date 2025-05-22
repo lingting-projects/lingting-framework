@@ -35,6 +35,16 @@ class AwsV4SignerTest {
         val dateTime = AwsUtils.parse("20130524T000000Z", signer.dateFormatter)
         val signed = signer.signed(dateTime, bodyPayload)
 
+        assertEquals(bodyPayload, signed.bodyPayload)
+        assertEquals("/test.txt", signed.canonicalUri)
+        assertEquals("", signed.canonicalQuery)
+        assertEquals(
+            "host:examplebucket.s3.amazonaws.com\n" +
+                    "range:bytes=0-9\n" +
+                    "x-amz-content-sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\n" +
+                    "x-amz-date:20130524T000000Z\n", signed.canonicalHeaders
+        )
+        assertEquals("host;range;x-amz-content-sha256;x-amz-date", signed.signedHeaders)
         assertEquals(
             """
 				GET
@@ -49,7 +59,9 @@ class AwsV4SignerTest {
 				e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 				""".trimIndent(), signed.canonicalRequest
         )
-
+        assertEquals("20130524T000000Z", signed.date)
+        assertEquals("20130524", signed.scopeDate)
+        assertEquals("20130524/us-east-1/s3/aws4_request", signed.scope)
         assertEquals(
             """
 				AWS4-HMAC-SHA256
@@ -60,5 +72,9 @@ class AwsV4SignerTest {
         )
 
         assertEquals("f0e8bdb87c964420e857bd35b5d6ed310bd44f0170aba48dd91039c6036bdb41", signed.sign)
+        assertEquals(
+            "AWS4-HMAC-SHA256 Credential=AKIAIOSFODNN7EXAMPLE/20130524/us-east-1/s3/aws4_request,SignedHeaders=host;range;x-amz-content-sha256;x-amz-date,Signature=f0e8bdb87c964420e857bd35b5d6ed310bd44f0170aba48dd91039c6036bdb41",
+            signed.authorization
+        )
     }
 }

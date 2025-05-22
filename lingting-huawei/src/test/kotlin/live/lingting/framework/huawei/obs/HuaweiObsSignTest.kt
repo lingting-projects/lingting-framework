@@ -1,9 +1,8 @@
 package live.lingting.framework.huawei.obs
 
-import live.lingting.framework.aws.AwsUtils.PAYLOAD_UNSIGNED
-import live.lingting.framework.http.header.HttpHeaders.Companion.empty
-import live.lingting.framework.huawei.HuaweiUtils.parse
-import live.lingting.framework.huawei.obs.HuaweiObsSign.Companion.builder
+import live.lingting.framework.http.HttpMethod
+import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.huawei.HuaweiUtils
 import live.lingting.framework.value.multi.StringMultiValue
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -17,22 +16,21 @@ class HuaweiObsSignTest {
 
     @Test
     fun test() {
-        val eHeaders = empty()
-        eHeaders.add("x-obs-content-sha256", PAYLOAD_UNSIGNED)
-        eHeaders.contentType("application/xml")
-        val eParams = StringMultiValue()
-        eParams.add("uploads")
-        val eDate = "Tue, 5 Nov 2024 06:26:17 GMT"
-        val builder = builder()
-            .ak("ak")
-            .sk("sk")
-            .method("get")
-            .dateTime(parse(eDate))
-            .bucket("bucket")
-            .headers(eHeaders)
-            .params(eParams)
-
-        val sing = builder.build()
+        val headers = HttpHeaders.empty()
+        headers.contentType("application/xml")
+        val params = StringMultiValue()
+        params.add("uploads")
+        val signer = HuaweiObsSigner(
+            HttpMethod.GET,
+            "/bucket",
+            headers,
+            null,
+            params,
+            "ak",
+            "sk"
+        )
+        val dateTime = HuaweiUtils.parse("Tue, 5 Nov 2024 06:26:17 GMT")
+        val signed = signer.signed(dateTime)
 
         assertEquals(
             """
@@ -40,10 +38,9 @@ class HuaweiObsSignTest {
 
 				application/xml
 				Tue, 5 Nov 2024 06:26:17 GMT
-				x-obs-content-sha256:UNSIGNED-PAYLOAD
 				/bucket/?uploads
-				""".trimIndent(), sing.source()
+				""".trimIndent(), signed.source
         )
-        assertEquals("OBS ak:qoJwPdUsDnYYKy/Ze8BBVmql4GI=", sing.calculate())
+        assertEquals("OBS ak:Y4gIe5i9N4/x9lEtkU9UX6q2Bzw=", signed.authorization)
     }
 }

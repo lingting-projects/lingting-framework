@@ -5,6 +5,7 @@ import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.api.ApiRequest
 import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.StringUtils.deleteLast
 import live.lingting.framework.value.multi.StringMultiValue
@@ -22,10 +23,18 @@ open class AwsV4Signer(
     val body: BodySource?,
     val params: StringMultiValue?,
     val region: String,
-    val ak: String,
+    ak: String,
     val sk: String,
     val service: String,
-) : AwsSigner() {
+) : AwsSigner(ak) {
+
+    constructor(
+        request: ApiRequest,
+        region: String,
+        ak: String,
+        sk: String,
+        service: String
+    ) : this(request.method(), request.path(), request.headers, request.body(), request.params, region, ak, sk, service)
 
     /**
      * 用于类似算法直接使用时设置
@@ -64,14 +73,6 @@ open class AwsV4Signer(
             DigestUtils.sha256Hex(it.string())
         }
     }
-
-    constructor(
-        request: ApiRequest,
-        region: String,
-        ak: String,
-        sk: String,
-        service: String
-    ) : this(request.method(), request.path(), request.headers, request.body(), request.params, region, ak, sk, service)
 
     open fun date(time: LocalDateTime) = AwsUtils.format(time, dateFormatter)
 
@@ -194,11 +195,13 @@ open class AwsV4Signer(
         return "$algorithm Credential=$ak/$scope,SignedHeaders=$signedHeaders,Signature=$sign"
     }
 
+    override fun signed() = signed(DateTime.current())
+
     override fun signed(time: LocalDateTime): Signed {
         return signed(time, bodyPayload)
     }
 
-    override fun signed(time: LocalDateTime, bodyPayload: String): Signed {
+    open fun signed(time: LocalDateTime, bodyPayload: String): Signed {
         headers.put(headerContentPayload, bodyPayload)
 
         val date = date(time)
@@ -222,6 +225,7 @@ open class AwsV4Signer(
         return Signed(
             this,
             headers,
+            bodyPayload,
             canonicalUri,
             canonicalQuery,
             canonicalHeaders,
@@ -239,6 +243,7 @@ open class AwsV4Signer(
     open class Signed(
         override val signer: AwsV4Signer,
         override val headers: HttpHeaders,
+        override val bodyPayload: String,
         open val canonicalUri: String,
         open val canonicalQuery: String,
         open val canonicalHeaders: String,
@@ -250,6 +255,6 @@ open class AwsV4Signer(
         override val source: String,
         override val sign: String,
         override val authorization: String,
-    ) : AwsSigner.Signed<AwsV4Signer>(signer, headers, source, sign, authorization)
+    ) : AwsSigner.Signed<AwsV4Signer>(signer, headers, bodyPayload, source, sign, authorization)
 
 }
