@@ -1,6 +1,5 @@
 package live.lingting.framework.http.api
 
-import java.time.Duration
 import live.lingting.framework.http.HttpClient
 import live.lingting.framework.http.HttpRequest
 import live.lingting.framework.http.HttpResponse
@@ -8,6 +7,7 @@ import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.util.Slf4jUtils.logger
+import java.time.Duration
 
 /**
  * @author lingting 2024-09-14 15:33
@@ -107,8 +107,12 @@ abstract class ApiClient<R : ApiRequest> @JvmOverloads protected constructor(
         builder.method(method.name).body(body)
 
         val request = builder.build()
-        val response = client.request(request)
+        val response = call(r, request)
         return checkout(r, response)
+    }
+
+    protected open fun call(r: R, request: HttpRequest): HttpResponse {
+        return client.request(request)
     }
 
 }

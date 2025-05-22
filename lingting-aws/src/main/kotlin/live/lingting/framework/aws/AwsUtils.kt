@@ -2,6 +2,7 @@ package live.lingting.framework.aws
 
 import live.lingting.framework.data.DataSize
 import live.lingting.framework.time.DatePattern
+import live.lingting.framework.time.DateTime
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
@@ -11,19 +12,29 @@ import java.time.format.DateTimeFormatter
  * @author lingting 2024-09-19 15:20
  */
 object AwsUtils {
+
+    @JvmField
+    val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'")
+
+    @JvmField
+    val SCOPE_DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+
     /**
      * 10M
      */
+    @JvmField
     val MULTIPART_DEFAULT_PART_SIZE = DataSize.ofMb(10)
 
     /**
      * 5G
      */
+    @JvmField
     val MULTIPART_MAX_PART_SIZE = DataSize.ofGb(5)
 
     /**
      * 100K
      */
+    @JvmField
     val MULTIPART_MIN_PART_SIZE = DataSize.ofKb(100)
 
     const val MULTIPART_MAX_PART_COUNT = 1000L
@@ -44,7 +55,7 @@ object AwsUtils {
 
     @JvmStatic
     fun format(dateTime: LocalDateTime, formatter: DateTimeFormatter): String {
-        val atZone = dateTime.atZone(DatePattern.SYSTEM_ZONE_ID)
+        val atZone = dateTime.atZone(DateTime.zoneId)
         val atGmt = atZone.withZoneSameInstant(DatePattern.GMT_ZONE_ID)
         return formatter.format(atGmt)
     }
@@ -53,7 +64,7 @@ object AwsUtils {
     fun parse(string: String, formatter: DateTimeFormatter): LocalDateTime {
         val source = LocalDateTime.parse(string, formatter)
         val atGmt = source.atZone(DatePattern.GMT_ZONE_ID)
-        val atZone = atGmt.withZoneSameInstant(DatePattern.SYSTEM_ZONE_ID)
+        val atZone = atGmt.withZoneSameInstant(DateTime.zoneId)
         return atZone.toLocalDateTime()
     }
 
@@ -61,4 +72,5 @@ object AwsUtils {
     fun encode(s: String): String {
         return URLEncoder.encode(s, StandardCharsets.UTF_8)
     }
+
 }

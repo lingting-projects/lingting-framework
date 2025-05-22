@@ -2,8 +2,7 @@ package live.lingting.framework.aws.s3.impl
 
 
 import live.lingting.framework.aws.AwsS3Client
-import live.lingting.framework.aws.AwsSignV4
-import live.lingting.framework.aws.AwsUtils
+import live.lingting.framework.aws.AwsV4Signer
 import live.lingting.framework.aws.exception.AwsS3Exception
 import live.lingting.framework.aws.s3.AwsS3Request
 import live.lingting.framework.aws.s3.interfaces.AwsS3Listener
@@ -27,25 +26,21 @@ open class AwsS3DefaultListener(@JvmField protected val client: AwsS3Client) : A
     }
 
     override fun onAuthorization(request: AwsS3Request, headers: HttpHeaders, url: HttpUrlBuilder, now: LocalDateTime) {
-        val date: String = AwsUtils.format(now, AwsSignV4.DATETIME_FORMATTER)
-        headers.put(AwsUtils.HEADER_DATE, date)
-
         val properties = client.properties
-        val sing: AwsSignV4 = AwsSignV4.builder()
-            .dateTime(now)
-            .method(request.method())
-            .path(url.buildPath())
-            .headers(headers)
-            .bodySha256(AwsUtils.PAYLOAD_UNSIGNED)
-            .params(url.params())
-            .region(properties.region)
-            .ak(properties.ak)
-            .sk(properties.sk)
-            .bucket(properties.bucket)
-            .service("s3")
-            .build()
 
-        val authorization = sing.calculate()
+        val signed = AwsV4Signer(
+            request.method(),
+            request.path(),
+            request.headers,
+            null,
+            request.params,
+            properties.region,
+            properties.ak,
+            properties.sk,
+            "s3"
+        ).signed()
+        headers.putAll(signed.headers)
+        val authorization = signed.authorization
         headers.authorization(authorization)
     }
 

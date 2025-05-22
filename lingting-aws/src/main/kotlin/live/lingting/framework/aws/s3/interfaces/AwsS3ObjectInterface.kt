@@ -18,6 +18,7 @@ import java.io.InputStream
  * @author lingting 2024-09-19 21:59
  */
 interface AwsS3ObjectInterface {
+
     // region get
     val key: String
 

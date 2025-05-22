@@ -15,6 +15,7 @@ import java.io.InputStream
  * @author lingting 2024-09-19 21:59
  */
 interface AwsS3ObjectDelegation : AwsS3ObjectInterface, AwsS3Delegation<AwsS3Object> {
+
     override val key: String
         get() = delegation().key
 
@@ -52,4 +53,5 @@ interface AwsS3ObjectDelegation : AwsS3ObjectInterface, AwsS3Delegation<AwsS3Obj
     override fun multipartCancel(uploadId: String) {
         delegation().multipartCancel(uploadId)
     }
+
 }

@@ -10,6 +10,7 @@ import java.io.InputStream
  * @author lingting 2024-09-13 16:31
  */
 open class AwsS3ObjectPutRequest : AwsS3Request() {
+
     var stream: InputStream? = null
 
     var uploadId: String? = null
@@ -39,9 +40,13 @@ open class AwsS3ObjectPutRequest : AwsS3Request() {
     }
 
     override fun onParams() {
-        if (part != null) {
-            params.add("partNumber", (part!!.index + 1).toString())
-            params.add("uploadId", uploadId!!)
+        val p = part
+        if (p != null) {
+            val u = uploadId
+            params.add("partNumber", (p.index + 1).toString())
+            checkNotNull(u) { "uploadId must be not null!" }
+            params.add("uploadId", u)
         }
     }
+
 }

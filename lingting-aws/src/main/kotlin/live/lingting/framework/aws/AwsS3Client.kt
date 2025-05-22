@@ -12,7 +12,6 @@ import live.lingting.framework.http.api.ApiClient
 import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.time.DateTime
-import live.lingting.framework.util.StringUtils
 
 /**
  * @author lingting 2024-09-19 15:02
@@ -42,10 +41,9 @@ abstract class AwsS3Client protected constructor(val properties: S3Properties) :
         }
 
         val now = DateTime.current()
-        headers.put(AwsUtils.HEADER_CONTENT_SHA256, AwsUtils.PAYLOAD_UNSIGNED)
 
-        if (StringUtils.hasText(token)) {
-            headers.put(AwsUtils.HEADER_TOKEN, token!!)
+        if (!token.isNullOrBlank()) {
+            headers.put(AwsUtils.HEADER_TOKEN, token)
         }
 
         request.meta.forEach { k, vs ->
