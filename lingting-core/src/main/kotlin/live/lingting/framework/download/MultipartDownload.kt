@@ -3,6 +3,7 @@ package live.lingting.framework.download
 import live.lingting.framework.concurrent.Await
 import live.lingting.framework.data.DataSize
 import live.lingting.framework.exception.DownloadException
+import live.lingting.framework.lock.JavaReentrantLock
 import live.lingting.framework.multipart.Multipart
 import live.lingting.framework.multipart.Part
 import live.lingting.framework.thread.Async
@@ -22,6 +23,8 @@ abstract class MultipartDownload<D : MultipartDownload<D>>
 protected constructor(builder: DownloadBuilder<*>) : Download {
 
     protected val log = logger()
+
+    protected val lock = JavaReentrantLock()
 
     val url: String = builder.url
 
@@ -59,7 +62,7 @@ protected constructor(builder: DownloadBuilder<*>) : Download {
 
     override fun start(): D {
         if (!isStart && !isFinished) {
-            synchronized(log) {
+            lock.runByInterruptibly {
                 if (!isStart && !isFinished) {
                     downloadStatus = DownloadStatus.RUNNING
                     doStart()
@@ -70,6 +73,7 @@ protected constructor(builder: DownloadBuilder<*>) : Download {
     }
 
     protected fun doStart() {
+        log.debug("[MultipartDownload] do start. submit task")
         async.submit("download-$id") {
             try {
                 val fileSize = if (size == null || size.bytes < 1) size() else size
@@ -80,6 +84,7 @@ protected constructor(builder: DownloadBuilder<*>) : Download {
                     .partSize(if (isMulti) partSize else fileSize)
                     .build()
                 val task = DownloadFileMultipartTask(multipart, maxRetryCount, async, file) { part -> download(part) }
+                log.debug("[MultipartDownload] build download task. start it.")
                 task.start().await(timeout)
                 if (task.hasFailed()) {
                     val t = task.tasksFailed()[0]
