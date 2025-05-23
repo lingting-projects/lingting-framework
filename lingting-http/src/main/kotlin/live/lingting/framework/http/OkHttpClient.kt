@@ -131,16 +131,6 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
         })
     }
 
-    fun get(url: String): Response {
-        val builder = Request.Builder().url(url).get()
-        return request(builder.build())
-    }
-
-    fun <T> get(url: String, cls: Class<T>): T? {
-        val builder = Request.Builder().url(url).get()
-        return request<T>(builder.build(), cls)
-    }
-
     fun get(url: HttpUrl): Response {
         val builder = Request.Builder().url(url).get()
         return request(builder.build())

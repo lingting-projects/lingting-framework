@@ -7,6 +7,9 @@ import live.lingting.framework.value.multi.StringMultiValue
 import java.net.URI
 import java.net.URISyntaxException
 import java.net.URL
+import java.net.URLEncoder
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 
 /**
  * @author lingting 2024-01-29 16:13
@@ -42,12 +45,22 @@ open class HttpUrlBuilder {
         }
 
         @JvmStatic
-        fun buildQuery(value: MultiValue<String, String, *>?): String {
-            return buildQuery(value?.map())
+        @JvmOverloads
+        fun buildQuery(
+            value: MultiValue<String, String, *>?,
+            encode: Boolean = false,
+            charset: Charset = StandardCharsets.UTF_8
+        ): String {
+            return buildQuery(value?.map(), encode, charset)
         }
 
         @JvmStatic
-        fun buildQuery(map: Map<String, Collection<String>>?): String {
+        @JvmOverloads
+        fun buildQuery(
+            map: Map<String, Collection<String>>?,
+            encode: Boolean = false,
+            charset: Charset = StandardCharsets.UTF_8
+        ): String {
             if (map.isNullOrEmpty()) {
                 return ""
             }
@@ -60,7 +73,9 @@ open class HttpUrlBuilder {
                     builder.append(k).append("&")
                 } else {
                     vs.sorted().forEach { v ->
-                        builder.append(k).append("=").append(v).append("&")
+                        builder.append(k).append("=")
+                        val av = if (encode) URLEncoder.encode(v, charset) else v
+                        builder.append(av).append("&")
                     }
                 }
             }

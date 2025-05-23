@@ -59,10 +59,6 @@ abstract class ApiClient<R : ApiRequest> @JvmOverloads protected constructor(
         //
     }
 
-    protected open fun customize(request: R, builder: HttpRequest.Builder) {
-        //
-    }
-
     protected open fun customize(request: R, headers: HttpHeaders, source: BodySource, url: HttpUrlBuilder) {
         //
     }
@@ -98,24 +94,32 @@ abstract class ApiClient<R : ApiRequest> @JvmOverloads protected constructor(
 
         headers.host(urlBuilder.headerHost())
 
+        customize(r, headers, body, urlBuilder)
         val response = call(urlBuilder, r, headers, body)
         return checkout(r, response)
     }
 
     protected open fun call(urlBuilder: HttpUrlBuilder, r: R, headers: HttpHeaders, body: BodySource): HttpResponse {
-        val builder = HttpRequest.builder()
-        builder.url(urlBuilder)
-        customize(r, builder)
-        customize(r, headers, body, urlBuilder)
-        builder.headers(headers)
-        builder.method(r.method().name).body(body)
-
-        val request = builder.build()
+        val request = buildRequest(urlBuilder, headers, r, body)
         return call(r, request)
     }
 
     protected open fun call(r: R, request: HttpRequest): HttpResponse {
         return client.request(request)
+    }
+
+    protected open fun buildRequest(
+        urlBuilder: HttpUrlBuilder,
+        headers: HttpHeaders,
+        r: R,
+        body: BodySource
+    ): HttpRequest {
+        val builder = HttpRequest.builder()
+        builder.url(urlBuilder)
+        builder.headers(headers)
+        builder.method(r.method().name).body(body)
+        val request = builder.build()
+        return request
     }
 
 }

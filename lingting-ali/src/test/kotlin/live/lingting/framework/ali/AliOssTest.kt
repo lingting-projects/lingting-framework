@@ -3,14 +3,20 @@ package live.lingting.framework.ali
 import live.lingting.framework.ali.exception.AliException
 import live.lingting.framework.ali.properties.AliOssProperties
 import live.lingting.framework.aws.AwsUtils
+import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3Meta
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
+import live.lingting.framework.concurrent.Await
+import live.lingting.framework.http.HttpClient
+import live.lingting.framework.http.HttpRequest
 import live.lingting.framework.http.download.HttpDownload
+import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.id.Snowflake
 import live.lingting.framework.thread.Async
 import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.DataSizeUtils.bytes
 import live.lingting.framework.util.DigestUtils
+import live.lingting.framework.util.DurationUtils.millis
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StreamUtils
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
@@ -31,7 +37,7 @@ import java.util.function.Consumer
  * @author lingting 2024-09-18 14:29
  */
 @EnabledIfSystemProperty(named = "framework.ali.oss.test", matches = "true")
-internal class AliOssTest {
+class AliOssTest {
 
     companion object {
         private val log = logger()
@@ -41,6 +47,8 @@ internal class AliOssTest {
 
     var properties: AliOssProperties? = null
 
+    val snowflake = Snowflake(0, 0)
+
     @BeforeEach
     fun before() {
         sts = AliBasic.sts()
@@ -49,23 +57,25 @@ internal class AliOssTest {
 
     @Test
     fun put() {
-        val snowflake = Snowflake(0, 0)
         val key = "test/s_" + snowflake.nextId()
-        log.info("key: {}", key)
+        log.info("put key: {}", key)
         val ossObject = sts!!.ossObject(properties!!, key)
         assertThrows(AliException::class.java) { ossObject.head() }
-        val source = "hello world"
-        val bytes = source.toByteArray()
-        val hex = DigestUtils.md5Hex(bytes)
-        assertDoesNotThrow { ossObject.put(ByteArrayInputStream(bytes)) }
-        val head = ossObject.head()
-        assertNotNull(head)
-        assertEquals(bytes.size.toLong(), head.contentLength())
-        assertTrue("\"$hex\"".equals(head.etag(), ignoreCase = true))
-        val await: HttpDownload = HttpDownload.single(ossObject.publicUrl()).build().start().await()
-        val string = StreamUtils.toString(Files.newInputStream(await.file().toPath()))
-        assertEquals(source, string)
-        ossObject.delete()
+        try {
+            val source = "hello world"
+            val bytes = source.toByteArray()
+            val hex = DigestUtils.md5Hex(bytes)
+            assertDoesNotThrow { ossObject.put(ByteArrayInputStream(bytes)) }
+            val head = ossObject.head()
+            assertNotNull(head)
+            assertEquals(bytes.size.toLong(), head.contentLength())
+            assertTrue("\"$hex\"".equals(head.etag(), ignoreCase = true))
+            val await: HttpDownload = HttpDownload.single(ossObject.publicUrl()).build().start().await()
+            val string = StreamUtils.toString(Files.newInputStream(await.file().toPath()))
+            assertEquals(source, string)
+        } finally {
+            ossObject.delete()
+        }
     }
 
     @Test
@@ -156,6 +166,62 @@ internal class AliOssTest {
         assertEquals(source, string)
         assertEquals(md5, DigestUtils.md5Hex(string))
         bo.delete()
+    }
+
+    @Test
+    fun pre() {
+        val client = HttpClient.default().disableSsl().build()
+        val key = "test/pre_" + snowflake.nextId()
+        log.info("pre key: {}", key)
+        val obj = sts!!.ossObject(properties!!, key)
+
+        val source = "hello world"
+        val bytes = source.toByteArray()
+        val hex = DigestUtils.md5Hex(bytes)
+
+        try {
+            log.info("ak: {}", obj.ak)
+            log.info("sk: {}", obj.sk)
+            log.info("token: {}", obj.token)
+
+            log.info("=================put=================")
+            val prePutR = obj.prePut(Acl.PRIVATE, HttpHeaders.empty().also {
+                it.put("pre", "true")
+            })
+
+            log.info("put url: {}", prePutR.url)
+
+            client.request(
+                HttpRequest.builder()
+                    .put()
+                    .body(source)
+                    .url(prePutR.url)
+                    .headers(prePutR.headers)
+                    .build()
+            ).use { putR ->
+                assertTrue(putR.isOk)
+            }
+
+            Await.wait(500.millis)
+            client.get(obj.publicUrl()).use { getR ->
+                assertFalse(getR.isOk)
+            }
+
+            log.info("=================get=================")
+            val preGet = obj.preGet()
+            log.info("get url: {}", preGet)
+
+            client.get(preGet).use { getR ->
+                assertTrue(getR.isOk)
+                val string = getR.string()
+                assertEquals(source, string)
+                assertEquals(hex, DigestUtils.md5Hex(string.toByteArray()))
+            }
+
+        } finally {
+            log.info("=================delete=================")
+            obj.delete()
+        }
     }
 
 }

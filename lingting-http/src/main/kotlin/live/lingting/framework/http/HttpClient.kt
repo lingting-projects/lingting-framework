@@ -38,7 +38,7 @@ abstract class HttpClient {
         @JvmStatic
         fun builder() = default()
 
-        fun default() = okhttp()
+        fun default(): Builder<*, *> = okhttp()
 
         @JvmStatic
         fun java(): JavaHttpClient.Builder {
@@ -75,6 +75,15 @@ abstract class HttpClient {
 
     fun get(uri: URI): HttpResponse {
         return request(HttpRequest.builder().get().url(uri).build())
+    }
+
+    fun get(url: String): HttpResponse {
+        return request(HttpRequest.builder().get().url(url).build())
+    }
+
+    fun <T> get(url: String, cls: Class<T>): T? {
+        val builder = HttpRequest.builder().get().url(url)
+        return request<T>(builder.build(), cls)
     }
 
     abstract class Builder<C : HttpClient, B : Builder<C, B>> {

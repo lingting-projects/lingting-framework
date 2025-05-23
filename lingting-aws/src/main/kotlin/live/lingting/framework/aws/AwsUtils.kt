@@ -6,6 +6,7 @@ import live.lingting.framework.time.DateTime
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 /**
@@ -54,18 +55,38 @@ object AwsUtils {
     const val HEADER_PREFIX_META: String = "$HEADER_PREFIX-meta-"
 
     @JvmStatic
-    fun format(dateTime: LocalDateTime, formatter: DateTimeFormatter): String {
-        val atZone = dateTime.atZone(DateTime.zoneId)
-        val atGmt = atZone.withZoneSameInstant(DatePattern.GMT_ZONE_ID)
+    fun atZone(dateTime: LocalDateTime): ZonedDateTime {
+        return dateTime.atZone(DateTime.zoneId)
+    }
+
+    @JvmStatic
+    fun format(dateTime: ZonedDateTime, formatter: DateTimeFormatter): String {
+        val atGmt = dateTime.withZoneSameInstant(DatePattern.GMT_ZONE_ID)
         return formatter.format(atGmt)
     }
 
     @JvmStatic
-    fun parse(string: String, formatter: DateTimeFormatter): LocalDateTime {
+    fun format(dateTime: LocalDateTime, formatter: DateTimeFormatter): String {
+        val atZone = atZone(dateTime)
+        return format(atZone, formatter)
+    }
+
+    @JvmStatic
+    fun atGmt(string: String, formatter: DateTimeFormatter): ZonedDateTime {
         val source = LocalDateTime.parse(string, formatter)
-        val atGmt = source.atZone(DatePattern.GMT_ZONE_ID)
+        return source.atZone(DatePattern.GMT_ZONE_ID)
+    }
+
+    @JvmStatic
+    fun parse(atGmt: ZonedDateTime): LocalDateTime {
         val atZone = atGmt.withZoneSameInstant(DateTime.zoneId)
         return atZone.toLocalDateTime()
+    }
+
+    @JvmStatic
+    fun parse(string: String, formatter: DateTimeFormatter): LocalDateTime {
+        val atGmt = atGmt(string, formatter)
+        return parse(atGmt)
     }
 
     @JvmStatic

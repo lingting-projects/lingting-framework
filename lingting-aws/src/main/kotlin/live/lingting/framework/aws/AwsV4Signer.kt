@@ -9,6 +9,7 @@ import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.StringUtils.deleteLast
 import live.lingting.framework.value.multi.StringMultiValue
+import java.time.Duration
 import java.time.LocalDateTime
 import java.util.function.BiConsumer
 
@@ -21,12 +22,12 @@ open class AwsV4Signer(
     path: String,
     headers: HttpHeaders,
     val body: BodySource?,
-    val params: StringMultiValue?,
+    params: StringMultiValue,
     val region: String,
     ak: String,
     val sk: String,
     val service: String,
-) : AwsSigner(ak) {
+) : AwsSigner<AwsV4Signer, AwsV4Signer.Signed>(ak) {
 
     constructor(
         request: ApiRequest,
@@ -58,9 +59,13 @@ open class AwsV4Signer(
 
     open val headerDate = "$headerPrefix-date"
 
-    open val headerContentPayload = "$headerPrefix-content-sha256"
+    open val headerContentPayload = "$headerPrefix-Content-Sha256"
+
+    open val headerSecurityToken = "$headerPrefix-Security-Token"
 
     open val headers = HttpHeaders.empty().also { it.putAll(headers) }
+
+    open val params = StringMultiValue().also { it.putAll(params) }
 
     open val path = path.let {
         if (path.startsWith("/")) path else "/$path"
@@ -80,7 +85,7 @@ open class AwsV4Signer(
 
     open fun canonicalQuery(): String {
         val builder = StringBuilder()
-        if (params != null && !params.isEmpty) {
+        if (!params.isEmpty) {
             params.forEachSorted { k, vs ->
                 val name: String = AwsUtils.encode(k)
                 if (vs.isEmpty()) {
@@ -195,17 +200,31 @@ open class AwsV4Signer(
         return "$algorithm Credential=$ak/$scope,SignedHeaders=$signedHeaders,Signature=$sign"
     }
 
-    override fun signed() = signed(DateTime.current())
-
-    override fun signed(time: LocalDateTime): Signed {
-        return signed(time, bodyPayload)
+    override fun signed(time: LocalDateTime, withUrl: Boolean): Signed {
+        return signed(time, bodyPayload, withUrl)
     }
 
-    open fun signed(time: LocalDateTime, bodyPayload: String): Signed {
-        headers.put(headerContentPayload, bodyPayload)
+    @JvmOverloads
+    open fun signed(time: LocalDateTime, bodyPayload: String, withUrl: Boolean = false): Signed {
+        val params = if (withUrl) StringMultiValue() else null
+        if (params == null) {
+            headers.put(headerContentPayload, bodyPayload)
+        }
 
-        val date = date(time)
-        headers.put(headerDate, date)
+        val current = if (withUrl) DateTime.current() else time
+
+        val date = date(current)
+        if (params == null) {
+            headers.put(headerDate, date)
+        } else {
+            val token = headers.remove(headerSecurityToken)?.firstOrNull()
+            if (!token.isNullOrEmpty()) {
+                this.params.add(headerSecurityToken, token)
+            }
+            params.add(headerDate, date)
+            val duration = Duration.between(current, time)
+            params.add("$headerPrefix-Expire", duration.seconds.toString())
+        }
 
         val canonicalUri = canonicalUri()
         val canonicalQuery = canonicalQuery()
@@ -215,16 +234,25 @@ open class AwsV4Signer(
         val canonicalRequest =
             canonicalRequest(canonicalUri, canonicalQuery, canonicalHeaders, signedHeaders, bodyPayload)
 
-        val scopeDate = scopeDate(time)
+        val scopeDate = scopeDate(current)
         val scope = scope(scopeDate)
         val source = source(canonicalRequest, date, scope)
 
         val calculate = calculate(scopeDate, source)
 
         val authorization = authorization(scope, signedHeaders, calculate)
+
+        if (params != null) {
+            params.add("$headerPrefix-Algorithm", algorithm)
+            params.add("$headerPrefix-Credential", scope)
+            params.add("$headerPrefix-SignedHeaders", signedHeaders)
+            params.add("$headerPrefix-Signature", calculate)
+        }
+
         return Signed(
             this,
             headers,
+            params,
             bodyPayload,
             canonicalUri,
             canonicalQuery,
@@ -241,9 +269,10 @@ open class AwsV4Signer(
     }
 
     open class Signed(
-        override val signer: AwsV4Signer,
-        override val headers: HttpHeaders,
-        override val bodyPayload: String,
+        signer: AwsV4Signer,
+        headers: HttpHeaders,
+        params: StringMultiValue?,
+        bodyPayload: String,
         open val canonicalUri: String,
         open val canonicalQuery: String,
         open val canonicalHeaders: String,
@@ -252,9 +281,9 @@ open class AwsV4Signer(
         open val date: String,
         open val scopeDate: String,
         open val scope: String,
-        override val source: String,
-        override val sign: String,
-        override val authorization: String,
-    ) : AwsSigner.Signed<AwsV4Signer>(signer, headers, bodyPayload, source, sign, authorization)
+        source: String,
+        sign: String,
+        authorization: String,
+    ) : AwsSigner.Signed<AwsV4Signer, Signed>(signer, headers, params, bodyPayload, source, sign, authorization)
 
 }

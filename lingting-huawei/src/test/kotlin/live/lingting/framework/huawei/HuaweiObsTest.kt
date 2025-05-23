@@ -1,8 +1,13 @@
 package live.lingting.framework.huawei
 
 import live.lingting.framework.aws.AwsUtils.MULTIPART_MIN_PART_SIZE
+import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3Meta
+import live.lingting.framework.concurrent.Await
+import live.lingting.framework.http.HttpClient
+import live.lingting.framework.http.HttpRequest
 import live.lingting.framework.http.download.HttpDownload
+import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.huawei.exception.HuaweiException
 import live.lingting.framework.huawei.properties.HuaweiObsProperties
 import live.lingting.framework.id.Snowflake
@@ -10,6 +15,7 @@ import live.lingting.framework.thread.Async
 import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.DataSizeUtils.bytes
 import live.lingting.framework.util.DigestUtils
+import live.lingting.framework.util.DurationUtils.millis
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StreamUtils
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
@@ -39,6 +45,8 @@ class HuaweiObsTest {
 
     var properties: HuaweiObsProperties? = null
 
+    val snowflake = Snowflake(0, 1)
+
     @BeforeEach
     fun before() {
         iam = HuaweiBasic.iam()
@@ -48,7 +56,7 @@ class HuaweiObsTest {
     @Test
     fun put() {
         val snowflake = Snowflake(0, 0)
-        val key = "huawei/obs/test/" + snowflake.nextId()
+        val key = "test/" + snowflake.nextId()
         val obsObject = iam!!.obsObject(properties!!, key)
         assertThrows(HuaweiException::class.java) { obsObject.head() }
         val source = "hello world"
@@ -78,7 +86,6 @@ class HuaweiObsTest {
             })
         }
 
-        val snowflake = Snowflake(0, 1)
         val key = "huawei/obs/test/" + snowflake.nextId()
         val obsObject = iam!!.obsObject(properties!!, key)
         assertThrows(HuaweiException::class.java) { obsObject.head() }
@@ -114,7 +121,6 @@ class HuaweiObsTest {
         obsObject.delete()
     }
 
-
     @Test
     fun listAndMeta() {
         val obsBucket = iam!!.obsBucket(properties!!)
@@ -148,4 +154,62 @@ class HuaweiObsTest {
         assertEquals(md5, DigestUtils.md5Hex(string))
         bo.delete()
     }
+
+    @Test
+    fun pre() {
+        val client = HttpClient.default().disableSsl().build()
+        val key = "test/" + snowflake.nextId()
+        log.info("pre key: {}", key)
+        val obj = iam!!.obsObject(properties!!, key)
+
+        val source = "hello world"
+        val bytes = source.toByteArray()
+        val hex = DigestUtils.md5Hex(bytes)
+
+        try {
+            log.info("ak: {}", obj.ak)
+            log.info("sk: {}", obj.sk)
+            log.info("token: {}", obj.token)
+
+            log.info("=================put=================")
+            val prePutR = obj.prePut(Acl.PRIVATE, HttpHeaders.empty().also {
+                it.put("pre", "true")
+            })
+
+            log.info("put url: {}", prePutR.url)
+
+            client.request(
+                HttpRequest.builder()
+                    .put()
+                    .body(source)
+                    .url(prePutR.url)
+                    .headers(prePutR.headers)
+                    .build()
+            ).use { putR ->
+                assertTrue(putR.isOk)
+            }
+
+            Await.wait(500.millis)
+            client.get(obj.publicUrl()).use { getR ->
+                assertFalse(getR.isOk)
+            }
+
+
+            log.info("=================get=================")
+            val preGet = obj.preGet()
+            log.info("get url: {}", preGet)
+
+            client.get(preGet).use { getR ->
+                assertTrue(getR.isOk)
+                val string = getR.string()
+                assertEquals(source, string)
+                assertEquals(hex, DigestUtils.md5Hex(string.toByteArray()))
+            }
+
+        } finally {
+            log.info("=================delete=================")
+            // obj.delete()
+        }
+    }
+
 }

@@ -2,6 +2,7 @@ package live.lingting.framework.huawei.obs
 
 
 import live.lingting.framework.aws.AwsS3Client
+import live.lingting.framework.aws.AwsSigner
 import live.lingting.framework.aws.AwsUtils
 import live.lingting.framework.aws.s3.AwsS3Request
 import live.lingting.framework.aws.s3.enums.HostStyle
@@ -11,7 +12,6 @@ import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.huawei.HuaweiObs
 import live.lingting.framework.huawei.exception.HuaweiObsException
-import java.time.LocalDateTime
 import java.util.function.Consumer
 
 /**
@@ -24,15 +24,13 @@ class HuaweiObsS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
         throw HuaweiObsException("request error! code: " + response.code())
     }
 
-    override fun onAuthorization(request: AwsS3Request, headers: HttpHeaders, url: HttpUrlBuilder, now: LocalDateTime) {
-        headers.keys().forEach(Consumer { name ->
-            if (name.startsWith(AwsUtils.HEADER_PREFIX)) {
-                val newName = name.replace(AwsUtils.HEADER_PREFIX, HuaweiObs.HEADER_PREFIX)
-                headers.replace(name, newName)
-            }
-        })
-
+    override fun onSign(
+        request: AwsS3Request,
+        headers: HttpHeaders,
+        url: HttpUrlBuilder
+    ): AwsSigner<*, *> {
         val properties = client.properties
+
         val path = if (properties.hostStyle != HostStyle.VIRTUAL) url.buildPath()
         else url.buildPath().let { s ->
             HttpUrlBuilder().path(properties.bucket).pathSegment(s).buildPath()
@@ -41,7 +39,13 @@ class HuaweiObsS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
                 }
         }
 
-        val signed = HuaweiObsSigner(
+        headers.keys().forEach(Consumer { name ->
+            if (name.startsWith(AwsUtils.HEADER_PREFIX)) {
+                val newName = name.replace(AwsUtils.HEADER_PREFIX, HuaweiObs.HEADER_PREFIX)
+                headers.replace(name, newName)
+            }
+        })
+        return HuaweiObsSigner(
             request.method(),
             path,
             headers,
@@ -49,9 +53,7 @@ class HuaweiObsS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
             url.params(),
             properties.ak,
             properties.sk
-        ).signed()
-
-        headers.putAll(signed.headers)
-        headers.authorization(signed.authorization)
+        )
     }
+
 }

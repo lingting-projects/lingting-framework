@@ -43,4 +43,13 @@ object HuaweiUtils {
         return AwsUtils.parse(string, DateTimeFormatter.RFC_1123_DATE_TIME)
     }
 
+    @JvmStatic
+    fun encode(s: String): String {
+        return s.replace("\\+", "%20")
+            .replace("\\*", "%2A")
+            .replace("%7E", "~")
+            .replace("+", "%2B")
+            .replace("%252B", "%2B");
+    }
+
 }

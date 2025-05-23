@@ -5,14 +5,17 @@ import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3Meta
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
 import live.lingting.framework.aws.s3.request.AwsS3ObjectPutRequest
+import live.lingting.framework.aws.s3.response.AwsS3PreSignedResponse
 import live.lingting.framework.data.DataSize
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.multipart.Part
 import live.lingting.framework.stream.CloneInputStream
 import live.lingting.framework.stream.FileCloneInputStream
 import live.lingting.framework.thread.Async
+import live.lingting.framework.util.DurationUtils.days
 import java.io.File
 import java.io.InputStream
+import java.time.Duration
 
 /**
  * @author lingting 2024-09-19 21:59
@@ -25,6 +28,8 @@ interface AwsS3ObjectInterface {
     fun publicUrl(): String
 
     fun head(): AwsS3Meta
+
+    fun get(): InputStream
 
     // endregion
 
@@ -83,6 +88,26 @@ interface AwsS3ObjectInterface {
     fun multipartMerge(uploadId: String, map: Map<Part, String>)
 
     fun multipartCancel(uploadId: String)
+
+    // endregion
+
+    // region pre sign
+
+    fun preGet(): String = preGet(1.days)
+
+    fun preGet(expire: Duration): String
+
+    fun prePut(): AwsS3PreSignedResponse = prePut(null)
+
+    fun prePut(acl: Acl?): AwsS3PreSignedResponse = prePut(null, null)
+
+    fun prePut(acl: Acl?, meta: HttpHeaders?): AwsS3PreSignedResponse = prePut(1.days, acl, meta)
+
+    fun prePut(expire: Duration): AwsS3PreSignedResponse = prePut(expire, null)
+
+    fun prePut(expire: Duration, acl: Acl?): AwsS3PreSignedResponse = prePut(expire, null, null)
+
+    fun prePut(expire: Duration, acl: Acl?, meta: HttpHeaders?): AwsS3PreSignedResponse
 
     // endregion
 

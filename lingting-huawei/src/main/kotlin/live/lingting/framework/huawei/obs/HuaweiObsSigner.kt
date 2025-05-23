@@ -13,6 +13,8 @@ import live.lingting.framework.huawei.HuaweiUtils
 import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.ArrayUtils.contains
 import live.lingting.framework.util.DigestUtils
+import live.lingting.framework.util.LocalDateTimeUtils.timestamp
+import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.value.multi.StringMultiValue
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -29,7 +31,7 @@ open class HuaweiObsSigner(
     params: StringMultiValue?,
     ak: String,
     val sk: String,
-) : AwsSigner(ak) {
+) : AwsSigner<HuaweiObsSigner, HuaweiObsSigner.Signed>(ak) {
 
 
     constructor(
@@ -94,7 +96,7 @@ open class HuaweiObsSigner(
         "x-image-process",
         "x-image-save-bucket",
         "x-image-save-object",
-        "x-obs-security-token",
+        HuaweiObs.HEADER_SECURITY_TOKEN,
         "object-lock",
         "retention"
     )
@@ -113,9 +115,9 @@ open class HuaweiObsSigner(
         }
     }
 
-    open val params = params?.let {
+    open val params = params.let {
         StringMultiValue().apply {
-            params.forEach { k, vs ->
+            params?.forEach { k, vs ->
                 if (resourceInclude.contains(k)) {
                     putAll(k, vs)
                 }
@@ -193,7 +195,7 @@ open class HuaweiObsSigner(
     }
 
     open fun calculate(source: String): String {
-        val mac = Mac.hmacBuilder().sha1().secret(sk).charset(HuaweiUtils.CHARSET).build()
+        val mac = Mac.hmacBuilder().sha1().charset(HuaweiUtils.CHARSET).secret(sk).build()
         return mac.calculateBase64(source)
     }
 
@@ -207,12 +209,26 @@ open class HuaweiObsSigner(
         return signed(time, bodyPayload)
     }
 
-    open fun signed(
-        time: LocalDateTime,
-        bodyPayload: String,
-    ): Signed {
-        val date = date(time)
-        headers.put(headerDate, date)
+    override fun signed(time: LocalDateTime, withUrl: Boolean): Signed {
+        return signed(time, bodyPayload, withUrl)
+    }
+
+    @JvmOverloads
+    open fun signed(time: LocalDateTime, bodyPayload: String, withUrl: Boolean = false): Signed {
+        val params = if (withUrl) StringMultiValue() else null
+
+        val date = if (withUrl) (time.timestamp / 1000).toString() else date(time)
+        if (params == null) {
+            headers.put(headerDate, date)
+        } else {
+            val token = headers.remove(HuaweiObs.HEADER_SECURITY_TOKEN)?.firstOrNull()
+            if (!token.isNullOrEmpty()) {
+                this.params.add(HuaweiObs.HEADER_SECURITY_TOKEN, token)
+                params.add(HuaweiObs.HEADER_SECURITY_TOKEN, token)
+            }
+            params.add("Expires", date)
+        }
+
 
         val canonicalUri = canonicalUri()
         val canonicalQuery = canonicalQuery()
@@ -224,9 +240,20 @@ open class HuaweiObsSigner(
         val calculate = calculate(source)
 
         val authorization = authorization(calculate)
+
+        if (params != null) {
+            params.add("AccessKeyId", ak)
+            params.add("Signature", HuaweiUtils.encode(calculate))
+        }
+
+        val log = logger()
+        log.info("source: {}", source)
+        log.info("calculate: {}", calculate)
+
         return Signed(
             this,
             headers,
+            params,
             contentType,
             bodyPayload,
             canonicalUri,
@@ -243,6 +270,7 @@ open class HuaweiObsSigner(
     open class Signed(
         signer: HuaweiObsSigner,
         headers: HttpHeaders,
+        params: StringMultiValue?,
         open val contentType: String,
         bodyPayload: String,
         open val canonicalUri: String,
@@ -253,9 +281,10 @@ open class HuaweiObsSigner(
         source: String,
         sign: String,
         authorization: String
-    ) : AwsSigner.Signed<HuaweiObsSigner>(
+    ) : AwsSigner.Signed<HuaweiObsSigner, Signed>(
         signer,
         headers,
+        params,
         bodyPayload,
         source,
         sign,
