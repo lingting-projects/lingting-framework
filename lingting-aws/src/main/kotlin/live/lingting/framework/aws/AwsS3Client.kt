@@ -70,15 +70,12 @@ abstract class AwsS3Client protected constructor(val properties: S3Properties) :
 
         val signer = listener.onSign(r, headers, urlBuilder)
 
-        var current = DateTime.current()
+        val current = DateTime.current()
         val expire = r.expire
-        val withUrl = expire != null
-        if (withUrl) {
-            current = current.plusSeconds(expire.seconds)
-        }
-        val signed = signer.signed(current, withUrl)
 
-        if (!withUrl) {
+        val signed = if (expire == null) signer.signed(current) else signer.signed(current, expire)
+
+        if (expire == null) {
             headers.putAll(signed.headers)
             headers.authorization(signed.authorization)
             val request = buildRequest(urlBuilder, headers, r, body)

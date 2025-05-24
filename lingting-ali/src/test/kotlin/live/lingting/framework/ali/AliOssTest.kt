@@ -39,9 +39,7 @@ import java.util.function.Consumer
 @EnabledIfSystemProperty(named = "framework.ali.oss.test", matches = "true")
 class AliOssTest {
 
-    companion object {
-        private val log = logger()
-    }
+    private val log = logger()
 
     var sts: AliSts? = null
 
@@ -211,7 +209,13 @@ class AliOssTest {
             val preGet = obj.preGet()
             log.info("get url: {}", preGet)
 
-            client.get(preGet).use { getR ->
+            client.request(
+                HttpRequest.builder()
+                    .get()
+                    .url(preGet.url)
+                    .headers(preGet.headers)
+                    .build()
+            ).use { getR ->
                 assertTrue(getR.isOk)
                 val string = getR.string()
                 assertEquals(source, string)

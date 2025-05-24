@@ -3,8 +3,7 @@ package live.lingting.framework.aws
 import live.lingting.framework.data.DataSize
 import live.lingting.framework.time.DatePattern
 import live.lingting.framework.time.DateTime
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
+import live.lingting.framework.util.StringUtils.firstUpper
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -90,8 +89,9 @@ object AwsUtils {
     }
 
     @JvmStatic
-    fun encode(s: String): String {
-        return URLEncoder.encode(s, StandardCharsets.UTF_8)
+    fun toParamsKey(key: String): String {
+        val split = key.split("-")
+        return split.joinToString("-") { it.firstUpper() }
     }
 
 }

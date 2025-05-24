@@ -9,7 +9,8 @@ import live.lingting.framework.util.Slf4jUtils.logger
  * @author lingting 2024-09-19 22:05
  */
 abstract class AliOss<C : AwsS3Client> protected constructor(protected val client: C) : AwsS3Delegation<C> {
-    protected val log = logger()
+
+    protected open val log = logger()
 
     init {
         client.listener = AliOssS3Listener(client)

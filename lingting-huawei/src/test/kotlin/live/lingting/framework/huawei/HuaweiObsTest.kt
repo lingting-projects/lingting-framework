@@ -199,7 +199,13 @@ class HuaweiObsTest {
             val preGet = obj.preGet()
             log.info("get url: {}", preGet)
 
-            client.get(preGet).use { getR ->
+            client.request(
+                HttpRequest.builder()
+                    .get()
+                    .url(preGet.url)
+                    .headers(preGet.headers)
+                    .build()
+            ).use { getR ->
                 assertTrue(getR.isOk)
                 val string = getR.string()
                 assertEquals(source, string)

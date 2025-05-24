@@ -10,13 +10,14 @@ import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.huawei.HuaweiObs
 import live.lingting.framework.huawei.HuaweiUtils
-import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.ArrayUtils.contains
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.LocalDateTimeUtils.timestamp
 import live.lingting.framework.value.multi.StringMultiValue
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.util.function.BiConsumer
 
 /**
@@ -106,11 +107,13 @@ open class HuaweiObsSigner(
         if (path.startsWith("/")) path else "/$path"
     }
 
-    open val bodyPayload = body.let {
-        if (it == null || it.length() < 1) {
-            ""
-        } else {
-            DigestUtils.md5Hex(it.string())
+    open val bodyPayload by lazy {
+        body.let {
+            if (it == null || it.length() < 1) {
+                ""
+            } else {
+                DigestUtils.md5Hex(it.string())
+            }
         }
     }
 
@@ -202,32 +205,17 @@ open class HuaweiObsSigner(
         return "OBS $ak:$sign"
     }
 
-    override fun signed() = signed(DateTime.current())
-
     override fun signed(time: LocalDateTime): Signed {
         return signed(time, bodyPayload)
     }
 
-    override fun signed(time: LocalDateTime, withUrl: Boolean): Signed {
-        return signed(time, bodyPayload, withUrl)
-    }
+    override fun signed(
+        time: LocalDateTime,
+        bodyPayload: String
+    ): Signed {
 
-    @JvmOverloads
-    open fun signed(time: LocalDateTime, bodyPayload: String, withUrl: Boolean = false): Signed {
-        val params = if (withUrl) StringMultiValue() else null
-
-        val date = if (withUrl) (time.timestamp / 1000).toString() else date(time)
-        if (params == null) {
-            headers.put(headerDate, date)
-        } else {
-            val token = headers.remove(HuaweiObs.HEADER_TOKEN)?.firstOrNull()
-            if (!token.isNullOrEmpty()) {
-                this.params.add(HuaweiObs.HEADER_TOKEN, token)
-                params.add(HuaweiObs.HEADER_TOKEN, token)
-            }
-            params.add("Expires", date)
-        }
-
+        val date = date(time)
+        headers.put(headerDate, date)
 
         val canonicalUri = canonicalUri()
         val canonicalQuery = canonicalQuery()
@@ -239,11 +227,6 @@ open class HuaweiObsSigner(
         val calculate = calculate(source)
 
         val authorization = authorization(calculate)
-
-        if (params != null) {
-            params.add("AccessKeyId", ak)
-            params.add("Signature", calculate)
-        }
 
         return Signed(
             this,
@@ -260,6 +243,69 @@ open class HuaweiObsSigner(
             calculate,
             authorization,
         )
+    }
+
+    override fun signed(
+        time: LocalDateTime,
+        expire: LocalDateTime
+    ): Signed = signed(time, expire, bodyPayload)
+
+    override fun signed(
+        time: LocalDateTime,
+        expire: LocalDateTime,
+        bodyPayload: String
+    ): Signed {
+        val date = (expire.timestamp / 1000).toString()
+
+        val token = headers.remove(HuaweiObs.HEADER_TOKEN)?.firstOrNull()
+        if (!token.isNullOrEmpty()) {
+            params.add(HuaweiObs.HEADER_TOKEN, token)
+        }
+
+        val canonicalUri = canonicalUri()
+        val canonicalQuery = canonicalQuery()
+        val canonicalizedResource = canonicalizedResource(canonicalQuery)
+        val canonicalizedHeaders = canonicalizedHeaders()
+
+        val source = source(date, bodyPayload, canonicalizedHeaders, canonicalizedResource)
+
+        val calculate = calculate(source)
+
+        val authorization = authorization(calculate)
+
+        params.add("AccessKeyId", ak)
+        params.add("Signature", calculate)
+        params.add("Expires", date)
+
+        return Signed(
+            this,
+            headers,
+            params,
+            contentType,
+            bodyPayload,
+            canonicalUri,
+            canonicalQuery,
+            canonicalizedHeaders,
+            canonicalizedResource,
+            date,
+            source,
+            calculate,
+            authorization,
+        )
+    }
+
+    override fun signed(
+        time: LocalDateTime,
+        duration: Duration
+    ): Signed = signed(time, duration, bodyPayload)
+
+    override fun signed(
+        time: LocalDateTime,
+        duration: Duration,
+        bodyPayload: String
+    ): Signed {
+        val expire = time.plus(duration.seconds, ChronoUnit.SECONDS)
+        return signed(time, expire, bodyPayload)
     }
 
     open class Signed(

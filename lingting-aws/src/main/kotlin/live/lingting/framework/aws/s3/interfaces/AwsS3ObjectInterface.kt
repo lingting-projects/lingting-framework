@@ -93,9 +93,9 @@ interface AwsS3ObjectInterface {
 
     // region pre sign
 
-    fun preGet(): String = preGet(1.days)
+    fun preGet() = preGet(1.days)
 
-    fun preGet(expire: Duration): String
+    fun preGet(expire: Duration): AwsS3PreSignedResponse
 
     fun prePut(): AwsS3PreSignedResponse = prePut(null)
 

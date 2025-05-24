@@ -4,6 +4,7 @@ import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.huawei.HuaweiObs
 import live.lingting.framework.huawei.HuaweiUtils
+import live.lingting.framework.time.DateTime
 import live.lingting.framework.value.multi.StringMultiValue
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -41,7 +42,7 @@ class HuaweiObsSignTest {
         )
 
         val time = LocalDate.of(2025, 5, 24).atStartOfDay()
-        val signed = signer.signed(time, true)
+        val signed = signer.signed(DateTime.current(), time)
 
 
         assertEquals(

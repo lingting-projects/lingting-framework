@@ -116,11 +116,11 @@ class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Cli
         call(request)
     }
 
-    override fun preGet(expire: Duration): String {
+    override fun preGet(expire: Duration): AwsS3PreSignedResponse {
         val r = AwsS3SimpleRequest(HttpMethod.GET)
         r.expire = expire
         val response = preRequest(r)
-        return response.url
+        return response
     }
 
     override fun prePut(

@@ -59,7 +59,7 @@ interface AwsS3ObjectDelegation : AwsS3ObjectInterface, AwsS3Delegation<AwsS3Obj
         delegation().multipartCancel(uploadId)
     }
 
-    override fun preGet(expire: Duration): String {
+    override fun preGet(expire: Duration): AwsS3PreSignedResponse {
         return delegation().preGet(expire)
     }
 
