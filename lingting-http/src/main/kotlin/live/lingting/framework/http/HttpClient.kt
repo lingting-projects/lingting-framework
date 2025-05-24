@@ -83,7 +83,7 @@ abstract class HttpClient {
 
     fun <T> get(url: String, cls: Class<T>): T? {
         val builder = HttpRequest.builder().get().url(url)
-        return request<T>(builder.build(), cls)
+        return request(builder.build(), cls)
     }
 
     abstract class Builder<C : HttpClient, B : Builder<C, B>> {

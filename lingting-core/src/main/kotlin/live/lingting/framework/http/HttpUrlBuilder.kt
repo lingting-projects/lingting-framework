@@ -7,6 +7,7 @@ import live.lingting.framework.value.multi.StringMultiValue
 import java.net.URI
 import java.net.URISyntaxException
 import java.net.URL
+import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
@@ -24,8 +25,24 @@ open class HttpUrlBuilder {
         }
 
         @JvmStatic
-        fun from(url: String): HttpUrlBuilder {
-            val u = URI.create(url)
+        @JvmOverloads
+        fun encode(s: String, charset: Charset = StandardCharsets.UTF_8): String {
+            val encode = URLEncoder.encode(s, charset)
+            return encode.replace("%25", "%")
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        fun decode(s: String, charset: Charset = StandardCharsets.UTF_8): String {
+            val l = s.replace("%25", "%")
+            return URLDecoder.decode(l, charset)
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        fun from(url: String, charset: Charset = StandardCharsets.UTF_8): HttpUrlBuilder {
+            val l = decode(url, charset)
+            val u = URI.create(l)
             return from(u)
         }
 
@@ -36,9 +53,11 @@ open class HttpUrlBuilder {
             if (StringUtils.hasText(query)) {
                 query.split("&")
                     .dropLastWhile { it.isBlank() }
+                    .map { it.split("=", limit = 2) }
                     .forEach {
-                        it.split("=", limit = 2)
-                            .let { builder.addParam(it[0], if (it.size == 1) null else it[1]) }
+                        val name = it[0]
+                        val value = if (it.size == 1) null else it[1]
+                        builder.addParam(name, value)
                     }
             }
             return builder
@@ -48,7 +67,7 @@ open class HttpUrlBuilder {
         @JvmOverloads
         fun buildQuery(
             value: MultiValue<String, String, *>?,
-            encode: Boolean = false,
+            encode: Boolean = true,
             charset: Charset = StandardCharsets.UTF_8
         ): String {
             return buildQuery(value?.map(), encode, charset)
@@ -58,7 +77,7 @@ open class HttpUrlBuilder {
         @JvmOverloads
         fun buildQuery(
             map: Map<String, Collection<String>>?,
-            encode: Boolean = false,
+            encode: Boolean = true,
             charset: Charset = StandardCharsets.UTF_8
         ): String {
             if (map.isNullOrEmpty()) {
@@ -69,13 +88,14 @@ open class HttpUrlBuilder {
             val builder = StringBuilder()
             for (k in keys) {
                 val vs = map[k]
+                val name = if (encode) encode(k, charset) else k
                 if (vs.isNullOrEmpty()) {
-                    builder.append(k).append("&")
+                    builder.append(name).append("&")
                 } else {
                     vs.sorted().forEach { v ->
-                        builder.append(k).append("=")
-                        val av = if (encode) URLEncoder.encode(v, charset) else v
-                        builder.append(av).append("&")
+                        builder.append(name).append("=")
+                        val value = if (encode) encode(v, charset) else v
+                        builder.append(value).append("&")
                     }
                 }
             }
@@ -156,7 +176,7 @@ open class HttpUrlBuilder {
     }
 
     fun port(port: Int): HttpUrlBuilder {
-        this.port = port
+        this.port = if (port < 0) null else port
         return this
     }
 
@@ -283,15 +303,14 @@ open class HttpUrlBuilder {
         return builder.toString()
     }
 
-    fun buildQuery(): String = buildQuery(params)
+    @JvmOverloads
+    fun buildQuery(encode: Boolean = true, charset: Charset = StandardCharsets.UTF_8): String =
+        buildQuery(params, encode, charset)
 
     fun buildUri(): URI {
         try {
-            val path = buildPath()
-            val query = buildQuery()
-            val p = port.let { if (it == null || it < 1) -1 else it }
-            val q = if (StringUtils.hasText(query)) query else null
-            return URI(scheme, null, host, p, path, q, null)
+            val url = build()
+            return URI.create(url)
         } catch (e: URISyntaxException) {
             throw IllegalStateException("Could not create URI object: " + e.message, e)
         }

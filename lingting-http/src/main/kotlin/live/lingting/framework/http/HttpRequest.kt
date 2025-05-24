@@ -1,14 +1,14 @@
 package live.lingting.framework.http
 
+import live.lingting.framework.http.body.BodySource
+import live.lingting.framework.http.body.MemoryBody
+import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.jackson.JacksonUtils
 import java.io.InputStream
 import java.net.URI
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.util.function.Consumer
-import live.lingting.framework.http.body.BodySource
-import live.lingting.framework.http.body.MemoryBody
-import live.lingting.framework.http.header.HttpHeaders
-import live.lingting.framework.jackson.JacksonUtils
 
 /**
  * @author lingting 2024-09-27 21:29
@@ -101,7 +101,7 @@ open class HttpRequest private constructor(
 
         // region url
         fun url(url: String): Builder {
-            return url(URI.create(url))
+            return url(HttpUrlBuilder.from(url))
         }
 
         fun url(url: URI): Builder {
