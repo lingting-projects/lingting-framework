@@ -95,7 +95,7 @@ open class HuaweiObsSigner(
         "x-image-process",
         "x-image-save-bucket",
         "x-image-save-object",
-        HuaweiObs.HEADER_SECURITY_TOKEN,
+        HuaweiObs.HEADER_TOKEN,
         "object-lock",
         "retention"
     )
@@ -220,10 +220,10 @@ open class HuaweiObsSigner(
         if (params == null) {
             headers.put(headerDate, date)
         } else {
-            val token = headers.remove(HuaweiObs.HEADER_SECURITY_TOKEN)?.firstOrNull()
+            val token = headers.remove(HuaweiObs.HEADER_TOKEN)?.firstOrNull()
             if (!token.isNullOrEmpty()) {
-                this.params.add(HuaweiObs.HEADER_SECURITY_TOKEN, token)
-                params.add(HuaweiObs.HEADER_SECURITY_TOKEN, token)
+                this.params.add(HuaweiObs.HEADER_TOKEN, token)
+                params.add(HuaweiObs.HEADER_TOKEN, token)
             }
             params.add("Expires", date)
         }

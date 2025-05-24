@@ -15,7 +15,7 @@ abstract class HuaweiObs<C : AwsS3Client> protected constructor(protected val cl
 
         const val HEADER_PREFIX_META = "$HEADER_PREFIX-meta-"
 
-        const val HEADER_SECURITY_TOKEN = "$HEADER_PREFIX-security-token"
+        const val HEADER_TOKEN = "$HEADER_PREFIX-security-token"
     }
 
     init {
