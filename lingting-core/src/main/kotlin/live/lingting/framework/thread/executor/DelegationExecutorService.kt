@@ -83,24 +83,24 @@ open class DelegationExecutorService(open var delegator: ExecutorService) : Exec
         return delegator.submit(task)
     }
 
-    override fun <T : Any?> invokeAll(tasks: Collection<Callable<T?>?>): List<Future<T?>?> {
+    override fun <T : Any?> invokeAll(tasks: Collection<Callable<T?>>): List<Future<T?>> {
         return delegator.invokeAll(tasks)
     }
 
     override fun <T : Any?> invokeAll(
-        tasks: Collection<Callable<T?>?>,
+        tasks: Collection<Callable<T?>>,
         timeout: Long,
         unit: TimeUnit
-    ): List<Future<T?>?> {
+    ): List<Future<T?>> {
         return delegator.invokeAll(tasks, timeout, unit)
     }
 
-    override fun <T : Any?> invokeAny(tasks: Collection<Callable<T?>?>): T & Any {
+    override fun <T : Any?> invokeAny(tasks: Collection<Callable<T?>>): T & Any {
         val t = delegator.invokeAny(tasks)
         return t!!
     }
 
-    override fun <T : Any?> invokeAny(tasks: Collection<Callable<T?>?>, timeout: Long, unit: TimeUnit): T? {
+    override fun <T : Any?> invokeAny(tasks: Collection<Callable<T?>>, timeout: Long, unit: TimeUnit): T? {
         return delegator.invokeAny(tasks)
     }
 
@@ -110,7 +110,7 @@ open class DelegationExecutorService(open var delegator: ExecutorService) : Exec
 
     fun execute(name: String?, command: Runnable) {
         if (command is StateKeepRunnable) {
-            command.name = name ?: ""
+            command.threadName = name ?: ""
             execute(command)
             return
         }

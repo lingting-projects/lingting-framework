@@ -182,27 +182,7 @@ class PerThreadExecutor(val factory: ThreadFactory) : ExecutorService {
             val watch = StopWatch()
             watch.start()
             tasks.forEach { t ->
-                val runnable = object : StateRunnable() {
-
-                    override fun doProcess() {
-                        try {
-                            val call = t.call()
-                            // 没有值的情况下更新为当前值
-                            r.compute {
-                                if (it == null) {
-                                    v.update(call)
-                                    this
-                                } else {
-                                    it
-                                }
-                            }
-                        } catch (t: Throwable) {
-                            // 第一个异常更新
-                            ex.compute { it ?: t }
-                        }
-                    }
-
-                }
+                val runnable = PerStateRunnableImpl(t, v, r, ex)
                 execute(runnable)
                 rs.add(runnable)
             }
@@ -250,6 +230,32 @@ class PerThreadExecutor(val factory: ThreadFactory) : ExecutorService {
         } catch (th: Throwable) {
             set.remove(t)
             throw th
+        }
+    }
+
+    class PerStateRunnableImpl<T>(
+        val t: Callable<T>,
+        val v: WaitValue<T>,
+        val r: WaitValue<StateRunnable>,
+        val ex: WaitValue<Throwable>
+    ) : StateRunnable() {
+
+        override fun doProcess() {
+            try {
+                val call = t.call()
+                // 没有值的情况下更新为当前值
+                r.compute {
+                    if (it == null) {
+                        v.update(call)
+                        this
+                    } else {
+                        it
+                    }
+                }
+            } catch (t: Throwable) {
+                // 第一个异常更新
+                ex.compute { it ?: t }
+            }
         }
     }
 

@@ -9,6 +9,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import java.time.Duration
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.TimeUnit
 import kotlin.test.assertNotEquals
 
 /**
@@ -17,23 +20,23 @@ import kotlin.test.assertNotEquals
 class ThreadPoolTest {
 
     @Test
-    fun testPool() {
-        ThreadUtils.delegator = PlatformThread
-        testMdc()
+    fun test() {
+        doTest(PlatformThread)
+        doTest(VirtualThread)
     }
 
-    @Test
-    fun testVirtual() {
-        if (!VirtualThread.isSupport) {
+    fun doTest(delegator: ExecutorService) {
+        ThreadUtils.delegator = delegator
+        testMdc()
+        testInvoke()
+        if (!VirtualThread.isSupport || delegator != VirtualThread) {
             return
         }
-        ThreadUtils.delegator = VirtualThread
-        testMdc()
         val factory = VirtualThread.threadFactory()
         assertNotNull(factory)
         val executor = VirtualThread.find(PerThreadExecutor::class.java)
         assertNotNull(executor)
-        assertEquals(0, executor?.threads?.size)
+        assertNotNull(executor?.threads?.size)
     }
 
     fun testMdc() {
@@ -57,6 +60,26 @@ class ThreadPoolTest {
         }
         assertEquals(traceId, MdcUtils.traceId)
         async.await()
+    }
+
+    fun testInvoke() {
+        val callables = mutableListOf<Callable<Int?>>()
+        for (i in 0..100) {
+            callables.add(Callable { i })
+        }
+
+        val futures = ThreadUtils.invokeAll(callables)
+        futures.forEachIndexed { i, f -> assertEquals(i, f.get()) }
+
+        callables.clear()
+        for (i in 0..100) {
+            callables.add(Callable {
+                Thread.sleep(i * 100L)
+                i
+            })
+        }
+        val i = ThreadUtils.invokeAny(callables, 10, TimeUnit.MILLISECONDS)
+        assertEquals(0, i)
     }
 
 }

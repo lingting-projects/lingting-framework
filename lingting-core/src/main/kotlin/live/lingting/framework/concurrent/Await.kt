@@ -185,7 +185,7 @@ open class Await<R>(
     @Throws(TimeoutException::class)
     fun await(): R? {
         val r = AwaitRunnable(worker, predicate, sleep)
-        r.name = name
+        r.threadName = name
 
         if (timeout == null || !timeout.isPositive) {
             r.run()

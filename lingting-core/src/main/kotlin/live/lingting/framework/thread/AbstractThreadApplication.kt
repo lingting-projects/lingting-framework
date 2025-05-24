@@ -17,7 +17,7 @@ import java.util.function.Consumer
  */
 abstract class AbstractThreadApplication : ApplicationComponent, Runnable {
 
-    protected val log = logger()
+    protected open val log = logger()
 
     val threadValue: WaitValue<Thread> = WaitValue.of()
 

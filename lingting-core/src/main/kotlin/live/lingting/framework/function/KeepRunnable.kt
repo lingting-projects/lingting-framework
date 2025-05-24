@@ -13,32 +13,40 @@ abstract class KeepRunnable @JvmOverloads constructor(
     mdc: Map<String, String>? = null
 ) : Runnable {
 
-    protected val log = logger()
+    protected open val log = logger()
 
-    var name: String = name ?: ""
+    var threadName: String = name ?: ""
+
+    var threadOldName = ""
+        private set
 
     val mdc: Map<String, String> = mdc ?: MdcUtils.copyContext()
 
     override fun run() {
         val thread = Thread.currentThread()
-        val oldName = thread.name
-        if (StringUtils.hasText(name)) {
-            thread.name = name
+        threadOldName = thread.name
+        if (StringUtils.hasText(threadName)) {
+            thread.name = threadName
         }
 
         MdcUtils.useContext(mdc) {
-            try {
-                onStart()
-                doProcess()
-            } catch (_: InterruptedException) {
-                thread.interrupt()
-                log.warn("Thread interrupted inside thread pool")
-            } catch (throwable: Throwable) {
-                log.error("Thread exception inside thread pool!", throwable)
-            } finally {
-                onFinally()
-                thread.name = oldName
-            }
+            onMdc()
+        }
+    }
+
+    private fun onMdc() {
+        val thread = Thread.currentThread()
+        try {
+            onStart()
+            doProcess()
+        } catch (_: InterruptedException) {
+            thread.interrupt()
+            log.warn("Thread interrupted inside keep runnable")
+        } catch (throwable: Throwable) {
+            log.error("Thread exception inside keep runnable!", throwable)
+        } finally {
+            onFinally()
+            thread.name = threadOldName
         }
     }
 

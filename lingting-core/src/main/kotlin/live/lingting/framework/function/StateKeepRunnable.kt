@@ -10,10 +10,10 @@ abstract class StateKeepRunnable @JvmOverloads constructor(
 
     protected val keep = KeepRunnableImpl(this, name, mdc)
 
-    var name: String
-        get() = keep.name
+    var threadName: String
+        get() = keep.threadName
         set(value) {
-            keep.name = value
+            keep.threadName = value
         }
 
     protected open fun keepRun() {
@@ -32,6 +32,5 @@ abstract class StateKeepRunnable @JvmOverloads constructor(
         }
 
     }
-
 
 }
