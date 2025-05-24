@@ -208,7 +208,7 @@ class HuaweiObsTest {
 
         } finally {
             log.info("=================delete=================")
-            // obj.delete()
+            obj.delete()
         }
     }
 

@@ -14,7 +14,6 @@ import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.ArrayUtils.contains
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.LocalDateTimeUtils.timestamp
-import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.value.multi.StringMultiValue
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -132,7 +131,7 @@ open class HuaweiObsSigner(
     open fun canonicalUri() = path
 
     open fun canonicalQuery(): String {
-        return HttpUrlBuilder.buildQuery(params)
+        return HttpUrlBuilder.buildQuery(params, false)
     }
 
     open fun headersForEach(consumer: BiConsumer<String, Collection<String>>) {
@@ -243,12 +242,8 @@ open class HuaweiObsSigner(
 
         if (params != null) {
             params.add("AccessKeyId", ak)
-            params.add("Signature", HuaweiUtils.encode(calculate))
+            params.add("Signature", calculate)
         }
-
-        val log = logger()
-        log.info("source: {}", source)
-        log.info("calculate: {}", calculate)
 
         return Signed(
             this,
