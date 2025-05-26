@@ -3,10 +3,7 @@ package live.lingting.framework.ali
 import live.lingting.framework.ali.exception.AliStsException
 import live.lingting.framework.ali.properties.AliOssProperties
 import live.lingting.framework.ali.properties.AliStsProperties
-import live.lingting.framework.ali.sts.AliStsCredentialRequest
-import live.lingting.framework.ali.sts.AliStsCredentialResponse
-import live.lingting.framework.ali.sts.AliStsRequest
-import live.lingting.framework.ali.sts.AliStsSign
+import live.lingting.framework.ali.sts.*
 import live.lingting.framework.aws.policy.Credential
 import live.lingting.framework.aws.policy.Statement
 import live.lingting.framework.http.HttpResponse
@@ -48,13 +45,19 @@ open class AliSts(protected val properties: AliStsProperties) : AliClient<AliSts
         if (!response.is2xx) {
             val string = response.string()
             val headers = response.request().headers()
-            log.error("AliSts call error! uri: {}; sign: {}; code: {}; body:\n{}", response.uri(), headers.authorization(), response.code(), string)
+            log.error(
+                "AliSts call error! uri: {}; sign: {}; code: {}; body:\n{}",
+                response.uri(),
+                headers.authorization(),
+                response.code(),
+                string
+            )
             throw AliStsException("request error! code: " + response.code())
         }
         return response
     }
 
-    override fun customize(request: AliStsRequest, headers: HttpHeaders, requestBody: BodySource, url: HttpUrlBuilder) {
+    override fun customize(request: AliStsRequest, headers: HttpHeaders, source: BodySource, url: HttpUrlBuilder) {
         val now = DateTime.current()
         val date = AliUtils.format(now, DatePattern.FORMATTER_ISO_8601)
         headers.put("x-acs-date", date)
@@ -65,7 +68,7 @@ open class AliSts(protected val properties: AliStsProperties) : AliClient<AliSts
             .path(url.buildPath())
             .headers(headers)
             .params(url.params())
-            .body(requestBody.string())
+            .body(source.string())
             .ak(ak)
             .sk(sk)
             .build()
@@ -157,6 +160,9 @@ open class AliSts(protected val properties: AliStsProperties) : AliClient<AliSts
         return ossObject(properties, key, AliActions.OSS_OBJECT_DEFAULT)
     }
 
+    fun ossObject(properties: AliOssProperties, key: String, vararg actions: String) =
+        ossObject(properties, key, actions.toList())
+
     fun ossObject(properties: AliOssProperties, key: String, actions: Collection<String>): AliOssObject {
         val bucket = properties.bucket
         val statement = Statement.allow()
@@ -166,6 +172,7 @@ open class AliSts(protected val properties: AliStsProperties) : AliClient<AliSts
         val copy = properties.copy()
         copy.useCredential(credential)
         return AliOssObject(copy, key)
-    } // endregion
+    }
+    // endregion
 
 }

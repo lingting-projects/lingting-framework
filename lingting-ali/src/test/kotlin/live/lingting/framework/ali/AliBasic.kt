@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 internal object AliBasic {
     fun sts(): AliSts {
         val properties = AliStsProperties()
-        properties.region = System.getenv("ALI_STS_REGION")
         properties.ak = System.getenv("ALI_STS_AK")
         properties.sk = System.getenv("ALI_STS_SK")
         properties.roleArn = System.getenv("ALI_STS_ROLE_ARN")
@@ -25,7 +24,7 @@ internal object AliBasic {
 
     fun ossProperties(): AliOssProperties {
         val properties = AliOssProperties()
-        properties.region = System.getenv("ALI_STS_REGION")
+        properties.region = System.getenv("ALI_REGION")
         properties.bucket = System.getenv("ALI_OSS_BUCKET")
         properties.acl = Acl.PUBLIC_READ
         assertNotNull(properties.region)
