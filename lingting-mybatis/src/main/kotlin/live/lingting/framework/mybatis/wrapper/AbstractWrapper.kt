@@ -258,8 +258,8 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
      * @param prefix # 或者 $
      */
     protected fun wrapperParam(prefix: String, mapping: String?, value: Any?): String {
-        val pId = "PARAM_${id}_${paramId.incrementAndGet()}"
-        val field = "${Wrappers.PARAM}.$pId"
+        val pId = "PARAM _${id}_${paramId.incrementAndGet()}"
+        val field = "${Wrappers.PARAM}.params.$pId"
         params.put(pId, value)
         val builder = StringBuilder(prefix).append("{").append(field)
         if (StringUtils.isNotBlank(mapping)) {
