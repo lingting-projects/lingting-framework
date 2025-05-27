@@ -1,6 +1,6 @@
 package live.lingting.framework.util
 
-import java.util.*
+import java.util.Collections
 
 /**
  * @author lingting
@@ -124,7 +124,8 @@ object CollectionUtils {
         return map
     }
 
-    private fun flattenMap(value: Any?, key: String = ""): Map<String, Any> {
+    @JvmStatic
+    fun flattenMap(value: Any?, key: String = ""): Map<String, Any> {
         val result = HashMap<String, Any>()
         when {
             value is Map<*, *> -> {
