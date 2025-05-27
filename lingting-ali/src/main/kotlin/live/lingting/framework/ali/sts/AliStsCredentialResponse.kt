@@ -1,11 +1,13 @@
 package live.lingting.framework.ali.sts
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import live.lingting.framework.ali.AliResponse
 
 /**
  * @author lingting 2024-09-14 13:50
  */
-class AliStsCredentialResponse : AliStsResponse() {
+class AliStsCredentialResponse : AliResponse() {
+
     @JsonProperty("Credentials")
     var credentials: Credentials = Credentials()
 

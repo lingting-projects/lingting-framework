@@ -68,9 +68,10 @@ open class HttpUrlBuilder {
         fun buildQuery(
             value: MultiValue<String, String, *>?,
             encode: Boolean = true,
-            charset: Charset = StandardCharsets.UTF_8
+            charset: Charset = StandardCharsets.UTF_8,
+            sort: Boolean = false
         ): String {
-            return buildQuery(value?.map(), encode, charset)
+            return buildQuery(value?.map(), encode, charset, sort)
         }
 
         @JvmStatic
@@ -78,12 +79,13 @@ open class HttpUrlBuilder {
         fun buildQuery(
             map: Map<String, Collection<String>>?,
             encode: Boolean = true,
-            charset: Charset = StandardCharsets.UTF_8
+            charset: Charset = StandardCharsets.UTF_8,
+            sort: Boolean = false
         ): String {
             if (map.isNullOrEmpty()) {
                 return ""
             }
-            val keys = map.keys.sorted().toList()
+            val keys = map.keys.let { if (sort) it.sorted() else it }.toList()
 
             val builder = StringBuilder()
             for (k in keys) {
@@ -92,7 +94,7 @@ open class HttpUrlBuilder {
                 if (vs.isNullOrEmpty()) {
                     builder.append(name).append("&")
                 } else {
-                    vs.sorted().forEach { v ->
+                    vs.let { if (sort) it.sorted() else it }.forEach { v ->
                         builder.append(name).append("=")
                         val value = if (encode) encode(v, charset) else v
                         builder.append(value).append("&")

@@ -33,7 +33,6 @@ open class HuaweiObsSigner(
     val sk: String,
 ) : AwsSigner<HuaweiObsSigner, HuaweiObsSigner.Signed>(ak) {
 
-
     constructor(
         request: ApiRequest,
         ak: String,
@@ -134,7 +133,7 @@ open class HuaweiObsSigner(
     open fun canonicalUri() = path
 
     open fun canonicalQuery(): String {
-        return HttpUrlBuilder.buildQuery(params, false)
+        return HttpUrlBuilder.buildQuery(params, false, sort = true)
     }
 
     open fun headersForEach(consumer: BiConsumer<String, Collection<String>>) {

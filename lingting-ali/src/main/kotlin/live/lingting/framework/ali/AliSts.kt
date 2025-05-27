@@ -3,15 +3,11 @@ package live.lingting.framework.ali
 import live.lingting.framework.ali.exception.AliStsException
 import live.lingting.framework.ali.properties.AliOssProperties
 import live.lingting.framework.ali.properties.AliStsProperties
-import live.lingting.framework.ali.sts.*
+import live.lingting.framework.ali.sts.AliStsCredentialRequest
+import live.lingting.framework.ali.sts.AliStsCredentialResponse
 import live.lingting.framework.aws.policy.Credential
 import live.lingting.framework.aws.policy.Statement
 import live.lingting.framework.http.HttpResponse
-import live.lingting.framework.http.HttpUrlBuilder
-import live.lingting.framework.http.body.BodySource
-import live.lingting.framework.http.header.HttpHeaders
-import live.lingting.framework.time.DatePattern
-import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.StringUtils
 import java.time.Duration
 import java.time.LocalDateTime
@@ -19,29 +15,9 @@ import java.time.LocalDateTime
 /**
  * @author lingting 2024-09-14 11:52
  */
-open class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsRequest>(properties) {
+open class AliSts(protected val properties: AliStsProperties) : AliClient<AliRequest>(properties) {
 
-    companion object {
-        const val ALGORITHM: String = "ACS3-HMAC-SHA256"
-
-        const val HEADER_PREFIX: String = "x-acs"
-    }
-
-    override fun customize(request: AliStsRequest, headers: HttpHeaders) {
-        val name = request.name()
-        val version = request.version()
-        val nonce = request.nonce()
-
-        headers.put("x-acs-action", name)
-        headers.put("x-acs-version", version)
-        headers.put("x-acs-signature-nonce", nonce)
-
-        if (StringUtils.hasText(token)) {
-            headers.put("x-acs-security-token", token!!)
-        }
-    }
-
-    override fun checkout(request: AliStsRequest, response: HttpResponse): HttpResponse {
+    override fun checkout(request: AliRequest, response: HttpResponse): HttpResponse {
         if (!response.is2xx) {
             val string = response.string()
             val headers = response.request().headers()
@@ -55,30 +31,6 @@ open class AliSts(protected val properties: AliStsProperties) : AliClient<AliSts
             throw AliStsException("request error! code: " + response.code())
         }
         return response
-    }
-
-    override fun customize(request: AliStsRequest, headers: HttpHeaders, source: BodySource, url: HttpUrlBuilder) {
-        val now = DateTime.current()
-        val date = AliUtils.format(now, DatePattern.FORMATTER_ISO_8601)
-        headers.put("x-acs-date", date)
-
-
-        val sing = AliStsSign.builder()
-            .method(request.method().name)
-            .path(url.buildPath())
-            .headers(headers)
-            .params(url.params())
-            .body(source.string())
-            .ak(ak)
-            .sk(sk)
-            .build()
-
-        val bodySha = sing.bodySha256
-
-        headers.put("x-acs-content-sha256", bodySha)
-
-        val authorization = sing.calculate()
-        headers.authorization(authorization)
     }
 
     fun credential(statement: Statement): Credential {
