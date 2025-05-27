@@ -9,8 +9,12 @@ class AliStsProperties : AliProperties() {
 
     var roleSessionName: String = ""
 
+    override fun host(): String {
+        return secondHost()
+    }
+
     override fun secondHost(): String {
-        return "sts.$region.$endpoint"
+        return "sts.$endpoint"
     }
 
 }
