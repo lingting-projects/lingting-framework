@@ -24,11 +24,11 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
     }
 
     protected fun absent(key: K): C {
-        var key = convert(key)
-        if (!allowModify && !hasKey(key)) {
+        val k = convert(key)
+        if (!allowModify && !hasKey(k)) {
             throw UnsupportedOperationException()
         }
-        return map.computeIfAbsent(key) { _ -> supplier.get() }
+        return map.computeIfAbsent(k) { _ -> supplier.get() }
     }
 
     override fun ifAbsent(key: K) {
