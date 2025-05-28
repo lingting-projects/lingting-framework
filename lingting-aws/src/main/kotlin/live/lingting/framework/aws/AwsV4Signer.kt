@@ -57,11 +57,11 @@ open class AwsV4Signer(
      */
     open val headerInclude = arrayOf("host", "content-md5", "range")
 
-    open val headerDate = "$headerPrefix-date"
+    open val headerDate by lazy { "$headerPrefix-date" }
 
-    open val headerContentPayload = "$headerPrefix-content-sha256"
+    open val headerContentPayload by lazy { "$headerPrefix-content-sha256" }
 
-    open val headerSecurityToken = "$headerPrefix-security-token"
+    open val headerSecurityToken by lazy { "$headerPrefix-security-token" }
 
     open val headers = HttpHeaders.empty().also { it.putAll(headers) }
 
