@@ -1,5 +1,6 @@
 package live.lingting.framework.ali
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.api.ApiRequest
 import live.lingting.framework.id.Snowflake
@@ -11,8 +12,10 @@ import live.lingting.framework.value.WaitValue
  */
 abstract class AliRequest : ApiRequest() {
 
+    @JsonIgnore
     protected var snowflake: Snowflake = Snowflake(5, 7)
 
+    @JsonIgnore
     protected val nonceValue: WaitValue<String> = WaitValue.of()
 
     abstract fun name(): String

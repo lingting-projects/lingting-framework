@@ -17,13 +17,16 @@ abstract class AwsS3Request : ApiRequest() {
     @JsonIgnore
     var expire: Duration? = null
 
+    @JsonIgnore
     var key: String = ""
 
+    @JsonIgnore
     var acl: Acl? = null
 
     /**
      * 自定义元数据key(不要前缀, 自动拼)
      */
+    @JsonIgnore
     val meta: HttpHeaders = HttpHeaders.empty()
 
     override fun path(): String {
