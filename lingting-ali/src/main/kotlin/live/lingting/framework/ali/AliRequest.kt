@@ -40,4 +40,5 @@ abstract class AliRequest : ApiRequest() {
     override fun onCall() {
         headers.contentType("application/json;charset=utf8")
     }
+
 }

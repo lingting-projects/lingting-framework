@@ -4,7 +4,7 @@ import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.api.ApiRequest
-import live.lingting.framework.http.body.BodySource
+import live.lingting.framework.http.body.Body
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.StringUtils.deleteLast
@@ -21,7 +21,7 @@ open class AwsV4Signer(
     val method: HttpMethod,
     path: String,
     headers: HttpHeaders,
-    val body: BodySource?,
+    val body: Body?,
     params: StringMultiValue,
     val region: String,
     ak: String,

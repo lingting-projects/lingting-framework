@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets
 /**
  * @author lingting 2024-09-28 14:04
  */
-abstract class BodySource {
+abstract class Body {
 
     companion object {
 
@@ -20,7 +20,7 @@ abstract class BodySource {
         }
 
         @JvmStatic
-        fun of(stream: InputStream): BodySource {
+        fun of(stream: InputStream): Body {
             if (stream is BytesInputStream) {
                 return MemoryBody(stream.source())
             }

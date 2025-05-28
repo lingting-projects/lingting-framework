@@ -1,7 +1,7 @@
 package live.lingting.framework.ali.sts
 
 import live.lingting.framework.aws.policy.Statement
-import live.lingting.framework.http.body.BodySource
+import live.lingting.framework.http.body.Body
 import live.lingting.framework.http.body.MemoryBody
 import live.lingting.framework.jackson.JacksonUtils
 
@@ -25,7 +25,7 @@ class AliStsCredentialRequest : AliStsRequest() {
         return "AssumeRole"
     }
 
-    override fun body(): BodySource {
+    override fun body(): Body {
         val policy = mapOf(
             "Version" to "1",
             "Statement" to statements.map { obj -> obj.map() }.toList(),

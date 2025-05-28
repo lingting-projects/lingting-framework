@@ -1,13 +1,11 @@
 package live.lingting.framework.http
 
-import live.lingting.framework.http.body.BodySource
+import live.lingting.framework.http.body.Body
 import live.lingting.framework.http.body.MemoryBody
+import live.lingting.framework.http.body.RequestBody
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.jackson.JacksonUtils
-import java.io.InputStream
 import java.net.URI
-import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
 import java.util.function.Consumer
 
 /**
@@ -17,7 +15,7 @@ open class HttpRequest private constructor(
     protected val method: HttpMethod,
     protected val uri: URI,
     protected val headers: HttpHeaders,
-    protected val body: Body
+    protected val body: RequestBody
 ) {
 
     companion object {
@@ -39,7 +37,7 @@ open class HttpRequest private constructor(
         return headers
     }
 
-    fun body(): Body {
+    fun body(): RequestBody {
         return body
     }
 
@@ -56,7 +54,7 @@ open class HttpRequest private constructor(
 
         val headers: HttpHeaders = HttpHeaders.empty()
 
-        var body: Body = Body.empty()
+        var body: RequestBody = RequestBody.empty()
             private set
 
         // region method
@@ -150,15 +148,15 @@ open class HttpRequest private constructor(
         // endregion
 
         // region body
-        fun body(body: Body): Builder {
+        fun body(body: RequestBody): Builder {
             this.body = body
             val contentType = body.contentType()
             headers.contentType(contentType)
             return this
         }
 
-        fun body(body: BodySource): Builder {
-            return body(Body.of(body, headers.contentType()))
+        fun body(body: Body): Builder {
+            return body(RequestBody.of(body, headers.contentType()))
         }
 
         fun body(body: String): Builder {
@@ -188,50 +186,6 @@ open class HttpRequest private constructor(
             }
             val uri = urlBuilder.buildUri()
             return HttpRequest(method, uri, headers.unmodifiable(), requestBody)
-        }
-    }
-
-    /**
-     * @author lingting 2024-09-28 11:54
-     */
-    class Body(private val source: BodySource, private val contentType: String?) {
-        fun contentType(): String? {
-            return contentType
-        }
-
-        fun contentLength(): Long {
-            return source.length()
-        }
-
-        fun source(): BodySource {
-            return source
-        }
-
-        fun bytes(): ByteArray {
-            return source.bytes()
-        }
-
-        fun input(): InputStream {
-            return source.openInput()
-        }
-
-        @JvmOverloads
-        fun string(charset: Charset = StandardCharsets.UTF_8): String {
-            return source.string(charset)
-        }
-
-        companion object {
-            fun empty(): Body {
-                return Body(BodySource.empty(), null)
-            }
-
-            fun of(body: BodySource): Body {
-                return Body(body, null)
-            }
-
-            fun of(body: BodySource, contentType: String?): Body {
-                return Body(body, contentType)
-            }
         }
     }
 

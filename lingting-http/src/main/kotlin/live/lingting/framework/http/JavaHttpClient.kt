@@ -1,6 +1,7 @@
 package live.lingting.framework.http
 
 import live.lingting.framework.http.body.MemoryBody
+import live.lingting.framework.http.body.RequestBody
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.util.StreamUtils
 import java.io.InputStream
@@ -38,7 +39,7 @@ class JavaHttpClient(protected val client: java.net.http.HttpClient) : HttpClien
             return builder.build()
         }
 
-        fun convert(method: HttpMethod, body: HttpRequest.Body?): BodyPublisher {
+        fun convert(method: HttpMethod, body: RequestBody?): BodyPublisher {
             if (body == null || !method.allowBody()) {
                 return BodyPublishers.noBody()
             }

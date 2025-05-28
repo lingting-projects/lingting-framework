@@ -2,7 +2,7 @@ package live.lingting.framework.aws.s3.request
 
 import live.lingting.framework.aws.s3.AwsS3Request
 import live.lingting.framework.http.HttpMethod
-import live.lingting.framework.http.body.BodySource
+import live.lingting.framework.http.body.Body
 import live.lingting.framework.http.body.MemoryBody
 import live.lingting.framework.multipart.Part
 
@@ -18,7 +18,7 @@ class AwsS3MultipartMergeRequest : AwsS3Request() {
         return HttpMethod.POST
     }
 
-    override fun body(): BodySource {
+    override fun body(): Body {
         val builder = StringBuilder("<CompleteMultipartUpload>\n")
         map.keys.sortedWith(Comparator.comparing(Part::index)).forEach { p ->
             val e = map[p]

@@ -5,7 +5,7 @@ import live.lingting.framework.ali.properties.AliProperties
 import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.api.ApiClient
-import live.lingting.framework.http.body.BodySource
+import live.lingting.framework.http.body.Body
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.util.StringUtils
 
@@ -44,7 +44,7 @@ abstract class AliClient<R : AliRequest> protected constructor(properties: AliPr
         urlBuilder: HttpUrlBuilder,
         r: R,
         headers: HttpHeaders,
-        body: BodySource
+        body: Body
     ): HttpResponse {
         val name = r.name()
         val version = r.version()

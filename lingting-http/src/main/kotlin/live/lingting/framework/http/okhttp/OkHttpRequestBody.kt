@@ -1,25 +1,24 @@
 package live.lingting.framework.http.okhttp
 
-import java.io.File
-import java.io.InputStream
-import live.lingting.framework.http.HttpRequest
-import live.lingting.framework.http.body.BodySource
+import live.lingting.framework.http.body.Body
 import live.lingting.framework.http.body.FileBody
 import live.lingting.framework.http.body.MemoryBody
+import live.lingting.framework.http.body.RequestBody
 import live.lingting.framework.stream.FileCloneInputStream
 import live.lingting.framework.util.StreamUtils
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody
 import okio.BufferedSink
+import java.io.File
+import java.io.InputStream
 
 /**
  * @author lingting 2024-09-02 16:20
  */
 open class OkHttpRequestBody(
-    protected val source: BodySource,
+    protected val source: Body,
     protected val mediaType: MediaType?
-) : RequestBody() {
+) : okhttp3.RequestBody() {
 
     companion object {
 
@@ -35,9 +34,9 @@ open class OkHttpRequestBody(
 
     constructor(input: InputStream, mediaType: MediaType?) : this(FileBody(input), mediaType)
 
-    constructor(source: BodySource, contentType: String?) : this(source, OkHttpUtils.mediaType(contentType))
+    constructor(source: Body, contentType: String?) : this(source, OkHttpUtils.mediaType(contentType))
 
-    constructor(body: HttpRequest.Body) : this(body.source(), body.contentType())
+    constructor(body: RequestBody) : this(body.source(), body.contentType())
 
     override fun contentType(): MediaType? {
         return mediaType
@@ -47,13 +46,13 @@ open class OkHttpRequestBody(
         return source.length()
     }
 
-    override fun writeTo(bufferedSink: BufferedSink) {
+    override fun writeTo(sink: BufferedSink) {
         if (source is MemoryBody) {
-            bufferedSink.write(source.bytes())
+            sink.write(source.bytes())
             return
         }
 
-        StreamUtils.read(source.openInput()) { buffer, len -> bufferedSink.write(buffer, 0, len) }
+        StreamUtils.read(source.openInput()) { buffer, len -> sink.write(buffer, 0, len) }
     }
 
 }

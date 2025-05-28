@@ -10,7 +10,7 @@ import live.lingting.framework.aws.s3.response.AwsS3PreSignedResponse
 import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.api.ApiClient
-import live.lingting.framework.http.body.BodySource
+import live.lingting.framework.http.body.Body
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.jackson.JacksonUtils
 import live.lingting.framework.time.DateTime
@@ -53,7 +53,7 @@ abstract class AwsS3Client protected constructor(val properties: S3Properties) :
         urlBuilder: HttpUrlBuilder,
         r: AwsS3Request,
         headers: HttpHeaders,
-        body: BodySource
+        body: Body
     ): HttpResponse {
         if (r.acl != null) {
             headers.put(AwsUtils.HEADER_ACL, r.acl!!.value)

@@ -1,5 +1,6 @@
 package live.lingting.framework.http.body
 
+import live.lingting.framework.stream.BytesInputStream
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.io.OutputStream
@@ -7,12 +8,11 @@ import java.nio.ByteBuffer
 import java.nio.channels.WritableByteChannel
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
-import live.lingting.framework.stream.BytesInputStream
 
 /**
  * @author lingting 2024-09-28 14:04
  */
-open class MemoryBody(val bytes: ByteArray) : BodySource() {
+open class MemoryBody(val bytes: ByteArray) : Body() {
 
     @JvmOverloads
     constructor(string: String, charset: Charset = StandardCharsets.UTF_8) : this(string.toByteArray(charset))

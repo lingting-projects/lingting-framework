@@ -1,7 +1,7 @@
 package live.lingting.framework.http.api
 
 import live.lingting.framework.http.HttpMethod
-import live.lingting.framework.http.body.BodySource
+import live.lingting.framework.http.body.Body
 
 /**
  * @author lingting 2024-09-19 15:41
@@ -9,7 +9,7 @@ import live.lingting.framework.http.body.BodySource
 open class ApiSimpleRequest @JvmOverloads constructor(
     protected val method: HttpMethod,
     protected val path: String,
-    protected val body: BodySource = BodySource.empty()
+    protected val body: Body = Body.empty()
 ) : ApiRequest() {
     override fun method(): HttpMethod {
         return method
@@ -19,7 +19,7 @@ open class ApiSimpleRequest @JvmOverloads constructor(
         return path
     }
 
-    override fun body(): BodySource {
+    override fun body(): Body {
         return body
     }
 }

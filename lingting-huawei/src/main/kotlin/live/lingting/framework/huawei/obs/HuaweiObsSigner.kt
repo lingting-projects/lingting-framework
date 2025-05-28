@@ -6,7 +6,7 @@ import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.api.ApiRequest
-import live.lingting.framework.http.body.BodySource
+import live.lingting.framework.http.body.Body
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.huawei.HuaweiObs
 import live.lingting.framework.huawei.HuaweiUtils
@@ -27,7 +27,7 @@ open class HuaweiObsSigner(
     val method: HttpMethod,
     path: String,
     headers: HttpHeaders,
-    val body: BodySource?,
+    val body: Body?,
     params: StringMultiValue?,
     ak: String,
     val sk: String,
