@@ -1,14 +1,29 @@
 package live.lingting.framework.ali.properties
 
-import live.lingting.framework.aws.s3.properties.S3Properties
-
 /**
  * @author lingting 2024-09-14 14:16
  */
-abstract class AliProperties : S3Properties() {
+abstract class AliProperties {
 
-    init {
-        endpoint = "aliyuncs.com"
+    companion object {
+
+        @JvmField
+        val ENDPOINT = "aliyuncs.com"
+
     }
+
+    open var ssl: Boolean = true
+
+    open var region: String = "us-east-1"
+
+    open var endpoint: String = ENDPOINT
+
+    open var ak: String = ""
+
+    open var sk: String = ""
+
+    open var token: String? = ""
+
+    abstract fun host(): String
 
 }

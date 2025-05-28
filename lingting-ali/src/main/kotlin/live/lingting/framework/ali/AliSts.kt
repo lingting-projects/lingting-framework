@@ -37,8 +37,9 @@ open class AliSts(protected val properties: AliStsProperties) : AliClient<AliSts
         request.statements = statements
         request.roleArn = properties.roleArn
         request.roleSessionName = properties.roleSessionName
-        val response = call(request)
-        val convert = response.convert(AliStsCredentialResponse::class.java)
+        val convert = call(request).use {
+            it.convert(AliStsCredentialResponse::class.java)
+        }
         val ak = convert.accessKeyId
         val sk = convert.accessKeySecret
         val token = convert.securityToken

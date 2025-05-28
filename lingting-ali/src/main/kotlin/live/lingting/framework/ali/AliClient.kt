@@ -50,19 +50,19 @@ abstract class AliClient<R : AliRequest> protected constructor(properties: AliPr
         val version = r.version()
         val nonce = r.nonce()
 
-        headers.put("x-acs-action", name)
-        headers.put("x-acs-version", version)
-        headers.put("x-acs-signature-nonce", nonce)
+        headers.put("${AliV3Signer.HEADER_PREFIX}-action", name)
+        headers.put("${AliV3Signer.HEADER_PREFIX}-version", version)
+        headers.put("${AliV3Signer.HEADER_PREFIX}-signature-nonce", nonce)
 
         if (StringUtils.hasText(token)) {
-            headers.put("x-acs-security-token", token!!)
+            headers.put("${AliV3Signer.HEADER_PREFIX}-security-token", token!!)
         }
 
         val signer = AliV3Signer(
             r.method(),
             urlBuilder.buildPath(),
             headers,
-            if (body.length() < 1) null else body,
+            body,
             urlBuilder.params(),
             ak,
             sk
