@@ -1,13 +1,12 @@
 package live.lingting.framework.ali
 
-import live.lingting.framework.ali.exception.AliStsException
 import live.lingting.framework.ali.properties.AliOssProperties
 import live.lingting.framework.ali.properties.AliStsProperties
 import live.lingting.framework.ali.sts.AliStsCredentialRequest
 import live.lingting.framework.ali.sts.AliStsCredentialResponse
+import live.lingting.framework.ali.sts.AliStsRequest
 import live.lingting.framework.aws.policy.Credential
 import live.lingting.framework.aws.policy.Statement
-import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.util.StringUtils
 import java.time.Duration
 import java.time.LocalDateTime
@@ -15,23 +14,7 @@ import java.time.LocalDateTime
 /**
  * @author lingting 2024-09-14 11:52
  */
-open class AliSts(protected val properties: AliStsProperties) : AliClient<AliRequest>(properties) {
-
-    override fun checkout(request: AliRequest, response: HttpResponse): HttpResponse {
-        if (!response.is2xx) {
-            val string = response.string()
-            val headers = response.request().headers()
-            log.error(
-                "AliSts call error! uri: {}; sign: {}; code: {}; body:\n{}",
-                response.uri(),
-                headers.authorization(),
-                response.code(),
-                string
-            )
-            throw AliStsException("request error! code: " + response.code())
-        }
-        return response
-    }
+open class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsRequest>(properties) {
 
     fun credential(statement: Statement): Credential {
         return credential(setOf(statement))

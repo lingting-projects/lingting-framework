@@ -1,5 +1,6 @@
 package live.lingting.framework.ali
 
+import live.lingting.framework.ali.exception.AliException
 import live.lingting.framework.ali.properties.AliProperties
 import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.HttpUrlBuilder
@@ -19,6 +20,25 @@ abstract class AliClient<R : AliRequest> protected constructor(properties: AliPr
     protected val sk: String = properties.sk
 
     protected val token: String? = properties.token
+
+    override fun checkout(request: R, response: HttpResponse): HttpResponse {
+        if (response.isOk) {
+            return response
+        }
+
+        val string = response.string()
+        val headers = response.request().headers()
+        log.error(
+            "Ali api call error! client: {} name: {}; uri: {}; authorization: {}; httpStatus: {}; body:\n{}",
+            javaClass.simpleName,
+            request.name(),
+            response.uri(),
+            headers.authorization(),
+            response.code(),
+            string
+        )
+        throw AliException("request error! name: ${request.name()}; code: ${response.code()}")
+    }
 
     override fun call(
         urlBuilder: HttpUrlBuilder,
@@ -54,4 +74,5 @@ abstract class AliClient<R : AliRequest> protected constructor(properties: AliPr
         headers.authorization(signed.authorization)
         return super.call(urlBuilder, r, headers, body)
     }
+
 }

@@ -11,23 +11,23 @@ import live.lingting.framework.http.HttpUrlBuilder
  */
 abstract class S3Properties {
 
-    var ssl: Boolean = true
+    open var ssl: Boolean = true
 
-    var hostStyle: HostStyle = HostStyle.VIRTUAL
+    open var hostStyle: HostStyle = HostStyle.VIRTUAL
 
-    var region: String = "us-east-1"
+    open var region: String = "us-east-1"
 
-    var endpoint: String = "amazonaws.com"
+    open var endpoint: String = "amazonaws.com"
 
-    var bucket: String = ""
+    open var bucket: String = ""
 
-    var acl: Acl = Acl.PRIVATE
+    open var acl: Acl = Acl.PRIVATE
 
-    var ak: String = ""
+    open var ak: String = ""
 
-    var sk: String = ""
+    open var sk: String = ""
 
-    var token: String? = ""
+    open var token: String? = ""
 
     open fun useCredential(credential: Credential) {
         ak = credential.ak
