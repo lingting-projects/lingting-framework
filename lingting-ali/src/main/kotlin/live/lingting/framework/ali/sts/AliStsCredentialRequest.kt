@@ -1,6 +1,5 @@
 package live.lingting.framework.ali.sts
 
-import live.lingting.framework.ali.AliRequest
 import live.lingting.framework.aws.policy.Statement
 import live.lingting.framework.http.body.BodySource
 import live.lingting.framework.http.body.MemoryBody
@@ -9,7 +8,7 @@ import live.lingting.framework.jackson.JacksonUtils
 /**
  * @author lingting 2024-09-14 13:45
  */
-class AliStsCredentialRequest : AliRequest() {
+class AliStsCredentialRequest : AliStsRequest() {
 
     /**
      * 过期时长, 单位: 秒
@@ -24,14 +23,6 @@ class AliStsCredentialRequest : AliRequest() {
 
     override fun name(): String {
         return "AssumeRole"
-    }
-
-    override fun version(): String {
-        return "2015-04-01"
-    }
-
-    override fun path(): String {
-        return ""
     }
 
     override fun body(): BodySource {

@@ -19,6 +19,8 @@ abstract class AliRequest : ApiRequest() {
 
     abstract fun version(): String
 
+    override fun path(): String = ""
+
     fun nonce(): String {
         return nonceValue.compute {
             if (StringUtils.hasText(it)) {
