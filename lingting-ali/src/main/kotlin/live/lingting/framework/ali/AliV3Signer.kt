@@ -195,7 +195,6 @@ class AliV3Signer(
 
 
     class Signed(
-
         signer: AliV3Signer,
         headers: HttpHeaders,
         params: StringMultiValue?,
