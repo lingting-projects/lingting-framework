@@ -49,13 +49,7 @@ abstract class AliClient<R : AliRequest> protected constructor(properties: AliPr
         )
 
         val signed = signer.signed()
-
-        headers.putAll(signed.headers)
-
-        val params = signed.params
-        if (params != null) {
-            urlBuilder.addParams(params)
-        }
+        signed.fill(headers, urlBuilder)
 
         headers.authorization(signed.authorization)
         return super.call(urlBuilder, r, headers, body)

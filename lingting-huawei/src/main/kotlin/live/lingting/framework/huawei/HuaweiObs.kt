@@ -25,4 +25,5 @@ abstract class HuaweiObs<C : AwsS3Client> protected constructor(protected val cl
     override fun delegation(): C {
         return client
     }
+
 }

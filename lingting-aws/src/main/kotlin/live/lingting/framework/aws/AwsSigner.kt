@@ -1,5 +1,6 @@
 package live.lingting.framework.aws
 
+import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.time.DateTime
 import live.lingting.framework.value.multi.StringMultiValue
@@ -45,6 +46,34 @@ abstract class AwsSigner<S : AwsSigner<S, R>, R : AwsSigner.Signed<S, R>>(open v
         open val source: String,
         open val sign: String,
         open val authorization: String,
-    )
+    ) {
+
+        open fun fill(headers: HttpHeaders?) {
+            headers?.putAll(this.headers)
+        }
+
+        open fun fill(urlBuilder: HttpUrlBuilder? = null) {
+            if (params == null || urlBuilder == null) {
+                return
+            }
+            val up = urlBuilder.params()
+            params?.forEach { k, vs ->
+                val uvs = up.get(k)
+
+                vs.forEach { v ->
+                    if (!uvs.contains(v)) {
+                        urlBuilder.addParam(k, v)
+                    }
+                }
+
+            }
+        }
+
+        open fun fill(headers: HttpHeaders? = null, urlBuilder: HttpUrlBuilder? = null) {
+            fill(headers)
+            fill(urlBuilder)
+        }
+
+    }
 
 }
