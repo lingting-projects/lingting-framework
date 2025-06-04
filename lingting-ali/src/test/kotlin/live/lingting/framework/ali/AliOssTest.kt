@@ -47,20 +47,29 @@ class AliOssTest {
 
     val snowflake = Snowflake(0, 0)
 
+    var useSts = true
+
     @BeforeEach
     fun before() {
         sts = AliBasic.sts()
-        properties = AliBasic.ossProperties()
+        properties = AliBasic.ossStsProperties()
     }
+
+    fun buildObj(key: String): AliOssObject =
+        if (useSts) sts!!.ossObject(properties!!, key) else AliOssObject(AliBasic.ossProperties(), key)
+
+    fun buildBucket(): AliOssBucket =
+        if (useSts) sts!!.ossBucket(properties!!) else AliOssBucket(AliBasic.ossProperties())
 
     @Test
     fun put() {
-        val key = "test/s_" + snowflake.nextId()
+        val key = "test/lingting.txt"
+
         log.info("put key: {}", key)
-        val obj = sts!!.ossObject(properties!!, key)
+        val obj = buildObj(key)
         assertThrows(AliException::class.java) { obj.head() }
         try {
-            val source = "hello world"
+            val source = "hello world oss"
             val bytes = source.toByteArray()
             val hex = DigestUtils.md5Hex(bytes)
             assertDoesNotThrow { obj.put(ByteArrayInputStream(bytes)) }
@@ -74,11 +83,12 @@ class AliOssTest {
         } finally {
             obj.delete()
         }
+
     }
 
     @Test
     fun multipart() {
-        val ossBucket = sts!!.ossBucket(properties!!)
+        val ossBucket = buildBucket()
         val bo = ossBucket.use("ali/b_t")
         val uploadId = bo.multipartInit()
         val bm = ossBucket.multipartList {
@@ -99,7 +109,7 @@ class AliOssTest {
 
         val snowflake = Snowflake(0, 1)
         val key = "ali/m_" + snowflake.nextId()
-        val ossObject = sts!!.ossObject(properties!!, key)
+        val ossObject = buildObj(key)
         assertThrows(AliException::class.java) { ossObject.head() }
         val source = "hello world\n".repeat(10000)
         val bytes = source.toByteArray()
@@ -134,7 +144,7 @@ class AliOssTest {
 
     @Test
     fun listAndMeta() {
-        val ossBucket = sts!!.ossBucket(properties!!)
+        val ossBucket = buildBucket()
         val key = "ali/b_t_l_m"
         val bo = ossBucket.use(key)
         val source = "hello world"
@@ -171,7 +181,7 @@ class AliOssTest {
         val client = HttpClient.default().disableSsl().build()
         val key = "test/pre_" + snowflake.nextId()
         log.info("pre key: {}", key)
-        val obj = sts!!.ossObject(properties!!, key)
+        val obj = buildObj(key)
 
         val source = "hello world"
         val bytes = source.toByteArray()
