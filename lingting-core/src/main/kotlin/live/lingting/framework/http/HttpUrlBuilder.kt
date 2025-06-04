@@ -82,27 +82,11 @@ open class HttpUrlBuilder {
             charset: Charset = StandardCharsets.UTF_8,
             sort: Boolean = false
         ): String {
-            if (map.isNullOrEmpty()) {
-                return ""
-            }
-            val keys = map.keys.let { if (sort) it.sorted() else it }.toList()
-
-            val builder = StringBuilder()
-            for (k in keys) {
-                val vs = map[k]
-                val name = if (encode) encode(k, charset) else k
-                if (vs.isNullOrEmpty()) {
-                    builder.append(name).append("&")
-                } else {
-                    vs.let { if (sort) it.sorted() else it }.forEach { v ->
-                        builder.append(name).append("=")
-                        val value = if (encode) encode(v, charset) else v
-                        builder.append(value).append("&")
-                    }
-                }
-            }
-
-            return StringUtils.deleteLast(builder).toString()
+            return QueryBuilder(map).also {
+                it.encode = encode
+                it.charset = charset
+                it.sort = sort
+            }.build()
         }
     }
 
@@ -254,13 +238,40 @@ open class HttpUrlBuilder {
         return this
     }
 
-    fun addParams(params: Map<String, *>): HttpUrlBuilder {
+    fun addParams(params: Map<String, Any>): HttpUrlBuilder {
         params.forEach { (name: String, value: Any?) -> this.addParam(name, value) }
         return this
     }
 
-    fun addParams(params: MultiValue<String, *, *>): HttpUrlBuilder {
+    fun addParams(params: MultiValue<String, out Any, out Collection<Any>>): HttpUrlBuilder {
         params.forEach { name, value -> addParam(name, value) }
+        return this
+    }
+
+    fun clearParams(): HttpUrlBuilder {
+        params.clear()
+        return this
+    }
+
+    @JvmOverloads
+    fun removeParam(name: String, value: String? = null): HttpUrlBuilder {
+        if (value == null) {
+            params.remove(name)
+        } else {
+            params.remove(name, value)
+        }
+        return this
+    }
+
+    @JvmOverloads
+    fun removeAllParams(name: String, collection: Collection<String>? = null): HttpUrlBuilder {
+        if (collection == null) {
+            params.remove(name)
+        } else if (collection.isNotEmpty()) {
+            collection.forEach { c ->
+                params.remove(c)
+            }
+        }
         return this
     }
 

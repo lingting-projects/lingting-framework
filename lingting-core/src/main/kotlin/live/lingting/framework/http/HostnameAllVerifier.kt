@@ -8,7 +8,9 @@ import javax.net.ssl.SSLSession
  */
 @Suppress("kotlin:S5527", "kotlin:S6516")
 object HostnameAllVerifier : HostnameVerifier {
+
     override fun verify(hostname: String, sslSession: SSLSession): Boolean {
         return true
     }
+
 }
