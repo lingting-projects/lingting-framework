@@ -1,11 +1,13 @@
 package live.lingting.framework.ali
 
 import live.lingting.framework.aws.AwsSigner
+import live.lingting.framework.aws.AwsUtils
 import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.body.Body
 import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.time.DatePattern
 import live.lingting.framework.util.ArrayUtils.contains
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.StringUtils.deleteLast
@@ -48,7 +50,7 @@ class AliV3Signer(
         if (path.startsWith("/")) path else "/$path"
     }
 
-    val bodyPayload by lazy {
+    override val bodyPayload by lazy {
         body.let {
             if (it == null || it.length() < 1) {
                 ""
@@ -58,7 +60,7 @@ class AliV3Signer(
         }
     }
 
-    fun date(time: LocalDateTime) = AliUtils.format(time)
+    fun date(time: LocalDateTime) = AwsUtils.format(time, DatePattern.FORMATTER_ISO_8601)
 
     fun canonicalUri() = path
 
@@ -173,26 +175,12 @@ class AliV3Signer(
 
     override fun signed(
         time: LocalDateTime,
-        expire: LocalDateTime
-    ): Signed {
-        throw UnsupportedOperationException()
-    }
-
-    override fun signed(
-        time: LocalDateTime,
-        duration: Duration
-    ): Signed {
-        throw UnsupportedOperationException()
-    }
-
-    override fun signed(
-        time: LocalDateTime,
         duration: Duration,
-        bodyPayload: String
+        bodyPayload: String,
+        tokenSigned: Boolean
     ): Signed {
         throw UnsupportedOperationException()
     }
-
 
     class Signed(
         signer: AliV3Signer,

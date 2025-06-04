@@ -106,7 +106,7 @@ open class HuaweiObsSigner(
         if (path.startsWith("/")) path else "/$path"
     }
 
-    open val bodyPayload by lazy {
+    override val bodyPayload by lazy {
         body.let {
             if (it == null || it.length() < 1) {
                 ""
@@ -138,10 +138,9 @@ open class HuaweiObsSigner(
 
     open fun headersForEach(consumer: BiConsumer<String, Collection<String>>) {
         headers.forEachSorted { k, vs ->
-            if (!k.startsWith(headerPrefix)) {
-                return@forEachSorted
+            if (k.startsWith(headerPrefix)) {
+                consumer.accept(k, vs)
             }
-            consumer.accept(k, vs)
         }
     }
 
@@ -204,15 +203,10 @@ open class HuaweiObsSigner(
         return "OBS $ak:$sign"
     }
 
-    override fun signed(time: LocalDateTime): Signed {
-        return signed(time, bodyPayload)
-    }
-
     override fun signed(
         time: LocalDateTime,
         bodyPayload: String
     ): Signed {
-
         val date = date(time)
         headers.put(headerDate, date)
 
@@ -246,13 +240,9 @@ open class HuaweiObsSigner(
 
     override fun signed(
         time: LocalDateTime,
-        expire: LocalDateTime
-    ): Signed = signed(time, expire, bodyPayload)
-
-    override fun signed(
-        time: LocalDateTime,
         expire: LocalDateTime,
-        bodyPayload: String
+        bodyPayload: String,
+        tokenSigned: Boolean
     ): Signed {
         val date = (expire.timestamp / 1000).toString()
 
@@ -301,7 +291,8 @@ open class HuaweiObsSigner(
     override fun signed(
         time: LocalDateTime,
         duration: Duration,
-        bodyPayload: String
+        bodyPayload: String,
+        tokenSigned: Boolean
     ): Signed {
         val expire = time.plus(duration.seconds, ChronoUnit.SECONDS)
         return signed(time, expire, bodyPayload)

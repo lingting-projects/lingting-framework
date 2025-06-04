@@ -1,9 +1,9 @@
-package live.lingting.framework.ali
+package live.lingting.framework.ali.oss
 
 /**
  * @author lingting 2024-09-18 14:58
  */
-object AliActions {
+object AliOssActions {
     /**
      * 列举请求者拥有的所有Bucket。
      */
@@ -804,4 +804,5 @@ object AliActions {
         OSS_OBJECT_PUT, OSS_OBJECT_PUT_ACL,
         OSS_OBJECT_GET_META, OSS_OBJECT_PUT_TAGGING, OSS_OBJECT_ABORT_MULTIPART_UPLOAD
     )
+
 }

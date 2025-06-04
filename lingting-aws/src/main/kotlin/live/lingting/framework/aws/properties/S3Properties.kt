@@ -1,33 +1,22 @@
-package live.lingting.framework.aws.s3.properties
+package live.lingting.framework.aws.properties
 
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.policy.Credential
-import live.lingting.framework.aws.s3.AwsS3Properties
 import live.lingting.framework.aws.s3.enums.HostStyle
 import live.lingting.framework.http.HttpUrlBuilder
 
 /**
  * @author lingting 2025/1/14 17:14
  */
-abstract class S3Properties {
-
-    open var ssl: Boolean = true
+abstract class S3Properties : AwsProperties() {
 
     open var hostStyle: HostStyle = HostStyle.VIRTUAL
 
-    open var region: String = "us-east-1"
-
-    open var endpoint: String = "amazonaws.com"
+    open var region: String = REGION
 
     open var bucket: String = ""
 
-    open var acl: Acl = Acl.PRIVATE
-
-    open var ak: String = ""
-
-    open var sk: String = ""
-
-    open var token: String? = ""
+    open var acl: Acl? = Acl.PRIVATE
 
     open fun useCredential(credential: Credential) {
         ak = credential.ak
@@ -50,7 +39,7 @@ abstract class S3Properties {
         return AwsS3Properties().also { it.from(this) }
     }
 
-    open fun host(): String {
+    override fun host(): String {
         if (hostStyle == HostStyle.VIRTUAL) {
             return virtualHost()
         }

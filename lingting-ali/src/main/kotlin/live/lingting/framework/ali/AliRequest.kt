@@ -1,6 +1,7 @@
 package live.lingting.framework.ali
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import live.lingting.framework.http.HttpContentTypes
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.api.ApiRequest
 import live.lingting.framework.id.Snowflake
@@ -38,7 +39,7 @@ abstract class AliRequest : ApiRequest() {
     }
 
     override fun onCall() {
-        headers.contentType("application/json;charset=utf8")
+        headers.contentType(HttpContentTypes.JSON_UTF8)
     }
 
 }

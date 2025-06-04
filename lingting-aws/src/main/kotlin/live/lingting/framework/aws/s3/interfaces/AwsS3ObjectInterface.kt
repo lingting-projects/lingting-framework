@@ -4,9 +4,11 @@ import live.lingting.framework.aws.AwsUtils
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3Meta
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
+import live.lingting.framework.aws.s3.AwsS3PreRequest
 import live.lingting.framework.aws.s3.request.AwsS3ObjectPutRequest
 import live.lingting.framework.aws.s3.response.AwsS3PreSignedResponse
 import live.lingting.framework.data.DataSize
+import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.multipart.Part
 import live.lingting.framework.stream.CloneInputStream
@@ -95,7 +97,11 @@ interface AwsS3ObjectInterface {
 
     fun preGet() = preGet(1.days)
 
-    fun preGet(expire: Duration): AwsS3PreSignedResponse
+    fun preGet(expire: Duration): AwsS3PreSignedResponse {
+        val r = AwsS3PreRequest(HttpMethod.GET)
+        r.expire = expire
+        return pre(r)
+    }
 
     fun prePut(): AwsS3PreSignedResponse = prePut(null)
 
@@ -107,7 +113,18 @@ interface AwsS3ObjectInterface {
 
     fun prePut(expire: Duration, acl: Acl?): AwsS3PreSignedResponse = prePut(expire, null, null)
 
-    fun prePut(expire: Duration, acl: Acl?, meta: HttpHeaders?): AwsS3PreSignedResponse
+    fun prePut(expire: Duration, acl: Acl?, meta: HttpHeaders?): AwsS3PreSignedResponse {
+        val r = AwsS3PreRequest(HttpMethod.PUT)
+        r.expire = expire
+        r.acl = acl
+        if (meta != null) {
+            r.meta.addAll(meta)
+        }
+        return pre(r)
+    }
+
+    fun pre(request: AwsS3PreRequest): AwsS3PreSignedResponse
+
 
     // endregion
 

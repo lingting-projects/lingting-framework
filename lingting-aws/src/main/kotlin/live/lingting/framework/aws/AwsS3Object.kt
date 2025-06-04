@@ -1,15 +1,14 @@
 package live.lingting.framework.aws
 
 import live.lingting.framework.aws.policy.Acl
+import live.lingting.framework.aws.properties.S3Properties
 import live.lingting.framework.aws.s3.AwsS3Meta
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
 import live.lingting.framework.aws.s3.AwsS3Request
 import live.lingting.framework.aws.s3.interfaces.AwsS3ObjectInterface
-import live.lingting.framework.aws.s3.properties.S3Properties
 import live.lingting.framework.aws.s3.request.AwsS3MultipartMergeRequest
 import live.lingting.framework.aws.s3.request.AwsS3ObjectPutRequest
 import live.lingting.framework.aws.s3.request.AwsS3SimpleRequest
-import live.lingting.framework.aws.s3.response.AwsS3PreSignedResponse
 import live.lingting.framework.data.DataSize
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.header.HttpHeaders
@@ -18,7 +17,6 @@ import live.lingting.framework.multipart.Multipart
 import live.lingting.framework.multipart.Part
 import live.lingting.framework.thread.Async
 import java.io.InputStream
-import java.time.Duration
 
 /**
  * @author lingting 2024-09-19 15:09
@@ -29,7 +27,12 @@ class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Cli
 
     override fun customize(request: AwsS3Request) {
         request.key = key
-        request.setAclIfAbsent(acl)
+        if (acl != null && request.acl == null) {
+            val method = request.method()
+            if (method.allowBody()) {
+                request.acl = acl
+            }
+        }
     }
 
     override fun publicUrl(): String {
@@ -114,27 +117,6 @@ class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Cli
         val request = AwsS3SimpleRequest(HttpMethod.DELETE)
         request.params.add("uploadId", uploadId)
         call(request)
-    }
-
-    override fun preGet(expire: Duration): AwsS3PreSignedResponse {
-        val r = AwsS3SimpleRequest(HttpMethod.GET)
-        r.expire = expire
-        val response = preRequest(r)
-        return response
-    }
-
-    override fun prePut(
-        expire: Duration,
-        acl: Acl?,
-        meta: HttpHeaders?
-    ): AwsS3PreSignedResponse {
-        val r = AwsS3SimpleRequest(HttpMethod.PUT)
-        r.expire = expire
-        r.acl = acl
-        if (meta != null) {
-            r.meta.addAll(meta)
-        }
-        return preRequest(r)
     }
 
 }

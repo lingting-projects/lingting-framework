@@ -1,6 +1,6 @@
 package live.lingting.framework.huawei.properties
 
-import live.lingting.framework.aws.s3.properties.S3Properties
+import live.lingting.framework.aws.properties.S3Properties
 
 /**
  * @author lingting 2024-09-12 21:25

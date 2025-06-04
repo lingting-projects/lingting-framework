@@ -1,49 +1,41 @@
 package live.lingting.framework.ali
 
+import live.lingting.framework.ali.oss.AliOssActions
 import live.lingting.framework.ali.properties.AliOssProperties
 import live.lingting.framework.ali.properties.AliStsProperties
 import live.lingting.framework.ali.sts.AliStsCredentialRequest
 import live.lingting.framework.ali.sts.AliStsCredentialResponse
 import live.lingting.framework.ali.sts.AliStsRequest
+import live.lingting.framework.aws.AwsUtils
 import live.lingting.framework.aws.policy.Credential
 import live.lingting.framework.aws.policy.Statement
+import live.lingting.framework.aws.sts.AwsStsInterface
+import live.lingting.framework.time.DatePattern
 import live.lingting.framework.util.StringUtils
 import java.time.Duration
-import java.time.LocalDateTime
 
 /**
  * @author lingting 2024-09-14 11:52
  */
-open class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsRequest>(properties) {
+open class AliSts(protected val properties: AliStsProperties) : AliClient<AliStsRequest>(properties), AwsStsInterface {
 
-    fun credential(statement: Statement): Credential {
-        return credential(setOf(statement))
-    }
-
-    fun credential(statement: Statement, vararg statements: Statement): Credential {
-        val list: MutableList<Statement> = ArrayList(statements.size + 1)
-        list.add(statement)
-        list.addAll(statements)
-        return credential(list)
-    }
-
-    fun credential(statements: Collection<Statement>): Credential {
-        return credential(AliUtils.CREDENTIAL_EXPIRE, statements)
-    }
-
-    fun credential(timeout: Duration, statements: Collection<Statement>): Credential {
+    override fun credential(timeout: Duration, statements: Collection<Statement>): Credential {
         val request = AliStsCredentialRequest()
         request.timeout = timeout.toSeconds()
         request.statements = statements
         request.roleArn = properties.roleArn
         request.roleSessionName = properties.roleSessionName
+        return credential(request)
+    }
+
+    fun credential(request: AliStsCredentialRequest): Credential {
         val convert = call(request).use {
             it.convert(AliStsCredentialResponse::class.java)
         }
         val ak = convert.accessKeyId
         val sk = convert.accessKeySecret
         val token = convert.securityToken
-        val expire: LocalDateTime = AliUtils.parse(convert.expire)
+        val expire = AwsUtils.parse(convert.expire, DatePattern.FORMATTER_ISO_8601)
         return Credential(ak, sk, token, expire)
     }
 
@@ -63,7 +55,7 @@ open class AliSts(protected val properties: AliStsProperties) : AliClient<AliSts
     }
 
     fun ossBucket(properties: AliOssProperties): AliOssBucket {
-        return ossBucket(properties, AliActions.OSS_BUCKET_DEFAULT)
+        return ossBucket(properties, AliOssActions.OSS_BUCKET_DEFAULT)
     }
 
     fun ossBucket(properties: AliOssProperties, actions: Collection<String>): AliOssBucket {
@@ -93,7 +85,7 @@ open class AliSts(protected val properties: AliStsProperties) : AliClient<AliSts
     }
 
     fun ossObject(properties: AliOssProperties, key: String): AliOssObject {
-        return ossObject(properties, key, AliActions.OSS_OBJECT_DEFAULT)
+        return ossObject(properties, key, AliOssActions.OSS_OBJECT_DEFAULT)
     }
 
     fun ossObject(properties: AliOssProperties, key: String, vararg actions: String) =

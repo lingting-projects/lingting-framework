@@ -14,4 +14,5 @@ open class AliOssBucket(
     override fun use(key: String): AliOssObject {
         return AliOssObject(ossProperties, key)
     }
+
 }

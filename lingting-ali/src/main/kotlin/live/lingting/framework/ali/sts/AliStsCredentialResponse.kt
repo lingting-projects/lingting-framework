@@ -24,6 +24,7 @@ class AliStsCredentialResponse : AliResponse() {
         get() = credentials.expiration
 
     class Credentials {
+
         @JsonProperty("AccessKeyId")
         var accessKeyId: String = ""
 
@@ -35,5 +36,6 @@ class AliStsCredentialResponse : AliResponse() {
 
         @JsonProperty("Expiration")
         var expiration: String = ""
+
     }
 }

@@ -57,22 +57,22 @@ class AliOssTest {
     fun put() {
         val key = "test/s_" + snowflake.nextId()
         log.info("put key: {}", key)
-        val ossObject = sts!!.ossObject(properties!!, key)
-        assertThrows(AliException::class.java) { ossObject.head() }
+        val obj = sts!!.ossObject(properties!!, key)
+        assertThrows(AliException::class.java) { obj.head() }
         try {
             val source = "hello world"
             val bytes = source.toByteArray()
             val hex = DigestUtils.md5Hex(bytes)
-            assertDoesNotThrow { ossObject.put(ByteArrayInputStream(bytes)) }
-            val head = ossObject.head()
+            assertDoesNotThrow { obj.put(ByteArrayInputStream(bytes)) }
+            val head = obj.head()
             assertNotNull(head)
             assertEquals(bytes.size.toLong(), head.contentLength())
             assertTrue("\"$hex\"".equals(head.etag(), ignoreCase = true))
-            val await: HttpDownload = HttpDownload.single(ossObject.publicUrl()).build().start().await()
+            val await: HttpDownload = HttpDownload.single(obj.publicUrl()).build().start().await()
             val string = StreamUtils.toString(Files.newInputStream(await.file().toPath()))
             assertEquals(source, string)
         } finally {
-            ossObject.delete()
+            obj.delete()
         }
     }
 
@@ -207,7 +207,7 @@ class AliOssTest {
 
             log.info("=================get=================")
             val preGet = obj.preGet()
-            log.info("get url: {}", preGet)
+            log.info("get url: {}", preGet.url)
 
             client.request(
                 HttpRequest.builder()

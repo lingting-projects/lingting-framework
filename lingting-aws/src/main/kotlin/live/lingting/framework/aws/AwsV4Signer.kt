@@ -2,7 +2,7 @@ package live.lingting.framework.aws
 
 import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.http.HttpMethod
-import live.lingting.framework.http.HttpUrlBuilder
+import live.lingting.framework.http.QueryBuilder
 import live.lingting.framework.http.api.ApiRequest
 import live.lingting.framework.http.body.Body
 import live.lingting.framework.http.header.HttpHeaders
@@ -71,7 +71,7 @@ open class AwsV4Signer(
         if (path.startsWith("/")) path else "/$path"
     }
 
-    open val bodyPayload by lazy {
+    override val bodyPayload by lazy {
         body.let {
             if (it == null || it.length() < 1) {
                 AwsUtils.PAYLOAD_UNSIGNED
@@ -86,29 +86,17 @@ open class AwsV4Signer(
     open fun canonicalUri() = path
 
     open fun canonicalQuery(): String {
-        val builder = StringBuilder()
-        if (!params.isEmpty) {
-            params.forEachSorted { k, vs ->
-                val name: String = HttpUrlBuilder.encode(k)
-                if (vs.isEmpty()) {
-                    builder.append(name).append("=").append("&")
-                    return@forEachSorted
-                }
-                vs.sorted().forEach { v ->
-                    val value: String = HttpUrlBuilder.encode(v)
-                    builder.append(name).append("=").append(value).append("&")
-                }
-            }
-        }
-        return deleteLast(builder).toString()
+        return QueryBuilder(params).apply {
+            emptyValueEqual = true
+            sort = true
+        }.build()
     }
 
     open fun headersForEach(consumer: BiConsumer<String, Collection<String>>) {
         headers.forEachSorted { k, vs ->
-            if (!k.startsWith(headerPrefix) && !headerInclude.contains(k)) {
-                return@forEachSorted
+            if (k.startsWith(headerPrefix) || headerInclude.contains(k)) {
+                consumer.accept(k, vs)
             }
-            consumer.accept(k, vs)
         }
     }
 
@@ -202,8 +190,6 @@ open class AwsV4Signer(
         return "$algorithm Credential=$ak/$scope,SignedHeaders=$signedHeaders,Signature=$sign"
     }
 
-    override fun signed(time: LocalDateTime): Signed = signed(time, bodyPayload)
-
     override fun signed(
         time: LocalDateTime,
         bodyPayload: String
@@ -251,24 +237,17 @@ open class AwsV4Signer(
 
     override fun signed(
         time: LocalDateTime,
-        expire: LocalDateTime
-    ): Signed = signed(time, expire, bodyPayload)
-
-
-    override fun signed(
-        time: LocalDateTime,
-        duration: Duration
-    ): Signed = signed(time, duration, bodyPayload)
-
-    override fun signed(
-        time: LocalDateTime,
         duration: Duration,
-        bodyPayload: String
+        bodyPayload: String,
+        tokenSigned: Boolean
     ): Signed {
         val date = date(time)
-        val token = headers.first(headerSecurityToken)
+        val token = headers.remove(headerSecurityToken)?.firstOrNull()
         if (!token.isNullOrEmpty()) {
             params.add(AwsUtils.toParamsKey(headerSecurityToken), token)
+            if (tokenSigned) {
+                headers.put(headerSecurityToken, token)
+            }
         }
         params.add(AwsUtils.toParamsKey(headerDate), date)
         params.add(AwsUtils.toParamsKey("$headerPrefix-Expires"), duration.seconds.toString())

@@ -1,8 +1,7 @@
 package live.lingting.framework.huawei
 
-import java.time.Duration
-import java.time.LocalDateTime
 import live.lingting.framework.aws.policy.Credential
+import live.lingting.framework.aws.policy.Statement
 import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.api.ApiClient
 import live.lingting.framework.http.header.HttpHeaders
@@ -17,6 +16,8 @@ import live.lingting.framework.huawei.properties.HuaweiIamProperties
 import live.lingting.framework.huawei.properties.HuaweiObsProperties
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.value.WaitValue
+import java.time.Duration
+import java.time.LocalDateTime
 
 /**
  * @author lingting 2024-09-12 21:27
@@ -90,22 +91,22 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
         return HuaweiIamToken(token, expire, issued)
     }
 
-    fun credential(statement: HuaweiStatement): Credential {
+    fun credential(statement: Statement): Credential {
         return credential(setOf(statement))
     }
 
-    fun credential(statement: HuaweiStatement, vararg statements: HuaweiStatement): Credential {
-        val list: MutableList<HuaweiStatement> = ArrayList(statements.size + 1)
+    fun credential(statement: Statement, vararg statements: Statement): Credential {
+        val list: MutableList<Statement> = ArrayList(statements.size + 1)
         list.add(statement)
         list.addAll(statements)
         return credential(list)
     }
 
-    fun credential(statements: Collection<HuaweiStatement>): Credential {
+    fun credential(statements: Collection<Statement>): Credential {
         return credential(HuaweiUtils.CREDENTIAL_EXPIRE, statements)
     }
 
-    fun credential(timeout: Duration, statements: Collection<HuaweiStatement>): Credential {
+    fun credential(timeout: Duration, statements: Collection<Statement>): Credential {
         val request = HuaweiIamCredentialRequest()
         request.timeout = timeout
         request.statements = statements
@@ -139,7 +140,7 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
 
     fun obsBucket(properties: HuaweiObsProperties, actions: Collection<String>): HuaweiObsBucket {
         val bucket = if (StringUtils.hasText(properties.bucket)) properties.bucket else "*"
-        val statement: HuaweiStatement = HuaweiStatement.allow()
+        val statement: Statement = Statement.allow()
         statement.addAction(actions)
         statement.addResource("obs:*:*:bucket:$bucket")
         statement.addResource("obs:*:*:object:$bucket/*")
@@ -169,7 +170,7 @@ class HuaweiIam(@JvmField val properties: HuaweiIamProperties) : ApiClient<Huawe
 
     fun obsObject(properties: HuaweiObsProperties, key: String, actions: Collection<String>): HuaweiObsObject {
         val bucket = properties.bucket
-        val statement: HuaweiStatement = HuaweiStatement.allow()
+        val statement: Statement = Statement.allow()
         statement.addAction(actions)
         statement.addResource("obs:*:*:object:$bucket/$key")
         val credential = credential(statement)

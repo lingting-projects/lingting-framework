@@ -11,4 +11,9 @@ class AwsS3PreSignedResponse(
     @JsonProperty("headers")
     val headers: Map<String, List<String>>
 ) {
+
+    override fun toString(): String {
+        return "[${headers.size}] $url"
+    }
+
 }

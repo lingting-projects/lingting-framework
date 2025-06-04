@@ -1,14 +1,14 @@
 package live.lingting.framework.aws
 
-import java.util.function.Consumer
+import live.lingting.framework.aws.properties.S3Properties
 import live.lingting.framework.aws.s3.interfaces.AwsS3BucketInterface
-import live.lingting.framework.aws.s3.properties.S3Properties
 import live.lingting.framework.aws.s3.request.AwsS3ListObjectRequest
 import live.lingting.framework.aws.s3.request.AwsS3SimpleRequest
 import live.lingting.framework.aws.s3.response.AwsS3ListObjectResponse
 import live.lingting.framework.aws.s3.response.AwsS3MultipartItem
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.jackson.JacksonUtils
+import java.util.function.Consumer
 
 /**
  * @author lingting 2024-09-19 15:09

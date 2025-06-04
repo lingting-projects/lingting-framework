@@ -197,7 +197,7 @@ class HuaweiObsTest {
 
             log.info("=================get=================")
             val preGet = obj.preGet()
-            log.info("get url: {}", preGet)
+            log.info("get url: {}", preGet.url)
 
             client.request(
                 HttpRequest.builder()

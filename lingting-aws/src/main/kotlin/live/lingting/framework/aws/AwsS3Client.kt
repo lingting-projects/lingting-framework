@@ -2,10 +2,11 @@ package live.lingting.framework.aws
 
 
 import live.lingting.framework.aws.policy.Acl
+import live.lingting.framework.aws.properties.S3Properties
+import live.lingting.framework.aws.s3.AwsS3PreRequest
 import live.lingting.framework.aws.s3.AwsS3Request
 import live.lingting.framework.aws.s3.impl.AwsS3DefaultListener
 import live.lingting.framework.aws.s3.interfaces.AwsS3Listener
-import live.lingting.framework.aws.s3.properties.S3Properties
 import live.lingting.framework.aws.s3.response.AwsS3PreSignedResponse
 import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.HttpUrlBuilder
@@ -32,7 +33,7 @@ abstract class AwsS3Client protected constructor(val properties: S3Properties) :
 
     val token: String? = properties.token
 
-    val acl: Acl = properties.acl
+    val acl: Acl? = properties.acl
 
     val bucket: String = properties.bucket
 
@@ -71,13 +72,13 @@ abstract class AwsS3Client protected constructor(val properties: S3Properties) :
         val signer = listener.onSign(r, headers, urlBuilder)
 
         val current = DateTime.current()
-        val expire = r.expire
 
-        val signed = if (expire == null) signer.signed(current) else signer.signed(current, expire)
+        val signed =
+            if (r is AwsS3PreRequest) signer.signed(current, r.expire, r.tokenSigned)
+            else signer.signed(current)
 
         signed.fill(headers, urlBuilder)
-        if (expire == null) {
-            headers.authorization(signed.authorization)
+        if (r !is AwsS3PreRequest) {
             val request = buildRequest(urlBuilder, headers, r, body)
             return call(r, request)
         }
@@ -91,11 +92,11 @@ abstract class AwsS3Client protected constructor(val properties: S3Properties) :
         return HttpResponse(request, 200, request.headers(), ByteArrayInputStream(bytes))
     }
 
-    open fun preRequest(r: AwsS3Request): AwsS3PreSignedResponse {
-        val expire = r.expire
+    open fun pre(request: AwsS3PreRequest): AwsS3PreSignedResponse {
+        val expire = request.expire
         checkNotNull(expire) { "pre sign expire must be not null!" }
         check(expire.isPositive) { "pre sign expire must be not positive!" }
-        val response = call(r)
+        val response = call(request)
         val json = response.string()
         return JacksonUtils.toObj(json, AwsS3PreSignedResponse::class)
     }

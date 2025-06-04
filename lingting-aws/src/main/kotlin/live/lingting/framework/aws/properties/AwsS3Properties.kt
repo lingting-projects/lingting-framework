@@ -1,6 +1,4 @@
-package live.lingting.framework.aws.s3
-
-import live.lingting.framework.aws.s3.properties.S3Properties
+package live.lingting.framework.aws.properties
 
 /**
  * @author lingting 2024-09-12 21:20

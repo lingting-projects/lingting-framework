@@ -1,7 +1,9 @@
 package live.lingting.framework.ali
 
+import live.lingting.framework.aws.AwsUtils
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.header.HttpHeaders
+import live.lingting.framework.time.DatePattern
 import live.lingting.framework.value.multi.StringMultiValue
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -20,7 +22,7 @@ class AliV3SignerTest {
         headers.put("x-acs-version", "2014-05-26")
         headers.put("host", "ecs.cn-shanghai.aliyuncs.com")
 
-        val time = AliUtils.parse("2023-10-26T10:22:32Z")
+        val time = AwsUtils.parse("2023-10-26T10:22:32Z", DatePattern.FORMATTER_ISO_8601)
 
         val params = StringMultiValue()
         params.add("ImageId", "win2019_1809_x64_dtc_zh-cn_40G_alibase_20230811.vhd")

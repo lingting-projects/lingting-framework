@@ -19,4 +19,6 @@ abstract class AliOss<C : AwsS3Client> protected constructor(protected val clien
     override fun delegation(): C {
         return client
     }
+
+
 }

@@ -4,18 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.http.api.ApiRequest
 import live.lingting.framework.http.header.HttpHeaders
-import java.time.Duration
 
 /**
  * @author lingting 2024-09-19 15:03
  */
 abstract class AwsS3Request : ApiRequest() {
-
-    /**
-     * 如果是预签名操作, 则指定过期时长
-     */
-    @JsonIgnore
-    var expire: Duration? = null
 
     @JsonIgnore
     var key: String = ""
@@ -33,10 +26,4 @@ abstract class AwsS3Request : ApiRequest() {
         return key
     }
 
-    fun setAclIfAbsent(acl: Acl) {
-        val method = method()
-        if (this.acl == null && method.allowBody()) {
-            this.acl = acl
-        }
-    }
 }

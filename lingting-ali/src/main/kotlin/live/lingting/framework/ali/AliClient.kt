@@ -70,8 +70,6 @@ abstract class AliClient<R : AliRequest> protected constructor(properties: AliPr
 
         val signed = signer.signed()
         signed.fill(headers, urlBuilder)
-
-        headers.authorization(signed.authorization)
         return super.call(urlBuilder, r, headers, body)
     }
 

@@ -12,13 +12,15 @@ import java.time.LocalDateTime
  */
 abstract class AwsSigner<S : AwsSigner<S, R>, R : AwsSigner.Signed<S, R>>(open val ak: String) {
 
+    protected abstract val bodyPayload: String
+
     open fun signed(): R = signed(DateTime.current())
 
     /**
      * header 签名
      * @param time: 签名时间
      */
-    abstract fun signed(time: LocalDateTime): R
+    open fun signed(time: LocalDateTime): R = signed(time, bodyPayload)
 
     abstract fun signed(time: LocalDateTime, bodyPayload: String): R
 
@@ -27,16 +29,35 @@ abstract class AwsSigner<S : AwsSigner<S, R>, R : AwsSigner.Signed<S, R>>(open v
      * @param time: 签名时间
      * @param expire: 过期时间
      */
-    abstract fun signed(time: LocalDateTime, expire: LocalDateTime): R
+    open fun signed(time: LocalDateTime, expire: LocalDateTime): R = signed(time, expire, false)
 
-    open fun signed(time: LocalDateTime, expire: LocalDateTime, bodyPayload: String): R {
+    open fun signed(time: LocalDateTime, expire: LocalDateTime, tokenSigned: Boolean): R =
+        signed(time, expire, bodyPayload, tokenSigned)
+
+    open fun signed(time: LocalDateTime, expire: LocalDateTime, bodyPayload: String): R =
+        signed(time, expire, bodyPayload, false)
+
+    open fun signed(time: LocalDateTime, expire: LocalDateTime, bodyPayload: String, tokenSigned: Boolean): R {
         val duration = Duration.between(time, expire)
-        return signed(time, duration, bodyPayload)
+        return signed(time, duration, bodyPayload, tokenSigned)
     }
 
-    abstract fun signed(time: LocalDateTime, duration: Duration): R
+    open fun signed(duration: Duration): R = signed(DateTime.current(), duration)
 
-    abstract fun signed(time: LocalDateTime, duration: Duration, bodyPayload: String): R
+    /**
+     * url 签名
+     * @param time: 签名时间
+     * @param duration: 有效时长
+     */
+    open fun signed(time: LocalDateTime, duration: Duration): R = signed(time, duration, false)
+
+    open fun signed(time: LocalDateTime, duration: Duration, tokenSigned: Boolean): R =
+        signed(time, duration, bodyPayload, tokenSigned)
+
+    open fun signed(time: LocalDateTime, duration: Duration, bodyPayload: String): R =
+        signed(time, duration, bodyPayload, false)
+
+    abstract fun signed(time: LocalDateTime, duration: Duration, bodyPayload: String, tokenSigned: Boolean): R
 
     open class Signed<S : AwsSigner<S, R>, R : Signed<S, R>>(
         open val signer: S,
@@ -49,7 +70,13 @@ abstract class AwsSigner<S : AwsSigner<S, R>, R : AwsSigner.Signed<S, R>>(open v
     ) {
 
         open fun fill(headers: HttpHeaders?) {
-            headers?.putAll(this.headers)
+            if (headers == null) {
+                return
+            }
+            headers.putAll(this.headers)
+            if (authorization.isNotBlank() && headers.authorization().isNullOrBlank()) {
+                headers.authorization(authorization)
+            }
         }
 
         open fun fill(urlBuilder: HttpUrlBuilder? = null) {

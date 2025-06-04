@@ -4,6 +4,7 @@ import live.lingting.framework.aws.AwsS3Object
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3Meta
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
+import live.lingting.framework.aws.s3.AwsS3PreRequest
 import live.lingting.framework.aws.s3.request.AwsS3ObjectPutRequest
 import live.lingting.framework.aws.s3.response.AwsS3PreSignedResponse
 import live.lingting.framework.data.DataSize
@@ -11,7 +12,6 @@ import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.multipart.Part
 import live.lingting.framework.thread.Async
 import java.io.InputStream
-import java.time.Duration
 
 /**
  * @author lingting 2024-09-19 21:59
@@ -59,16 +59,8 @@ interface AwsS3ObjectDelegation : AwsS3ObjectInterface, AwsS3Delegation<AwsS3Obj
         delegation().multipartCancel(uploadId)
     }
 
-    override fun preGet(expire: Duration): AwsS3PreSignedResponse {
-        return delegation().preGet(expire)
-    }
-
-    override fun prePut(
-        expire: Duration,
-        acl: Acl?,
-        meta: HttpHeaders?
-    ): AwsS3PreSignedResponse {
-        return delegation().prePut(expire, acl, meta)
+    override fun pre(request: AwsS3PreRequest): AwsS3PreSignedResponse {
+        return delegation().pre(request)
     }
 
 }
