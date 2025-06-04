@@ -47,6 +47,8 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
      */
     protected val params = HashMap<String, Any?>()
 
+    fun params() = params.toMap()
+
     // region common
 
     fun column(field: String) = column(entityClass ?: entity?.javaClass, field)
@@ -768,5 +770,8 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
     fun <E : Any> `in`(condition: Boolean, field: String, consumer: Consumer<QueryWrapper<E>>): C {
         return appendSql<E>(condition, field, SqlKeyword.IN, consumer)
 
-    } // endregion
+    }
+
+    // endregion
+
 }
