@@ -1,6 +1,5 @@
 package live.lingting.framework.aws
 
-import live.lingting.framework.aws.properties.AwsProperties
 import live.lingting.framework.http.HttpContentTypes
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.api.ApiRequest
@@ -18,8 +17,6 @@ abstract class AwsRequest : ApiRequest() {
     abstract fun version(): String
 
     abstract fun action(): String
-
-    open fun region() = AwsProperties.REGION
 
     override fun onCall() {
         headers.contentType(HttpContentTypes.FORM_URL_ENCODE)

@@ -13,6 +13,8 @@ abstract class AwsProperties {
 
     open var ssl: Boolean = true
 
+    open var region = REGION
+
     open var endpoint: String = "amazonaws.com"
 
     open var ak: String = ""

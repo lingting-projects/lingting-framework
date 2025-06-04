@@ -12,8 +12,6 @@ abstract class S3Properties : AwsProperties() {
 
     open var hostStyle: HostStyle = HostStyle.VIRTUAL
 
-    open var region: String = REGION
-
     open var bucket: String = ""
 
     open var acl: Acl? = Acl.PRIVATE

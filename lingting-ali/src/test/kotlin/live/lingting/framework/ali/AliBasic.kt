@@ -13,6 +13,7 @@ internal object AliBasic {
         val properties = AliStsProperties()
         properties.ak = System.getenv("ALI_STS_AK")
         properties.sk = System.getenv("ALI_STS_SK")
+        properties.region = System.getenv("ALI_REGION")
         properties.roleArn = System.getenv("ALI_STS_ROLE_ARN")
         properties.roleSessionName = System.getenv("ALI_STS_ROLE_SESSION_NAME")
         assertNotNull(properties.ak)

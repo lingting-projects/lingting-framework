@@ -22,6 +22,8 @@ abstract class AwsClient<R : AwsRequest>(properties: AwsProperties) : ApiClient<
 
     protected val token: String? = properties.token
 
+    protected val region = properties.region.let { it.ifBlank { AwsProperties.REGION } }
+
     override fun checkout(
         request: R,
         response: HttpResponse
@@ -73,7 +75,7 @@ abstract class AwsClient<R : AwsRequest>(properties: AwsProperties) : ApiClient<
             headers,
             body,
             urlBuilder.params(),
-            r.region(),
+            region,
             ak,
             sk,
             service()

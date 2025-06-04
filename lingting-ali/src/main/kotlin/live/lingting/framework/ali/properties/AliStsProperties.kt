@@ -10,7 +10,13 @@ class AliStsProperties : AliProperties() {
     var roleSessionName: String = ""
 
     override fun host(): String {
-        return "sts.$endpoint"
+        return buildString {
+            append("sts.")
+            if (region.isNotBlank()) {
+                append(region).append(".")
+            }
+            append(endpoint)
+        }
     }
 
 }

@@ -5,6 +5,10 @@ package live.lingting.framework.aws.properties
  */
 open class AwsStsProperties : AwsProperties() {
 
+    init {
+        region = ""
+    }
+
     var roleArn: String = ""
 
     var roleSessionName: String = ""
@@ -12,7 +16,13 @@ open class AwsStsProperties : AwsProperties() {
     var sourceIdentity = ""
 
     override fun host(): String {
-        return "sts.$endpoint"
+        return buildString {
+            append("sts.")
+            if (region.isNotBlank()) {
+                append(region).append(".")
+            }
+            append(endpoint)
+        }
     }
 
 }

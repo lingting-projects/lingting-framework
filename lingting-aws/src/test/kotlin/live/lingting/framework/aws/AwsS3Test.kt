@@ -1,6 +1,8 @@
 package live.lingting.framework.ali
 
 import live.lingting.framework.aws.AwsBasic
+import live.lingting.framework.aws.AwsS3Bucket
+import live.lingting.framework.aws.AwsS3Object
 import live.lingting.framework.aws.AwsSts
 import live.lingting.framework.aws.AwsUtils
 import live.lingting.framework.aws.exception.AwsException
@@ -49,18 +51,25 @@ class AwsS3Test {
 
     val snowflake = Snowflake(0, 0)
 
+    var useSts = false
+
     @BeforeEach
     fun before() {
         sts = AwsBasic.sts()
-        properties = AwsBasic.s3Properties()
+        properties = AwsBasic.s3StsProperties()
     }
+
+    fun buildObj(key: String): AwsS3Object =
+        if (useSts) sts!!.s3Object(properties!!, key) else AwsS3Object(AwsBasic.s3Properties(), key)
+
+    fun buildBucket(): AwsS3Bucket = if (useSts) sts!!.s3Bucket(properties!!) else AwsS3Bucket(AwsBasic.s3Properties())
 
     @Test
     fun put() {
         val key = "test/lingting.txt"
 
         log.info("put key: {}", key)
-        val obj = sts!!.s3Object(properties!!, key)
+        val obj = buildObj(key)
         assertThrows(AwsException::class.java) { obj.head() }
         try {
             val source = "hello world s3"
@@ -82,7 +91,7 @@ class AwsS3Test {
 
     @Test
     fun multipart() {
-        val s3Bucket = sts!!.s3Bucket(properties!!)
+        val s3Bucket = buildBucket()
         val bo = s3Bucket.use("ali/b_t")
         val uploadId = bo.multipartInit()
         val bm = s3Bucket.multipartList {
@@ -103,7 +112,7 @@ class AwsS3Test {
 
         val snowflake = Snowflake(0, 1)
         val key = "ali/m_" + snowflake.nextId()
-        val s3Object = sts!!.s3Object(properties!!, key)
+        val s3Object = buildObj(key)
         assertThrows(AwsException::class.java) { s3Object.head() }
         val source = "hello world\n".repeat(10000)
         val bytes = source.toByteArray()
@@ -138,7 +147,7 @@ class AwsS3Test {
 
     @Test
     fun listAndMeta() {
-        val s3Bucket = sts!!.s3Bucket(properties!!)
+        val s3Bucket = buildBucket()
         val key = "ali/b_t_l_m"
         val bo = s3Bucket.use(key)
         val source = "hello world"
@@ -175,7 +184,7 @@ class AwsS3Test {
         val client = HttpClient.default().disableSsl().build()
         val key = "test/pre_" + snowflake.nextId()
         log.info("pre key: {}", key)
-        val obj = sts!!.s3Object(properties!!, key)
+        val obj = buildObj(key)
 
         val source = "hello world"
         val bytes = source.toByteArray()
@@ -231,5 +240,6 @@ class AwsS3Test {
             obj.delete()
         }
     }
+
 
 }

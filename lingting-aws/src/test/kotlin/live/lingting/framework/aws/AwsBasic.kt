@@ -14,6 +14,7 @@ internal object AwsBasic {
         val properties = AwsStsProperties()
         properties.ak = System.getenv("AWS_STS_AK")
         properties.sk = System.getenv("AWS_STS_SK")
+        properties.region = System.getenv("AWS_REGION")
         properties.roleArn = System.getenv("AWS_STS_ROLE_ARN")
         properties.roleSessionName = System.getenv("AWS_STS_ROLE_SESSION_NAME")
         properties.sourceIdentity = System.getenv("AWS_STS_SourceIdentity") ?: ""
@@ -24,7 +25,7 @@ internal object AwsBasic {
         return AwsSts(properties)
     }
 
-    fun s3Properties(): AwsS3Properties {
+    fun s3StsProperties(): AwsS3Properties {
         val properties = AwsS3Properties()
         properties.region = System.getenv("AWS_REGION")
         properties.bucket = System.getenv("AWS_OSS_BUCKET")
@@ -33,4 +34,18 @@ internal object AwsBasic {
         assertNotNull(properties.bucket)
         return properties
     }
+
+
+    fun s3Properties(): AwsS3Properties {
+        val properties = AwsS3Properties()
+        properties.ak = System.getenv("AWS_STS_AK")
+        properties.sk = System.getenv("AWS_STS_SK")
+        properties.region = System.getenv("AWS_REGION")
+        properties.bucket = System.getenv("AWS_OSS_BUCKET")
+        properties.acl = Acl.PUBLIC_READ
+        assertNotNull(properties.region)
+        assertNotNull(properties.bucket)
+        return properties
+    }
+
 }
