@@ -15,7 +15,6 @@ class AliV3SignerTest {
 
     @Test
     fun test() {
-
         val headers = HttpHeaders.empty()
         headers.put("x-acs-signature-nonce", "3156853299f313e23d1673dc12e1703d")
         headers.put("x-acs-action", "RunInstances")

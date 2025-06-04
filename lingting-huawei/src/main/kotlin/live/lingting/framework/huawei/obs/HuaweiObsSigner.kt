@@ -242,7 +242,6 @@ open class HuaweiObsSigner(
         time: LocalDateTime,
         expire: LocalDateTime,
         bodyPayload: String,
-        tokenSigned: Boolean
     ): Signed {
         val date = (expire.timestamp / 1000).toString()
 
@@ -292,7 +291,6 @@ open class HuaweiObsSigner(
         time: LocalDateTime,
         duration: Duration,
         bodyPayload: String,
-        tokenSigned: Boolean
     ): Signed {
         val expire = time.plus(duration.seconds, ChronoUnit.SECONDS)
         return signed(time, expire, bodyPayload)

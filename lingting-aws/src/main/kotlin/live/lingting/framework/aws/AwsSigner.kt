@@ -29,17 +29,11 @@ abstract class AwsSigner<S : AwsSigner<S, R>, R : AwsSigner.Signed<S, R>>(open v
      * @param time: 签名时间
      * @param expire: 过期时间
      */
-    open fun signed(time: LocalDateTime, expire: LocalDateTime): R = signed(time, expire, false)
+    open fun signed(time: LocalDateTime, expire: LocalDateTime): R = signed(time, expire, bodyPayload)
 
-    open fun signed(time: LocalDateTime, expire: LocalDateTime, tokenSigned: Boolean): R =
-        signed(time, expire, bodyPayload, tokenSigned)
-
-    open fun signed(time: LocalDateTime, expire: LocalDateTime, bodyPayload: String): R =
-        signed(time, expire, bodyPayload, false)
-
-    open fun signed(time: LocalDateTime, expire: LocalDateTime, bodyPayload: String, tokenSigned: Boolean): R {
+    open fun signed(time: LocalDateTime, expire: LocalDateTime, bodyPayload: String): R {
         val duration = Duration.between(time, expire)
-        return signed(time, duration, bodyPayload, tokenSigned)
+        return signed(time, duration, bodyPayload)
     }
 
     open fun signed(duration: Duration): R = signed(DateTime.current(), duration)
@@ -49,15 +43,9 @@ abstract class AwsSigner<S : AwsSigner<S, R>, R : AwsSigner.Signed<S, R>>(open v
      * @param time: 签名时间
      * @param duration: 有效时长
      */
-    open fun signed(time: LocalDateTime, duration: Duration): R = signed(time, duration, false)
+    open fun signed(time: LocalDateTime, duration: Duration): R = signed(time, duration, bodyPayload)
 
-    open fun signed(time: LocalDateTime, duration: Duration, tokenSigned: Boolean): R =
-        signed(time, duration, bodyPayload, tokenSigned)
-
-    open fun signed(time: LocalDateTime, duration: Duration, bodyPayload: String): R =
-        signed(time, duration, bodyPayload, false)
-
-    abstract fun signed(time: LocalDateTime, duration: Duration, bodyPayload: String, tokenSigned: Boolean): R
+    abstract fun signed(time: LocalDateTime, duration: Duration, bodyPayload: String): R
 
     open class Signed<S : AwsSigner<S, R>, R : Signed<S, R>>(
         open val signer: S,

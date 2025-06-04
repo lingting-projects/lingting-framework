@@ -74,7 +74,7 @@ abstract class AwsS3Client protected constructor(val properties: S3Properties) :
         val current = DateTime.current()
 
         val signed =
-            if (r is AwsS3PreRequest) signer.signed(current, r.expire, r.tokenSigned)
+            if (r is AwsS3PreRequest) signer.signed(current, r.expire)
             else signer.signed(current)
 
         signed.fill(headers, urlBuilder)

@@ -18,10 +18,4 @@ class AwsS3PreRequest(method: HttpMethod, body: Body? = null) : AwsS3SimpleReque
     @JsonIgnore
     var expire: Duration = 24.hours
 
-    /**
-     * 如果请求头存在 security-token(sts临时密钥). 该token是否参与签名
-     */
-    @JsonIgnore
-    var tokenSigned = false
-
 }

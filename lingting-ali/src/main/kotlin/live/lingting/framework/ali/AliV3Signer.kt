@@ -177,7 +177,6 @@ class AliV3Signer(
         time: LocalDateTime,
         duration: Duration,
         bodyPayload: String,
-        tokenSigned: Boolean
     ): Signed {
         throw UnsupportedOperationException()
     }

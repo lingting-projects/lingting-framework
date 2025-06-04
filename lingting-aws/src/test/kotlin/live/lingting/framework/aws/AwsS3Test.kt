@@ -66,8 +66,7 @@ class AwsS3Test {
 
     @Test
     fun put() {
-        val key = "test/lingting.txt"
-
+        val key = "test/s_" + snowflake.nextId()
         log.info("put key: {}", key)
         val obj = buildObj(key)
         assertThrows(AwsException::class.java) { obj.head() }
@@ -80,7 +79,7 @@ class AwsS3Test {
             assertNotNull(head)
             assertEquals(bytes.size.toLong(), head.contentLength())
             assertTrue("\"$hex\"".equals(head.etag(), ignoreCase = true))
-            val await: HttpDownload = HttpDownload.single(obj.publicUrl()).build().start().await()
+            val await = HttpDownload.single(obj.publicUrl()).build().start().await()
             val string = StreamUtils.toString(Files.newInputStream(await.file().toPath()))
             assertEquals(source, string)
         } finally {
@@ -92,7 +91,7 @@ class AwsS3Test {
     @Test
     fun multipart() {
         val s3Bucket = buildBucket()
-        val bo = s3Bucket.use("ali/b_t")
+        val bo = s3Bucket.use("test/b_t")
         val uploadId = bo.multipartInit()
         val bm = s3Bucket.multipartList {
             val params = it.params
@@ -111,7 +110,7 @@ class AwsS3Test {
         }
 
         val snowflake = Snowflake(0, 1)
-        val key = "ali/m_" + snowflake.nextId()
+        val key = "test/m_" + snowflake.nextId()
         val s3Object = buildObj(key)
         assertThrows(AwsException::class.java) { s3Object.head() }
         val source = "hello world\n".repeat(10000)
@@ -138,7 +137,7 @@ class AwsS3Test {
         val head = s3Object.head()
         assertNotNull(head)
         assertEquals(bytes.size.toLong(), head.contentLength())
-        val await: HttpDownload = HttpDownload.single(s3Object.publicUrl()).build().start().await()
+        val await = HttpDownload.single(s3Object.publicUrl()).build().start().await()
         val string = StreamUtils.toString(Files.newInputStream(await.file().toPath()))
         assertEquals(source, string)
         assertEquals(hex, DigestUtils.md5Hex(string))
@@ -148,7 +147,7 @@ class AwsS3Test {
     @Test
     fun listAndMeta() {
         val s3Bucket = buildBucket()
-        val key = "ali/b_t_l_m"
+        val key = "test/b_t_l_m"
         val bo = s3Bucket.use(key)
         val source = "hello world"
         val bytes = source.toByteArray()
@@ -172,7 +171,7 @@ class AwsS3Test {
         assertEquals(bytes.size.toLong(), head.contentLength())
         assertEquals(md5, head.first("md5"))
         assertEquals(meta.first("timestamp"), head.first("timestamp"))
-        val await: HttpDownload = HttpDownload.single(bo.publicUrl()).build().start().await()
+        val await = HttpDownload.single(bo.publicUrl()).build().start().await()
         val string = StreamUtils.toString(Files.newInputStream(await.file().toPath()))
         assertEquals(source, string)
         assertEquals(md5, DigestUtils.md5Hex(string))
@@ -221,12 +220,10 @@ class AwsS3Test {
             log.info("=================get=================")
             val preGet = obj.preGet()
             log.info("get url: {}", preGet.url)
-
             client.request(
                 HttpRequest.builder()
                     .get()
                     .url(preGet.url)
-                    .headers(preGet.headers)
                     .build()
             ).use { getR ->
                 assertTrue(getR.isOk)

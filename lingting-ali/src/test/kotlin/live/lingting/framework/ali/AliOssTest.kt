@@ -63,8 +63,7 @@ class AliOssTest {
 
     @Test
     fun put() {
-        val key = "test/lingting.txt"
-
+        val key = "test/s_" + snowflake.nextId()
         log.info("put key: {}", key)
         val obj = buildObj(key)
         assertThrows(AliException::class.java) { obj.head() }
@@ -77,7 +76,7 @@ class AliOssTest {
             assertNotNull(head)
             assertEquals(bytes.size.toLong(), head.contentLength())
             assertTrue("\"$hex\"".equals(head.etag(), ignoreCase = true))
-            val await: HttpDownload = HttpDownload.single(obj.publicUrl()).build().start().await()
+            val await = HttpDownload.single(obj.publicUrl()).build().start().await()
             val string = StreamUtils.toString(Files.newInputStream(await.file().toPath()))
             assertEquals(source, string)
         } finally {
@@ -89,7 +88,7 @@ class AliOssTest {
     @Test
     fun multipart() {
         val ossBucket = buildBucket()
-        val bo = ossBucket.use("ali/b_t")
+        val bo = ossBucket.use("test/b_t")
         val uploadId = bo.multipartInit()
         val bm = ossBucket.multipartList {
             val params = it.params
@@ -108,7 +107,7 @@ class AliOssTest {
         }
 
         val snowflake = Snowflake(0, 1)
-        val key = "ali/m_" + snowflake.nextId()
+        val key = "test/m_" + snowflake.nextId()
         val ossObject = buildObj(key)
         assertThrows(AliException::class.java) { ossObject.head() }
         val source = "hello world\n".repeat(10000)
@@ -135,7 +134,7 @@ class AliOssTest {
         val head = ossObject.head()
         assertNotNull(head)
         assertEquals(bytes.size.toLong(), head.contentLength())
-        val await: HttpDownload = HttpDownload.single(ossObject.publicUrl()).build().start().await()
+        val await = HttpDownload.single(ossObject.publicUrl()).build().start().await()
         val string = StreamUtils.toString(Files.newInputStream(await.file().toPath()))
         assertEquals(source, string)
         assertEquals(hex, DigestUtils.md5Hex(string))
@@ -145,7 +144,7 @@ class AliOssTest {
     @Test
     fun listAndMeta() {
         val ossBucket = buildBucket()
-        val key = "ali/b_t_l_m"
+        val key = "test/b_t_l_m"
         val bo = ossBucket.use(key)
         val source = "hello world"
         val bytes = source.toByteArray()
@@ -169,7 +168,7 @@ class AliOssTest {
         assertEquals(bytes.size.toLong(), head.contentLength())
         assertEquals(md5, head.first("md5"))
         assertEquals(meta.first("timestamp"), head.first("timestamp"))
-        val await: HttpDownload = HttpDownload.single(bo.publicUrl()).build().start().await()
+        val await = HttpDownload.single(bo.publicUrl()).build().start().await()
         val string = StreamUtils.toString(Files.newInputStream(await.file().toPath()))
         assertEquals(source, string)
         assertEquals(md5, DigestUtils.md5Hex(string))
@@ -218,12 +217,10 @@ class AliOssTest {
             log.info("=================get=================")
             val preGet = obj.preGet()
             log.info("get url: {}", preGet.url)
-
             client.request(
                 HttpRequest.builder()
                     .get()
                     .url(preGet.url)
-                    .headers(preGet.headers)
                     .build()
             ).use { getR ->
                 assertTrue(getR.isOk)

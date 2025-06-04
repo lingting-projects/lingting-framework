@@ -45,6 +45,7 @@ class HuaweiObsS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
                 headers.replace(name, newName)
             }
         })
+
         return HuaweiObsSigner(
             request.method(),
             path,
