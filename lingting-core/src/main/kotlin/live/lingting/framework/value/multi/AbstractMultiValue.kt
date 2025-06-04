@@ -50,13 +50,6 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
         absent(key).add(value)
     }
 
-    override fun addAll(key: K, values: Collection<V>) {
-        if (!allowModify) {
-            throw UnsupportedOperationException()
-        }
-        absent(key).addAll(values)
-    }
-
     override fun addAll(key: K, values: Iterable<V>) {
         if (!allowModify) {
             throw UnsupportedOperationException()
@@ -65,14 +58,14 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
         values.forEach(Consumer<V> { e -> c.add(e) })
     }
 
-    override fun addAll(map: Map<K, Collection<V>>) {
+    override fun addAll(map: Map<K, Iterable<V>>) {
         if (!allowModify) {
             throw UnsupportedOperationException()
         }
         map.forEach { (key: K, values) -> this.addAll(key, values) }
     }
 
-    override fun addAll(value: MultiValue<K, V, C>) {
+    override fun addAll(value: MultiValue<K, V, out Collection<V>>) {
         if (!allowModify) {
             throw UnsupportedOperationException()
         }
@@ -96,14 +89,14 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
         map.put(key, c)
     }
 
-    override fun putAll(map: Map<K, Collection<V>>) {
+    override fun putAll(map: Map<K, Iterable<V>>) {
         if (!allowModify) {
             throw UnsupportedOperationException()
         }
         map.forEach { (key: K, values) -> this.putAll(key, values) }
     }
 
-    override fun putAll(value: MultiValue<K, V, C>) {
+    override fun putAll(value: MultiValue<K, V, out Collection<V>>) {
         if (!allowModify) {
             throw UnsupportedOperationException()
         }
@@ -137,7 +130,6 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
     }
 
     override val isEmpty: Boolean
-        // endregion
         get() = map.isEmpty()
 
     override fun isEmpty(key: K): Boolean {
@@ -149,8 +141,8 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
     }
 
     override fun hasKey(key: K): Boolean {
-        var key = convert(key)
-        return map.containsKey(key)
+        val k = convert(key)
+        return map.containsKey(k)
     }
 
     override fun get(key: K): C {
@@ -190,8 +182,8 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
         return hashMap
     }
 
-    override fun entries(): Set<Map.Entry<K, C>> {
-        return map.entries
+    override fun entries(): List<MultiValue.Entry<K, V, C>> {
+        return map.entries.map { MultiValue.Entry(it.key, it.value) }
     }
 
     override fun unmodifiable(): MultiValue<K, V, out Collection<V>> {
@@ -211,7 +203,6 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
         if (!allowModify) {
             throw UnsupportedOperationException()
         }
-        absent(key)
         return map.remove(key)
     }
 
@@ -227,12 +218,5 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
     }
 
     // endregion
-    // region function
-    override fun forEach(consumer: BiConsumer<K, C>) {
-        map.forEach(consumer)
-    }
 
-    override fun each(consumer: BiConsumer<K, V>) {
-        forEach { k, c -> c.forEach { v -> consumer.accept(k, v) } }
-    } // endregion
 }

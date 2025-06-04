@@ -16,21 +16,19 @@ interface MultiValue<K, V, C : Collection<V>> {
 
     fun add(key: K, value: V)
 
-    fun addAll(key: K, values: Collection<V>)
-
     fun addAll(key: K, values: Iterable<V>)
 
-    fun addAll(map: Map<K, Collection<V>>)
+    fun addAll(map: Map<K, Iterable<V>>)
 
-    fun addAll(value: MultiValue<K, V, C>)
+    fun addAll(value: MultiValue<K, V, out Collection<V>>)
 
     fun put(key: K, value: V)
 
     fun putAll(key: K, values: Iterable<V>)
 
-    fun putAll(map: Map<K, Collection<V>>)
+    fun putAll(map: Map<K, Iterable<V>>)
 
-    fun putAll(value: MultiValue<K, V, C>)
+    fun putAll(value: MultiValue<K, V, out Collection<V>>)
 
     fun replace(oldKey: K, newKey: K)
 
@@ -62,7 +60,7 @@ interface MultiValue<K, V, C : Collection<V>> {
 
     fun map(): Map<K, C>
 
-    fun entries(): Set<Map.Entry<K, C>>
+    fun entries(): List<Entry<K, V, C>>
 
     fun unmodifiable(): MultiValue<K, V, out Collection<V>>
 
@@ -75,10 +73,16 @@ interface MultiValue<K, V, C : Collection<V>> {
     fun remove(key: K, value: V): Boolean
 
     // endregion
-    // region function
-    fun forEach(consumer: BiConsumer<K, C>)
 
-    fun each(consumer: BiConsumer<K, V>)
+    // region function
+
+    fun forEach(consumer: BiConsumer<K, C>) {
+        entries().forEach { consumer.accept(it.key, it.value) }
+    }
+
+    fun each(consumer: BiConsumer<K, V>) {
+        forEach { k, c -> c.forEach { v -> consumer.accept(k, v) } }
+    }
 
     fun forEachSorted(consumer: BiConsumer<K, C>) {
         keys().stream().sorted().forEach { key -> consumer.accept(key, get(key)) }
@@ -95,5 +99,14 @@ interface MultiValue<K, V, C : Collection<V>> {
     fun eachSorted(consumer: BiConsumer<K, V>, comparator: Comparator<K>) {
         forEachSorted({ k, c -> c.forEach { v -> consumer.accept(k, v) } }, comparator)
     }
-// endregion
+
+    // endregion
+
+    class Entry<K, V, C : Collection<V>>(
+        override val key: K,
+        override val value: C
+    ) : Map.Entry<K, C> {
+
+    }
+
 }
