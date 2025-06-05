@@ -1,9 +1,5 @@
 package live.lingting.framework.ntp
 
-import java.net.InetAddress
-import java.net.SocketTimeoutException
-import java.time.Duration
-import java.util.concurrent.CopyOnWriteArrayList
 import live.lingting.framework.concurrent.Await
 import live.lingting.framework.thread.Async
 import live.lingting.framework.time.DateTime
@@ -11,6 +7,11 @@ import live.lingting.framework.util.DurationUtils.millis
 import live.lingting.framework.util.IpUtils
 import live.lingting.framework.util.Slf4jUtils.logger
 import org.apache.commons.net.ntp.NTPUDPClient
+import java.net.InetAddress
+import java.net.SocketException
+import java.net.SocketTimeoutException
+import java.time.Duration
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * @author lingting 2023-12-27 15:47
@@ -77,6 +78,10 @@ object NtpFactory {
                 val system = DateTime.millis()
                 val ntp = time.message.transmitTimeStamp.time
                 return ntp - system
+            }
+        } catch (e: SocketException) {
+            if (e.message?.contains("interrupt") != true) {
+                log.debug("Ntp get diff socket exception! host: $host", e)
             }
         } catch (_: InterruptedException) {
             Thread.currentThread().interrupt()
