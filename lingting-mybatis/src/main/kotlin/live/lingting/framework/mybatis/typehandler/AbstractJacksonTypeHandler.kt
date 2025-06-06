@@ -3,18 +3,17 @@ package live.lingting.framework.mybatis.typehandler
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
+import live.lingting.framework.util.Slf4jUtils.logger
+import live.lingting.framework.util.StringUtils
+import org.apache.ibatis.type.JdbcType
 import java.sql.CallableStatement
 import java.sql.PreparedStatement
 import java.sql.ResultSet
-import live.lingting.framework.util.Slf4jUtils.logger
-import live.lingting.framework.util.StringUtils
-import org.apache.ibatis.type.BaseTypeHandler
-import org.apache.ibatis.type.JdbcType
 
 /**
  * @author lingting 2022/9/28 14:43
  */
-abstract class AbstractJacksonTypeHandler<T> : BaseTypeHandler<T>() {
+abstract class AbstractJacksonTypeHandler<T> : AbstractTypeHandler<T>() {
     protected val log = logger()
 
     open val mapper: ObjectMapper
@@ -56,7 +55,7 @@ abstract class AbstractJacksonTypeHandler<T> : BaseTypeHandler<T>() {
         return defaultJson
     }
 
-    override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: T, jdbcType: JdbcType?) {
+    override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: T?, jdbcType: JdbcType?) {
         ps.setString(i, resolve(parameter))
     }
 

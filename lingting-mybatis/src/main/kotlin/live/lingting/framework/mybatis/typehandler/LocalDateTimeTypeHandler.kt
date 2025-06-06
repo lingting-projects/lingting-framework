@@ -1,18 +1,17 @@
 package live.lingting.framework.mybatis.typehandler
 
+import live.lingting.framework.time.DatePattern
+import live.lingting.framework.util.StringUtils
+import org.apache.ibatis.type.JdbcType
 import java.sql.CallableStatement
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.time.LocalDateTime
-import live.lingting.framework.time.DatePattern
-import live.lingting.framework.util.StringUtils
-import org.apache.ibatis.type.BaseTypeHandler
-import org.apache.ibatis.type.JdbcType
 
 /**
  * @author lingting 2022/8/22 9:41
  */
-open class LocalDateTimeTypeHandler : BaseTypeHandler<LocalDateTime>(), AutoRegisterTypeHandler<LocalDateTime> {
+open class LocalDateTimeTypeHandler : AbstractAutoRegisterTypeHandler<LocalDateTime>() {
 
     companion object {
 
