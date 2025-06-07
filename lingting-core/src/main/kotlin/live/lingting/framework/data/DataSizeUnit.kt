@@ -27,7 +27,8 @@ enum class DataSizeUnit(
                 bit >= TB.size -> TB
                 bit >= GB.size -> GB
                 bit >= MB.size -> MB
-                else -> KB
+                bit >= KB.size -> KB
+                else -> BYTES
             }
         }
     }
