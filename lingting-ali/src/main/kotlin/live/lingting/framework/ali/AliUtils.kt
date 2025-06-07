@@ -15,4 +15,6 @@ object AliUtils {
 
     const val HEADER_ACL = "$HEADER_PREFIX-object-acl"
 
+    const val REGION_ACCELERATE = "accelerate"
+
 }

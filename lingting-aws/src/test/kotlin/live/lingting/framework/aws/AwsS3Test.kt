@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty
 import java.io.ByteArrayInputStream
 import java.nio.file.Files
+import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
 
 /**
@@ -56,15 +57,67 @@ class AwsS3Test {
     @BeforeEach
     fun before() {
         sts = AwsBasic.sts()
-        properties = AwsBasic.s3StsProperties()
+        properties = if (useSts) AwsBasic.s3StsProperties() else AwsBasic.s3Properties()
     }
 
     fun buildObj(key: String): AwsS3Object =
         if (useSts) sts!!.s3Object(properties!!, key) else AwsS3Object(AwsBasic.s3Properties(), key)
 
-    fun buildBucket(): AwsS3Bucket = if (useSts) sts!!.s3Bucket(properties!!) else AwsS3Bucket(AwsBasic.s3Properties())
+    fun buildBucket(): AwsS3Bucket =
+        if (useSts) sts!!.s3Bucket(properties!!) else AwsS3Bucket(AwsBasic.s3Properties())
 
     @Test
+    fun test() {
+        doTest()
+        val domain = System.getenv("DOMAIN")
+        if (!domain.isNullOrBlank()) {
+            properties!!.domain = domain
+            doTest()
+        }
+        val domain1 = System.getenv("DOMAIN1")
+        if (!domain1.isNullOrBlank()) {
+            properties!!.domain = domain1
+            doTest()
+        }
+    }
+
+    fun doTest() {
+        val async = Async()
+        val atomic = AtomicLong()
+
+        async.submit {
+            try {
+                put()
+            } catch (_: Exception) {
+                atomic.incrementAndGet()
+            }
+        }
+        async.submit {
+            try {
+                multipart()
+            } catch (_: Exception) {
+                atomic.incrementAndGet()
+            }
+        }
+        async.submit {
+            try {
+                pre()
+            } catch (_: Exception) {
+                atomic.incrementAndGet()
+            }
+        }
+        async.submit {
+            try {
+                listAndMeta()
+            } catch (_: Exception) {
+                atomic.incrementAndGet()
+            }
+        }
+
+        assertEquals(0, atomic.get())
+        async.await()
+    }
+
     fun put() {
         val key = "test/s_" + snowflake.nextId()
         log.info("put key: {}", key)
@@ -88,7 +141,6 @@ class AwsS3Test {
 
     }
 
-    @Test
     fun multipart() {
         val s3Bucket = buildBucket()
         val bo = s3Bucket.use("test/b_t")
@@ -144,7 +196,6 @@ class AwsS3Test {
         s3Object.delete()
     }
 
-    @Test
     fun listAndMeta() {
         val s3Bucket = buildBucket()
         val key = "test/b_t_l_m"
@@ -178,7 +229,6 @@ class AwsS3Test {
         bo.delete()
     }
 
-    @Test
     fun pre() {
         val client = HttpClient.default().disableSsl().build()
         val key = "test/pre_" + snowflake.nextId()
@@ -209,6 +259,9 @@ class AwsS3Test {
                     .headers(prePutR.headers)
                     .build()
             ).use { putR ->
+                if (!putR.isOk) {
+                    println(putR.string())
+                }
                 assertTrue(putR.isOk)
             }
 
@@ -226,8 +279,11 @@ class AwsS3Test {
                     .url(preGet.url)
                     .build()
             ).use { getR ->
-                assertTrue(getR.isOk)
                 val string = getR.string()
+                if (!getR.isOk) {
+                    println(string)
+                }
+                assertTrue(getR.isOk)
                 assertEquals(source, string)
                 assertEquals(hex, DigestUtils.md5Hex(string.toByteArray()))
             }

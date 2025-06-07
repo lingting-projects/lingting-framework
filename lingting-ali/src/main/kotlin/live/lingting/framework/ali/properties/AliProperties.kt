@@ -22,8 +22,18 @@ abstract class AliProperties {
 
     open var sk: String = ""
 
-    open var token: String? = ""
+    open var token: String? = null
 
-    abstract fun host(): String
+    open var domain: String? = null
+
+    open fun host(): String {
+        val str = domain
+        if (str.isNullOrBlank()) {
+            return buildHost()
+        }
+        return str
+    }
+
+    abstract fun buildHost(): String
 
 }

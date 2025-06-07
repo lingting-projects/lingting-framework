@@ -16,6 +16,23 @@ abstract class S3Properties : AwsProperties() {
 
     open var acl: Acl? = Acl.PRIVATE
 
+    open var domain: String? = null
+
+    override fun host(): String {
+        val str = domain
+        if (str.isNullOrBlank()) {
+            return buildHost()
+        }
+        return str
+    }
+
+    open fun buildHost(): String {
+        if (hostStyle == HostStyle.VIRTUAL) {
+            return virtualHost()
+        }
+        return secondHost()
+    }
+
     open fun useCredential(credential: Credential) {
         ak = credential.ak
         sk = credential.sk
@@ -28,6 +45,7 @@ abstract class S3Properties : AwsProperties() {
         endpoint = properties.endpoint
         bucket = properties.bucket
         acl = properties.acl
+        domain = properties.domain
         ak = properties.ak
         sk = properties.sk
         token = properties.token
@@ -35,13 +53,6 @@ abstract class S3Properties : AwsProperties() {
 
     open fun copy(): S3Properties {
         return AwsS3Properties().also { it.from(this) }
-    }
-
-    override fun host(): String {
-        if (hostStyle == HostStyle.VIRTUAL) {
-            return virtualHost()
-        }
-        return secondHost()
     }
 
     open fun urlBuilder(): HttpUrlBuilder {
