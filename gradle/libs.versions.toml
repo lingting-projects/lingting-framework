@@ -10,6 +10,7 @@ commonsNet = "3.11.1"
 polaris = "1.15.9"
 javax = "1.3.2"
 springBoot = "2.7.18"
+springBootAdmin = "2.7.10"
 formatter = "0.0.41"
 publish = "0.29.0"
 kotlin = "2.0.21"
@@ -21,7 +22,7 @@ spring-boot-classpath = { group = "org.springframework.boot", name = "spring-boo
 spring-formatter-plugin = { group = "io.spring.javaformat", name = "spring-javaformat-gradle-plugin", version.ref = "formatter" }
 spring-formatter-checkstyle = { group = "io.spring.javaformat", name = "spring-javaformat-checkstyle", version.ref = "formatter" }
 spring-boot-dependencies = { group = "org.springframework.boot", name = "spring-boot-dependencies", version.ref = "springBoot" }
-spring-boot-admin-dependencies = { group = "de.codecentric", name = "spring-boot-admin-dependencies", version.ref = "springBoot" }
+spring-boot-admin-dependencies = { group = "de.codecentric", name = "spring-boot-admin-dependencies", version.ref = "springBootAdmin" }
 polaris-dependencies = { group = "com.tencent.polaris", name = "polaris-dependencies", version.ref = "polaris" }
 grpc-dependencies = { group = "io.grpc", name = "grpc-bom", version.ref = "grpc" }
 grpc-protobuf-plugin = { group = "com.google.protobuf", name = "protobuf-gradle-plugin", version.ref = "grpcProtobuf" }
