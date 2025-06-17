@@ -8,8 +8,13 @@ import io.grpc.ServerCallHandler
 /**
  * @author lingting 2023-12-18 19:10
  */
-open class ForwardingServerOnCallListener<S, R> protected constructor(call: ServerCall<S, R>, headers: Metadata, next: ServerCallHandler<S, R>) : ForwardingServerCallListener<S>() {
-    val delegate: ServerCall.Listener<S> by lazy {
+open class ForwardingServerOnCallListener<ReqT, RespT> protected constructor(
+    val call: ServerCall<ReqT, RespT>,
+    val headers: Metadata,
+    val next: ServerCallHandler<ReqT, RespT>,
+) : ForwardingServerCallListener<ReqT>() {
+
+    val delegate: ServerCall.Listener<ReqT> by lazy {
         try {
             next.startCall(call, headers)
         } catch (e: Exception) {
@@ -18,11 +23,11 @@ open class ForwardingServerOnCallListener<S, R> protected constructor(call: Serv
         }
     }
 
-    override fun delegate(): ServerCall.Listener<S> {
+    override fun delegate(): ServerCall.Listener<ReqT> {
         return delegate
     }
 
-    override fun onMessage(message: S) {
+    override fun onMessage(message: ReqT) {
         onMessageBefore(message)
         super.onMessage(message)
         onMessageAfter(message)
@@ -55,43 +60,43 @@ open class ForwardingServerOnCallListener<S, R> protected constructor(call: Serv
         onReadyAfter()
     }
 
-    fun onMessageBefore(message: S) {
+    open fun onMessageBefore(message: ReqT) {
         //
     }
 
-    fun onMessageAfter(message: S) {
+    open fun onMessageAfter(message: ReqT) {
         //
     }
 
-    fun onHalfCloseBefore() {
+    open fun onHalfCloseBefore() {
         //
     }
 
-    fun onHalfCloseAfter() {
+    open fun onHalfCloseAfter() {
         //
     }
 
-    fun onCancelBefore() {
+    open fun onCancelBefore() {
         //
     }
 
-    fun onCancelAfter() {
+    open fun onCancelAfter() {
         //
     }
 
-    fun onCompleteBefore() {
+    open fun onCompleteBefore() {
         //
     }
 
-    fun onCompleteAfter() {
+    open fun onCompleteAfter() {
         //
     }
 
-    fun onReadyBefore() {
+    open fun onReadyBefore() {
         //
     }
 
-    fun onReadyAfter() {
+    open fun onReadyAfter() {
         //
     }
 

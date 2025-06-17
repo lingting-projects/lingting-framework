@@ -10,6 +10,7 @@ import live.lingting.framework.api.PaginationParams
 import live.lingting.framework.exception.BizException
 import live.lingting.framework.function.ThrowingRunnable
 import live.lingting.framework.function.ThrowingSupplier
+import live.lingting.framework.value.CursorValue
 
 /**
  * 以前继承 com.baomidou.mybatisplus.extension.service.IService 的实现类，现在继承当前类
@@ -197,5 +198,12 @@ interface ExtendService<T> {
     fun updateFallback(t: T, fallback: Function<Exception?, RuntimeException?>) {
         fallback(BooleanSupplier { updateById(t) }, fallback)
     }
+
+    /**
+     * 分页游标
+     */
+    fun cursor(): CursorValue<T> = cursor(PaginationParams())
+
+    fun cursor(params: PaginationParams): CursorValue<T>
 
 }

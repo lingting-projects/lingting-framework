@@ -4,14 +4,16 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient
 import co.elastic.clients.elasticsearch._types.query_dsl.Query
 import co.elastic.clients.json.JsonpMapper
 import co.elastic.clients.transport.ElasticsearchTransport
+import live.lingting.framework.datascope.HandlerType
 import live.lingting.framework.elasticsearch.ElasticsearchProvider.client
 import live.lingting.framework.elasticsearch.ElasticsearchProvider.jacksonMapper
 import live.lingting.framework.elasticsearch.ElasticsearchProvider.transport
 import live.lingting.framework.elasticsearch.annotation.Index
-import live.lingting.framework.elasticsearch.composer.QueryComposer
+import live.lingting.framework.elasticsearch.api.ElasticsearchApiImpl
 import live.lingting.framework.elasticsearch.datascope.DataScopeInterceptor
 import live.lingting.framework.elasticsearch.datascope.ElasticsearchDataScope
 import live.lingting.framework.elasticsearch.polymerize.PolymerizeFactory
+import live.lingting.framework.elasticsearch.util.QueryUtils
 import org.elasticsearch.client.RestClient
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -33,7 +35,7 @@ internal class ElasticsearchApiTest {
 
     var client: ElasticsearchClient? = null
 
-    var api: ElasticsearchApi<Entity>? = null
+    var api: ElasticsearchApiImpl<Entity>? = null
 
     var allowDefault: Boolean = false
 
@@ -46,14 +48,15 @@ internal class ElasticsearchApiTest {
 
         val scope = object : ElasticsearchDataScope {
             override val resource: String = "null"
-            override fun includes(p: String): Boolean = true
+            override fun includes(type: HandlerType?, p: String): Boolean = true
 
-            override fun handler(p: IndexInfo): Query? = if (allowDefault) QueryComposer.term("space.name", "default") else null
+            override fun handler(type: HandlerType?, p: IndexInfo): Query? =
+                if (allowDefault) QueryUtils.term("space.name", "default") else null
         }
         val scopes = listOf(scope)
         val interceptors = listOf(DataScopeInterceptor(scopes))
 
-        api = ElasticsearchApi(Entity::class.java, PolymerizeFactory(), { it.id!! }, ElasticsearchProperties(), interceptors, client!!)
+        api = ElasticsearchApiImpl(Entity::class.java, PolymerizeFactory(), { it.id!! }, ElasticsearchProperties(), interceptors, client!!)
     }
 
     @Test
@@ -61,7 +64,7 @@ internal class ElasticsearchApiTest {
         val list = api!!.list()
         assertFalse(list.isEmpty())
         allowDefault = true
-        val byQuery = api!!.getByQuery()
+        val byQuery = api!!.get()
         assertNotNull(byQuery)
         assertEquals("Default", byQuery!!.space!!["name"])
     }

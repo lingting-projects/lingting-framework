@@ -9,6 +9,7 @@ import live.lingting.framework.security.store.SecurityStore
  * @author lingting 2024-05-27 16:36
  */
 class SecurityTokenDefaultResolver(private val store: SecurityStore) : SecurityTokenResolver, Sequence {
+
     override fun isSupport(token: SecurityToken?): Boolean {
         return true
     }

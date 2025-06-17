@@ -12,6 +12,8 @@ open class StringMultiValue : AbstractMultiValue<String, String, MutableCollecti
 
     constructor(supplier: Supplier<MutableCollection<String>>) : super(supplier)
 
+    constructor(allowModify: Boolean) : super(allowModify, { ArrayList() })
+
     constructor(allowModify: Boolean, supplier: Supplier<MutableCollection<String>>) : super(allowModify, supplier)
 
     override fun unmodifiable(): StringMultiValue {
@@ -19,4 +21,5 @@ open class StringMultiValue : AbstractMultiValue<String, String, MutableCollecti
         value.from(this) { Collections.unmodifiableCollection<String>(it) }
         return value
     }
+
 }

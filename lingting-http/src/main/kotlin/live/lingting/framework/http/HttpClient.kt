@@ -1,10 +1,8 @@
 package live.lingting.framework.http
 
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
+import live.lingting.framework.util.FileUtils
+import live.lingting.framework.util.ThreadUtils
 import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
 import java.net.CookieManager
 import java.net.CookiePolicy
 import java.net.CookieStore
@@ -12,24 +10,47 @@ import java.net.ProxySelector
 import java.net.URI
 import java.time.Duration
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
 import javax.net.SocketFactory
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLContext
 import javax.net.ssl.X509TrustManager
-import live.lingting.framework.stream.BytesInputStream
-import live.lingting.framework.stream.FileCloneInputStream
-import live.lingting.framework.util.FileUtils
-import live.lingting.framework.util.StreamUtils
-import live.lingting.framework.util.ThreadUtils
-import live.lingting.framework.value.LazyValue
 
 /**
  * @author lingting 2024-09-02 15:28
  */
 @Suppress("UNCHECKED_CAST")
 abstract class HttpClient {
+
+    companion object {
+        /**
+         * @see jdk.internal.net.http.common.Utils.getDisallowedHeaders
+         */
+        @JvmField
+        val HEADERS_DISABLED: Set<String> = setOf(
+            "connection", "content-length", "expect", "host",
+            "upgrade"
+        )
+
+        @JvmField
+        val TEMP_DIR: File = FileUtils.createTempDir("http")
+
+        @JvmStatic
+        fun builder() = default()
+
+        fun default(): Builder<*, *> = okhttp()
+
+        @JvmStatic
+        fun okhttp(): OkHttpClient.Builder {
+            return OkHttpClient.Builder()
+        }
+
+        fun createFile() = FileUtils.createTemp(".wrap", TEMP_DIR)
+
+    }
+
+    var memoryResponse = true
+
     protected var cookie: CookieStore? = null
 
     fun cookie(): CookieStore? {
@@ -51,8 +72,18 @@ abstract class HttpClient {
         return request(HttpRequest.builder().get().url(uri).build())
     }
 
+    fun get(url: String): HttpResponse {
+        return request(HttpRequest.builder().get().url(url).build())
+    }
+
+    fun <T> get(url: String, cls: Class<T>): T? {
+        val builder = HttpRequest.builder().get().url(url)
+        return request(builder.build(), cls)
+    }
+
     abstract class Builder<C : HttpClient, B : Builder<C, B>> {
-        protected var executor: ExecutorService? = ThreadUtils.executor()
+
+        protected var executor: ExecutorService? = ThreadUtils
 
         protected var redirects: Boolean = true
 
@@ -70,6 +101,9 @@ abstract class HttpClient {
 
         protected var trustManager: X509TrustManager? = null
 
+        /**
+         * java 实现无效
+         */
         protected var callTimeout: Duration? = null
 
         protected var connectTimeout: Duration? = null
@@ -81,6 +115,8 @@ abstract class HttpClient {
         protected var proxySelector: ProxySelector? = null
 
         protected var cookie: CookieStore? = null
+
+        protected var memoryResponse: Boolean = true
 
         fun socketFactory(socketFactory: SocketFactory?): B {
             this.socketFactory = socketFactory
@@ -119,6 +155,9 @@ abstract class HttpClient {
             return ssl(manager).hostnameVerifier(verifier)
         }
 
+        /**
+         * java 实现无效
+         */
         fun callTimeout(callTimeout: Duration?): B {
             this.callTimeout = callTimeout
             return this as B
@@ -150,7 +189,12 @@ abstract class HttpClient {
             return connectTimeout(connectTimeout).readTimeout(readTimeout)
         }
 
-        fun timeout(callTimeout: Duration?, connectTimeout: Duration?, readTimeout: Duration?, writeTimeout: Duration?): B {
+        fun timeout(
+            callTimeout: Duration?,
+            connectTimeout: Duration?,
+            readTimeout: Duration?,
+            writeTimeout: Duration?
+        ): B {
             return callTimeout(callTimeout).connectTimeout(connectTimeout)
                 .readTimeout(readTimeout)
                 .writeTimeout(writeTimeout)
@@ -171,6 +215,16 @@ abstract class HttpClient {
             return cookie(manager.cookieStore)
         }
 
+        fun memoryResponse(): B {
+            memoryResponse = true
+            return this as B
+        }
+
+        fun fileResponse(): B {
+            memoryResponse = false
+            return this as B
+        }
+
         protected fun <A> nonNull(a: A?, consumer: Consumer<A>) {
             if (a == null) {
                 return
@@ -187,65 +241,4 @@ abstract class HttpClient {
         protected abstract fun doBuild(): C
     }
 
-    companion object {
-        /**
-         * @see jdk.internal.net.http.common.Utils.getDisallowedHeaders
-         */
-        @JvmField
-        val HEADERS_DISABLED: Set<String> = setOf(
-            "connection", "content-length", "expect", "host",
-            "upgrade"
-        )
-
-        @JvmField
-        val TEMP_DIR: File = FileUtils.createTempDir("http")
-
-        /**
-         * 默认大小以内文件直接放内存里面, 单位: bytes
-         */
-        @JvmField
-        var defaultMaxBytes: Long = 1048576
-
-        @JvmStatic
-        fun builder() = default()
-
-        fun default() = okhttp()
-
-        @JvmStatic
-        fun okhttp(): OkHttpClient.Builder {
-            return OkHttpClient.Builder()
-        }
-
-        @JvmStatic
-        @JvmOverloads
-        fun wrap(source: InputStream?, maxBytes: Long = defaultMaxBytes): InputStream {
-            if (source == null) {
-                return ByteArrayInputStream(ByteArray(0))
-            }
-            val size = AtomicLong(0)
-
-            val byteOut = ByteArrayOutputStream()
-            val fileOutValue = LazyValue<FileOutputStream?> { null }
-            val fileValue = LazyValue<File> {
-                val file = FileUtils.createTemp(".wrap", TEMP_DIR)
-                fileOutValue.set(FileOutputStream(file))
-                file
-            }
-            StreamUtils.read(source) { bytes, len ->
-                if (!fileValue.isFirst() || size.addAndGet(len.toLong()) > maxBytes) {
-                    if (fileValue.isFirst()) {
-                        fileValue.get()
-                        fileOutValue.get()!!.write(byteOut.toByteArray())
-                    }
-                    fileOutValue.get()!!.write(bytes, 0, len)
-                } else {
-                    byteOut.write(bytes, 0, len)
-                }
-            }
-            if (fileValue.isFirst()) {
-                return BytesInputStream(byteOut.toByteArray())
-            }
-            return FileCloneInputStream(fileValue.get()!!)
-        }
-    }
 }

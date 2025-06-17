@@ -1,17 +1,17 @@
 package live.lingting.framework.mybatis.typehandler
 
+import live.lingting.framework.util.EnumUtils
+import org.apache.ibatis.type.JdbcType
 import java.sql.CallableStatement
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.util.Objects
-import live.lingting.framework.util.EnumUtils
-import org.apache.ibatis.type.BaseTypeHandler
-import org.apache.ibatis.type.JdbcType
 
 /**
  * @author lingting 2022/12/14 16:06
  */
-open class EnumTypeHandler<E : Enum<E>>(private val type: Class<E>) : BaseTypeHandler<E>(), AutoRegisterTypeHandler<E> {
+open class EnumTypeHandler<E : Enum<E>>(private val type: Class<E>) : AbstractTypeHandler<E>(),
+    AutoRegisterTypeHandler<E> {
 
     override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: E?, jdbcType: JdbcType?) {
         val value = EnumUtils.getValue(parameter)

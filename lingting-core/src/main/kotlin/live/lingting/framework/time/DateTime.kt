@@ -1,5 +1,6 @@
 package live.lingting.framework.time
 
+import live.lingting.framework.lock.JavaReentrantLock
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -12,21 +13,46 @@ import java.time.ZonedDateTime
  */
 object DateTime {
 
+    private var zoneIdValue = DatePattern.SYSTEM_ZONE_ID
+
+    private var zoneOffsetValue = DatePattern.SYSTEM_ZONE_OFFSET
+
+    private var clockValue = Clock.system(zoneIdValue)
+
+    private val lock = JavaReentrantLock()
+
     /**
      * 内置的时区设置, 用于规避系统的时区设置问题, 默认使用系统时区.
      */
-    var zoneId = DatePattern.SYSTEM_ZONE_ID
-        private set
-
-    var zoneOffset = DatePattern.SYSTEM_ZONE_OFFSET
+    var zoneId
+        get() = zoneIdValue
         set(value) {
-            field = value
-            zoneId = value.normalized()
-            clock = Clock.system(zoneId)
+            lock.runByInterruptibly {
+                clockValue = Clock.system(value)
+
+                zoneIdValue = value
+                zoneOffsetValue = value.rules.getOffset(Instant.now())
+            }
         }
 
-    var clock: Clock = Clock.system(zoneId)
-        private set
+    var zoneOffset
+        get() = zoneOffsetValue
+        set(value) {
+            lock.runByInterruptibly {
+                clockValue = clock.withZone(value)
+
+                zoneIdValue = value.normalized()
+                zoneOffsetValue = value
+            }
+        }
+
+    var clock: Clock
+        get() = clockValue
+        set(value) {
+            lock.runByInterruptibly {
+                zoneId = value.zone
+            }
+        }
 
     @JvmStatic
     fun millis(): Long {

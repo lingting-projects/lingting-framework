@@ -29,6 +29,11 @@ object MdcUtils {
     }
 
     @JvmStatic
+    fun ifAbsentTraceId(): String {
+        return traceId ?: setTraceId()
+    }
+
+    @JvmStatic
     fun removeTraceId() {
         MDC.remove(traceIdKey)
     }

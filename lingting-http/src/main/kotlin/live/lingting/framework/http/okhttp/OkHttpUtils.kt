@@ -1,13 +1,12 @@
 package live.lingting.framework.http.okhttp
 
-import java.io.IOException
-import java.io.InputStream
-import live.lingting.framework.http.HttpRequest
 import live.lingting.framework.util.StringUtils
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
 import okio.Buffer
+import java.io.IOException
+import java.io.InputStream
 
 /**
  * @author lingting 2024-09-28 14:11
@@ -39,7 +38,7 @@ object OkHttpUtils {
     }
 
     @JvmStatic
-    fun mediaType(body: HttpRequest.Body): MediaType? {
+    fun mediaType(body: live.lingting.framework.http.body.RequestBody): MediaType? {
         return mediaType((body.contentType()))
     }
 
@@ -47,5 +46,6 @@ object OkHttpUtils {
     fun mediaType(contentType: String?): MediaType? {
         return if (StringUtils.hasText(contentType)) contentType?.toMediaTypeOrNull() else null
     }
+
 }
 

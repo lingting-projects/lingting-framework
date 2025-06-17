@@ -1,25 +1,31 @@
 package live.lingting.framework.huawei.iam
 
-import java.time.Duration
-import live.lingting.framework.http.body.BodySource
+import live.lingting.framework.aws.policy.Statement
+import live.lingting.framework.http.body.Body
 import live.lingting.framework.http.body.MemoryBody
-import live.lingting.framework.huawei.HuaweiStatement
 import live.lingting.framework.huawei.HuaweiUtils
 import live.lingting.framework.jackson.JacksonUtils
+import java.time.Duration
 
 /**
  * @author lingting 2024-09-13 13:53
  */
 class HuaweiIamCredentialRequest : HuaweiIamRequest() {
+
+    companion object {
+        @JvmField
+        val VALUE_METHODS: Array<String> = arrayOf("token")
+    }
+
     var timeout: Duration = HuaweiUtils.CREDENTIAL_EXPIRE
 
-    var statements: Collection<HuaweiStatement> = emptyList()
+    var statements: Collection<Statement> = emptyList()
 
     override fun path(): String {
         return "v3.0/OS-CREDENTIAL/securitytokens"
     }
 
-    override fun body(): BodySource {
+    override fun body(): Body {
         val map = buildMap {
             put("auth", buildMap {
                 put("identity", buildMap {
@@ -38,8 +44,4 @@ class HuaweiIamCredentialRequest : HuaweiIamRequest() {
         return MemoryBody(json)
     }
 
-    companion object {
-        @JvmField
-        val VALUE_METHODS: Array<String> = arrayOf("token")
-    }
 }

@@ -25,14 +25,14 @@ abstract class FileMultipartTask<I : FileMultipartTask<I>> : MultipartTask<I> {
     override fun onCompleted() {
         val id = id
         if (failedNumber > 0) {
-            log.debug("[{}] onCancel", id)
+            log.debug("[FileMultipartTask] [{}] onCancel", id)
             onCancel()
-            log.debug("[{}] onCanceled", id)
+            log.trace("[FileMultipartTask] [{}] onCanceled", id)
             taskStatus = FileMultipartTaskStatus.CANCELED
         } else {
-            log.debug("[{}] onMerge", id)
+            log.debug("[FileMultipartTask] [{}] onMerge", id)
             onMerge()
-            log.debug("[{}] onMerged", id)
+            log.trace("[FileMultipartTask] [{}] onMerged", id)
             taskStatus = FileMultipartTaskStatus.MERGED
         }
         multipart.clear()

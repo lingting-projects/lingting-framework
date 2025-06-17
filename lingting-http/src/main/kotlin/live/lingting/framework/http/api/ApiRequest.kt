@@ -1,7 +1,8 @@
 package live.lingting.framework.http.api
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import live.lingting.framework.http.HttpMethod
-import live.lingting.framework.http.body.BodySource
+import live.lingting.framework.http.body.Body
 import live.lingting.framework.http.body.MemoryBody
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.jackson.JacksonUtils
@@ -11,17 +12,21 @@ import live.lingting.framework.value.multi.StringMultiValue
  * @author lingting 2024-09-14 15:33
  */
 abstract class ApiRequest {
-    @JvmField
+
+    @JsonIgnore
     val headers: HttpHeaders = HttpHeaders.empty()
 
-    @JvmField
+    @JsonIgnore
     val params: StringMultiValue = StringMultiValue()
 
     abstract fun method(): HttpMethod
 
     abstract fun path(): String
 
-    open fun body(): BodySource {
+    open fun body(): Body {
+        if (!method().allowBody()) {
+            return Body.empty()
+        }
         val json = JacksonUtils.toJson(this)
         return MemoryBody(json)
     }
@@ -36,4 +41,5 @@ abstract class ApiRequest {
     open fun onParams() {
         //
     }
+
 }

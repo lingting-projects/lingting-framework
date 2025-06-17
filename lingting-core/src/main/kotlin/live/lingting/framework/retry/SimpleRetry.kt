@@ -14,26 +14,18 @@ class SimpleRetry<T>(
     /**
      * 重试延迟
      */
-    val delay: Duration?, supplier: ThrowingSupplier<T>
-) : Retry<T>(supplier, SimpleRetryFunction(maxRetryCount, delay)) {
+    val delay: Duration,
+    supplier: ThrowingSupplier<T>
+) : Retry<T>(supplier) {
 
-}
+    private val sleep = delay.toMillis()
 
-class SimpleRetryFunction(
-    /**
-     * 最大重试次数
-     */
-    protected val maxRetryCount: Int,
-    /**
-     * 重试延迟
-     */
-    protected val delay: Duration?
-) : RetryFunction {
-    override fun allowRetry(retryCount: Int, e: Throwable): Boolean {
-        return retryCount < maxRetryCount && e !is InterruptedException
+    override fun allowRetry(ex: Throwable): Boolean {
+        return ex !is InterruptedException && count < maxRetryCount
     }
 
-    override fun getDelay(retryCount: Int, e: Throwable): Duration? {
-        return delay
+    override fun delay(ex: Throwable) {
+        Thread.sleep(sleep)
     }
+
 }

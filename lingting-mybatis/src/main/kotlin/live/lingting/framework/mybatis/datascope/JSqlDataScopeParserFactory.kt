@@ -1,5 +1,6 @@
 package live.lingting.framework.mybatis.datascope
 
+import live.lingting.framework.datascope.HandlerType
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -7,28 +8,14 @@ import java.util.concurrent.ConcurrentHashMap
  */
 abstract class JSqlDataScopeParserFactory {
 
-    val cache = ConcurrentHashMap<List<JSqlDataScope>, JSqlDataScopeParser>()
+    val cache = ConcurrentHashMap<String, JSqlDataScopeParser>()
 
-    fun get(scopes: List<JSqlDataScope>): JSqlDataScopeParser {
-        val filter = cache.entries.filter { it.key == scopes || (it.key.size == scopes.size && it.key.containsAll(scopes)) }
-        val find = filter.firstOrNull()
-        val parser = if (find == null) {
-            val p = create(scopes)
-            cache[scopes] = p
-            p
-        } else {
-            if (filter.size > 1) {
-                filter.forEach {
-                    if (it.key != find.key) {
-                        cache.remove(it.key, it.value)
-                    }
-                }
-            }
-            find.value
-        }
+    fun get(type: HandlerType?, scopes: List<JSqlDataScope>): JSqlDataScopeParser {
+        val key = scopes.map { it.hashCode() }.joinToString(":", type?.name ?: "-")
+        val parser = cache.computeIfAbsent(key) { create(type, scopes) }
         return parser
     }
 
-    abstract fun create(scopes: List<JSqlDataScope>): JSqlDataScopeParser
+    abstract fun create(type: HandlerType?, scopes: List<JSqlDataScope>): JSqlDataScopeParser
 
 }

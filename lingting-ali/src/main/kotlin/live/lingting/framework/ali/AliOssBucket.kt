@@ -7,11 +7,12 @@ import live.lingting.framework.aws.s3.interfaces.AwsS3BucketDelegation
 /**
  * @author lingting 2024-09-19 21:21
  */
-class AliOssBucket(
+open class AliOssBucket(
     protected val ossProperties: AliOssProperties
-) : AliOss<AwsS3Bucket>(AwsS3Bucket(ossProperties.s3())), AwsS3BucketDelegation {
+) : AliOss<AwsS3Bucket>(AwsS3Bucket(ossProperties)), AwsS3BucketDelegation {
 
     override fun use(key: String): AliOssObject {
         return AliOssObject(ossProperties, key)
     }
+
 }

@@ -1,7 +1,5 @@
 package live.lingting.framework.download
 
-import java.io.File
-import java.io.InputStream
 import live.lingting.framework.function.ThrowableFunction
 import live.lingting.framework.multipart.Multipart
 import live.lingting.framework.multipart.Part
@@ -10,11 +8,13 @@ import live.lingting.framework.multipart.file.FileMultipartTask
 import live.lingting.framework.stream.RandomAccessOutputStream
 import live.lingting.framework.thread.Async
 import live.lingting.framework.util.StreamUtils
+import java.io.File
+import java.io.InputStream
 
 /**
  * @author lingting 2024-09-06 16:55
  */
-class DownloadFileMultipartTask(
+open class DownloadFileMultipartTask(
     multipart: Multipart, maxRetryCount: Long, async: Async, target: File,
     download: ThrowableFunction<Part, InputStream>
 ) : FileMultipartTask<DownloadFileMultipartTask>(multipart, async) {
@@ -44,7 +44,7 @@ class DownloadFileMultipartTask(
 
     override fun onPart(part: Part) {
         RandomAccessOutputStream(target).use { output ->
-            output.seek(part.start)
+            output.seek(part.start.bytes)
             download.apply(part).use { input ->
                 StreamUtils.write(input, output)
             }
@@ -55,6 +55,4 @@ class DownloadFileMultipartTask(
         return task.retryCount < maxRetryCount
     }
 
-    companion object {
-    }
 }

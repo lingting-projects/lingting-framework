@@ -11,17 +11,27 @@ import com.baomidou.mybatisplus.core.enums.SqlKeyword
 import com.baomidou.mybatisplus.core.enums.WrapperKeyword
 import com.baomidou.mybatisplus.core.toolkit.StringUtils
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache
+import live.lingting.framework.util.CollectionUtils
+import live.lingting.framework.util.ValueUtils
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 import java.util.function.Supplier
 import java.util.regex.Pattern
 import kotlin.reflect.KClass
-import live.lingting.framework.util.CollectionUtils
-import live.lingting.framework.util.ValueUtils
 
 @Suppress("UNCHECKED_CAST", "SYNTHETIC_PROPERTY_WITHOUT_JAVA_ORIGIN")
 abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
     Wrapper<T>(), Compare<C, String>, Nested<C, C>, Join<C>, Func<C, String>, ISqlSegment {
+
+    companion object {
+
+        private val atomic = AtomicInteger()
+
+        fun nextId() = atomic.andIncrement
+
+    }
+
+    val id = nextId()
 
     protected val c = this as C
 
@@ -36,6 +46,8 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
      * sql 参数
      */
     protected val params = HashMap<String, Any?>()
+
+    fun params() = params.toMap()
 
     // region common
 
@@ -89,6 +101,14 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
     // endregion
 
     // region append
+
+    fun <O : AbstractWrapper<*, *>> merge(o: O?): C {
+        if (o != null) {
+            appendCondition(true, null, o)
+        }
+        return c
+    }
+
     fun appendSql(sql: String): C {
         return appendSql(null, sql)
     }
@@ -111,14 +131,14 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
             return c
         }
 
-        val list: MutableList<ISqlSegment> = ArrayList<ISqlSegment>()
+        val list = ArrayList<ISqlSegment>()
 
         if (StringUtils.isNotBlank(field)) {
             val name = field(field!!)
             list.add(ISqlSegment { name })
         }
 
-        list.add(if (keyword == null) WrapperKeyword.APPLY else keyword)
+        list.add(keyword ?: WrapperKeyword.APPLY)
 
         if (StringUtils.isNotBlank(sql)) {
             list.add(ISqlSegment { sql })
@@ -128,7 +148,12 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
         return c
     }
 
-    fun <E : Any> appendSql(condition: Boolean, field: String, keyword: SqlKeyword, consumer: Consumer<QueryWrapper<E>>): C {
+    fun <E : Any> appendSql(
+        condition: Boolean,
+        field: String,
+        keyword: SqlKeyword,
+        consumer: Consumer<QueryWrapper<E>>
+    ): C {
         if (!condition) {
             return c
         }
@@ -151,15 +176,11 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
         val builder = StringBuilder()
         val supplier = if (arg == null) {
             null
-        } else if (arg is Supplier<*>) {
-            arg
-        } else {
-            Supplier { arg }
-        }
+        } else arg as? Supplier<*> ?: Supplier { arg }
 
         if (supplier != null) {
             val arg = supplier.get()
-            val isMulti: Boolean = CollectionUtils.isMulti(arg)
+            val isMulti = CollectionUtils.isMulti(arg)
             if (isMulti) {
                 builder.append("(")
             }
@@ -198,6 +219,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
         }
 
         val c = instance()
+        c.paramId = paramId
         consumer.accept(c)
         return appendCondition<C>(true, keyword, c)
     }
@@ -238,9 +260,9 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
      * @param prefix # 或者 $
      */
     protected fun wrapperParam(prefix: String, mapping: String?, value: Any?): String {
-        val id = "PARAM" + paramId.incrementAndGet()
-        val field = Wrappers.PARAM + ".params." + id
-        params.put(id, value)
+        val pId = "PARAM _${id}_${paramId.incrementAndGet()}"
+        val field = "${Wrappers.PARAM}.params.$pId"
+        params.put(pId, value)
         val builder = StringBuilder(prefix).append("{").append(field)
         if (StringUtils.isNotBlank(mapping)) {
             builder.append(",").append(mapping)
@@ -384,7 +406,12 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
         return c
     }
 
-    override fun <V> allEq(condition: Boolean, filter: java.util.function.BiPredicate<String, V>, params: MutableMap<String, V>, null2IsNull: Boolean): C {
+    override fun <V> allEq(
+        condition: Boolean,
+        filter: java.util.function.BiPredicate<String, V>,
+        params: MutableMap<String, V>,
+        null2IsNull: Boolean
+    ): C {
         if (condition && params.isNotEmpty()) {
             params.forEach { (k: String, v: V) ->
                 if (filter.test(k, v)) {
@@ -743,5 +770,8 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
     fun <E : Any> `in`(condition: Boolean, field: String, consumer: Consumer<QueryWrapper<E>>): C {
         return appendSql<E>(condition, field, SqlKeyword.IN, consumer)
 
-    } // endregion
+    }
+
+    // endregion
+
 }

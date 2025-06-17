@@ -1,17 +1,16 @@
 package live.lingting.framework.thread
 
 import java.time.Duration
-import java.util.concurrent.TimeUnit
 import live.lingting.framework.lock.JavaReentrantLock
 
 /**
  * @author lingting 2022/6/27 20:26
  */
-abstract class AbstractTimer : AbstractThreadApplicationComponent() {
+abstract class AbstractTimer : AbstractThreadApplication() {
 
     protected val lock: JavaReentrantLock = JavaReentrantLock()
 
-    open val timeout: Duration = Duration.ofSeconds(30)
+    open val interval: Duration = Duration.ofSeconds(30)
 
     /**
      * 执行任务
@@ -23,8 +22,7 @@ abstract class AbstractTimer : AbstractThreadApplicationComponent() {
         try {
             process()
         } finally {
-            val duration = timeout
-            lock.await(duration.toMillis(), TimeUnit.MILLISECONDS)
+            lock.await(interval)
             lock.unlock()
         }
     }
@@ -32,7 +30,7 @@ abstract class AbstractTimer : AbstractThreadApplicationComponent() {
     /**
      * 唤醒定时器, 立即执行代码
      */
-    fun wake() {
+    override fun wake() {
         lock.runByTry { lock.signalAll() }
     }
 

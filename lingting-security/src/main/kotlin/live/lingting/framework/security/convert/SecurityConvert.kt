@@ -2,7 +2,6 @@ package live.lingting.framework.security.convert
 
 import live.lingting.framework.security.domain.AuthorizationVO
 import live.lingting.framework.security.domain.SecurityScope
-import live.lingting.framework.security.domain.SecurityScopeAttributes
 import live.lingting.framework.security.domain.SecurityToken
 import live.lingting.framework.security.po.EndpointTokenPO
 
@@ -31,9 +30,7 @@ interface SecurityConvert {
             vo.enabled = scope.enabled
             vo.roles = scope.roles.toSet()
             vo.permissions = scope.permissions.toSet()
-            vo.attributes = SecurityScopeAttributes().apply {
-                putAll(scope.attributes)
-            }
+            vo.attributes.putAll(scope.attributes)
         }
         return voExpand(vo)
     }
@@ -52,9 +49,7 @@ interface SecurityConvert {
             scope.expireTime = Long.MAX_VALUE
             scope.roles = vo.roles.toSet()
             scope.permissions = vo.permissions.toSet()
-            scope.attributes = SecurityScopeAttributes().apply {
-                putAll(vo.attributes)
-            }
+            scope.attributes.putAll(vo.attributes)
         }
         return scopeExpand(scope)
     }

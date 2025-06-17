@@ -1,15 +1,17 @@
 package live.lingting.framework.thread
 
+import live.lingting.framework.concurrent.Await
+import live.lingting.framework.function.StateKeepRunnable
+import live.lingting.framework.function.ThrowableRunnable
+import live.lingting.framework.lock.JavaReentrantLock
+import live.lingting.framework.thread.platform.PlatformThread
+import live.lingting.framework.thread.virtual.VirtualThread
 import java.time.Duration
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executor
 import java.util.concurrent.LinkedBlockingQueue
-import java.util.function.Supplier
-import live.lingting.framework.function.ThrowableRunnable
-import live.lingting.framework.lock.JavaReentrantLock
-import live.lingting.framework.util.ThreadUtils
-import live.lingting.framework.util.ValueUtils
+import java.util.concurrent.TimeoutException
 
 /**
  * @author lingting 2023-06-05 17:31
@@ -18,7 +20,7 @@ open class Async @JvmOverloads constructor(
     /**
      * 异步任务使用的线程池
      */
-    protected val executor: Executor? = defaultExecutor,
+    protected val executor: Executor = defaultExecutor,
     /**
      * 线程数量限制. -1 表示不限制
      */
@@ -26,43 +28,42 @@ open class Async @JvmOverloads constructor(
 ) {
 
     companion object {
+
         @JvmStatic
-        var defaultExecutor: Executor = VirtualThread.executor()
+        var defaultExecutor: Executor = VirtualThread
 
         const val UNLIMITED: Long = -1
 
         @JvmStatic
         @JvmOverloads
-        fun pool(limit: Long = UNLIMITED): Async {
-            val e: Executor = ThreadUtils.executor()
-            return Async(e, limit)
+        fun platform(limit: Long = UNLIMITED): Async {
+            return Async(PlatformThread, limit)
         }
 
         @JvmStatic
         @JvmOverloads
         fun virtual(limit: Long = UNLIMITED): Async {
-            val e: Executor = VirtualThread.executor()
-            return Async(e, limit)
+            return Async(VirtualThread, limit)
         }
 
     }
 
-    protected val lock: JavaReentrantLock = JavaReentrantLock()
+    protected val lock = JavaReentrantLock()
 
     /**
      * 所有异步任务列表
      */
-    protected val all: MutableList<StateKeepRunnable> = CopyOnWriteArrayList()
+    protected val all = CopyOnWriteArrayList<StateKeepRunnable>()
 
     /**
      * 执行中任务列表
      */
-    protected val running: MutableList<StateKeepRunnable> = CopyOnWriteArrayList()
+    protected val running = CopyOnWriteArrayList<StateKeepRunnable>()
 
     /**
      * 已完成异步任务列表
      */
-    protected val completed: MutableList<StateKeepRunnable> = CopyOnWriteArrayList()
+    protected val completed = CopyOnWriteArrayList<StateKeepRunnable>()
 
     /**
      * 待执行任务队列
@@ -71,11 +72,17 @@ open class Async @JvmOverloads constructor(
 
     constructor(limit: Long) : this(defaultExecutor, limit)
 
+    /**
+     * 是否可以无限制使用线程
+     */
     val isUnlimited: Boolean
-        /**
-         * 是否可以无限制使用线程
-         */
         get() = limit == UNLIMITED
+
+    /**
+     * 是否已满, 不能立即执行新任务
+     */
+    val isFull: Boolean
+        get() = !isUnlimited && running.size >= limit
 
     fun execute(runnable: Runnable) {
         execute("", runnable)
@@ -90,15 +97,14 @@ open class Async @JvmOverloads constructor(
     }
 
     fun submit(name: String?, runnable: ThrowableRunnable) {
-        val keepRunnable: StateKeepRunnable = object : StateKeepRunnable(name) {
+        val keepRunnable = object : StateKeepRunnable(name) {
 
             override fun doProcess() {
                 runnable.run()
             }
 
             override fun onFinally() {
-                super.onFinally()
-                lock.runByInterruptibly {
+                lock.run {
                     completed.add(this)
                     running.remove(this)
                     walk()
@@ -116,13 +122,14 @@ open class Async @JvmOverloads constructor(
      */
     fun walk() {
         // 上锁确保不会多执行
-        lock.runByInterruptibly {
-            // 无限制 || 可以执行新任务
-            if (isUnlimited || running.size < limit) {
-                val runnable = queue.poll() ?: return@runByInterruptibly
-                executor!!.execute(runnable)
-                running.add(runnable)
+        lock.runByTry {
+            // 已满
+            if (isFull) {
+                return@runByTry
             }
+            val runnable = queue.poll() ?: return@runByTry
+            executor.execute(runnable)
+            running.add(runnable)
         }
     }
 
@@ -131,31 +138,30 @@ open class Async @JvmOverloads constructor(
      * @param duration       超时时间
      * @param forceInterrupt 是否强制中断已超时的任务
      */
-    /**
-     * 等待结束, 执行时间超过超时时间的任务强行中断
-     * @param duration 超时时间
-     */
-
+    @JvmOverloads
     fun await(duration: Duration? = null, forceInterrupt: Boolean = true) {
-        val supplier = Supplier {
-            val count = notCompletedCount()
-            if (count < 1) {
-                return@Supplier true
+        try {
+            Await.waitTrue(duration) { notCompletedCount() < 1 }
+        } catch (e: TimeoutException) {
+            if (forceInterrupt) {
+                interruptAll()
             }
-
-            if (duration == null) {
-                return@Supplier false
-            }
-            val millis = duration.toMillis()
-            for (runnable in running) {
-                // 执行时间超时
-                if (runnable.time() >= millis && forceInterrupt) {
-                    runnable.interrupt()
-                }
-            }
-            false
+            throw e
         }
-        ValueUtils.awaitTrue(supplier)
+    }
+
+    /**
+     * 等待可线程空闲, 此时可立即执行新任务
+     */
+    fun awaitIdle() = Await.waitFalse { isFull }
+
+    /**
+     * 中断所有运行中任务
+     */
+    fun interruptAll() {
+        for (runnable in running) {
+            runnable.interrupt()
+        }
     }
 
     /**
@@ -181,6 +187,12 @@ open class Async @JvmOverloads constructor(
      */
     fun allCount(): Long {
         return all.size.toLong()
+    }
+
+    fun clearCompleted() {
+        val list = completed.toList()
+        all.removeAll(list)
+        completed.removeAll(list)
     }
 
 }

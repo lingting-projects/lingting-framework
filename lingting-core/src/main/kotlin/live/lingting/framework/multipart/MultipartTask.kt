@@ -1,14 +1,13 @@
 package live.lingting.framework.multipart
 
+import live.lingting.framework.concurrent.Await
+import live.lingting.framework.lock.JavaReentrantLock
+import live.lingting.framework.thread.Async
+import live.lingting.framework.util.Slf4jUtils.logger
 import java.time.Duration
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Supplier
-import live.lingting.framework.lock.JavaReentrantLock
-import live.lingting.framework.thread.Async
-import live.lingting.framework.util.Slf4jUtils.logger
-import live.lingting.framework.util.ValueUtils
 
 /**
  * @author lingting 2024-09-05 14:48
@@ -64,7 +63,7 @@ abstract class MultipartTask<I : MultipartTask<I>> protected constructor(val mul
 
     fun await(duration: Duration? = null): I {
         if (isStarted) {
-            ValueUtils.awaitTrue(duration, Supplier<Boolean> { this.isCompleted })
+            Await.waitTrue(duration) { this.isCompleted }
         }
         return this as I
     }
@@ -94,7 +93,7 @@ abstract class MultipartTask<I : MultipartTask<I>> protected constructor(val mul
             if (isCompleted && !currentCompleted) {
                 val isSet = reference.compareAndSet(MultipartTaskStatus.RUNNING, MultipartTaskStatus.COMPLETED)
                 if (isSet) {
-                    log.debug("[{}] onCompleted", multipart.id)
+                    log.debug("[MultipartTask] [{}] onCompleted", multipart.id)
                     onCompleted()
                 }
             }
@@ -108,10 +107,12 @@ abstract class MultipartTask<I : MultipartTask<I>> protected constructor(val mul
 
         val id = multipart.id
         val name = "Multipart-$id"
+        log.debug("[MultipartTask] submit start task")
         async.submit(name) {
-            log.debug("[{}] onStarted", id)
+            log.debug("[MultipartTask] [{}] onStarted", id)
             onStarted()
             for (part in multipart.parts) {
+                log.debug("[MultipartTask] submit part[{}] task", part.index)
                 async.submit(name + "-" + part.index) { doPart(part) }
             }
         }
@@ -129,9 +130,9 @@ abstract class MultipartTask<I : MultipartTask<I>> protected constructor(val mul
             task.status = PartTaskStatus.RUNNING
             var t: Throwable? = null
             try {
-                log.debug("[{}] onPart {}", id, index)
+                log.trace("[MultipartTask] [{}] onPart {}", id, index)
                 onPart(part)
-                log.debug("[{}] onPart completed {}", id, index)
+                log.trace("[MultipartTask] [{}] onPart completed {}", id, index)
                 task.status = PartTaskStatus.SUCCESSFUL
             } catch (throwable: Throwable) {
                 t = throwable

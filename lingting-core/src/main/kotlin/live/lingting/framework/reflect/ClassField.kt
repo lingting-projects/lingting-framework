@@ -23,7 +23,7 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
         else -> ""
     }
 
-    val valueType: Class<*> = field?.type ?: methodGet!!.returnType
+    val valueType: Class<*> = field?.type ?: (methodGet?.returnType ?: methodSet!!.parameterTypes[0])
 
     val hasField = field != null
 
@@ -63,7 +63,7 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
      * @param obj 对象
      * @return java.lang.Object 对象指定字段值
      */
-    fun get(obj: Any): Any {
+    fun get(obj: Any): Any? {
         if (methodGet != null) {
             return methodGet.invoke(obj)
         }
@@ -75,7 +75,7 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
      * @param obj 对象
      * @param args set方法参数, 如果无set方法, 则第一个参数会被作为值通过字段设置
      */
-    fun set(obj: Any, vararg args: Any) {
+    fun set(obj: Any?, vararg args: Any?) {
         if (methodSet != null) {
             methodSet.invoke(obj, *args)
             return

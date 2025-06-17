@@ -1,14 +1,15 @@
 package live.lingting.framework.multipart
 
-import java.io.File
-import java.io.FileOutputStream
-import java.util.concurrent.ConcurrentHashMap
-import java.util.function.Consumer
+import live.lingting.framework.data.DataSize
 import live.lingting.framework.stream.CloneInputStream
 import live.lingting.framework.stream.FileCloneInputStream
 import live.lingting.framework.stream.RandomAccessInputStream
 import live.lingting.framework.util.FileUtils
 import live.lingting.framework.util.StreamUtils
+import java.io.File
+import java.io.FileOutputStream
+import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Consumer
 
 /**
  * @author lingting 2024-09-05 14:47
@@ -25,11 +26,11 @@ class Multipart(
     /**
      * 原始内容大小: byte
      */
-    val size: Long,
+    val size: DataSize,
     /**
      * 每个分片的最大大小: byte
      */
-    val partSize: Long,
+    val partSize: DataSize,
     /**
      * 所有分片
      */
@@ -38,11 +39,11 @@ class Multipart(
 
     protected val cache: MutableMap<Long, File> = ConcurrentHashMap(parts.size)
 
-    fun usePartSize(partSize: Long): Multipart {
+    fun usePartSize(partSize: DataSize): Multipart {
         return usePartSize(partSize, id)
     }
 
-    fun usePartSize(partSize: Long, id: String): Multipart {
+    fun usePartSize(partSize: DataSize, id: String): Multipart {
         return Multipart(id, source, size, partSize, parts)
     }
 
@@ -51,9 +52,9 @@ class Multipart(
             val dir = File(TEMP_DIR, id)
             val temp: File = FileUtils.createTemp(".part$k", dir)
             RandomAccessInputStream(source!!).use { input ->
-                input.seek(part.start)
+                input.seek(part.start.bytes)
                 FileOutputStream(temp).use { output ->
-                    StreamUtils.write(input, output, part.size)
+                    StreamUtils.write(input, output, part.size.bytes)
                 }
             }
             temp
@@ -93,17 +94,21 @@ class Multipart(
          * @param partSize 每个分片大小
          */
         @JvmStatic
-        fun calculate(size: Long, partSize: Long): Long {
-            val l = size / partSize
-            return if (size % partSize == 0L) l else l + 1
+        fun calculate(size: DataSize, partSize: DataSize): Long {
+            val d = size / partSize
+            val l = d.toLong()
+            if (l.toDouble() == d) {
+                return l
+            }
+            return l + 1
         }
 
         @JvmStatic
-        fun split(size: Long, partSize: Long): Collection<Part> {
+        fun split(size: DataSize, partSize: DataSize): Collection<Part> {
             val number = calculate(size, partSize)
             val parts: MutableList<Part> = ArrayList(number.toInt())
             for (i in 0 until number) {
-                val start: Long = i * partSize
+                val start = partSize * i
                 val middle = start + partSize - 1
                 val end = if (middle >= size) size - 1 else middle
                 val part = Part(i, start, end)

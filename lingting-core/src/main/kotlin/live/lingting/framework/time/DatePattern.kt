@@ -11,10 +11,10 @@ import java.time.format.DateTimeFormatter
 object DatePattern {
 
     @JvmField
-    val DEFAULT_ZONE_OFFSET: ZoneOffset = ZoneOffset.of("+8")
+    val UTC8_ZONE_OFFSET: ZoneOffset = ZoneOffset.of("+8")
 
     @JvmField
-    val DEFAULT_ZONE_ID: ZoneId = DEFAULT_ZONE_OFFSET.normalized()
+    val UTC8_ZONE_ID: ZoneId = UTC8_ZONE_OFFSET.normalized()
 
     @JvmField
     val GMT_ZONE_OFFSET: ZoneOffset = ZoneOffset.of("+0")

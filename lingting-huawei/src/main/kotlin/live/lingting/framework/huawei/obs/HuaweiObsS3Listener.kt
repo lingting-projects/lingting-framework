@@ -1,19 +1,18 @@
 package live.lingting.framework.huawei.obs
 
 
-import java.time.LocalDateTime
-import live.lingting.framework.time.DateTime
-import java.util.function.Consumer
 import live.lingting.framework.aws.AwsS3Client
+import live.lingting.framework.aws.AwsSigner
+import live.lingting.framework.aws.AwsUtils
 import live.lingting.framework.aws.s3.AwsS3Request
-import live.lingting.framework.aws.s3.AwsS3Utils
+import live.lingting.framework.aws.s3.enums.HostStyle
 import live.lingting.framework.aws.s3.impl.AwsS3DefaultListener
 import live.lingting.framework.http.HttpResponse
+import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.huawei.HuaweiObs
-import live.lingting.framework.huawei.HuaweiUtils
 import live.lingting.framework.huawei.exception.HuaweiObsException
-import live.lingting.framework.value.multi.StringMultiValue
+import java.util.function.Consumer
 
 /**
  * @author lingting 2024/11/5 14:54
@@ -25,28 +24,37 @@ class HuaweiObsS3Listener(client: AwsS3Client) : AwsS3DefaultListener(client) {
         throw HuaweiObsException("request error! code: " + response.code())
     }
 
-    override fun onAuthorization(request: AwsS3Request, headers: HttpHeaders, params: StringMultiValue, now: LocalDateTime) {
-        val date: String = HuaweiUtils.format(now)
-        headers.put(HuaweiUtils.HEADER_DATE, date)
+    override fun onSign(
+        request: AwsS3Request,
+        headers: HttpHeaders,
+        url: HttpUrlBuilder
+    ): AwsSigner<*, *> {
+        val properties = client.properties
 
-        headers.keys().forEach(Consumer<String> { name ->
-            if (name.startsWith(AwsS3Utils.HEADER_PREFIX)) {
-                val newName = name.replace(AwsS3Utils.HEADER_PREFIX, HuaweiObs.HEADER_PREFIX)
+        val path = if (properties.hostStyle != HostStyle.VIRTUAL) url.buildPath()
+        else url.buildPath().let { s ->
+            HttpUrlBuilder().path(properties.bucket).pathSegment(s).buildPath()
+                .let {
+                    if (s == "/" && !it.endsWith(s)) "$it/" else it
+                }
+        }
+
+        headers.keys().forEach(Consumer { name ->
+            if (name.startsWith(AwsUtils.HEADER_PREFIX)) {
+                val newName = name.replace(AwsUtils.HEADER_PREFIX, HuaweiObs.HEADER_PREFIX)
                 headers.replace(name, newName)
             }
         })
-        val sing: HuaweiObsSing = HuaweiObsSing.builder()
-            .dateTime(now)
-            .method(request.method())
-            .path(request.path())
-            .headers(headers)
-            .params(params)
-            .ak(client.ak)
-            .sk(client.sk)
-            .bucket(client.bucket)
-            .build()
 
-        val authorization = sing.calculate()
-        headers.authorization(authorization)
+        return HuaweiObsSigner(
+            request.method(),
+            path,
+            headers,
+            null,
+            url.params(),
+            properties.ak,
+            properties.sk
+        )
     }
+
 }

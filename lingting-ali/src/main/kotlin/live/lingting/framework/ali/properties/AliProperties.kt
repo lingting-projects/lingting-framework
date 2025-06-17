@@ -1,38 +1,39 @@
 package live.lingting.framework.ali.properties
 
-import live.lingting.framework.aws.s3.AwsS3Properties
-
 /**
  * @author lingting 2024-09-14 14:16
  */
-open class AliProperties {
-    var scheme: String = "https"
+abstract class AliProperties {
 
-    var prefix: String = ""
+    companion object {
 
-    var region: String = ""
+        @JvmField
+        val ENDPOINT = "aliyuncs.com"
 
-    var endpoint: String = "aliyuncs.com"
+    }
 
-    var ak: String = ""
+    open var ssl: Boolean = true
 
-    var sk: String = ""
+    open var region: String = "us-east-1"
 
-    var token: String? = ""
+    open var endpoint: String = ENDPOINT
+
+    open var ak: String = ""
+
+    open var sk: String = ""
+
+    open var token: String? = null
+
+    open var domain: String? = null
 
     open fun host(): String {
-        return "$scheme://$prefix.$region.$endpoint"
+        val str = domain
+        if (str.isNullOrBlank()) {
+            return buildHost()
+        }
+        return str
     }
 
-    open fun s3(): AwsS3Properties {
-        val s3 = AwsS3Properties()
-        s3.scheme = scheme
-        s3.connector = "-"
-        s3.region = region
-        s3.endpoint = endpoint
-        s3.ak = ak
-        s3.sk = sk
-        s3.token = token
-        return s3
-    }
+    abstract fun buildHost(): String
+
 }

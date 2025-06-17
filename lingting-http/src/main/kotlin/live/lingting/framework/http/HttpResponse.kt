@@ -5,6 +5,8 @@ import java.io.Closeable
 import java.io.InputStream
 import java.lang.reflect.Type
 import java.net.URI
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 import java.util.function.Function
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.jackson.JacksonUtils
@@ -15,20 +17,30 @@ import live.lingting.framework.util.StreamUtils.readAllBytes
 /**
  * @author lingting 2024-09-12 23:37
  */
-class HttpResponse(
+open class HttpResponse(
     protected val request: HttpRequest,
     protected val code: Int,
     protected val headers: HttpHeaders,
     protected val body: InputStream
 ) : Closeable {
 
-    protected val string by lazy { body().use { StreamUtils.toString(it) } }
+    protected val string by lazy { String(bytes, charset) }
 
-    protected val bytes by lazy { body().use { it.readAllBytes() } }
+    protected val bytes: ByteArray by lazy { body().use { it.readAllBytes() } }
 
-    val is2xx: Boolean = isRange(200, 299)
+    val is2xx = code().let { it >= 200 && it <= 299 }
 
     val isOk = is2xx
+
+    val charset: Charset by lazy {
+        headers.charset()?.let {
+            try {
+                Charset.forName(it)
+            } catch (_: Exception) {
+                null
+            }
+        } ?: StandardCharsets.UTF_8
+    }
 
     fun request(): HttpRequest {
         return request
@@ -78,15 +90,15 @@ class HttpResponse(
         return function.apply(json)
     }
 
-    fun isRange(start: Int, end: Int): Boolean {
-        val status = code()
-        return status >= start && status <= end
-    }
-
     override fun close() {
         if (body is CloneInputStream) {
             body.isCloseAndDelete = true
         }
         StreamUtils.close(body)
     }
+
+    override fun toString(): String {
+        return "[$code] ${request.uri()}"
+    }
+
 }

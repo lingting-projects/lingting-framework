@@ -1,30 +1,53 @@
 package live.lingting.framework.http.api
 
-import java.time.Duration
 import live.lingting.framework.http.HttpClient
 import live.lingting.framework.http.HttpRequest
 import live.lingting.framework.http.HttpResponse
 import live.lingting.framework.http.HttpUrlBuilder
-import live.lingting.framework.http.body.BodySource
+import live.lingting.framework.http.body.Body
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.util.Slf4jUtils.logger
-import live.lingting.framework.value.multi.StringMultiValue
+import java.time.Duration
 
 /**
  * @author lingting 2024-09-14 15:33
  */
-abstract class ApiClient<R : ApiRequest> protected constructor(@JvmField protected val host: String) {
+abstract class ApiClient<R : ApiRequest> @JvmOverloads protected constructor(
+    @JvmField protected val host: String,
+    @JvmField protected val ssl: Boolean = true,
+) {
+
+    companion object {
+
+        @JvmStatic
+        var defaultClient: HttpClient = HttpClient.builder()
+            .disableSsl()
+            .callTimeout(Duration.ofSeconds(10))
+            .connectTimeout(Duration.ofSeconds(15))
+            .readTimeout(Duration.ofSeconds(30))
+            .build()
+
+    }
+
     @JvmField
     val log = logger()
 
     @JvmField
-    var client: HttpClient = CLIENT
+    var client: HttpClient = defaultClient
 
     protected open fun customize(request: R) {
         //
     }
 
-    protected fun customize(headers: HttpHeaders) {
+    protected open fun customize(body: Body) {
+        //
+    }
+
+    protected open fun customize(headers: HttpHeaders) {
+        //
+    }
+
+    protected open fun customize(body: Body, headers: HttpHeaders) {
         //
     }
 
@@ -32,57 +55,71 @@ abstract class ApiClient<R : ApiRequest> protected constructor(@JvmField protect
         //
     }
 
-    protected fun customize(builder: HttpUrlBuilder) {
+    protected open fun customize(builder: HttpUrlBuilder) {
         //
     }
 
-    protected fun customize(request: R, builder: HttpRequest.Builder) {
-        //
-    }
-
-    protected open fun customize(request: R, headers: HttpHeaders, source: BodySource, params: StringMultiValue) {
+    protected open fun customize(request: R, headers: HttpHeaders, source: Body, url: HttpUrlBuilder) {
         //
     }
 
     protected abstract fun checkout(request: R, response: HttpResponse): HttpResponse
 
-    protected fun call(r: R): HttpResponse {
+    protected open fun urlBuilder(): HttpUrlBuilder {
+        return HttpUrlBuilder.builder().let {
+            if (ssl) {
+                it.https()
+            } else {
+                it.http()
+            }
+        }.host(host)
+    }
+
+    protected open fun call(r: R): HttpResponse {
         r.onCall()
         customize(r)
 
-        val method = r.method()
-        val headers: HttpHeaders = HttpHeaders.of(r.headers)
+        val headers = HttpHeaders.of(r.headers)
         val body = r.body()
 
+        customize(body)
         customize(headers)
         customize(r, headers)
+        customize(body, headers)
 
         val path = r.path()
         r.onParams()
-        val urlBuilder = HttpUrlBuilder.builder().https().host(host).uri(path).addParams(r.params)
+        val urlBuilder = urlBuilder().pathSegment(path).addParams(r.params)
         customize(urlBuilder)
 
-        val builder: HttpRequest.Builder = HttpRequest.builder()
-        val uri = urlBuilder.buildUri()
-        builder.url(uri)
-        headers.host(uri.host)
+        headers.host(urlBuilder.headerHost())
 
-        customize(r, builder)
-        customize(r, headers, body, urlBuilder.params())
-        builder.headers(headers)
-        builder.method(method.name).body(body)
-
-        val request = builder.build()
-        val response = client.request(request)
+        customize(r, headers, body, urlBuilder)
+        val response = call(urlBuilder, r, headers, body)
         return checkout(r, response)
     }
 
-    companion object {
-        @JvmField
-        var CLIENT: HttpClient = HttpClient.builder()
-            .disableSsl()
-            .timeout(Duration.ofSeconds(15), Duration.ofSeconds(30))
-            .build()
-
+    protected open fun call(urlBuilder: HttpUrlBuilder, r: R, headers: HttpHeaders, body: Body): HttpResponse {
+        val request = buildRequest(urlBuilder, headers, r, body)
+        return call(r, request)
     }
+
+    protected open fun call(r: R, request: HttpRequest): HttpResponse {
+        return client.request(request)
+    }
+
+    protected open fun buildRequest(
+        urlBuilder: HttpUrlBuilder,
+        headers: HttpHeaders,
+        r: R,
+        body: Body
+    ): HttpRequest {
+        val builder = HttpRequest.builder()
+        builder.url(urlBuilder)
+        builder.headers(headers)
+        builder.method(r.method().name).body(body)
+        val request = builder.build()
+        return request
+    }
+
 }

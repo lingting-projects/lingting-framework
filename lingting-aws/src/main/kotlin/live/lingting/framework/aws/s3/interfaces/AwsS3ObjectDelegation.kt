@@ -1,19 +1,23 @@
 package live.lingting.framework.aws.s3.interfaces
 
-import java.io.File
-import java.io.InputStream
 import live.lingting.framework.aws.AwsS3Object
 import live.lingting.framework.aws.policy.Acl
+import live.lingting.framework.aws.s3.AwsS3Meta
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
+import live.lingting.framework.aws.s3.AwsS3PreRequest
+import live.lingting.framework.aws.s3.request.AwsS3ObjectPutRequest
+import live.lingting.framework.aws.s3.response.AwsS3PreSignedResponse
+import live.lingting.framework.data.DataSize
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.multipart.Part
-import live.lingting.framework.stream.CloneInputStream
 import live.lingting.framework.thread.Async
+import java.io.InputStream
 
 /**
  * @author lingting 2024-09-19 21:59
  */
 interface AwsS3ObjectDelegation : AwsS3ObjectInterface, AwsS3Delegation<AwsS3Object> {
+
     override val key: String
         get() = delegation().key
 
@@ -21,51 +25,25 @@ interface AwsS3ObjectDelegation : AwsS3ObjectInterface, AwsS3Delegation<AwsS3Obj
         return delegation().publicUrl()
     }
 
-    override fun head(): HttpHeaders {
+    override fun get(): InputStream = delegation().get()
+
+    override fun head(): AwsS3Meta {
         return delegation().head()
     }
 
-    override fun put(file: File) {
-        delegation().put(file)
-    }
-
-    override fun put(file: File, acl: Acl?) {
-        delegation().put(file, acl)
-    }
-
-    override fun put(input: InputStream) {
-        delegation().put(input)
-    }
-
-    override fun put(input: InputStream, acl: Acl?) {
-        delegation().put(input, acl)
-    }
-
-    override fun put(input: CloneInputStream) {
-        delegation().put(input)
-    }
-
-    override fun put(input: CloneInputStream, acl: Acl?) {
-        delegation().put(input, acl)
+    override fun put(request: AwsS3ObjectPutRequest) {
+        delegation().put(request)
     }
 
     override fun delete() {
         delegation().delete()
     }
 
-    override fun multipartInit(): String {
-        return delegation().multipartInit()
+    override fun multipartInit(acl: Acl?, meta: HttpHeaders?): String {
+        return delegation().multipartInit(acl, meta)
     }
 
-    override fun multipartInit(acl: Acl?): String {
-        return delegation().multipartInit(acl)
-    }
-
-    override fun multipart(source: InputStream): AwsS3MultipartTask {
-        return delegation().multipart(source)
-    }
-
-    override fun multipart(source: InputStream, parSize: Long, async: Async): AwsS3MultipartTask {
+    override fun multipart(source: InputStream, parSize: DataSize, async: Async): AwsS3MultipartTask {
         return delegation().multipart(source, parSize, async)
     }
 
@@ -80,4 +58,9 @@ interface AwsS3ObjectDelegation : AwsS3ObjectInterface, AwsS3Delegation<AwsS3Obj
     override fun multipartCancel(uploadId: String) {
         delegation().multipartCancel(uploadId)
     }
+
+    override fun pre(request: AwsS3PreRequest): AwsS3PreSignedResponse {
+        return delegation().pre(request)
+    }
+
 }

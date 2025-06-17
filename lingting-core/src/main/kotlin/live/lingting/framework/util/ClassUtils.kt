@@ -1,21 +1,21 @@
 package live.lingting.framework.util
 
+import live.lingting.framework.reflect.ClassField
+import live.lingting.framework.util.StringUtils.firstLower
+import live.lingting.framework.util.StringUtils.firstUpper
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
-import java.util.Objects
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.BiConsumer
 import java.util.function.BiFunction
 import java.util.function.Function
 import java.util.function.Predicate
 import kotlin.reflect.KClass
-import live.lingting.framework.reflect.ClassField
-import live.lingting.framework.util.StringUtils.firstLower
-import live.lingting.framework.util.StringUtils.firstUpper
 
 /**
  * @author lingting 2021/2/25 21:17
@@ -201,7 +201,7 @@ object ClassUtils {
         loaders: Set<ClassLoader> = classLoaders(),
         error: BiConsumer<String, Throwable> = BiConsumer { _, _ -> },
     ): Set<Class<T>> {
-        val path = Resource.convertPath(basePack).replace(".", "/")
+        val path = Resource.replace(basePack).replace(".", "/")
 
         val collection = ResourceUtils.scan(path) {
             !it.isDirectory && it.name.endsWith(".class")
@@ -283,7 +283,7 @@ object ClassUtils {
     fun fields(cls: Class<*>): Array<Field> {
         return CACHE_FIELDS.computeIfAbsent(cls) {
             var k: Class<*>? = cls
-            val fields: MutableList<Field> = ArrayList()
+            val fields = ArrayList<Field>()
             while (k != null && !k.isAssignableFrom(Any::class.java)) {
                 fields.addAll(k.declaredFields)
                 k = k.superclass
@@ -414,6 +414,48 @@ object ClassUtils {
 
         return trim.firstLower()
     }
+
+    @JvmStatic
+    fun isSuper(cls: Class<*>?, superClassName: String): Boolean {
+        if (cls == null) {
+            return false
+        }
+        if (superClassName == Any::class.java.name) {
+            return true
+        }
+
+        if (cls == Any::class.java) {
+            return false
+        }
+
+        if (cls.name == superClassName) {
+            return true
+        }
+
+        // 找父类
+        if (isSuper(cls.superclass, superClassName)) {
+            return true
+        }
+
+        // 接口
+        return cls.interfaces.any { isSuper(it, superClassName) }
+    }
+
+    /**
+     * cls 是否是 superClass 的子类
+     */
+    @JvmStatic
+    fun isSuper(cls: Class<*>, superClass: Class<*>): Boolean {
+        if (superClass == Any::class.java) {
+            return true
+        }
+        if (cls == Any::class.java) {
+            return false
+        }
+        return superClass.isAssignableFrom(cls)
+    }
+
+    fun isSuper(cls: KClass<*>, superClass: KClass<*>) = isSuper(cls.java, superClass.java)
 
     @JvmStatic
     fun <T> constructors(cls: Class<T>): Array<Constructor<T>> {

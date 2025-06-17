@@ -1,14 +1,13 @@
 package live.lingting.framework.mybatis.extend
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler
-
 import java.time.LocalDateTime
-import live.lingting.framework.time.DateTime
 import java.util.Objects
 import java.util.function.Supplier
+import live.lingting.framework.time.DateTime
 import org.apache.ibatis.reflection.MetaObject
 
-class ExtendMetaObjectHandle : MetaObjectHandler {
+open class ExtendMetaObjectHandle : MetaObjectHandler {
 
     override fun insertFill(metaObject: MetaObject) {
         // 逻辑删除标识

@@ -13,9 +13,9 @@ import live.lingting.framework.util.StringUtils
 object IPageUtils {
 
     @JvmStatic
-    fun <T> PaginationParams.toIPage() = Page<T>(page, size).apply {
+    fun <T> PaginationParams.toIPage() = Page<T>(page, size).also {
         if (sorts.isEmpty()) {
-            return@apply
+            return@also
         }
 
         for ((field, desc) in sorts) {
@@ -24,21 +24,21 @@ object IPageUtils {
             val column = StringUtils.humpToUnderscore(field)
             item.isAsc = isAsc
             item.column = column
-            addOrder(item)
+            it.addOrder(item)
         }
     }
 
     @JvmStatic
-    fun <T> PaginationResult<T>.toIPage() = Page<T>().apply {
-        total = this@toIPage.total
-        records = this@toIPage.records
+    fun <T> PaginationResult<T>.toIPage() = Page<T>().also {
+        it.total = total
+        it.records = records
     }
 
     @JvmStatic
-    fun <T> IPage<T>.toParams() = PaginationParams(current, size).apply {
+    fun <T> IPage<T>.toParams() = PaginationParams(current, size).also {
         val orders = this@toParams.orders()
         if (orders.isEmpty()) {
-            return@apply
+            return@also
         }
         val list = ArrayList<PaginationParams.Sort>(orders.size)
         orders.forEach {
@@ -48,7 +48,7 @@ object IPageUtils {
             val sort = PaginationParams.Sort(column, !asc)
             list.add(sort)
         }
-        sorts = list
+        it.sorts = list
     }
 
     @JvmStatic

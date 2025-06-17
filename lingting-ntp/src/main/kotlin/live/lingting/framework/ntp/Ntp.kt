@@ -1,60 +1,48 @@
 package live.lingting.framework.ntp
 
+import java.time.Clock
+import java.time.Duration
 import java.time.Instant
-
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
-import java.time.ZoneOffset
-import java.util.concurrent.TimeUnit
+import java.time.ZonedDateTime
+import live.lingting.framework.time.DatePattern
+import live.lingting.framework.time.DateTime
 
 /**
- * ntp 校时服务
+ * ntp 校时结果
  * @author lingting 2022/11/18 13:40
  */
-class Ntp(val host: String, val diff: Long) {
-    var zoneId: ZoneId = DEFAULT_ZONE_ID
-        private set
+class Ntp(val host: String, val diff: Duration) {
 
-    fun zoneId(zoneId: ZoneId): Ntp {
-        this.zoneId = zoneId
-        return this
-    }
+    val zoneId: ZoneId = DatePattern.SYSTEM_ZONE_ID
+
+    val clock: Clock = Clock.offset(Clock.system(zoneId), diff)
 
     fun millis(): Long {
-        return System.currentTimeMillis() + diff
-    }
-
-    fun diff(): Long {
-        return diff
+        return clock.millis()
     }
 
     fun instant(): Instant {
-        val millis = millis()
-        return Instant.ofEpochMilli(millis)
+        return clock.instant()
+    }
+
+    fun zone(): ZonedDateTime {
+        return DateTime.instant().atZone(zoneId)
     }
 
     fun current(): LocalDateTime {
-        val instant = instant()
-        return LocalDateTime.ofInstant(instant, zoneId)
+        return zone().toLocalDateTime()
     }
 
-    fun plusSeconds(seconds: Long): Long {
-        return plusMillis(seconds * 1000)
+    fun date(): LocalDate {
+        return zone().toLocalDate()
     }
 
-    fun plusMillis(millis: Long): Long {
-        return millis() + millis
+    fun time(): LocalTime {
+        return zone().toLocalTime()
     }
 
-    fun plus(time: Long, unit: TimeUnit): Long {
-        return plusMillis(unit.toMillis(time))
-    }
-
-    companion object {
-        @JvmField
-        val DEFAULT_ZONE_OFFSET: ZoneOffset = ZoneOffset.of("+0")
-
-        @JvmField
-        val DEFAULT_ZONE_ID: ZoneId = DEFAULT_ZONE_OFFSET.normalized()
-    }
 }

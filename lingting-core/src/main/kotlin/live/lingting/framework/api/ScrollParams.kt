@@ -5,9 +5,11 @@ package live.lingting.framework.api
  */
 data class ScrollParams<T>(
     var size: Long,
-    var cursor: T?,
+    var cursor: T? = null,
 ) {
 
-    constructor() : this(10, null)
+    constructor() : this(10)
+
+    constructor(size: Long) : this(size, null)
 
 }

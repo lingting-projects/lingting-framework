@@ -7,8 +7,9 @@ import java.util.Locale
  */
 class MapI18nSource(
     override val locale: Locale,
-    val map: MutableMap<String, String>
+    map: Map<String, String>,
 ) : I18nSource {
+    val map: MutableMap<String, String> = map.toMutableMap()
 
     override fun find(key: String): String? {
         return map[key]

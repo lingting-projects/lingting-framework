@@ -5,14 +5,13 @@ import com.baomidou.mybatisplus.core.toolkit.support.SFunction
 
 @Suppress("SYNTHETIC_PROPERTY_WITHOUT_JAVA_ORIGIN")
 class QueryWrapper<T : Any> : LambdaWrapper<T, QueryWrapper<T>>() {
+
     override fun instance(): QueryWrapper<T> {
-        val w = QueryWrapper<T>()
-        w.paramId = paramId
-        return w
+        return QueryWrapper()
     }
 
     override fun getSafeSql(): String {
-        val builder = java.lang.StringBuilder()
+        val builder = StringBuilder()
 
         if (com.baomidou.mybatisplus.core.toolkit.StringUtils.isNotBlank(first)) {
             builder.append(first)
@@ -67,4 +66,5 @@ class QueryWrapper<T : Any> : LambdaWrapper<T, QueryWrapper<T>>() {
     }
 
 // endregion
+
 }

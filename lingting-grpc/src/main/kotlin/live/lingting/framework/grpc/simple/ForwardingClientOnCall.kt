@@ -10,8 +10,12 @@ import io.grpc.MethodDescriptor
 /**
  * @author lingting 2023-12-18 19:13
  */
-open class ForwardingClientOnCall<S, R>(method: MethodDescriptor<S, R>, callOptions: CallOptions, next: Channel) : ForwardingClientCall<S, R>() {
-    val delegate: ClientCall<S, R> by lazy {
+open class ForwardingClientOnCall<ReqT, RespT>(
+    method: MethodDescriptor<ReqT, RespT>,
+    callOptions: CallOptions, next: Channel,
+) : ForwardingClientCall<ReqT, RespT>() {
+
+    val delegate: ClientCall<ReqT, RespT> by lazy {
         try {
             next.newCall(method, callOptions)
         } catch (e: Exception) {
@@ -20,17 +24,17 @@ open class ForwardingClientOnCall<S, R>(method: MethodDescriptor<S, R>, callOpti
         }
     }
 
-    override fun delegate(): ClientCall<S, R> {
+    override fun delegate(): ClientCall<ReqT, RespT> {
         return delegate
     }
 
-    override fun start(responseListener: Listener<R>, headers: Metadata) {
+    override fun start(responseListener: Listener<RespT>, headers: Metadata) {
         onStartBefore(responseListener, headers)
         super.start(responseListener, headers)
         onStartAfter(responseListener, headers)
     }
 
-    override fun sendMessage(message: S) {
+    override fun sendMessage(message: ReqT) {
         onSendMessageBefore(message)
         super.sendMessage(message)
         onSendMessageAfter(message)
@@ -43,31 +47,31 @@ open class ForwardingClientOnCall<S, R>(method: MethodDescriptor<S, R>, callOpti
         onFinally()
     }
 
-    open fun onStartBefore(responseListener: Listener<R>, headers: Metadata) {
+    open fun onStartBefore(responseListener: Listener<RespT>, headers: Metadata) {
         //
     }
 
-    fun onStartAfter(responseListener: Listener<R>, headers: Metadata) {
+    open fun onStartAfter(responseListener: Listener<RespT>, headers: Metadata) {
         //
     }
 
-    fun onSendMessageBefore(message: S) {
+    open fun onSendMessageBefore(message: ReqT) {
         //
     }
 
-    fun onSendMessageAfter(message: S) {
+    open fun onSendMessageAfter(message: ReqT) {
         //
     }
 
-    fun onHalfCloseBefore() {
+    open fun onHalfCloseBefore() {
         //
     }
 
-    fun onHalfCloseAfter() {
+    open fun onHalfCloseAfter() {
         //
     }
 
-    fun onFinally() {
+    open fun onFinally() {
         //
     }
 }

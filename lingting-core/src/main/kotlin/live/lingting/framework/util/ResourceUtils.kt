@@ -5,6 +5,8 @@ import java.io.InputStream
 import java.net.JarURLConnection
 import java.net.URI
 import java.net.URL
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.util.function.Predicate
 
@@ -28,7 +30,14 @@ object ResourceUtils {
     @JvmStatic
     fun get(loader: ClassLoader, name: String): Resource? {
         val url = loader.getResource(name) ?: return null
-        val resources = resolver(url)
+        val resources = resolver(url).filter {
+            // 普通文件
+            it.name == name
+                    // jar中的文件
+                    || it.link.endsWith(name)
+                    // jar中的文件
+                    || it.link.endsWith("$name/")
+        }
         return resources.firstOrNull()
     }
 
@@ -71,13 +80,21 @@ object ResourceUtils {
         return result
     }
 
-    private fun fillByJar(url: URL, root: String, protocol: String, predicate: Predicate<Resource>, result: ArrayList<Resource>) {
+    private fun fillByJar(
+        url: URL,
+        root: String,
+        protocol: String,
+        predicate: Predicate<Resource>,
+        result: ArrayList<Resource>
+    ) {
         val connection = url.openConnection()
         if (connection is JarURLConnection) {
             val jarPaths = root.split(Resource.DELIMITER_JAR).dropLastWhile { it.isEmpty() }.dropLast(1)
-            val jarPath = jarPaths.joinToString(Resource.DELIMITER_JAR)
-                .substring(protocol.length + Resource.DELIMITER_PROTOCOL.length)
-                .let { it + Resource.DELIMITER_JAR }
+            val jarPath = if (jarPaths.isEmpty()) "" else {
+                jarPaths.joinToString(Resource.DELIMITER_JAR)
+                    .substring(protocol.length + Resource.DELIMITER_PROTOCOL.length)
+                    .let { it + Resource.DELIMITER_JAR }
+            }
             val jarFile = connection.jarFile
             val entries = jarFile.entries()
             while (entries.hasMoreElements()) {
@@ -94,11 +111,11 @@ object ResourceUtils {
     private fun fillByFile(url: URL, protocol: String, predicate: Predicate<Resource>, result: ArrayList<Resource>) {
         val uri = url.toURI()
         val source = File(uri)
-        val root = Resource.convertPath(source.absolutePath)
+        val root = source.absolutePath
         val files = if (source.isDirectory) {
             ArrayList<File>().apply {
                 Files.walk(source.toPath()).use {
-                    it.forEach { add(it.toFile()) }
+                    it.forEach { p -> add(p.toFile()) }
                 }
             }
         } else {
@@ -123,7 +140,7 @@ class Resource(
     /**
      * 资源路径(根路径下的相对路径)
      */
-    val path: String,
+    p: String,
     /**
      * 资源名称
      */
@@ -131,7 +148,7 @@ class Resource(
     /**
      * 资源根路径, 表示文件从哪个文件(夹)开始识别到的
      */
-    val root: String,
+    r: String,
     val isDirectory: Boolean
 ) {
 
@@ -148,15 +165,21 @@ class Resource(
         const val PROTOCOL_FILE: String = "file"
 
         @JvmStatic
-        fun convertPath(source: String): String {
+        fun replace(source: String): String {
             return source.replace("\\", DELIMITER_FILE)
         }
 
     }
 
     constructor(protocol: String, file: File, root: String) : this(
-        protocol, convertPath(file.absolutePath.substring(root.length)), file.name, root, file.isDirectory
+        protocol, file.absolutePath.substring(root.length), file.name, root, file.isDirectory
     )
+
+    constructor(protocol: String, file: File) : this(protocol, file, file.parentFile.absolutePath)
+
+    val path = replace(p)
+
+    val root = replace(r)
 
     /**
      * 资源本身是文件
@@ -190,8 +213,9 @@ class Resource(
         return url.openStream()
     }
 
-    fun string(): String {
-        return StreamUtils.toString(stream())
+    @JvmOverloads
+    fun string(charset: Charset = StandardCharsets.UTF_8): String {
+        return StreamUtils.toString(stream(), charset)
     }
 
     override fun toString(): String {

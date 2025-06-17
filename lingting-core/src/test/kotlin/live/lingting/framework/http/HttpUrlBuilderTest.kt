@@ -6,12 +6,13 @@ import org.junit.jupiter.api.Test
 /**
  * @author lingting 2024-01-29 16:31
  */
-internal class HttpUrlBuilderTest {
+class HttpUrlBuilderTest {
+
     @Test
-    fun test() {
+    fun testDomain() {
         val builder = HttpUrlBuilder.builder().https().host("www.baidu.com")
         assertEquals("https://www.baidu.com", builder.build())
-        builder.uri("search").http()
+        builder.path("search").http()
         assertEquals("http://www.baidu.com/search", builder.build())
         assertEquals("http://www.baidu.com/search", builder.buildUri().toString())
         builder.https().addParam("q1", "q1").addParam("q2", "q2")
@@ -25,7 +26,7 @@ internal class HttpUrlBuilderTest {
 
         copy.addParam("q3", listOf("q31", "q32"))
         assertEquals("https://www.google.com:80/search?q1=q1&q2=q2&q3=q31&q3=q32", copy.build())
-        copy.uriSegment("a").uriSegment("b", "c")
+        copy.pathSegment("a").pathSegment("b", "c")
         assertEquals("https://www.google.com:80/search/a/b/c?q1=q1&q2=q2&q3=q31&q3=q32", copy.build())
         copy.addParam("q4", "s p a c e")
         assertEquals("https://www.google.com:80/search/a/b/c?q1=q1&q2=q2&q3=q31&q3=q32&q4=s p a c e", copy.build())
@@ -36,5 +37,22 @@ internal class HttpUrlBuilderTest {
         )
         val from = HttpUrlBuilder.from(uri)
         assertEquals("https://www.google.com:80/search/a/b/c?q1=q1&q2=q2&q3=q31&q3=q32&q4=s p a c e", from.build())
+        val repeat = HttpUrlBuilder.builder().host("https://www.baidu.com/").pathSegment("/a/").pathSegment("/b/")
+        assertEquals("https://www.baidu.com/a/b", repeat.build())
     }
+
+    @Test
+    fun testIp() {
+        val builder = HttpUrlBuilder.builder().https().host("192.168.1.1")
+        assertEquals("https://192.168.1.1", builder.build())
+        assertEquals("https://192.168.1.1", builder.buildUri().toString())
+        assertEquals("192.168.1.1", builder.headerHost())
+        builder.host("192.168.1.1:90")
+        assertEquals(90, builder.port())
+        assertEquals("https://192.168.1.1:90", builder.build())
+        assertEquals("https://192.168.1.1:90", builder.buildUri().toString())
+        assertEquals("https://192.168.1.1:90", builder.buildUrl().toString())
+        assertEquals("192.168.1.1:90", builder.headerHost())
+    }
+
 }

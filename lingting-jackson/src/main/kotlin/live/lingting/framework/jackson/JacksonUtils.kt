@@ -3,31 +3,48 @@ package live.lingting.framework.jackson
 import com.fasterxml.jackson.core.json.JsonReadFeature
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.JavaType
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import java.lang.reflect.Type
-import java.util.function.Consumer
-import kotlin.reflect.KClass
 import live.lingting.framework.jackson.module.BooleanModule
+import live.lingting.framework.jackson.module.DataSizeModule
 import live.lingting.framework.jackson.module.EnumModule
 import live.lingting.framework.jackson.module.JavaTimeModule
 import live.lingting.framework.jackson.module.MoneyModule
 import live.lingting.framework.jackson.module.RModule
 import live.lingting.framework.jackson.provider.NullSerializerProvider
 import live.lingting.framework.jackson.sensitive.SensitiveModule
+import live.lingting.framework.jackson.wrapper.JacksonWrapper
+import java.lang.reflect.Type
+import java.util.function.Consumer
+import kotlin.reflect.KClass
 
 /**
  * @author lingting 2021/6/9 14:28
  */
 @Suppress("UNCHECKED_CAST")
 object JacksonUtils {
-    @JvmField
-    var mapper: ObjectMapper = defaultConfig(ObjectMapper())
 
-    @JvmField
+    @JvmStatic
+    var mapper: ObjectMapper = defaultConfig(ObjectMapper())
+        set(value) {
+            field = value
+            jsonWrapper.mapper = value
+        }
+
+
+    val jsonWrapper = JacksonWrapper(mapper)
+
+    @JvmStatic
     var xmlMapper: XmlMapper = defaultConfig(XmlMapper())
+        set(value) {
+            field = value
+            xmlWrapper.mapper = value
+        }
+
+    val xmlWrapper = JacksonWrapper(xmlMapper)
 
     @JvmStatic
     fun <T : ObjectMapper> defaultConfig(mapper: T): T {
@@ -56,142 +73,109 @@ object JacksonUtils {
         mapper.registerModule(SensitiveModule())
         // 金额相关
         mapper.registerModule(MoneyModule())
+        // 数据大小
+        mapper.registerModule(DataSizeModule())
         return mapper
     }
 
     @JvmStatic
-    fun config(consumer: Consumer<ObjectMapper>) {
-        consumer.accept(mapper)
-    }
+    fun config(consumer: Consumer<ObjectMapper>) = jsonWrapper.config(consumer)
 
     @JvmStatic
-    fun configXml(consumer: Consumer<XmlMapper>) {
-        consumer.accept(xmlMapper)
-    }
+    fun configXml(consumer: Consumer<XmlMapper>) = xmlWrapper.config(consumer)
+
+    // region convert
+
+    @JvmStatic
+    fun <T> convert(value: Any?, type: JavaType): T? = jsonWrapper.convert(value, type)
+
+    fun <T : Any> convert(value: Any?, r: KClass<out T>): T? = jsonWrapper.convert(value, r)
+
+    @JvmStatic
+    fun <T> convert(value: Any?, r: Class<T>): T? = jsonWrapper.convert(value, r)
+
+    @JvmStatic
+    fun <T> convert(value: Any?, t: Type): T? = jsonWrapper.convert(value, t)
+
+    @JvmStatic
+    fun <T> convert(value: Any?, t: TypeReference<T>): T? = jsonWrapper.convert(value, t)
+
+    @JvmStatic
+    fun <T> convert(value: Any?, t: TypeReference<T>, defaultVal: T): T? = jsonWrapper.convert(value, t, defaultVal)
+
+    // endregion
 
     // region json
     @JvmStatic
-    fun toJson(obj: Any?): String {
-        return mapper.writeValueAsString(obj)
-    }
-
-    fun <T : Any> toObj(json: String, r: KClass<out T>): T = toObj(json, r.java)
+    fun toJson(obj: Any?): String = jsonWrapper.toString(obj)
 
     @JvmStatic
-    fun <T> toObj(json: String, r: Class<T>): T {
-        if (r.isAssignableFrom(String::class.java)) {
-            return json as T
-        }
-        return mapper.readValue(json, r)
-    }
+    fun <T> toObj(json: String, type: JavaType): T = jsonWrapper.toObj(json, type)
+
+    fun <T : Any> toObj(json: String, r: KClass<out T>): T = jsonWrapper.toObj(json, r)
 
     @JvmStatic
-    fun <T> toObj(json: String, t: Type): T {
-        val type = mapper.constructType(t)
-        if (type.rawClass == String::class.java) {
-            return json as T
-        }
-        return mapper.readValue(json, type)
-    }
+    fun <T> toObj(json: String, r: Class<T>): T = jsonWrapper.toObj(json, r)
 
     @JvmStatic
-    fun <T> toObj(json: String, t: TypeReference<T>): T {
-        return mapper.readValue(json, t)
-    }
+    fun <T> toObj(json: String, t: Type): T = jsonWrapper.toObj(json, t)
 
     @JvmStatic
-    fun <T> toObj(json: String, t: TypeReference<T>, defaultVal: T): T {
-        return try {
-            mapper.readValue(json, t)
-        } catch (e: Exception) {
-            defaultVal
-        }
-    }
-
-    fun <T : Any> toObj(node: JsonNode, r: KClass<out T>): T = toObj(node, r.java)
+    fun <T> toObj(json: String, t: TypeReference<T>): T = jsonWrapper.toObj(json, t)
 
     @JvmStatic
-    fun <T> toObj(node: JsonNode, r: Class<T>): T {
-        return mapper.treeToValue(node, r)
-    }
+    fun <T> toObj(json: String, t: TypeReference<T>, defaultVal: T): T = jsonWrapper.toObj(json, t, defaultVal)
+
+    fun <T : Any> toObj(node: JsonNode, r: KClass<out T>): T = jsonWrapper.toObj(node, r)
 
     @JvmStatic
-    fun <T> toObj(node: JsonNode, t: Type): T {
-        return mapper.treeToValue(node, mapper.constructType(t))
-    }
+    fun <T> toObj(node: JsonNode, r: Class<T>): T = jsonWrapper.toObj(node, r)
 
     @JvmStatic
-    fun <T> toObj(node: JsonNode, t: TypeReference<T>): T {
-        val javaType = mapper.constructType(t.type)
-        return mapper.treeToValue(node, javaType)
-    }
+    fun <T> toObj(node: JsonNode, t: Type): T = jsonWrapper.toObj(node, t)
 
     @JvmStatic
-    fun toNode(json: String): JsonNode {
-        return mapper.readTree(json)
-    }
+    fun <T> toObj(node: JsonNode, t: TypeReference<T>): T = jsonWrapper.toObj(node, t)
+
+    @JvmStatic
+    fun toNode(json: String): JsonNode = jsonWrapper.toNode(json)
 
     // endregion
 
     // region xml
-    @JvmStatic
-    fun toXml(obj: Any?): String {
-        return xmlMapper.writeValueAsString(obj)
-    }
-
-    fun <T : Any> xmlToObj(xml: String, r: KClass<out T>): T = xmlToObj(xml, r.java)
 
     @JvmStatic
-    fun <T> xmlToObj(xml: String, r: Class<T>): T {
-        if (r.isAssignableFrom(String::class.java)) {
-            return xml as T
-        }
-        return xmlMapper.readValue(xml, r)
-    }
+    fun toXml(obj: Any?): String = xmlWrapper.toString(obj)
 
     @JvmStatic
-    fun <T> xmlToObj(xml: String, t: Type): T {
-        val type = xmlMapper.constructType(t)
-        if (type.rawClass == String::class.java) {
-            return xml as T
-        }
-        return xmlMapper.readValue(xml, type)
-    }
+    fun <T> xmlToObj(xml: String, type: JavaType): T = xmlWrapper.toObj(xml, type)
+
+    fun <T : Any> xmlToObj(xml: String, r: KClass<out T>): T = xmlWrapper.toObj(xml, r)
 
     @JvmStatic
-    fun <T> xmlToObj(xml: String, t: TypeReference<T>): T {
-        return xmlMapper.readValue(xml, t)
-    }
+    fun <T> xmlToObj(xml: String, r: Class<T>): T = xmlWrapper.toObj(xml, r)
 
     @JvmStatic
-    fun <T> xmlToObj(xml: String, t: TypeReference<T>, defaultVal: T): T {
-        return try {
-            xmlMapper.readValue(xml, t)
-        } catch (e: Exception) {
-            defaultVal
-        }
-    }
+    fun <T> xmlToObj(xml: String, t: Type): T = xmlWrapper.toObj(xml, t)
 
     @JvmStatic
-    fun <T> xmlToObj(node: JsonNode, r: Class<T>): T {
-        return xmlMapper.treeToValue(node, r)
-    }
+    fun <T> xmlToObj(xml: String, t: TypeReference<T>): T = xmlWrapper.toObj(xml, t)
 
     @JvmStatic
-    fun <T> xmlToObj(node: JsonNode, t: Type): T {
-        return xmlMapper.treeToValue(node, xmlMapper.constructType(t))
-    }
+    fun <T> xmlToObj(xml: String, t: TypeReference<T>, defaultVal: T): T = xmlWrapper.toObj(xml, t, defaultVal)
 
     @JvmStatic
-    fun <T> xmlToObj(node: JsonNode, t: TypeReference<T>): T {
-        val javaType = xmlMapper.constructType(t.type)
-        return xmlMapper.treeToValue(node, javaType)
-    }
+    fun <T> xmlToObj(node: JsonNode, r: Class<T>): T = xmlWrapper.toObj(node, r)
 
     @JvmStatic
-    fun xmlToNode(xml: String): JsonNode {
-        return xmlMapper.readTree(xml)
-    }
+    fun <T> xmlToObj(node: JsonNode, t: Type): T = xmlWrapper.toObj(node, t)
+
+    @JvmStatic
+    fun <T> xmlToObj(node: JsonNode, t: TypeReference<T>): T = xmlWrapper.toObj(node, t)
+
+    @JvmStatic
+    fun xmlToNode(xml: String): JsonNode = xmlWrapper.toNode(xml)
+
     // endregion
-}
 
+}

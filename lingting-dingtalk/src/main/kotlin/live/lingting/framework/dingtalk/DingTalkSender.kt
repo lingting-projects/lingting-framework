@@ -1,15 +1,16 @@
 package live.lingting.framework.dingtalk
 
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
-import java.util.function.Supplier
 import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.dingtalk.message.DingTalkMessage
+import live.lingting.framework.http.HttpContentTypes
 import live.lingting.framework.http.HttpRequest
 import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.api.ApiClient
 import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.StringUtils
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import java.util.function.Supplier
 
 /**
  * 订单消息发送
@@ -21,7 +22,7 @@ class DingTalkSender(
      */
     @JvmField val url: String
 ) {
-    var client = ApiClient.CLIENT
+    var client = ApiClient.defaultClient
 
     /**
      * 密钥
@@ -100,7 +101,7 @@ class DingTalkSender(
         val builder = HttpRequest.builder()
             .post()
             .url(urlBuilder)
-            .header("Content-Type", "application/json")
+            .header("Content-Type", HttpContentTypes.JSON)
             .body(message)
 
         val request = builder.build()

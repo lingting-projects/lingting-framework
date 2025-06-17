@@ -97,8 +97,7 @@ open class SecurityScope {
         this.expireTime = scope.expireTime
         this.roles = scope.roles.toSet()
         this.permissions = scope.permissions.toSet()
-        this.attributes = SecurityScopeAttributes().apply {
-            putAll(scope.attributes)
-        }
+        this.attributes.putAll(scope.attributes)
     }
+
 }

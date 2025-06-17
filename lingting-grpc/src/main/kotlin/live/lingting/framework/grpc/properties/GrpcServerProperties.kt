@@ -10,6 +10,11 @@ import live.lingting.framework.util.MdcUtils
 class GrpcServerProperties {
     var port: Int? = null
 
+    /**
+     * 是否使用gzip压缩/解压
+     */
+    var useGzip: Boolean = false
+
     var messageSize: Long = DataSize.ofMb(1).bytes
 
     var keepAliveTime: Duration = Duration.ofMinutes(30)
@@ -18,7 +23,14 @@ class GrpcServerProperties {
 
     var traceIdKey: String = MdcUtils.traceIdKey
 
-    var traceOrder: Int = Int.MIN_VALUE + 100
+    var traceOrder: Int = Int.MIN_VALUE
 
-    var exceptionHandlerOrder: Int = Int.MIN_VALUE + 200
+    var exceptionHandlerOrder: Int = Int.MIN_VALUE + 2000
+
+    /**
+     * 当上下文在关闭阶段时, 是否拒绝请求
+     * @see live.lingting.framework.application.ApplicationHolder.isStop
+     */
+    var rejectRequestOnStop = true
+
 }

@@ -1,5 +1,6 @@
 package live.lingting.framework.mybatis.datascope
 
+import live.lingting.framework.datascope.HandlerType
 import live.lingting.framework.datascope.exception.DataScopeException
 import live.lingting.framework.util.Slf4jUtils.logger
 import net.sf.jsqlparser.parser.CCJSqlParserUtil
@@ -13,7 +14,7 @@ import net.sf.jsqlparser.statement.update.Update
 /**
  * @author lingting 2024/11/25 14:19
  */
-abstract class JSqlDataScopeParser(protected val scopes: List<JSqlDataScope>) {
+abstract class JSqlDataScopeParser(protected val type: HandlerType?, protected val scopes: List<JSqlDataScope>) {
 
     protected val log = logger()
 
@@ -56,14 +57,22 @@ abstract class JSqlDataScopeParser(protected val scopes: List<JSqlDataScope>) {
         if (log.isDebugEnabled) {
             log.debug("SQL to parse, SQL: {}", sql)
         }
-        if (statement is Insert) {
-            this.insert(statement, index, sql)
-        } else if (statement is Select) {
-            this.select(statement, index, sql)
-        } else if (statement is Update) {
-            this.update(statement, index, sql)
-        } else if (statement is Delete) {
-            this.delete(statement, index, sql)
+        when (statement) {
+            is Insert -> {
+                this.insert(statement, index, sql)
+            }
+
+            is Select -> {
+                this.select(statement, index, sql)
+            }
+
+            is Update -> {
+                this.update(statement, index, sql)
+            }
+
+            is Delete -> {
+                this.delete(statement, index, sql)
+            }
         }
         sql = statement.toString()
         if (log.isDebugEnabled) {
@@ -99,6 +108,7 @@ abstract class JSqlDataScopeParser(protected val scopes: List<JSqlDataScope>) {
     protected open fun select(select: Select, index: Int, sql: String) {
         throw UnsupportedOperationException()
     }
+
 }
 
 data class DataScopeParserResult(

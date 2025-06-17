@@ -37,8 +37,6 @@ open class AuthorizationVO {
         this.enabled = vo.enabled
         this.roles = vo.roles.toSet()
         this.permissions = vo.permissions.toSet()
-        this.attributes = SecurityScopeAttributes().apply {
-            putAll(vo.attributes)
-        }
+        this.attributes.putAll(vo.attributes)
     }
 }

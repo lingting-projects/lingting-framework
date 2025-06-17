@@ -23,6 +23,7 @@ class ElasticsearchProperties {
     var scroll: Scroll = Scroll()
 
     class Index {
+
         /**
          * 索引前缀
          */
@@ -32,10 +33,12 @@ class ElasticsearchProperties {
          * 索引各部分分隔符. 用于 前缀, 聚合后缀 拼接分隔. 仅在存在前/后缀时拼接
          */
         var separate = "_"
+
     }
 
     class Retry {
-        var isEnabled: Boolean = false
+
+        var enable: Boolean = false
 
         /**
          * 最大重试次数
@@ -57,6 +60,7 @@ class ElasticsearchProperties {
          * 版本冲突重试延迟, 未配置则按照 [Retry.getDelay] 进行
          */
         var versionConflictDelay: Duration? = null
+
     }
 
     class Scroll {

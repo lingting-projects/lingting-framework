@@ -1,12 +1,13 @@
 package live.lingting.framework.download
 
-import java.io.File
 import live.lingting.framework.util.FileUtils
+import java.io.File
 
 /**
  * @author lingting 2024-01-17 10:09
  */
 interface Download {
+
     fun start(): Download
 
     fun await(): Download

@@ -16,8 +16,6 @@ object Wrappers {
 
     private val COLUMN_CACHE = ConcurrentHashMap<Class<*>, MutableMap<String, ColumnCache>>()
 
-    private val COLUMN_SF_CACHE = ConcurrentHashMap<SFunction<*, *>, ColumnCache>()
-
     fun extract(sf: SFunction<*, *>): LambdaMeta {
         return LambdaMeta.of(sf)
     }
@@ -29,25 +27,21 @@ object Wrappers {
 
     @JvmStatic
     fun column(sf: SFunction<*, *>): ColumnCache {
-        return COLUMN_SF_CACHE.computeIfAbsent(sf) {
-            val info = extract(sf)
-            column(info.cls, info.field)
-        }
+        val info = extract(sf)
+        return column(info.cls, info.field)
     }
 
     @JvmStatic
     fun <T> column(cls: Class<T>, sf: SFunction<T, *>): ColumnCache {
-        return COLUMN_SF_CACHE.computeIfAbsent(sf) {
-            val info = extract(sf)
-            column(cls, info.field)
-        }
+        val info = extract(sf)
+        return column(cls, info.field)
     }
 
     @JvmStatic
     fun column(cls: Class<*>?, field: String): ColumnCache {
         val clazz = cls ?: Wrappers::class.java
         val map = column(clazz)
-        val key: String = LambdaUtils.formatKey(field)
+        val key = LambdaUtils.formatKey(field)
         val v1 = map[key]
         if (v1 != null) {
             return v1
@@ -79,10 +73,10 @@ object Wrappers {
 
     @JvmStatic
     fun <T : Any> query(t: T?): QueryWrapper<T> {
-        return QueryWrapper<T>().apply {
-            e = t
+        return QueryWrapper<T>().also {
+            it.e = t
             if (t != null) {
-                cls(t::class.java as Class<T>)
+                it.cls(t::class.java as Class<T>)
             }
         }
     }
@@ -101,10 +95,10 @@ object Wrappers {
 
     @JvmStatic
     fun <T : Any> update(t: T?): UpdateWrapper<T> {
-        return UpdateWrapper<T>().apply {
-            e = t
+        return UpdateWrapper<T>().also {
+            it.e = t
             if (t != null) {
-                cls(t::class.java as Class<T>)
+                it.cls(t::class.java as Class<T>)
             }
         }
     }

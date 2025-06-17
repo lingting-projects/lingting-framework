@@ -1,33 +1,29 @@
 package live.lingting.framework.http
 
-import java.io.IOException
-import java.net.InetSocketAddress
-import java.net.Proxy
-import java.net.ProxySelector
-import java.net.SocketAddress
-import java.net.URI
-import okhttp3.OkHttpClient
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.net.InetSocketAddress
+import java.net.ProxySelector
+import java.net.URI
 
 /**
  * @author lingting 2024-05-08 14:22
  */
-internal class HttpClientTest {
-    var client: OkHttpClient? = null
+class HttpClientTest {
+    var client: java.net.http.HttpClient? = null
 
     var selector: ProxySelector? = null
 
-    var useCharles: Boolean = false
+    var useProxy: Boolean = false
 
     @BeforeEach
     fun before() {
         client = OkHttpClient.Builder().build()
-        selector = if (!useCharles) null else InetSocketAddress("127.0.0.1", 9999).let {
+        selector = if (!useProxy) null else InetSocketAddress("127.0.0.1", 8888).let {
             val proxy = Proxy(Proxy.Type.HTTP, it)
             object : ProxySelector() {
                 override fun select(uri: URI?): List<Proxy?>? {
@@ -61,15 +57,16 @@ internal class HttpClientTest {
     }
 
     fun assertGet(http: HttpClient) {
-        val builder = HttpRequest.builder().url(URI.create("https://www.baidu.com"))
+        val builder = HttpRequest.builder()
+
+        // 补充一个参数带 + 号的测试用例
+
+        builder.url(URI.create("https://www.baidu.com"))
         val httpResponse = http.request(builder.build())
         assertNotNull(httpResponse.body())
         val string = assertDoesNotThrow<String?> { httpResponse.string() }
         assertTrue(string!!.contains("<") && string.contains(">"))
-        builder.url(
-            "https://maven.aliyun.com/repository/central/live/lingting/components/component-validation/0.0.1/component-validation-0.0.1.pom"
-        )
-            .build()
+        builder.url("https://maven.aliyun.com/repository/central/live/lingting/components/component-validation/0.0.1/component-validation-0.0.1.pom")
         val r2 = http.request(builder.build())
         assertNotNull(r2.body())
         val string2 = assertDoesNotThrow<String?> { r2.string() }

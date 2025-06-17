@@ -7,7 +7,26 @@ import live.lingting.framework.time.StopWatch
  * 顶级队列线程类
  * @author lingting 2021/3/2 15:07
  */
-abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
+abstract class AbstractQueueThread<E> : AbstractThreadApplication() {
+
+    companion object {
+        /**
+         * 默认缓存数据数量
+         */
+        const val BATCH_SIZE: Int = 500
+
+        /**
+         * 默认等待时长 30秒
+         */
+        @JvmField
+        val BATCH_TIMEOUT: Duration = Duration.ofSeconds(30)
+
+        /**
+         * 默认获取数据时的超时时间
+         */
+        @JvmField
+        val POLL_TIMEOUT: Duration = Duration.ofSeconds(5)
+    }
 
     /**
      * 用于子类自定义缓存数据数量
@@ -31,11 +50,21 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
 
     protected val data: MutableList<E> = ArrayList<E>(batchSize)
 
+    override val isRun: Boolean
+        // 开启安全模式时必须在队列空的情况下关闭
+        get() = super.isRun || (safe && queueSize.toLong() > 0)
+
+    abstract val queueSize: Number
+
     /**
      * 往队列插入数据
      * @param e 数据
      */
-    abstract fun put(e: E?)
+    fun put(e: E?) {
+        put(QueueItem(QueueSignal.DATA, e))
+    }
+
+    abstract fun put(item: QueueItem<E>)
 
     /**
      * 数据处理前执行
@@ -50,7 +79,7 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
      * @return E
      * @throws InterruptedException 线程中断
      */
-    protected abstract fun poll(timeout: Duration): E?
+    protected abstract fun poll(timeout: Duration): QueueItem<E>?
 
     /**
      * 处理单个接收的数据
@@ -66,12 +95,12 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
      * @param list 所有已接收的数据
      * @throws Exception 异常
      */
-    protected abstract fun process(list: List<E>?)
+    protected abstract fun process(list: List<E>)
 
     override fun doRun() {
         preProcess()
         fill()
-        if (!data.isNullOrEmpty()) {
+        if (data.isNotEmpty()) {
             process(ArrayList(data))
             data.clear()
         }
@@ -84,7 +113,9 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
         var count = 0
         val watch = StopWatch()
         while (count < this.batchSize) {
-            val e = poll()
+            val item = poll()
+            // 唤醒信号值忽略
+            val e = if (item?.signal != QueueSignal.DATA) null else item.data
             val p = if (e != null) process(e) else null
 
             if (p != null) {
@@ -121,45 +152,35 @@ abstract class AbstractQueueThread<E> : AbstractThreadApplicationComponent() {
      * 已有数据且超过设定的等待时间
      */
     protected fun isTimeout(watch: StopWatch): Boolean {
-        return !data.isNullOrEmpty() && watch.timeMillis() >= this.batchTimeout.toMillis()
+        return data.isNotEmpty() && watch.timeMillis() >= this.batchTimeout.toMillis()
     }
 
-    fun poll(): E? {
-        var e: E? = null
+    fun poll(): QueueItem<E>? {
+        var e: QueueItem<E>? = null
         try {
             val duration: Duration = this.pollTimeout
             e = poll(duration)
-        } catch (ex: InterruptedException) {
+        } catch (_: InterruptedException) {
             log.error("Class: {}; ThreadId: {}; poll interrupted!", simpleName, threadId())
             interrupt()
         }
         return e
     }
 
+    override fun wake() {
+        put(QueueItem<E>(QueueSignal.WAKE, null))
+    }
+
     /**
      * 线程被中断后的处理. 如果有缓存手段可以让数据进入缓存.
      */
-    override fun shutdown() {
+    override fun onInterrupt() {
         log.warn("Class: {}; ThreadId: {}; shutdown! data: {}", simpleName, threadId(), data)
     }
 
-    companion object {
-        /**
-         * 默认缓存数据数量
-         */
-        @JvmField
-        val BATCH_SIZE: Int = 500
+    data class QueueItem<E>(val signal: QueueSignal, val data: E?)
 
-        /**
-         * 默认等待时长 30秒
-         */
-        @JvmField
-        val BATCH_TIMEOUT: Duration = Duration.ofSeconds(30)
-
-        /**
-         * 默认获取数据时的超时时间
-         */
-        @JvmField
-        val POLL_TIMEOUT: Duration = Duration.ofSeconds(5)
+    enum class QueueSignal {
+        DATA, WAKE
     }
 }

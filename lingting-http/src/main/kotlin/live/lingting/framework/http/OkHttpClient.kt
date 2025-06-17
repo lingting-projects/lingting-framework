@@ -1,13 +1,11 @@
 package live.lingting.framework.http
 
-import java.io.IOException
-import java.util.function.Consumer
-import java.util.function.Supplier
 import live.lingting.framework.function.ThrowingFunction
 import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.http.okhttp.OkHttpCookie
 import live.lingting.framework.http.okhttp.OkHttpRequestBody
 import live.lingting.framework.jackson.JacksonUtils
+import live.lingting.framework.util.StreamUtils
 import okhttp3.Authenticator
 import okhttp3.Call
 import okhttp3.Callback
@@ -16,12 +14,60 @@ import okhttp3.HttpUrl
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
+import java.io.ByteArrayInputStream
+import java.io.IOException
+import java.io.InputStream
+import java.util.function.Consumer
+import java.util.function.Supplier
 
 /**
  * @author lingting 2024-09-02 15:36
  */
-@Suppress("UNCHECKED_CAST")
+@Suppress("UNCHECKED_CAST", "kotlin:S6531")
 class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
+
+    companion object {
+        fun convert(request: HttpRequest): Request {
+            val method = request.method()
+            val uri = request.uri()
+            val headers = request.headers()
+            val body = request.body()
+
+            val builder = Request.Builder()
+            // 请求头
+            headers.each { k, v ->
+                if (HEADERS_DISABLED.contains(k)) {
+                    return@each
+                }
+                builder.header(k, v)
+            }
+            // 请求地址
+            builder.url(uri.toURL())
+            builder.method(method.name, if (method.allowBody()) OkHttpRequestBody(body) else null)
+            return builder.build()
+        }
+
+    }
+
+    fun convert(request: HttpRequest, response: Response): HttpResponse {
+        val code = response.code
+        val body = response.body
+        val stream: InputStream
+        if (body == null) {
+            stream = ByteArrayInputStream(byteArrayOf())
+        } else if (memoryResponse) {
+            stream = ByteArrayInputStream(body.bytes())
+        } else {
+            val file = createFile()
+            StreamUtils.write(body.byteStream(), file)
+            stream = file.inputStream()
+        }
+
+        val map = response.headers.toMultimap()
+        val headers = HttpHeaders.of(map)
+        return HttpResponse(request, code, headers, stream)
+    }
+
     override fun client(): okhttp3.OkHttpClient {
         return client
     }
@@ -83,16 +129,6 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
             }
             return@ThrowingFunction JacksonUtils.toObj(string, cls)
         })
-    }
-
-    fun get(url: String): Response {
-        val builder = Request.Builder().url(url).get()
-        return request(builder.build())
-    }
-
-    fun <T> get(url: String, cls: Class<T>): T? {
-        val builder = Request.Builder().url(url).get()
-        return request<T>(builder.build(), cls)
     }
 
     fun get(url: HttpUrl): Response {
@@ -167,34 +203,4 @@ class OkHttpClient(protected val client: okhttp3.OkHttpClient) : HttpClient() {
         }
     }
 
-    companion object {
-        fun convert(request: HttpRequest): Request {
-            val method = request.method()
-            val uri = request.uri()
-            val headers = request.headers()
-            val body = request.body()
-
-            val builder = Request.Builder()
-            // 请求头
-            headers.each { k, v ->
-                if (HEADERS_DISABLED.contains(k)) {
-                    return@each
-                }
-                builder.header(k, v)
-            }
-            // 请求地址
-            builder.url(uri.toURL())
-            builder.method(method.name, if (method.allowBody()) OkHttpRequestBody(body) else null)
-            return builder.build()
-        }
-
-        fun convert(request: HttpRequest, response: Response): HttpResponse {
-            val code = response.code
-            val body = response.body
-            val stream = wrap(body?.byteStream())
-            val map: Map<String, List<String>> = response.headers.toMultimap()
-            val headers: HttpHeaders = HttpHeaders.of(map)
-            return HttpResponse(request, code, headers, stream)
-        }
-    }
 }

@@ -1,6 +1,7 @@
 package live.lingting.framework.huawei
 
 import live.lingting.framework.aws.policy.Credential
+import live.lingting.framework.aws.policy.Statement
 import live.lingting.framework.huawei.properties.HuaweiIamProperties
 import live.lingting.framework.util.StringUtils.hasText
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
@@ -9,7 +10,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty
-import org.junit.jupiter.api.function.ThrowingSupplier
 
 /**
  * @author lingting 2024-09-13 11:58
@@ -28,10 +28,10 @@ internal class HuaweiIamTest {
 
     @Test
     fun credential() {
-        val statement = HuaweiStatement(true)
+        val statement = Statement(true)
         statement.addAction("obs:*")
         statement.addResource("obs:*:*:bucket:*")
-        val credential = assertDoesNotThrow<Credential?>(ThrowingSupplier { iam!!.credential(statement) })
+        val credential = assertDoesNotThrow<Credential?> { iam!!.credential(statement) }
         assertNotNull(credential)
         assertTrue(hasText(credential!!.ak))
         assertTrue(hasText(credential.sk))

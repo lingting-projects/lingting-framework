@@ -12,6 +12,9 @@ open class IteratorStepValue<T> protected constructor(
     private val iterator: Iterator<T>
 ) : AbstractConcurrentStepValue<T>() {
 
+
+    constructor(iterable: Iterable<T>) : this(iterable.iterator())
+
     constructor(iterator: Iterator<T>) : this(ConcurrentHashMap<BigInteger, T>(), iterator)
 
     override fun copy(): StepValue<T> {
@@ -28,12 +31,13 @@ open class IteratorStepValue<T> protected constructor(
     }
 
     override fun doNext(): T {
-        return map.computeIfAbsent(increasing()) { i -> iterator.next() }
+        return map.computeIfAbsent(increasing()) { _ -> iterator.next() }
     }
 
     override fun doCalculate(index: BigInteger): T {
-        if (map.containsKey(index)) {
-            return map[index]!!
+        val t = map[index]
+        if (t != null) {
+            return t
         }
 
         // 如果迭代器已经取空了

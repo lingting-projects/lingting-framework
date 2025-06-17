@@ -1,12 +1,16 @@
 package live.lingting.framework.security.grpc
 
 import com.google.protobuf.Empty
-import io.grpc.ClientInterceptor
 import io.grpc.ManagedChannel
 import io.grpc.StatusRuntimeException
+import live.lingting.framework.application.ApplicationHolder
+import live.lingting.framework.concurrent.Await
 import live.lingting.framework.grpc.GrpcClientProvide
 import live.lingting.framework.grpc.GrpcServer
 import live.lingting.framework.grpc.GrpcServerBuilder
+import live.lingting.framework.grpc.customizer.ClientCustomizer
+import live.lingting.framework.grpc.customizer.GrpcThreadExecutorCustomizer
+import live.lingting.framework.grpc.customizer.ServerCustomizer
 import live.lingting.framework.grpc.exception.GrpcExceptionProcessor
 import live.lingting.framework.grpc.interceptor.GrpcClientTraceIdInterceptor
 import live.lingting.framework.grpc.interceptor.GrpcServerExceptionInterceptor
@@ -23,6 +27,7 @@ import live.lingting.framework.security.grpc.authorization.AuthorizationServiceI
 import live.lingting.framework.security.grpc.authorization.Password
 import live.lingting.framework.security.grpc.endpoint.SecurityGrpcAuthorizationEndpoint
 import live.lingting.framework.security.grpc.exception.SecurityGrpcExceptionInstance
+import live.lingting.framework.security.grpc.interceptor.GzipInterceptor
 import live.lingting.framework.security.grpc.interceptor.SecurityGrpcRemoteContent.pop
 import live.lingting.framework.security.grpc.interceptor.SecurityGrpcRemoteContent.put
 import live.lingting.framework.security.grpc.interceptor.SecurityGrpcRemoteResourceClientInterceptor
@@ -32,7 +37,6 @@ import live.lingting.framework.security.resolver.SecurityTokenDefaultResolver
 import live.lingting.framework.security.resolver.SecurityTokenResolver
 import live.lingting.framework.security.resource.SecurityDefaultResourceServiceImpl
 import live.lingting.framework.security.store.SecurityMemoryStore
-import live.lingting.framework.util.ValueUtils
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrowsExactly
@@ -43,7 +47,7 @@ import org.junit.jupiter.api.Test
 /**
  * @author lingting 2024-01-30 20:16
  */
-internal class SecurityGrpcTest {
+class SecurityGrpcTest {
     var convert: SecurityGrpcExpandConvert? = null
 
     var server: GrpcServer? = null
@@ -54,6 +58,7 @@ internal class SecurityGrpcTest {
 
     @BeforeEach
     fun before() {
+        ApplicationHolder.start()
         val store = SecurityMemoryStore()
         val authorizationService = AuthorizationServiceImpl(store)
         val password = Password()
@@ -64,8 +69,22 @@ internal class SecurityGrpcTest {
             password, convert!!
         )
 
+        val clientCustomizers = mutableListOf<ClientCustomizer>()
+        val serverCustomizers = mutableListOf<ServerCustomizer>()
+
+        val threadExecutorCustomizer = GrpcThreadExecutorCustomizer()
+        clientCustomizers.add(threadExecutorCustomizer)
+        serverCustomizers.add(threadExecutorCustomizer)
+
+        val gzipInterceptor = GzipInterceptor()
         val endpoint = SecurityGrpcAuthorizationEndpoint(service, convert!!)
         val serverProperties = GrpcServerProperties()
+        serverProperties.useGzip = true
+
+        val clientProperties = GrpcClientProperties()
+        clientProperties.usePlaintext = true
+        clientProperties.useGzip = true
+
         val properties = SecurityGrpcProperties()
         val resolvers: MutableList<SecurityTokenResolver> = ArrayList()
         resolvers.add(SecurityTokenDefaultResolver(store))
@@ -74,25 +93,28 @@ internal class SecurityGrpcTest {
         val securityGrpcExceptionInstance = SecurityGrpcExceptionInstance()
         val processor = GrpcExceptionProcessor(listOf(securityGrpcExceptionInstance))
         val authorizationKey = properties.authorizationKey()
-        server = GrpcServerBuilder().port(0)
+        server = GrpcServerBuilder(serverCustomizers).port(0)
             .properties(serverProperties)
             .service(endpoint)
+            .interceptor(gzipInterceptor)
             .interceptor(GrpcServerExceptionInterceptor(serverProperties, processor))
             .interceptor(GrpcServerTraceIdInterceptor(serverProperties))
             .interceptor(SecurityGrpcResourceServerInterceptor(authorizationKey, resourceService, authorize, convert!!))
             .build()
         server!!.onApplicationStart()
-        ValueUtils.awaitTrue { server!!.isRunning }
+        Await.waitTrue { server!!.isRunning }
 
-        val clientProperties = GrpcClientProperties()
-        clientProperties.usePlaintext = true
-        val clientInterceptors: MutableList<ClientInterceptor> = ArrayList()
-        clientInterceptors.add(GrpcClientTraceIdInterceptor(clientProperties))
-        clientInterceptors.add(SecurityGrpcRemoteResourceClientInterceptor(properties))
-        val provide = GrpcClientProvide(clientProperties, clientInterceptors)
+        val clientInterceptors = listOf(
+            gzipInterceptor,
+            GrpcClientTraceIdInterceptor(clientProperties),
+            SecurityGrpcRemoteResourceClientInterceptor(properties),
+        )
+        val provide = GrpcClientProvide(clientProperties, clientInterceptors, clientCustomizers)
 
         channel = provide.channel("127.0.0.1", server!!.port())
-        blocking = provide.blocking(channel!!) { channel -> SecurityGrpcAuthorizationServiceGrpc.newBlockingStub(channel) }
+        blocking = provide.blocking(channel!!) { channel ->
+            SecurityGrpcAuthorizationServiceGrpc.newBlockingStub(channel)
+        }
     }
 
     @AfterEach
@@ -114,7 +136,9 @@ internal class SecurityGrpcTest {
         assertEquals("admin", admin.userId)
         assertTrue(admin.isExpand)
         // 无token解析
-        assertThrowsExactly(StatusRuntimeException::class.java) { blocking!!.resolve(SecurityGrpcAuthorization.TokenPO.newBuilder().buildPartial()) }
+        assertThrowsExactly(StatusRuntimeException::class.java) {
+            blocking!!.resolve(SecurityGrpcAuthorization.TokenPO.newBuilder().buildPartial())
+        }
         // token解析
         put(SecurityToken.ofDelimiter(admin.authorization, " "))
         try {

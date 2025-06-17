@@ -9,13 +9,14 @@ import org.junit.jupiter.api.Assertions.assertNotNull
  * @author lingting 2024-09-13 17:18
  */
 internal object AliBasic {
+
     fun sts(): AliSts {
         val properties = AliStsProperties()
-        properties.region = System.getenv("ALI_STS_REGION")
-        properties.ak = System.getenv("ALI_STS_AK")
-        properties.sk = System.getenv("ALI_STS_SK")
-        properties.roleArn = System.getenv("ALI_STS_ROLE_ARN")
-        properties.roleSessionName = System.getenv("ALI_STS_ROLE_SESSION_NAME")
+        properties.ak = System.getenv("AK")
+        properties.sk = System.getenv("SK")
+        properties.region = System.getenv("REGION")
+        properties.roleArn = System.getenv("ROLE_ARN")
+        properties.roleSessionName = System.getenv("ROLE_SESSION_NAME")
         assertNotNull(properties.ak)
         assertNotNull(properties.sk)
         assertNotNull(properties.roleArn)
@@ -23,13 +24,26 @@ internal object AliBasic {
         return AliSts(properties)
     }
 
-    fun ossProperties(): AliOssProperties {
+    fun ossStsProperties(): AliOssProperties {
         val properties = AliOssProperties()
-        properties.region = System.getenv("ALI_STS_REGION")
-        properties.bucket = System.getenv("ALI_OSS_BUCKET")
+        properties.region = System.getenv("REGION")
+        properties.bucket = System.getenv("BUCKET")
         properties.acl = Acl.PUBLIC_READ
         assertNotNull(properties.region)
         assertNotNull(properties.bucket)
         return properties
     }
+
+    fun ossProperties(): AliOssProperties {
+        val properties = AliOssProperties()
+        properties.ak = System.getenv("AK")
+        properties.sk = System.getenv("SK")
+        properties.region = System.getenv("REGION")
+        properties.bucket = System.getenv("BUCKET")
+        properties.acl = Acl.PUBLIC_READ
+        assertNotNull(properties.region)
+        assertNotNull(properties.bucket)
+        return properties
+    }
+
 }

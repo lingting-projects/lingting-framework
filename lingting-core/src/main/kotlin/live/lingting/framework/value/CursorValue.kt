@@ -28,7 +28,7 @@ abstract class CursorValue<T> : Iterator<T> {
         protected set
 
     override fun hasNext(): Boolean {
-        if (!current.isNullOrEmpty()) {
+        if (current.isNotEmpty()) {
             return true
         }
 
@@ -38,7 +38,7 @@ abstract class CursorValue<T> : Iterator<T> {
 
         val list = nextBatchData()
 
-        if (list.isNullOrEmpty()) {
+        if (list.isEmpty()) {
             empty = true
             return false
         }
@@ -63,6 +63,10 @@ abstract class CursorValue<T> : Iterator<T> {
     fun stream(): Stream<T> {
         val spliterator = Spliterators.spliteratorUnknownSize(this, Spliterator.ORDERED)
         return StreamSupport.stream(spliterator, false)
+    }
+
+    fun toList(): List<T> {
+        return stream().toList()
     }
 
 }

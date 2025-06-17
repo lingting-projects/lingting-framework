@@ -1,26 +1,23 @@
 package live.lingting.framework.aws.s3.impl
 
 
-import java.time.LocalDateTime
 import live.lingting.framework.aws.AwsS3Client
+import live.lingting.framework.aws.AwsSigner
+import live.lingting.framework.aws.AwsV4Signer
 import live.lingting.framework.aws.exception.AwsS3Exception
 import live.lingting.framework.aws.s3.AwsS3Request
-import live.lingting.framework.aws.s3.AwsS3SingV4
-import live.lingting.framework.aws.s3.AwsS3Utils
 import live.lingting.framework.aws.s3.interfaces.AwsS3Listener
 import live.lingting.framework.http.HttpResponse
+import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.header.HttpHeaders
-import live.lingting.framework.value.multi.StringMultiValue
 
 /**
  * @author lingting 2024/11/5 14:48
  */
 open class AwsS3DefaultListener(@JvmField protected val client: AwsS3Client) : AwsS3Listener {
-    @JvmField
-    protected val log = client.log
 
     @JvmField
-    protected val region: String = client.properties.region
+    protected val log = client.log
 
     override fun onFailed(request: AwsS3Request, response: HttpResponse) {
         val string = response.string()
@@ -28,24 +25,24 @@ open class AwsS3DefaultListener(@JvmField protected val client: AwsS3Client) : A
         throw AwsS3Exception("request error! code: " + response.code())
     }
 
-    override fun onAuthorization(request: AwsS3Request, headers: HttpHeaders, params: StringMultiValue, now: LocalDateTime) {
-        val date: String = AwsS3Utils.format(now, AwsS3SingV4.DATETIME_FORMATTER)
-        headers.put(AwsS3Utils.HEADER_DATE, date)
+    override fun onSign(
+        request: AwsS3Request,
+        headers: HttpHeaders,
+        url: HttpUrlBuilder
+    ): AwsSigner<*, *> {
+        val properties = client.properties
 
-        val sing: AwsS3SingV4 = AwsS3SingV4.builder()
-            .dateTime(now)
-            .method(request.method())
-            .path(request.path())
-            .headers(headers)
-            .bodySha256(AwsS3Utils.PAYLOAD_UNSIGNED)
-            .params(params)
-            .region(region)
-            .ak(client.ak)
-            .sk(client.sk)
-            .bucket(client.bucket)
-            .build()
-
-        val authorization = sing.calculate()
-        headers.authorization(authorization)
+        return AwsV4Signer(
+            request.method(),
+            url.buildPath(),
+            headers,
+            null,
+            url.params(),
+            properties.region,
+            properties.ak,
+            properties.sk,
+            "s3"
+        )
     }
+
 }

@@ -6,22 +6,26 @@ import io.grpc.Server
 import io.grpc.ServerBuilder
 import io.grpc.ServerInterceptor
 import io.grpc.ServiceDescriptor
-import java.lang.reflect.Method
 import live.lingting.framework.Sequence
 import live.lingting.framework.application.ApplicationComponent
+import live.lingting.framework.function.StateKeepRunnable
 import live.lingting.framework.grpc.interceptor.AbstractServerInterceptor
 import live.lingting.framework.util.ClassUtils
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.ThreadUtils
+import java.lang.reflect.Method
 
 /**
  * @author lingting 2023-04-14 17:38
  */
 @Suppress("UNCHECKED_CAST")
-class GrpcServer(
+open class GrpcServer(
     builder: ServerBuilder<*>, interceptors: MutableCollection<ServerInterceptor>,
     services: MutableCollection<BindableService>
 ) : ApplicationComponent {
+
+    protected val log = logger()
+
     val server: Server
 
     val serviceNameMap: MutableMap<String, Class<out BindableService>>
@@ -110,7 +114,13 @@ class GrpcServer(
     override fun onApplicationStart() {
         server.start()
         log.info("grpc server started. port: {}", server.port)
-        ThreadUtils.execute("GrpcServer", server::awaitTermination)
+        ThreadUtils.execute(object : StateKeepRunnable("GrpcServer") {
+
+            override fun doProcess() {
+                server.awaitTermination()
+            }
+
+        })
     }
 
     override fun onApplicationStop() {
@@ -118,7 +128,4 @@ class GrpcServer(
         server.shutdown()
     }
 
-    companion object {
-        private val log = logger()
-    }
 }

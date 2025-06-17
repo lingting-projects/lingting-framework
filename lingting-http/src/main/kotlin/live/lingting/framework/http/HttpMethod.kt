@@ -4,6 +4,7 @@ package live.lingting.framework.http
  * @author lingting 2024-09-12 21:45
  */
 enum class HttpMethod(val isSupportBody: Boolean) {
+
     GET(false), PUT(true), POST(true), DELETE(true), HEAD(false), OPTIONS(true), PATCH(true),  // region webdav
 
     /**
@@ -89,9 +90,18 @@ enum class HttpMethod(val isSupportBody: Boolean) {
      * 用于搜索通讯录中的条目
      */
     ADDRESSBOOK_QUERY(true),
-    ; // endregion
+    ;
+    // endregion
+
+    companion object {
+
+        @JvmStatic
+        fun from(str: String?) = str?.uppercase()?.let { s -> entries.firstOrNull { it.name == s } }
+
+    }
 
     fun allowBody(): Boolean {
         return isSupportBody
     }
+
 }

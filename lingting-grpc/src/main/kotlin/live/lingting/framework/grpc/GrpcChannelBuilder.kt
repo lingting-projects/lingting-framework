@@ -10,23 +10,22 @@ import io.grpc.stub.AbstractStub
 import java.util.function.Function
 import java.util.function.UnaryOperator
 import live.lingting.framework.grpc.properties.GrpcClientProperties
-import live.lingting.framework.util.StringUtils
 
 /**
  * @author lingting 2024-01-30 13:55
  */
-class GrpcChannelBuilder(protected val provide: GrpcClientProvide) {
+class GrpcChannelBuilder(val provide: GrpcClientProvide) {
+
     private val interceptors: MutableList<ClientInterceptor> = ArrayList()
 
-    protected var target: String? = null
+    var target: String? = null
 
-    protected var properties: GrpcClientProperties? = null
+    var properties: GrpcClientProperties? = null
 
-    fun address(host: String?, port: Int?): GrpcChannelBuilder {
-        require(StringUtils.hasText(host)) { "Host [$host] is invalid!" }
-        require(!(port == null || port < 0 || port > 65535)) { "Port [$port] is invalid!" }
-        this.target = "$host:$port"
-        return this
+    fun address(host: String, port: Int): GrpcChannelBuilder {
+        require(host.isNotEmpty()) { "Host [$host] is invalid!" }
+        require(!(port < 0 || port > 65535)) { "Port [$port] is invalid!" }
+        return target("$host:$port")
     }
 
     fun target(target: String): GrpcChannelBuilder {
@@ -43,7 +42,7 @@ class GrpcChannelBuilder(protected val provide: GrpcClientProvide) {
         return this
     }
 
-    fun interceptor(collection: MutableCollection<ClientInterceptor>): GrpcChannelBuilder {
+    fun interceptor(collection: Collection<ClientInterceptor>): GrpcChannelBuilder {
         interceptors.addAll(collection)
         return this
     }
@@ -73,10 +72,11 @@ class GrpcChannelBuilder(protected val provide: GrpcClientProvide) {
     }
 
     fun build(function: Function<String, ManagedChannelBuilder<*>>): ManagedChannel {
-        val builder = function.apply(target!!)
-        if (properties != null) {
-            provide.useProperties(builder, properties!!)
+        val builder = target.let {
+            require(!it.isNullOrBlank()) { "Target is invalid!" }
+            function.apply(it)
         }
+        properties?.let { provide.useProperties(builder, it) }
         provide.addInterceptors(builder, interceptors)
         return builder.build()
     }

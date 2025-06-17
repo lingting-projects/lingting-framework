@@ -1,17 +1,95 @@
 package live.lingting.framework.http
 
-import java.net.URI
-import java.net.URISyntaxException
-import java.net.URL
 import live.lingting.framework.util.CollectionUtils
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.value.MultiValue
 import live.lingting.framework.value.multi.StringMultiValue
+import java.net.URI
+import java.net.URISyntaxException
+import java.net.URL
+import java.net.URLDecoder
+import java.net.URLEncoder
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 
 /**
  * @author lingting 2024-01-29 16:13
  */
-class HttpUrlBuilder {
+open class HttpUrlBuilder {
+
+    companion object {
+
+        @JvmStatic
+        fun builder(): HttpUrlBuilder {
+            return HttpUrlBuilder()
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        fun encode(s: String, charset: Charset = StandardCharsets.UTF_8): String {
+            val encode = URLEncoder.encode(s, charset)
+            return encode.replace("%25", "%")
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        fun decode(s: String, charset: Charset = StandardCharsets.UTF_8): String {
+            val l = s.replace("%25", "%")
+            return URLDecoder.decode(l, charset)
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        fun from(url: String, charset: Charset = StandardCharsets.UTF_8): HttpUrlBuilder {
+            val l = decode(url, charset)
+            val u = URI.create(l)
+            return from(u)
+        }
+
+        @JvmStatic
+        fun from(u: URI): HttpUrlBuilder {
+            val builder = builder().scheme(u.scheme).host(u.host).port(u.port).path(u.path)
+            val query = u.query
+            if (StringUtils.hasText(query)) {
+                query.split("&")
+                    .dropLastWhile { it.isBlank() }
+                    .map { it.split("=", limit = 2) }
+                    .forEach {
+                        val name = it[0]
+                        val value = if (it.size == 1) null else it[1]
+                        builder.addParam(name, value)
+                    }
+            }
+            return builder
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        fun buildQuery(
+            value: MultiValue<String, String, *>?,
+            encode: Boolean = true,
+            charset: Charset = StandardCharsets.UTF_8,
+            sort: Boolean = false
+        ): String {
+            return buildQuery(value?.map(), encode, charset, sort)
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        fun buildQuery(
+            map: Map<String, Collection<String>>?,
+            encode: Boolean = true,
+            charset: Charset = StandardCharsets.UTF_8,
+            sort: Boolean = false
+        ): String {
+            return QueryBuilder(map).also {
+                it.encode = encode
+                it.charset = charset
+                it.sort = sort
+            }.build()
+        }
+    }
+
     protected val params: StringMultiValue = StringMultiValue()
 
     protected var scheme: String = "https"
@@ -20,7 +98,7 @@ class HttpUrlBuilder {
 
     protected var port: Int? = null
 
-    protected var uri: StringBuilder = StringBuilder("/")
+    protected var path: StringBuilder = StringBuilder("/")
 
     fun params(): StringMultiValue {
         return params.unmodifiable()
@@ -38,8 +116,18 @@ class HttpUrlBuilder {
         return port
     }
 
-    fun uri(): String {
-        return uri.toString()
+    fun headerHost(): String {
+        return port.let {
+            if (it == null || it < 1) {
+                "$host"
+            } else {
+                "$host:$it"
+            }
+        }
+    }
+
+    fun path(): String {
+        return path.toString()
     }
 
     fun scheme(scheme: String): HttpUrlBuilder {
@@ -56,24 +144,31 @@ class HttpUrlBuilder {
     }
 
     fun host(host: String): HttpUrlBuilder {
-        if (host.contains("://")) {
-            val split: Array<String> = host.split("://".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            scheme(split[0])
-            this.host = split[1]
-        } else {
-            this.host = host
+        var v = host
+        val schemeSplit = v.split("://", limit = 2)
+        if (schemeSplit.size > 1) {
+            scheme(schemeSplit[0])
+            v = schemeSplit[1]
         }
+
+        val portSplit = v.split(":", limit = 2)
+        if (portSplit.size > 1) {
+            port(portSplit[1].toInt())
+            v = portSplit[0]
+        }
+
+        this.host = if (v.endsWith("/")) v.substringBeforeLast("/") else v
         return this
     }
 
     fun port(port: Int): HttpUrlBuilder {
-        this.port = port
+        this.port = if (port < 0) null else port
         return this
     }
 
-    fun uri(string: String): HttpUrlBuilder {
+    fun path(string: String): HttpUrlBuilder {
         if (!StringUtils.hasText(string)) {
-            this.uri = StringBuilder("/")
+            this.path = StringBuilder("/")
             return this
         }
         val newUri: String
@@ -86,7 +181,12 @@ class HttpUrlBuilder {
             newUri = string
             query = ""
         }
-        this.uri = StringBuilder(newUri)
+        val builder = StringBuilder()
+        if (!newUri.startsWith("/")) {
+            builder.append("/")
+        }
+        builder.append(newUri)
+        this.path = builder
         if (StringUtils.hasText(query)) {
             val split: Array<String> = query.split("&".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             for (kv in split) {
@@ -99,17 +199,21 @@ class HttpUrlBuilder {
         return this
     }
 
-    fun uri(uri: StringBuilder): HttpUrlBuilder {
-        return uri(uri.toString())
+    fun path(path: StringBuilder): HttpUrlBuilder {
+        return path(path.toString())
     }
 
-    fun uriSegment(vararg segments: String): HttpUrlBuilder {
-        if (uri.isNotEmpty() && uri.substring(uri.length - 1) != "/") {
-            uri.append("/")
+    fun pathSegment(vararg segments: String): HttpUrlBuilder {
+        if (path.isNotEmpty() && path.substring(path.length - 1) != "/") {
+            path.append("/")
         }
 
+        val builder = this.path
         for (segment in segments) {
-            uri.append(segment).append("/")
+            if (!builder.endsWith("/")) {
+                builder.append("/")
+            }
+            builder.append(if (segment.startsWith("/")) segment.substring(1) else segment)
         }
 
         return this
@@ -134,13 +238,40 @@ class HttpUrlBuilder {
         return this
     }
 
-    fun addParams(params: Map<String, *>): HttpUrlBuilder {
+    fun addParams(params: Map<String, Any>): HttpUrlBuilder {
         params.forEach { (name: String, value: Any?) -> this.addParam(name, value) }
         return this
     }
 
-    fun addParams(params: MultiValue<String, *, *>): HttpUrlBuilder {
-        params.forEach { name, value -> addParam(name!!.toString(), value) }
+    fun addParams(params: MultiValue<String, out Any, out Collection<Any>>): HttpUrlBuilder {
+        params.forEach { name, value -> addParam(name, value) }
+        return this
+    }
+
+    fun clearParams(): HttpUrlBuilder {
+        params.clear()
+        return this
+    }
+
+    @JvmOverloads
+    fun removeParam(name: String, value: String? = null): HttpUrlBuilder {
+        if (value == null) {
+            params.remove(name)
+        } else {
+            params.remove(name, value)
+        }
+        return this
+    }
+
+    @JvmOverloads
+    fun removeAllParams(name: String, collection: Collection<String>? = null): HttpUrlBuilder {
+        if (collection == null) {
+            params.remove(name)
+        } else if (collection.isNotEmpty()) {
+            collection.forEach { c ->
+                params.remove(c)
+            }
+        }
         return this
     }
 
@@ -170,30 +301,29 @@ class HttpUrlBuilder {
     }
 
     fun buildPath(): String {
-        if (!StringUtils.hasText(uri)) {
-            return ""
+        if (!StringUtils.hasText(path)) {
+            return "/"
         }
         val builder = StringBuilder()
-        val string = uri.toString()
+        val string = path.toString()
         if (!string.startsWith("/")) {
             builder.append("/")
         }
         builder.append(string)
-        if (string.endsWith("/")) {
+        if (builder.length > 1 && string.endsWith("/")) {
             builder.deleteCharAt(builder.length - 1)
         }
         return builder.toString()
     }
 
-    fun buildQuery(): String = buildQuery(params)
+    @JvmOverloads
+    fun buildQuery(encode: Boolean = true, charset: Charset = StandardCharsets.UTF_8): String =
+        buildQuery(params, encode, charset)
 
     fun buildUri(): URI {
         try {
-            val path = buildPath()
-            val query = buildQuery()
-            val p = if (port == null) -1 else port!!
-            val q = if (StringUtils.hasText(query)) query else null
-            return URI(scheme, null, host, p, path, q, null)
+            val url = build()
+            return URI.create(url)
         } catch (e: URISyntaxException) {
             throw IllegalStateException("Could not create URI object: " + e.message, e)
         }
@@ -204,65 +334,10 @@ class HttpUrlBuilder {
     }
 
     fun copy(): HttpUrlBuilder {
-        val builder = builder().addParams(params).scheme(scheme).uri(uri)
+        val builder = builder().addParams(params).scheme(scheme).path(path)
         host?.let { builder.host(it) }
         port?.let { builder.port(it) }
         return builder
     }
 
-    companion object {
-
-        @JvmStatic
-        fun builder(): HttpUrlBuilder {
-            return HttpUrlBuilder()
-        }
-
-        @JvmStatic
-        fun from(url: String): HttpUrlBuilder {
-            val u = URI.create(url)
-            return from(u)
-        }
-
-        @JvmStatic
-        fun from(u: URI): HttpUrlBuilder {
-            val builder = builder().scheme(u.scheme).host(u.host).port(u.port).uri(u.path)
-            val query = u.query
-            if (StringUtils.hasText(query)) {
-                query.split("&")
-                    .dropLastWhile { it.isBlank() }
-                    .forEach {
-                        it.split("=", limit = 2)
-                            .let { builder.addParam(it[0], if (it.size == 1) null else it[1]) }
-                    }
-            }
-            return builder
-        }
-
-        @JvmStatic
-        fun buildQuery(value: MultiValue<String, String, *>): String {
-            return buildQuery(value.map())
-        }
-
-        @JvmStatic
-        fun buildQuery(map: Map<String, Collection<String>>): String {
-            if (map.isEmpty()) {
-                return ""
-            }
-            val keys = map.keys.sorted().toList()
-
-            val builder = StringBuilder()
-            for (key in keys) {
-                val list = map[key]
-                if (list.isNullOrEmpty()) {
-                    builder.append(key).append("&")
-                } else {
-                    for (v in list) {
-                        builder.append(key).append("=").append(v).append("&")
-                    }
-                }
-            }
-
-            return StringUtils.deleteLast(builder).toString()
-        }
-    }
 }
