@@ -3,12 +3,12 @@ package live.lingting.framework.mybatis.wrapper
 import com.baomidou.mybatisplus.annotation.TableName
 import com.baomidou.mybatisplus.core.MybatisConfiguration
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper
-import java.util.function.Consumer
 import live.lingting.framework.mybatis.wrapper.Wrappers.query
 import org.apache.ibatis.builder.MapperBuilderAssistant
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.util.function.Consumer
 
 class WrapperTest {
     @BeforeEach
@@ -35,7 +35,7 @@ class WrapperTest {
 
         assertEquals("t.s2, t.s1, t.s3", query.getSqlSelect())
         assertEquals(
-            "(t.q1 = #{ew.params.PARAM1} AND t.i1 IN (#{ew.params.PARAM2},#{ew.params.PARAM3}) AND t.b1 BETWEEN #{ew.params.PARAM4} AND #{ew.params.PARAM5} AND (aq1 = #{ew.params.PARAM6} AND (aaq1 = #{ew.params.PARAM7})   )    AND (oq1 = #{ew.params.PARAM8} OR (ooq1 = #{ew.params.PARAM9})   )   ) GROUP BY t.g1, t.g2 HAVING sum(t.h1) > 0 ORDER BY t.od1 DESC, t.od2 DESC,t.oa1 ASC, t.oa2 ASC  limit 1",
+            "(t.q1 = #{ew.params.PARAM_2_1} AND t.i1 IN (#{ew.params.PARAM_2_2},#{ew.params.PARAM_2_3}) AND t.b1 BETWEEN #{ew.params.PARAM_2_4} AND #{ew.params.PARAM_2_5} AND (aq1 = #{ew.params.PARAM_3_6} AND (aaq1 = #{ew.params.PARAM_4_7})   )    AND (oq1 = #{ew.params.PARAM_5_8} OR (ooq1 = #{ew.params.PARAM_6_9})   )   ) GROUP BY t.g1, t.g2 HAVING sum(t.h1) > 0 ORDER BY t.od1 DESC, t.od2 DESC,t.oa1 ASC, t.oa2 ASC  limit 1",
             query.getSqlSegment()
         )
     }
@@ -54,7 +54,7 @@ class WrapperTest {
                 })
 
         assertEquals(
-            "SELECT * FROM table t1 WHERE (t1.e1 = #{ew.params.PARAM1} AND t1.i1 IN (SELECT t2.t1_id FROM table t2 WHERE (t2.o2i1 IN (#{ew.params.PARAM2},#{ew.params.PARAM3}))))",
+            "SELECT * FROM table t1 WHERE (t1.e1 = #{ew.params.PARAM_0_1} AND t1.i1 IN (SELECT t2.t1_id FROM table t2 WHERE (t2.o2i1 IN (#{ew.params.PARAM_1_2},#{ew.params.PARAM_1_3}))))",
             query.getSafeSql()
         )
     }
@@ -67,7 +67,7 @@ class WrapperTest {
             .eqIfPresent(Table::name, null)
 
         assertEquals(
-            "SELECT * FROM table WHERE (id = #{ew.params.PARAM1})",
+            "SELECT * FROM table WHERE (id = #{ew.params.PARAM_7_1})",
             query.getSafeSql()
         )
     }

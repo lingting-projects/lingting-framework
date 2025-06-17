@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test
  * @author lingting 2024-09-05 20:32
  */
 internal class MultiValueTest {
+
     @Test
     fun list() {
         val value = ListMultiValue<Any, Any>()
@@ -35,7 +36,8 @@ internal class MultiValueTest {
         assertEquals(1, value.first(1))
         assertTrue(value.remove(1, 1))
         assertFalse(value.remove(2, 1))
-        assertTrue(value.remove(2)!!.isEmpty())
+        val r2 = value.remove(2)
+        assertTrue(r2.isNullOrEmpty())
         val unmodifiable = value.unmodifiable()
         assertUnmodifiable(unmodifiable)
     }
