@@ -1,5 +1,6 @@
 package live.lingting.framework.thread.platform
 
+import live.lingting.framework.thread.IncrementThreadFactory
 import live.lingting.framework.thread.executor.DelegationExecutorService
 import live.lingting.framework.thread.executor.PolicyExecutorService
 import live.lingting.framework.thread.executor.StateKeepExecutorService
@@ -14,9 +15,9 @@ object PlatformThread : DelegationExecutorService(
     PolicyExecutorService(
         StateKeepExecutorService(
             newExecutor(
-                Thread.ofPlatform()
-                    .name("t-", 0)
-                    .factory()
+                IncrementThreadFactory { id, task ->
+                    Thread.ofPlatform().name("t-$id").unstarted(task)
+                }
             )
         )
     )
