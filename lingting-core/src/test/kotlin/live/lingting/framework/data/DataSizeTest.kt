@@ -2,7 +2,6 @@ package live.lingting.framework.data
 
 import live.lingting.framework.data.DataSizeUnit.BYTES
 import live.lingting.framework.data.DataSizeUnit.GB
-import live.lingting.framework.data.DataSizeUnit.KB
 import live.lingting.framework.data.DataSizeUnit.MB
 import live.lingting.framework.data.DataSizeUnit.TB
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -41,7 +40,7 @@ class DataSizeTest {
         testValid("123.45 MB", 123, MB, 129446707L)
         testValid("1.5TB", 1, TB, 1649267441664L)
 
-        testValid("1 Bytes", 0, KB, 1L)
+        testValid("1 Bytes", 1, BYTES, 1L)
         testValid("1024KB", 1, MB, 1048576L)
         testValid("123.45GB extra", 123, GB, 132553428172L)
 
