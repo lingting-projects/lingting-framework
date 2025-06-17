@@ -1,10 +1,11 @@
 package live.lingting.framework.value
 
+import live.lingting.framework.util.Slf4jUtils.logger
 import java.util.Spliterator
 import java.util.Spliterators
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
-import live.lingting.framework.util.Slf4jUtils.logger
+import kotlin.streams.toList
 
 /**
  * @author lingting 2023-12-29 11:30

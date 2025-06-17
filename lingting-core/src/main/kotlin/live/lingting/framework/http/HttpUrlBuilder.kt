@@ -27,7 +27,7 @@ open class HttpUrlBuilder {
         @JvmStatic
         @JvmOverloads
         fun encode(s: String, charset: Charset = StandardCharsets.UTF_8): String {
-            val encode = URLEncoder.encode(s, charset)
+            val encode = URLEncoder.encode(s, charset.name())
             return encode.replace("%25", "%")
         }
 
@@ -35,7 +35,7 @@ open class HttpUrlBuilder {
         @JvmOverloads
         fun decode(s: String, charset: Charset = StandardCharsets.UTF_8): String {
             val l = s.replace("%25", "%")
-            return URLDecoder.decode(l, charset)
+            return URLDecoder.decode(l, charset.name())
         }
 
         @JvmStatic

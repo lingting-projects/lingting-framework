@@ -53,9 +53,7 @@ class ProcessStreamBuilder(init: String) {
     }
 
     fun redirectIgnore(): ProcessStreamBuilder {
-        redirectOut = Redirect.DISCARD
-        redirectErr = Redirect.DISCARD
-        return this
+        return redirectFile(FileUtils.NULL, FileUtils.NULL)
     }
 
     fun redirectFile(out: File, err: File): ProcessStreamBuilder {

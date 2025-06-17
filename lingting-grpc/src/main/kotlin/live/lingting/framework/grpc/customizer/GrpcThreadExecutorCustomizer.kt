@@ -13,6 +13,7 @@ import live.lingting.framework.thread.executor.PolicyExecutorService
 import live.lingting.framework.thread.executor.ThreadExecuteResolver
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.ThreadUtils
+import live.lingting.framework.util.ThreadUtils.threadId
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 

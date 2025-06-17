@@ -32,19 +32,6 @@ internal class HttpDownloadTest {
     var client: HttpClient = ApiClient.defaultClient
 
     @Test
-    fun testJava() {
-        client = HttpClient.java()
-            .disableSsl()
-            .callTimeout(Duration.ofSeconds(10))
-            .connectTimeout(Duration.ofSeconds(15))
-            .readTimeout(Duration.ofSeconds(30))
-            .build()
-
-        testSingle()
-        testMulti()
-    }
-
-    @Test
     fun testOkhttp() {
         client = HttpClient.okhttp()
             .disableSsl()

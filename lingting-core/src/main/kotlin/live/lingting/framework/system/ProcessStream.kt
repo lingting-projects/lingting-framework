@@ -2,6 +2,7 @@ package live.lingting.framework.system
 
 import live.lingting.framework.stream.AsyncCopyInputStream
 import live.lingting.framework.stream.BytesInputStream
+import live.lingting.framework.util.DurationUtils.isPositive
 import live.lingting.framework.util.FileUtils
 import live.lingting.framework.util.StreamUtils
 import live.lingting.framework.util.SystemUtils
@@ -94,7 +95,8 @@ open class ProcessStream(
         val builder = builder()
         onBuild(builder)
         process = builder.start()
-        pid = process.pid()
+        // windows不支持
+        pid = -1
         startTime = LocalDateTime.now()
         stdIn = process.outputStream
         if (redirectOut.file() == null) {

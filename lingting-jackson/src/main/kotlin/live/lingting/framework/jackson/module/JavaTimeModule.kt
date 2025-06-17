@@ -1,13 +1,10 @@
 package live.lingting.framework.jackson.module
 
-import com.fasterxml.jackson.core.util.JacksonFeatureSet
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeFeature
 import com.fasterxml.jackson.datatype.jsr310.deser.DurationDeserializer
 import com.fasterxml.jackson.datatype.jsr310.deser.InstantDeserializer
 import com.fasterxml.jackson.datatype.jsr310.deser.JSR310StringParsableDeserializer
-import com.fasterxml.jackson.datatype.jsr310.deser.JavaTimeDeserializerModifier
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer
@@ -31,7 +28,6 @@ import com.fasterxml.jackson.datatype.jsr310.deser.key.ZoneOffsetKeyDeserializer
 import com.fasterxml.jackson.datatype.jsr310.deser.key.ZonedDateTimeKeyDeserializer
 import com.fasterxml.jackson.datatype.jsr310.ser.DurationSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.InstantSerializer
-import com.fasterxml.jackson.datatype.jsr310.ser.JavaTimeSerializerModifier
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer
@@ -43,6 +39,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.YearSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.ZoneIdSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.ZonedDateTimeSerializer
 import com.fasterxml.jackson.datatype.jsr310.ser.key.ZonedDateTimeKeySerializer
+import live.lingting.framework.time.DatePattern
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -57,26 +54,17 @@ import java.time.YearMonth
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
-import live.lingting.framework.time.DatePattern
 
 /**
  * 自定义java8新增时间类型的序列化
  * <p>basic copy  from com.fasterxml.jackson.datatype.jsr310.JavaTimeModule</p>
  * @author Hccake
  */
-open class JavaTimeModule @JvmOverloads constructor(
-    protected val features: JacksonFeatureSet<JavaTimeFeature> = JacksonFeatureSet.fromDefaults(JavaTimeFeature.entries.toTypedArray())
-) : SimpleModule() {
+open class JavaTimeModule : SimpleModule() {
 
     open val localDateTime = DatePattern.FORMATTER_YMD_HMS
     open val localDate = DatePattern.FORMATTER_YMD
     open val localTime = DatePattern.FORMATTER_HMS
-
-    val oneBasedMonthEnabled = features.isEnabled(JavaTimeFeature.ONE_BASED_MONTHS)
-
-    val deserializerModifier = JavaTimeDeserializerModifier(oneBasedMonthEnabled)
-
-    val serializerModifier = JavaTimeSerializerModifier(oneBasedMonthEnabled)
 
     protected var init = false
         private set
@@ -86,9 +74,9 @@ open class JavaTimeModule @JvmOverloads constructor(
             return
         }
         // Instant variants:
-        addDeserializer(Instant::class.java, InstantDeserializer.INSTANT.withFeatures(features))
-        addDeserializer(OffsetDateTime::class.java, InstantDeserializer.OFFSET_DATE_TIME.withFeatures(features))
-        addDeserializer(ZonedDateTime::class.java, InstantDeserializer.ZONED_DATE_TIME.withFeatures(features))
+        addDeserializer(Instant::class.java, InstantDeserializer.INSTANT)
+        addDeserializer(OffsetDateTime::class.java, InstantDeserializer.OFFSET_DATE_TIME)
+        addDeserializer(ZonedDateTime::class.java, InstantDeserializer.ZONED_DATE_TIME)
 
         // Other deserializers
         addDeserializer(Duration::class.java, DurationDeserializer.INSTANCE)
@@ -151,8 +139,6 @@ open class JavaTimeModule @JvmOverloads constructor(
     override fun setupModule(context: SetupContext) {
         init()
         super.setupModule(context)
-        context.addBeanDeserializerModifier(deserializerModifier)
-        context.addBeanSerializerModifier(serializerModifier)
     }
 
 }

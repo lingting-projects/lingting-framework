@@ -4,6 +4,7 @@ import live.lingting.framework.concurrent.Await
 import live.lingting.framework.thread.platform.PlatformThread
 import live.lingting.framework.thread.virtual.VirtualThread
 import live.lingting.framework.util.ThreadUtils
+import live.lingting.framework.util.TimeUnitUtils.toChronoUnit
 import live.lingting.framework.util.ValueUtils
 import java.time.Duration
 import java.time.temporal.TemporalUnit
@@ -86,7 +87,7 @@ class AwaitBuilder<R> {
         return this
     }
 
-    fun sleep(duration: Duration) = sleep { Thread.sleep(duration) }
+    fun sleep(duration: Duration) = sleep { Thread.sleep(duration.toMillis()) }
 
     fun sleep(amount: Long, unit: TemporalUnit) = sleep(Duration.of(amount, unit))
 

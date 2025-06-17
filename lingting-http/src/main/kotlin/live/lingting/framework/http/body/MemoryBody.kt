@@ -1,6 +1,7 @@
 package live.lingting.framework.http.body
 
 import live.lingting.framework.stream.BytesInputStream
+import live.lingting.framework.util.StreamUtils.readAllBytes
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.io.OutputStream

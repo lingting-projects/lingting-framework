@@ -16,7 +16,7 @@ object PlatformThread : DelegationExecutorService(
         StateKeepExecutorService(
             newExecutor(
                 IncrementThreadFactory { id, task ->
-                    Thread.ofPlatform().name("t-$id").unstarted(task)
+                    Thread(task, "t-$id")
                 }
             )
         )

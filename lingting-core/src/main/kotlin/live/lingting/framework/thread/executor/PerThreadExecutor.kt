@@ -2,6 +2,7 @@ package live.lingting.framework.thread.executor
 
 import live.lingting.framework.function.StateRunnable
 import live.lingting.framework.time.StopWatch
+import live.lingting.framework.util.TimeUnitUtils.toChronoUnit
 import live.lingting.framework.value.WaitValue
 import java.time.Duration
 import java.util.concurrent.Callable

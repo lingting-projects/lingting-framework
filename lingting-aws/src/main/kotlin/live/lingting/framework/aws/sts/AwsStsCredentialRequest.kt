@@ -2,6 +2,8 @@ package live.lingting.framework.aws.sts
 
 import live.lingting.framework.aws.policy.Statement
 import live.lingting.framework.jackson.JacksonUtils
+import live.lingting.framework.util.DurationUtils.isPositive
+import live.lingting.framework.util.DurationUtils.toSeconds
 import java.time.Duration
 
 /**

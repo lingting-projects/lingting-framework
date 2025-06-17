@@ -27,6 +27,7 @@ import live.lingting.framework.elasticsearch.polymerize.PolymerizeFactory
 import live.lingting.framework.elasticsearch.retry.ElasticsearchRetry
 import live.lingting.framework.elasticsearch.retry.ElasticsearchRetryProperties
 import live.lingting.framework.function.ThrowingSupplier
+import live.lingting.framework.util.DurationUtils.toSeconds
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StringUtils
 import org.slf4j.Logger

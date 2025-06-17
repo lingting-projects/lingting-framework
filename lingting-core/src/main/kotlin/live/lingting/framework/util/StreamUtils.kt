@@ -152,7 +152,7 @@ object StreamUtils {
     fun toString(input: InputStream, size: DataSize, charset: Charset): String {
         ByteArrayOutputStream().use { out ->
             write(input, out, size)
-            return out.toString(charset.name())
+            return out.toString(charset)
         }
     }
 
@@ -288,4 +288,8 @@ object StreamUtils {
             doConsumer.accept(index, list)
         }
     }
+
+    @JvmStatic
+    fun ByteArrayOutputStream.toString(charset: Charset): String = toString(charset.name())
+
 }

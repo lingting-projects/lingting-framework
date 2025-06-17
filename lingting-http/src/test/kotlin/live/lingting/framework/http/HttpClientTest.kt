@@ -6,15 +6,19 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.io.IOException
 import java.net.InetSocketAddress
+import java.net.Proxy
 import java.net.ProxySelector
+import java.net.SocketAddress
 import java.net.URI
 
 /**
  * @author lingting 2024-05-08 14:22
  */
 class HttpClientTest {
-    var client: java.net.http.HttpClient? = null
+
+    var client: HttpClient? = null
 
     var selector: ProxySelector? = null
 
