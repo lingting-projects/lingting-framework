@@ -9,7 +9,7 @@ import live.lingting.framework.aws.sts.AwsStsCredentialRequest
 import live.lingting.framework.aws.sts.AwsStsCredentialResponse
 import live.lingting.framework.aws.sts.AwsStsInterface
 import live.lingting.framework.aws.sts.AwsStsRequest
-import live.lingting.framework.jackson.JacksonUtils
+import live.lingting.framework.jackson.xml.JacksonXmlUtils
 import live.lingting.framework.time.DatePattern
 import live.lingting.framework.util.StringUtils
 import java.time.Duration
@@ -38,7 +38,7 @@ class AwsSts(val properties: AwsStsProperties) : AwsClient<AwsStsRequest>(proper
     fun credential(request: AwsStsCredentialRequest): Credential {
         val convert = call(request).use {
             val xml = it.string()
-            JacksonUtils.xmlToObj(xml, AwsStsCredentialResponse::class.java)
+            JacksonXmlUtils.toObj(xml, AwsStsCredentialResponse::class.java)
         }
         val ak = convert.accessKeyId
         val sk = convert.secretAccessKey

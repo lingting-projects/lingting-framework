@@ -1,4 +1,4 @@
-package live.lingting.framework.jackson
+package live.lingting.framework.jackson.xml
 
 import com.fasterxml.jackson.core.json.JsonReadFeature
 import com.fasterxml.jackson.core.type.TypeReference
@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JavaType
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import live.lingting.framework.jackson.module.BooleanModule
 import live.lingting.framework.jackson.module.DataSizeModule
 import live.lingting.framework.jackson.module.EnumModule
@@ -24,17 +25,16 @@ import kotlin.reflect.KClass
  * @author lingting 2021/6/9 14:28
  */
 @Suppress("UNCHECKED_CAST")
-object JacksonUtils {
+object JacksonXmlUtils {
 
     @JvmStatic
-    var mapper: ObjectMapper = defaultConfig(ObjectMapper())
+    var mapper: XmlMapper = defaultConfig(XmlMapper())
         set(value) {
             field = value
-            jsonWrapper.mapper = value
+            wrapper.mapper = value
         }
 
-
-    val jsonWrapper = JacksonWrapper(mapper)
+    val wrapper = JacksonWrapper(mapper)
 
     @JvmStatic
     fun <T : ObjectMapper> defaultConfig(mapper: T): T {
@@ -69,64 +69,38 @@ object JacksonUtils {
     }
 
     @JvmStatic
-    fun config(consumer: Consumer<ObjectMapper>) = jsonWrapper.config(consumer)
-
-    // region convert
+    fun config(consumer: Consumer<XmlMapper>) = wrapper.config(consumer)
 
     @JvmStatic
-    fun <T> convert(value: Any?, type: JavaType): T? = jsonWrapper.convert(value, type)
-
-    fun <T : Any> convert(value: Any?, r: KClass<out T>): T? = jsonWrapper.convert(value, r)
+    fun toXml(obj: Any?): String = wrapper.toString(obj)
 
     @JvmStatic
-    fun <T> convert(value: Any?, r: Class<T>): T? = jsonWrapper.convert(value, r)
+    fun <T> toObj(xml: String, type: JavaType): T = wrapper.toObj(xml, type)
+
+    fun <T : Any> toObj(xml: String, r: KClass<out T>): T = wrapper.toObj(xml, r)
 
     @JvmStatic
-    fun <T> convert(value: Any?, t: Type): T? = jsonWrapper.convert(value, t)
+    fun <T> toObj(xml: String, r: Class<T>): T = wrapper.toObj(xml, r)
 
     @JvmStatic
-    fun <T> convert(value: Any?, t: TypeReference<T>): T? = jsonWrapper.convert(value, t)
+    fun <T> toObj(xml: String, t: Type): T = wrapper.toObj(xml, t)
 
     @JvmStatic
-    fun <T> convert(value: Any?, t: TypeReference<T>, defaultVal: T): T? = jsonWrapper.convert(value, t, defaultVal)
-
-    // endregion
-
-    // region json
-    @JvmStatic
-    fun toJson(obj: Any?): String = jsonWrapper.toString(obj)
+    fun <T> toObj(xml: String, t: TypeReference<T>): T = wrapper.toObj(xml, t)
 
     @JvmStatic
-    fun <T> toObj(json: String, type: JavaType): T = jsonWrapper.toObj(json, type)
-
-    fun <T : Any> toObj(json: String, r: KClass<out T>): T = jsonWrapper.toObj(json, r)
+    fun <T> toObj(xml: String, t: TypeReference<T>, defaultVal: T): T = wrapper.toObj(xml, t, defaultVal)
 
     @JvmStatic
-    fun <T> toObj(json: String, r: Class<T>): T = jsonWrapper.toObj(json, r)
+    fun <T> toObj(node: JsonNode, r: Class<T>): T = wrapper.toObj(node, r)
 
     @JvmStatic
-    fun <T> toObj(json: String, t: Type): T = jsonWrapper.toObj(json, t)
+    fun <T> toObj(node: JsonNode, t: Type): T = wrapper.toObj(node, t)
 
     @JvmStatic
-    fun <T> toObj(json: String, t: TypeReference<T>): T = jsonWrapper.toObj(json, t)
+    fun <T> toObj(node: JsonNode, t: TypeReference<T>): T = wrapper.toObj(node, t)
 
     @JvmStatic
-    fun <T> toObj(json: String, t: TypeReference<T>, defaultVal: T): T = jsonWrapper.toObj(json, t, defaultVal)
-
-    fun <T : Any> toObj(node: JsonNode, r: KClass<out T>): T = jsonWrapper.toObj(node, r)
-
-    @JvmStatic
-    fun <T> toObj(node: JsonNode, r: Class<T>): T = jsonWrapper.toObj(node, r)
-
-    @JvmStatic
-    fun <T> toObj(node: JsonNode, t: Type): T = jsonWrapper.toObj(node, t)
-
-    @JvmStatic
-    fun <T> toObj(node: JsonNode, t: TypeReference<T>): T = jsonWrapper.toObj(node, t)
-
-    @JvmStatic
-    fun toNode(json: String): JsonNode = jsonWrapper.toNode(json)
-
-    // endregion
+    fun toNode(xml: String): JsonNode = wrapper.toNode(xml)
 
 }

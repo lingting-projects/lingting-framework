@@ -8,19 +8,20 @@ import io.grpc.ServerInterceptor
 import io.grpc.ServiceDescriptor
 import live.lingting.framework.Sequence
 import live.lingting.framework.application.ApplicationComponent
-import live.lingting.framework.function.StateKeepRunnable
 import live.lingting.framework.grpc.interceptor.AbstractServerInterceptor
 import live.lingting.framework.util.ClassUtils
 import live.lingting.framework.util.Slf4jUtils.logger
-import live.lingting.framework.util.ThreadUtils
 import java.lang.reflect.Method
+import java.time.Duration
+import java.util.concurrent.TimeUnit
 
 /**
  * @author lingting 2023-04-14 17:38
  */
 @Suppress("UNCHECKED_CAST")
 open class GrpcServer(
-    builder: ServerBuilder<*>, interceptors: MutableCollection<ServerInterceptor>,
+    builder: ServerBuilder<*>,
+    interceptors: MutableCollection<ServerInterceptor>,
     services: MutableCollection<BindableService>
 ) : ApplicationComponent {
 
@@ -111,16 +112,18 @@ open class GrpcServer(
         return null
     }
 
+    @JvmOverloads
+    fun awaitTermination(timeout: Duration? = null) {
+        if (timeout == null || !timeout.isPositive) {
+            server.awaitTermination()
+        } else {
+            server.awaitTermination(timeout.toMillis(), TimeUnit.MILLISECONDS)
+        }
+    }
+
     override fun onApplicationStart() {
         server.start()
         log.info("grpc server started. port: {}", server.port)
-        ThreadUtils.execute(object : StateKeepRunnable("GrpcServer") {
-
-            override fun doProcess() {
-                server.awaitTermination()
-            }
-
-        })
     }
 
     override fun onApplicationStop() {
