@@ -21,6 +21,7 @@
             <option value="$PROJECT_DIR$/lingting-http" />
             <option value="$PROJECT_DIR$/lingting-huawei" />
             <option value="$PROJECT_DIR$/lingting-jackson" />
+            <option value="$PROJECT_DIR$/lingting-jackson-xml" />
             <option value="$PROJECT_DIR$/lingting-mybatis" />
             <option value="$PROJECT_DIR$/lingting-ntp" />
             <option value="$PROJECT_DIR$/lingting-polaris-grpc" />

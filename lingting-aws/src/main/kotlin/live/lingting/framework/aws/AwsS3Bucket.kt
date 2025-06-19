@@ -7,7 +7,7 @@ import live.lingting.framework.aws.s3.request.AwsS3SimpleRequest
 import live.lingting.framework.aws.s3.response.AwsS3ListObjectResponse
 import live.lingting.framework.aws.s3.response.AwsS3MultipartItem
 import live.lingting.framework.http.HttpMethod
-import live.lingting.framework.jackson.JacksonUtils
+import live.lingting.framework.jackson.xml.JacksonXmlUtils
 import java.util.function.Consumer
 
 /**
@@ -34,7 +34,7 @@ class AwsS3Bucket(properties: S3Properties) : AwsS3Client(properties), AwsS3Buck
         val xml = response.string()
         val list = ArrayList<AwsS3MultipartItem>()
         try {
-            val node = JacksonUtils.xmlToNode(xml)
+            val node = JacksonXmlUtils.toNode(xml)
             val tree = node["Upload"] ?: return list
             if (tree.isArray && !tree.isEmpty) {
                 tree.forEach(Consumer {
@@ -57,7 +57,7 @@ class AwsS3Bucket(properties: S3Properties) : AwsS3Client(properties), AwsS3Buck
         val response = call(request)
         val xml = response.string()
         val r = AwsS3ListObjectResponse(request)
-        val node = JacksonUtils.xmlToNode(xml)
+        val node = JacksonXmlUtils.toNode(xml)
         r.name = node["Name"]?.asText() ?: ""
         r.maxKeys = request.maxKeys
         r.encodeType = node["EncodingType"]?.asText()

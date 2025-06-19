@@ -12,7 +12,7 @@ import live.lingting.framework.aws.s3.request.AwsS3SimpleRequest
 import live.lingting.framework.data.DataSize
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.header.HttpHeaders
-import live.lingting.framework.jackson.JacksonUtils
+import live.lingting.framework.jackson.xml.JacksonXmlUtils
 import live.lingting.framework.multipart.Multipart
 import live.lingting.framework.multipart.Part
 import live.lingting.framework.thread.Async
@@ -68,7 +68,7 @@ class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Cli
         meta?.run { request.meta.addAll(this) }
         val response = call(request)
         val xml = response.string()
-        val node = JacksonUtils.xmlToNode(xml)
+        val node = JacksonXmlUtils.toNode(xml)
         return node["UploadId"].asText()
     }
 
