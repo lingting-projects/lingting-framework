@@ -10,6 +10,7 @@ import live.lingting.framework.Sequence
 import live.lingting.framework.application.ApplicationComponent
 import live.lingting.framework.grpc.interceptor.AbstractServerInterceptor
 import live.lingting.framework.util.ClassUtils
+import live.lingting.framework.util.DurationUtils.isPositive
 import live.lingting.framework.util.Slf4jUtils.logger
 import java.lang.reflect.Method
 import java.time.Duration
