@@ -2,6 +2,7 @@ package live.lingting.framework.http.download
 
 import live.lingting.framework.http.HttpClient
 import live.lingting.framework.http.api.ApiClient
+import live.lingting.framework.multipart.Multipart
 import live.lingting.framework.util.DataSizeUtils.bytes
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.FileUtils
@@ -21,6 +22,7 @@ import java.time.Duration
  * @author lingting 2024-01-29 16:43
  */
 internal class HttpDownloadTest {
+
     private val log = logger()
 
     val url: URI = URI.create(
@@ -42,6 +44,7 @@ internal class HttpDownloadTest {
 
         testSingle()
         testMulti()
+        testOutput()
     }
 
     @Test
@@ -55,10 +58,13 @@ internal class HttpDownloadTest {
 
         testSingle()
         testMulti()
+        testOutput()
     }
 
     fun testSingle() {
-        val download = HttpDownload.single(url).client(client).build()
+        val download = HttpDownload.single(url)
+            .client(client)
+            .build()
 
         assertFalse(download.isStart)
         assertFalse(download.isSuccess)
@@ -88,8 +94,12 @@ internal class HttpDownloadTest {
         }
     }
 
-    fun testMulti() {
-        val download = HttpDownload.multi(url).partSize(50.bytes).client(client).build()
+    fun testMulti(output: File? = null) {
+        val download = HttpDownload.multi(url)
+            .partSize(50.bytes)
+            .client(client)
+            .file(output)
+            .build()
 
         assertFalse(download.isStart)
         assertFalse(download.isSuccess)
@@ -107,6 +117,9 @@ internal class HttpDownloadTest {
         assertTrue(download.isFinished)
 
         val file = download.file
+        if (output != null) {
+            assertEquals(output, file)
+        }
         val temp = FileUtils.createTemp(".2")
         try {
             download.transferTo(temp)
@@ -116,6 +129,11 @@ internal class HttpDownloadTest {
             FileUtils.delete(file)
             FileUtils.delete(temp)
         }
+    }
+
+    fun testOutput() {
+        val output = FileUtils.createTemp(".multi", Multipart.TEMP_DIR)
+        testMulti(output)
     }
 
     fun assertFile(target: File) {

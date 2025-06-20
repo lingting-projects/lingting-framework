@@ -2,6 +2,7 @@ package live.lingting.framework.download
 
 import live.lingting.framework.data.DataSize
 import live.lingting.framework.util.ThreadUtils
+import java.io.File
 import java.time.Duration
 import java.util.concurrent.ExecutorService
 
@@ -15,29 +16,43 @@ abstract class DownloadBuilder<B : DownloadBuilder<B>> protected constructor(
      */
     val url: String
 ) {
+
     var isMulti: Boolean = false
+        protected set
 
     var executor: ExecutorService = ThreadUtils
+        protected set
 
     /**
      * 文件大小, 用于多线程下载时进行分片. 单位: bytes
      * 设置为null或者小于1时调用size方法解析
      */
     var size: DataSize? = null
+        protected set
 
     /**
      * 最大启动线程数
      */
     var threadLimit: Int = DEFAULT_THREAD_LIMIT
+        protected set
 
     /**
      * 每个分片的最大大小, 单位: bytes
      */
     var partSize: DataSize = DEFAULT_PART_SIZE
+        protected set
 
     var maxRetryCount: Long = DEFAULT_MAX_RETRY_COUNT
+        protected set
 
     var timeout: Duration? = null
+        protected set
+
+    /**
+     * 下载的数据写入到指定文件. 不指定则生成一个随机文件
+     */
+    var file: File? = null
+        protected set
 
     fun executor(executor: ExecutorService): B {
         this.executor = executor
@@ -76,6 +91,11 @@ abstract class DownloadBuilder<B : DownloadBuilder<B>> protected constructor(
 
     fun timeout(timeout: Duration): B {
         this.timeout = safeDefault(timeout, DEFAULT_TIMEOUT)
+        return this as B
+    }
+
+    fun file(file: File?): B {
+        this.file = file
         return this as B
     }
 
