@@ -11,7 +11,11 @@ import java.io.InputStream
  * @author lingting 2024-09-14 10:39
  */
 class MultipartBuilder {
+
     var partSize: DataSize = DataSize.ZERO
+        private set
+
+    var partDir: File = Multipart.TEMP_DIR
         private set
 
     var id: String = ValueUtils.simpleUuid()
@@ -34,6 +38,11 @@ class MultipartBuilder {
 
     fun partSize(partSize: DataSize): MultipartBuilder {
         this.partSize = partSize
+        return this
+    }
+
+    fun partDir(partDir: File): MultipartBuilder {
+        this.partDir = partDir
         return this
     }
 
@@ -86,7 +95,7 @@ class MultipartBuilder {
 
     fun build(): Multipart {
         val parts = parts()
-        return Multipart(id, source?.source(), size, partSize, parts)
+        return Multipart(id, source?.source(), size, partSize, parts, partDir)
     }
 
 }

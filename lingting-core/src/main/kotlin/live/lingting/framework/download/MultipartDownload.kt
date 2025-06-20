@@ -20,7 +20,14 @@ import java.util.concurrent.ExecutorService
  */
 @Suppress("UNCHECKED_CAST")
 abstract class MultipartDownload<D : MultipartDownload<D>>
-protected constructor(builder: DownloadBuilder<*>) : Download {
+protected constructor(protected val builder: DownloadBuilder<*>) : Download {
+
+    companion object {
+
+        @JvmField
+        val TEMP_DIR: File = FileUtils.createTempDir("download")
+
+    }
 
     protected val log = logger()
 
@@ -58,7 +65,7 @@ protected constructor(builder: DownloadBuilder<*>) : Download {
     var ex: DownloadException? = null
         protected set
 
-    override val file = FileUtils.createTemp(id, TEMP_DIR)
+    override val file = if (builder.file != null) builder.file!! else FileUtils.createTemp(id, TEMP_DIR)
 
     override fun start(): D {
         if (!isStart && !isFinished) {
@@ -77,12 +84,22 @@ protected constructor(builder: DownloadBuilder<*>) : Download {
         async.submit("download-$id") {
             try {
                 val fileSize = if (size == null || size.bytes < 1) size() else size
-                val multipart = Multipart.builder()
+                val multipartBuilder = Multipart
+                    .builder()
                     .id(id)
-                    // 不使用多分配下载时, 只设置一个分片
                     .size(fileSize)
+                    // 不使用多分配下载时, 只设置一个分片
                     .partSize(if (isMulti) partSize else fileSize)
-                    .build()
+
+                if (builder.file != null) {
+                    multipartBuilder.partDir(builder.file!!.parentFile)
+                }
+
+                val multipart = multipartBuilder.build()
+                log.debug("[MultipartDownload] create output file")
+                if (!FileUtils.createFile(file)) {
+                    throw DownloadException("output file create failed! ${file.absolutePath}")
+                }
                 val task = DownloadFileMultipartTask(multipart, maxRetryCount, async, file) { part -> download(part) }
                 log.debug("[MultipartDownload] build download task. start it.")
                 task.start().await(timeout)
@@ -90,6 +107,8 @@ protected constructor(builder: DownloadBuilder<*>) : Download {
                     val t = task.tasksFailed()[0]
                     throw t.t!!
                 }
+            } catch (e: DownloadException) {
+                ex = e
             } catch (e: Throwable) {
                 ex = DownloadException("download start error!", e)
             } finally {
@@ -125,10 +144,5 @@ protected constructor(builder: DownloadBuilder<*>) : Download {
     abstract fun size(): DataSize
 
     abstract fun download(part: Part): InputStream
-
-    companion object {
-        @JvmField
-        val TEMP_DIR: File = FileUtils.createTempDir("download")
-    }
 
 }

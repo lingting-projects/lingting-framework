@@ -9,12 +9,11 @@ import live.lingting.framework.util.StreamUtils
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.ConcurrentHashMap
-import java.util.function.Consumer
 
 /**
  * @author lingting 2024-09-05 14:47
  */
-class Multipart(
+open class Multipart(
     /**
      * 唯一标识符
      */
@@ -34,52 +33,12 @@ class Multipart(
     /**
      * 所有分片
      */
-    val parts: Collection<Part>
+    val parts: Collection<Part>,
+    val partDir: File = TEMP_DIR,
 ) {
 
-    protected val cache: MutableMap<Long, File> = ConcurrentHashMap(parts.size)
-
-    fun usePartSize(partSize: DataSize): Multipart {
-        return usePartSize(partSize, id)
-    }
-
-    fun usePartSize(partSize: DataSize, id: String): Multipart {
-        return Multipart(id, source, size, partSize, parts)
-    }
-
-    fun file(part: Part): File {
-        return cache.computeIfAbsent(part.index) { k ->
-            val dir = File(TEMP_DIR, id)
-            val temp: File = FileUtils.createTemp(".part$k", dir)
-            RandomAccessInputStream(source!!).use { input ->
-                input.seek(part.start.bytes)
-                FileOutputStream(temp).use { output ->
-                    StreamUtils.write(input, output, part.size.bytes)
-                }
-            }
-            temp
-        }
-    }
-
-    fun stream(part: Part): CloneInputStream {
-        val file = file(part)
-        return FileCloneInputStream(file)
-    }
-
-    fun clear() {
-        cache.keys.forEach(Consumer { index -> this.clear(index) })
-    }
-
-    fun clear(part: Part) {
-        clear(part.index)
-    }
-
-    protected fun clear(index: Long) {
-        val file = cache.remove(index)
-        FileUtils.delete(file)
-    }
-
     companion object {
+
         @JvmField
         val TEMP_DIR: File = FileUtils.createTempDir("multipart")
 
@@ -117,4 +76,46 @@ class Multipart(
             return parts.toList()
         }
     }
+
+    protected val cache: MutableMap<Long, File> = ConcurrentHashMap(parts.size)
+
+    fun usePartSize(partSize: DataSize): Multipart {
+        return usePartSize(partSize, id)
+    }
+
+    fun usePartSize(partSize: DataSize, id: String): Multipart {
+        return Multipart(id, source, size, partSize, parts)
+    }
+
+    fun file(part: Part): File {
+        return cache.computeIfAbsent(part.index) { k ->
+            val file = FileUtils.createFile("$id.$k.part", partDir)
+            RandomAccessInputStream(source!!).use { input ->
+                input.seek(part.start.bytes)
+                FileOutputStream(file).use { output ->
+                    StreamUtils.write(input, output, part.size.bytes)
+                }
+            }
+            file
+        }
+    }
+
+    fun stream(part: Part): CloneInputStream {
+        val file = file(part)
+        return FileCloneInputStream(file)
+    }
+
+    fun clear() {
+        cache.keys.forEach { clear(it) }
+    }
+
+    fun clear(part: Part) {
+        clear(part.index)
+    }
+
+    protected fun clear(index: Long) {
+        val file = cache.remove(index)
+        FileUtils.delete(file)
+    }
+
 }

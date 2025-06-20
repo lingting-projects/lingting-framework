@@ -15,7 +15,10 @@ import java.io.InputStream
  * @author lingting 2024-09-06 16:55
  */
 open class DownloadFileMultipartTask(
-    multipart: Multipart, maxRetryCount: Long, async: Async, target: File,
+    multipart: Multipart,
+    maxRetryCount: Long,
+    async: Async,
+    target: File,
     download: ThrowableFunction<Part, InputStream>
 ) : FileMultipartTask<DownloadFileMultipartTask>(multipart, async) {
 
