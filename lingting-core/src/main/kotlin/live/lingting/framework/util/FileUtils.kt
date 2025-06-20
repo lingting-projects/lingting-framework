@@ -1,5 +1,6 @@
 package live.lingting.framework.util
 
+import live.lingting.framework.util.Slf4jUtils.logger
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -9,7 +10,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
-import live.lingting.framework.util.Slf4jUtils.logger
 
 /**
  * @author lingting
@@ -19,8 +19,8 @@ object FileUtils {
     @JvmField
     val NULL = File(if (SystemUtils.isWindows) "NUL" else "/dev/null")
 
-    @JvmField
-    val TEMP_DIR: File = SystemUtils.tmpDirLingting()
+    @JvmStatic
+    var tempDir: File = SystemUtils.tmpDirLingting()
 
     private val log = logger()
 
@@ -45,11 +45,11 @@ object FileUtils {
 
         // 文件夹
         val files = file.listFiles()
-        if (files.isEmpty()) {
+        if (files.isNullOrEmpty()) {
             return list
         }
 
-        for (childFile in files!!) {
+        for (childFile in files) {
             // 如果递归
             if (recursive && childFile.isDirectory) {
                 list.addAll(scanFile(childFile.absolutePath, true))
@@ -72,7 +72,7 @@ object FileUtils {
 
     @JvmStatic
     fun createTempDir(child: String): File {
-        val file = File(TEMP_DIR, child)
+        val file = File(tempDir, child)
         createDir(file)
         return file
     }
@@ -119,7 +119,7 @@ object FileUtils {
      */
     @JvmStatic
     @JvmOverloads
-    fun createTemp(suffix: String = ".tmp", dir: File = TEMP_DIR): File {
+    fun createTemp(suffix: String = ".tmp", dir: File = tempDir): File {
         if (!createDir(dir)) {
             throw IOException("temp dir create error! path : " + dir.absolutePath)
         }
