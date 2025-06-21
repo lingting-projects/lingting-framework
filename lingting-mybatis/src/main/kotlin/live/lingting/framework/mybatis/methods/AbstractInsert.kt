@@ -16,6 +16,7 @@ import org.apache.ibatis.mapping.MappedStatement
  * @author lingting 2020/5/27 15:14
  */
 abstract class AbstractInsert protected constructor(methodName: String) : AbstractMybatisMethod(methodName) {
+
     override fun injectMappedStatement(mapperClass: Class<*>, modelClass: Class<*>, tableInfo: TableInfo): MappedStatement {
         val prepare = prepare(tableInfo)
         val key = key(tableInfo)
