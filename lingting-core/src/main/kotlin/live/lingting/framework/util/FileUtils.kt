@@ -232,8 +232,9 @@ object FileUtils {
         if (!StringUtils.hasText(filename)) {
             return ""
         }
-        val split: Array<String> = filename.split(delimiter.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        return split[split.size - 1]
+        val split = filename.split(delimiter.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        return split.last()
     }
+
 }
 
