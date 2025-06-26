@@ -2,10 +2,10 @@ package live.lingting.framework.util
 
 import com.baomidou.mybatisplus.annotation.IEnum
 import com.fasterxml.jackson.annotation.JsonValue
+import live.lingting.framework.reflect.ClassField
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
-import live.lingting.framework.reflect.ClassField
 
 /**
  * @author lingting 2022/12/20 14:52
@@ -50,7 +50,7 @@ object EnumUtils {
             }
         }
 
-        var method = getJsonValueMethod(cls)
+        val method = getJsonValueMethod(cls)
         if (method != null) {
             return ClassField(null, method, null)
         }
@@ -116,7 +116,7 @@ object EnumUtils {
         val cf = getCf(e.javaClass)
 
         if (cf == null) {
-            return null;
+            return null
         }
 
         try {

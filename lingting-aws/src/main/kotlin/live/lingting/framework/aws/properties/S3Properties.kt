@@ -14,7 +14,7 @@ abstract class S3Properties : AwsProperties() {
 
     open var bucket: String = ""
 
-    open var acl: Acl? = Acl.PRIVATE
+    open var acl: Acl? = null
 
     open var domain: String? = null
 
