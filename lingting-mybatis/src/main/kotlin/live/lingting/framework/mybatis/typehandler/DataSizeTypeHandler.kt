@@ -21,25 +21,17 @@ open class DataSizeTypeHandler : BaseTypeHandler<DataSize>(), AutoRegisterTypeHa
 
     override fun getNullableResult(rs: ResultSet, columnName: String): DataSize? {
         val source = rs.getString(columnName)
-        if (source == null) {
-            return null
-        }
         return DataSize.of(source)
     }
 
     override fun getNullableResult(rs: ResultSet, columnIndex: Int): DataSize? {
         val source = rs.getString(columnIndex)
-        if (source == null) {
-            return null
-        }
         return DataSize.of(source)
     }
 
     override fun getNullableResult(cs: CallableStatement, columnIndex: Int): DataSize? {
         val source = cs.getString(columnIndex)
-        if (source == null) {
-            return null
-        }
         return DataSize.of(source)
     }
+
 }
