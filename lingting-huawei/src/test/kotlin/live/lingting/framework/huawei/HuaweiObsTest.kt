@@ -124,7 +124,7 @@ class HuaweiObsTest {
     @Test
     fun listAndMeta() {
         val obsBucket = iam!!.obsBucket(properties!!)
-        val key = "obs/b_t_l_m"
+        val key = "test/b_t_l_m"
         val bo = obsBucket.use(key)
         val source = "hello world"
         val bytes = source.toByteArray()
