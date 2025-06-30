@@ -6,12 +6,12 @@ import live.lingting.framework.aws.AwsUtils
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3Meta
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
+import live.lingting.framework.aws.s3.impl.S3Meta
 import live.lingting.framework.concurrent.Await
 import live.lingting.framework.http.HttpClient
 import live.lingting.framework.http.HttpRequest
 import live.lingting.framework.http.api.ApiClient
 import live.lingting.framework.http.download.HttpDownload
-import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.id.Snowflake
 import live.lingting.framework.thread.Async
 import live.lingting.framework.time.DateTime
@@ -263,7 +263,7 @@ class AliOssTest {
             log.info("token: {}", obj.token)
 
             log.info("=================put=================")
-            val prePutR = obj.prePut(Acl.PRIVATE, HttpHeaders.empty().also {
+            val prePutR = obj.prePut(Acl.PRIVATE, S3Meta.empty().also {
                 it.put("pre", "true")
             })
 

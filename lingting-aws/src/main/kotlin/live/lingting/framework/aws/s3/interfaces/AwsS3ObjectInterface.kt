@@ -2,14 +2,13 @@ package live.lingting.framework.aws.s3.interfaces
 
 import live.lingting.framework.aws.AwsUtils
 import live.lingting.framework.aws.policy.Acl
-import live.lingting.framework.aws.s3.AwsS3Meta
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
 import live.lingting.framework.aws.s3.AwsS3PreRequest
+import live.lingting.framework.aws.s3.impl.S3Meta
 import live.lingting.framework.aws.s3.request.AwsS3ObjectPutRequest
 import live.lingting.framework.aws.s3.response.AwsS3PreSignedResponse
 import live.lingting.framework.data.DataSize
 import live.lingting.framework.http.HttpMethod
-import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.multipart.Part
 import live.lingting.framework.stream.CloneInputStream
 import live.lingting.framework.stream.FileCloneInputStream
@@ -29,7 +28,7 @@ interface AwsS3ObjectInterface {
 
     fun publicUrl(): String
 
-    fun head(): AwsS3Meta
+    fun head(): S3Meta
 
     fun get(): InputStream
 
@@ -41,15 +40,15 @@ interface AwsS3ObjectInterface {
 
     fun put(file: File, acl: Acl?) = put(FileCloneInputStream(file), acl)
 
-    fun put(file: File, meta: HttpHeaders?) = put(FileCloneInputStream(file), meta)
+    fun put(file: File, meta: S3Meta?) = put(FileCloneInputStream(file), meta)
 
     fun put(input: InputStream) = put(input, null as Acl?)
 
     fun put(input: InputStream, acl: Acl?) = put(input, acl, null)
 
-    fun put(input: InputStream, meta: HttpHeaders?) = put(input, null, meta)
+    fun put(input: InputStream, meta: S3Meta?) = put(input, null, meta)
 
-    fun put(input: InputStream, acl: Acl?, meta: HttpHeaders?) = input.use {
+    fun put(input: InputStream, acl: Acl?, meta: S3Meta?) = input.use {
         val request = AwsS3ObjectPutRequest().also {
             it.stream = input
             it.acl = acl
@@ -62,9 +61,9 @@ interface AwsS3ObjectInterface {
 
     fun put(input: CloneInputStream, acl: Acl?) = put(input, acl, null)
 
-    fun put(input: CloneInputStream, meta: HttpHeaders?) = put(input, null, meta)
+    fun put(input: CloneInputStream, meta: S3Meta?) = put(input, null, meta)
 
-    fun put(input: CloneInputStream, acl: Acl?, meta: HttpHeaders?) = put(input as InputStream, acl, null)
+    fun put(input: CloneInputStream, acl: Acl?, meta: S3Meta?) = put(input as InputStream, acl, null)
 
     fun put(request: AwsS3ObjectPutRequest)
 
@@ -77,7 +76,7 @@ interface AwsS3ObjectInterface {
 
     fun multipartInit(acl: Acl?) = multipartInit(acl, null)
 
-    fun multipartInit(acl: Acl?, meta: HttpHeaders?): String
+    fun multipartInit(acl: Acl?, meta: S3Meta?): String
 
     fun multipart(source: InputStream) = multipart(source, Async(20))
 
@@ -107,13 +106,13 @@ interface AwsS3ObjectInterface {
 
     fun prePut(acl: Acl?): AwsS3PreSignedResponse = prePut(null, null)
 
-    fun prePut(acl: Acl?, meta: HttpHeaders?): AwsS3PreSignedResponse = prePut(1.days, acl, meta)
+    fun prePut(acl: Acl?, meta: S3Meta?): AwsS3PreSignedResponse = prePut(1.days, acl, meta)
 
     fun prePut(expire: Duration): AwsS3PreSignedResponse = prePut(expire, null)
 
     fun prePut(expire: Duration, acl: Acl?): AwsS3PreSignedResponse = prePut(expire, null, null)
 
-    fun prePut(expire: Duration, acl: Acl?, meta: HttpHeaders?): AwsS3PreSignedResponse {
+    fun prePut(expire: Duration, acl: Acl?, meta: S3Meta?): AwsS3PreSignedResponse {
         val r = AwsS3PreRequest(HttpMethod.PUT)
         r.expire = expire
         r.acl = acl

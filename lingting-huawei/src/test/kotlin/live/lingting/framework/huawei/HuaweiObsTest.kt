@@ -3,11 +3,11 @@ package live.lingting.framework.huawei
 import live.lingting.framework.aws.AwsUtils.MULTIPART_MIN_PART_SIZE
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3Meta
+import live.lingting.framework.aws.s3.impl.S3Meta
 import live.lingting.framework.concurrent.Await
 import live.lingting.framework.http.HttpClient
 import live.lingting.framework.http.HttpRequest
 import live.lingting.framework.http.download.HttpDownload
-import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.huawei.exception.HuaweiException
 import live.lingting.framework.huawei.properties.HuaweiObsProperties
 import live.lingting.framework.id.Snowflake
@@ -172,7 +172,7 @@ class HuaweiObsTest {
             log.info("token: {}", obj.token)
 
             log.info("=================put=================")
-            val prePutR = obj.prePut(Acl.PRIVATE, HttpHeaders.empty().also {
+            val prePutR = obj.prePut(Acl.PRIVATE, S3Meta.empty().also {
                 it.put("pre", "true")
             })
 
