@@ -24,7 +24,7 @@ open class AwsS3MultipartTask(multipart: Multipart, async: Async, protected val 
 
     override fun onMerge() {
         try {
-            s3.multipartMerge(uploadId, map)
+            s3.multipartMergeByPart(uploadId, map)
         } catch (e: Exception) {
             log.warn("[AwsS3MultipartTask] [{}] onMerge exception", uploadId, e)
             onCancel()

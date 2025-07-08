@@ -4,15 +4,19 @@ import live.lingting.framework.aws.s3.AwsS3Request
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.body.Body
 import live.lingting.framework.http.body.MemoryBody
-import live.lingting.framework.multipart.Part
 
 /**
  * @author lingting 2024-09-13 16:54
  */
 class AwsS3MultipartMergeRequest : AwsS3Request() {
+
     var uploadId: String? = null
 
-    var map: Map<Part, String> = emptyMap()
+    /**
+     * key: 分片索引(0开始)
+     * value: 分片上传后返回的 eTag
+     */
+    var eTagMap: Map<Long, String> = emptyMap()
 
     override fun method(): HttpMethod {
         return HttpMethod.POST
@@ -20,10 +24,10 @@ class AwsS3MultipartMergeRequest : AwsS3Request() {
 
     override fun body(): Body {
         val builder = StringBuilder("<CompleteMultipartUpload>\n")
-        map.keys.sortedWith(Comparator.comparing(Part::index)).forEach { p ->
-            val e = map[p]
+        eTagMap.keys.sorted().forEach { index ->
+            val e = eTagMap[index]
             builder.append("<Part><PartNumber>")
-                .append(p.index + 1)
+                .append(index + 1)
                 .append("</PartNumber><ETag>")
                 .append(e)
                 .append("</ETag></Part>\n")
@@ -36,4 +40,5 @@ class AwsS3MultipartMergeRequest : AwsS3Request() {
     override fun onParams() {
         params.add("uploadId", uploadId!!)
     }
+
 }

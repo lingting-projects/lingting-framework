@@ -4,11 +4,13 @@ import live.lingting.framework.aws.AwsUtils
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
 import live.lingting.framework.aws.s3.AwsS3PreRequest
+import live.lingting.framework.aws.s3.impl.AwsS3PreSignedMultipart
 import live.lingting.framework.aws.s3.impl.S3Meta
 import live.lingting.framework.aws.s3.request.AwsS3ObjectPutRequest
 import live.lingting.framework.aws.s3.response.AwsS3PreSignedResponse
 import live.lingting.framework.data.DataSize
 import live.lingting.framework.http.HttpMethod
+import live.lingting.framework.multipart.Multipart
 import live.lingting.framework.multipart.Part
 import live.lingting.framework.stream.CloneInputStream
 import live.lingting.framework.stream.FileCloneInputStream
@@ -17,11 +19,15 @@ import live.lingting.framework.util.DurationUtils.days
 import java.io.File
 import java.io.InputStream
 import java.time.Duration
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * @author lingting 2024-09-19 21:59
  */
 interface AwsS3ObjectInterface {
+
+    val DEFAULT_EXPIRE_PRE: Duration
+        get() = 1.days
 
     // region get
     val key: String
@@ -86,7 +92,12 @@ interface AwsS3ObjectInterface {
 
     fun multipartUpload(uploadId: String, part: Part, input: InputStream): String
 
-    fun multipartMerge(uploadId: String, map: Map<Part, String>)
+    fun multipartMergeByPart(uploadId: String, map: Map<Part, String>) {
+        val converted = map.mapKeys { it.key.index }
+        multipartMerge(uploadId, converted)
+    }
+
+    fun multipartMerge(uploadId: String, map: Map<Long, String>)
 
     fun multipartCancel(uploadId: String)
 
@@ -94,7 +105,7 @@ interface AwsS3ObjectInterface {
 
     // region pre sign
 
-    fun preGet() = preGet(1.days)
+    fun preGet() = preGet(DEFAULT_EXPIRE_PRE)
 
     fun preGet(expire: Duration): AwsS3PreSignedResponse {
         val r = AwsS3PreRequest(HttpMethod.GET)
@@ -106,7 +117,7 @@ interface AwsS3ObjectInterface {
 
     fun prePut(acl: Acl?): AwsS3PreSignedResponse = prePut(null, null)
 
-    fun prePut(acl: Acl?, meta: S3Meta?): AwsS3PreSignedResponse = prePut(1.days, acl, meta)
+    fun prePut(acl: Acl?, meta: S3Meta?): AwsS3PreSignedResponse = prePut(DEFAULT_EXPIRE_PRE, acl, meta)
 
     fun prePut(expire: Duration): AwsS3PreSignedResponse = prePut(expire, null)
 
@@ -122,8 +133,45 @@ interface AwsS3ObjectInterface {
         return pre(r)
     }
 
-    fun pre(request: AwsS3PreRequest): AwsS3PreSignedResponse
+    fun preMultipart(multipart: Multipart): AwsS3PreSignedMultipart =
+        preMultipart(multipart, null, null)
 
+
+    fun preMultipart(multipart: Multipart, acl: Acl?): AwsS3PreSignedMultipart =
+        preMultipart(multipart, acl, null)
+
+
+    fun preMultipart(multipart: Multipart, meta: S3Meta?): AwsS3PreSignedMultipart =
+        preMultipart(multipart, null, meta)
+
+    fun preMultipart(multipart: Multipart, acl: Acl?, meta: S3Meta?): AwsS3PreSignedMultipart =
+        preMultipart(DEFAULT_EXPIRE_PRE, multipart, acl, meta)
+
+    fun preMultipart(expire: Duration, multipart: Multipart, acl: Acl?, meta: S3Meta?): AwsS3PreSignedMultipart {
+        val uploadId = multipartInit(acl, meta)
+        val items = CopyOnWriteArrayList<AwsS3PreSignedMultipart.Item>()
+        val async = Async()
+        multipart.parts.forEach { part ->
+            async.execute {
+                val put = preMultipartPut(expire, uploadId, part)
+                val item = AwsS3PreSignedMultipart.Item(part, put.url, put.headers)
+                items.add(item)
+            }
+        }
+        async.await()
+        return AwsS3PreSignedMultipart(multipart.size, uploadId, multipart.partSize, items)
+    }
+
+    fun preMultipartPut(uploadId: String, part: Part): AwsS3PreSignedResponse =
+        preMultipartPut(DEFAULT_EXPIRE_PRE, uploadId, part)
+
+    fun preMultipartPut(expire: Duration, uploadId: String, part: Part): AwsS3PreSignedResponse {
+        val r = AwsS3PreRequest(HttpMethod.PUT)
+        r.multipart(uploadId, part)
+        return pre(r)
+    }
+
+    fun pre(request: AwsS3PreRequest): AwsS3PreSignedResponse
 
     // endregion
 

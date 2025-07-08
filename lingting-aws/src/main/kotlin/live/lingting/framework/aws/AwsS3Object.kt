@@ -106,10 +106,10 @@ class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Cli
      * 合并分片
      * @param map key: part. value: etag
      */
-    override fun multipartMerge(uploadId: String, map: Map<Part, String>) {
+    override fun multipartMerge(uploadId: String, map: Map<Long, String>) {
         val request = AwsS3MultipartMergeRequest()
         request.uploadId = uploadId
-        request.map = map
+        request.eTagMap = map
         call(request)
     }
 

@@ -50,7 +50,7 @@ interface AwsS3ObjectDelegation : AwsS3ObjectInterface, AwsS3Delegation<AwsS3Obj
         return delegation().multipartUpload(uploadId, part, input)
     }
 
-    override fun multipartMerge(uploadId: String, map: Map<Part, String>) {
+    override fun multipartMerge(uploadId: String, map: Map<Long, String>) {
         delegation().multipartMerge(uploadId, map)
     }
 
