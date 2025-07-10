@@ -133,8 +133,8 @@ class AliOssTest {
             }
         }
 
-        assertEquals(0, atomic.get())
         async.await()
+        assertEquals(0, atomic.get())
     }
 
     fun put() {

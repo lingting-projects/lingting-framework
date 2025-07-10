@@ -6,9 +6,6 @@ import com.baomidou.mybatisplus.core.toolkit.ReflectionKit
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper
 import jakarta.annotation.Resource
-import java.io.Serializable
-import java.util.function.BiConsumer
-import java.util.function.Predicate
 import live.lingting.framework.api.PaginationParams
 import live.lingting.framework.function.ThrowingSupplier
 import live.lingting.framework.value.CursorValue
@@ -18,6 +15,9 @@ import org.apache.ibatis.logging.Log
 import org.apache.ibatis.logging.LogFactory
 import org.apache.ibatis.session.SqlSession
 import org.apache.ibatis.session.SqlSessionFactory
+import java.io.Serializable
+import java.util.function.BiConsumer
+import java.util.function.Predicate
 
 /**
  * 以前继承 com.baomidou.mybatisplus.extension.service.impl.ServiceImpl 的实现类，现在继承本类
@@ -148,9 +148,9 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
      * @since 3.3.1
     </E> */
     fun <E> executeBatch(list: Collection<E>, batchSize: Int, consumer: BiConsumer<SqlSession, E>): Boolean {
-        return useTransactional<Boolean>(ThrowingSupplier {
+        return useTransactional<Boolean> {
             SqlHelper.executeBatch(sessionFactory, this.log, list, batchSize, consumer)
-        })
+        }
     }
 
     override fun <R> useTransactional(supplier: ThrowingSupplier<R>, predicate: Predicate<Throwable>): R {

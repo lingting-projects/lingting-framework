@@ -1,16 +1,16 @@
 package live.lingting.framework.mybatis.extend
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page
-import java.io.Serializable
-import java.util.function.BooleanSupplier
-import java.util.function.Function
-import java.util.function.Predicate
 import live.lingting.framework.api.ApiResultCode
 import live.lingting.framework.api.PaginationParams
 import live.lingting.framework.exception.BizException
 import live.lingting.framework.function.ThrowingRunnable
 import live.lingting.framework.function.ThrowingSupplier
 import live.lingting.framework.value.CursorValue
+import java.io.Serializable
+import java.util.function.BooleanSupplier
+import java.util.function.Function
+import java.util.function.Predicate
 
 /**
  * 以前继承 com.baomidou.mybatisplus.extension.service.IService 的实现类，现在继承当前类
@@ -43,7 +43,7 @@ interface ExtendService<T> {
      * @param entityList 实体对象集合
      */
     fun saveBatch(entityList: Collection<T>): Boolean {
-        return useTransactional<Boolean>(ThrowingSupplier { saveBatch(entityList, DEFAULT_INSERT_BATCH_SIZE) })
+        return useTransactional<Boolean> { saveBatch(entityList, DEFAULT_INSERT_BATCH_SIZE) }
     }
 
     /**
