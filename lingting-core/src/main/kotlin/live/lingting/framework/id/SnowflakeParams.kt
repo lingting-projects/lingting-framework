@@ -46,15 +46,6 @@ class SnowflakeParams(
     val sequenceMask: Long
 ) {
 
-    constructor(
-        startTimestamp: Long = DEFAULT_TIMESTAMP, workerIdBits: Long = 5L, datacenterIdBits: Long = 5L, sequenceBits: Long = 12L,
-        workerIdShift: Long = sequenceBits
-    ) : this(
-        startTimestamp, workerIdBits, datacenterIdBits, (-1L shl workerIdBits.toInt()).inv(), (-1L shl datacenterIdBits.toInt()).inv(),
-        sequenceBits, workerIdShift, sequenceBits + workerIdBits,
-        sequenceBits + workerIdBits + datacenterIdBits, (-1L shl sequenceBits.toInt()).inv()
-    )
-
     companion object {
         @JvmField
         val DEFAULT: SnowflakeParams = SnowflakeParams()
@@ -64,4 +55,24 @@ class SnowflakeParams(
          */
         const val DEFAULT_TIMESTAMP: Long = 1288834974657L
     }
+
+    constructor(
+        startTimestamp: Long = DEFAULT_TIMESTAMP,
+        workerIdBits: Long = 5L,
+        datacenterIdBits: Long = 5L,
+        sequenceBits: Long = 12L,
+        workerIdShift: Long = sequenceBits
+    ) : this(
+        startTimestamp,
+        workerIdBits,
+        datacenterIdBits,
+        (-1L shl workerIdBits.toInt()).inv(),
+        (-1L shl datacenterIdBits.toInt()).inv(),
+        sequenceBits,
+        workerIdShift,
+        sequenceBits + workerIdBits,
+        sequenceBits + workerIdBits + datacenterIdBits,
+        (-1L shl sequenceBits.toInt()).inv()
+    )
+
 }

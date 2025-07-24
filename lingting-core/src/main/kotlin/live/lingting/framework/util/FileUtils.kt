@@ -203,7 +203,8 @@ object FileUtils {
 
     @JvmStatic
     fun getFilenameByUrl(url: String): String {
-        return getFilename(url, "/")
+        val before = url.substringBefore("?")
+        return getFilename(before, "/")
     }
 
     /**
@@ -214,8 +215,8 @@ object FileUtils {
         if (!StringUtils.hasText(path)) {
             return ""
         }
-        val split: Array<String> = path.split(delimiter.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        return split[split.size - 1]
+        val split = path.split(delimiter.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        return split.last()
     }
 
     /**
@@ -232,8 +233,9 @@ object FileUtils {
         if (!StringUtils.hasText(filename)) {
             return ""
         }
-        val split: Array<String> = filename.split(delimiter.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        return split[split.size - 1]
+        val split = filename.split(delimiter.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        return split.last()
     }
+
 }
 

@@ -591,9 +591,11 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
     }
 
     // endregion
+
     // region func extended
+
     fun <E : Any> `in`(column: SFunction<T, *>, consumer: Consumer<QueryWrapper<E>>): C {
-        return `in`<E>(true, column, consumer)
+        return `in`(true, column, consumer)
     }
 
     fun <E : Any> `in`(condition: Boolean, column: SFunction<T, *>, consumer: Consumer<QueryWrapper<E>>): C {
@@ -601,7 +603,19 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
             return c
         }
         val filed: String = field(column)
-        return `in`<E>(true, filed, consumer)
+        return `in`(true, filed, consumer)
+    }
+
+    fun <E : Any> notIn(column: SFunction<T, *>, consumer: Consumer<QueryWrapper<E>>): C {
+        return notIn(true, column, consumer)
+    }
+
+    fun <E : Any> notIn(condition: Boolean, column: SFunction<T, *>, consumer: Consumer<QueryWrapper<E>>): C {
+        if (!condition) {
+            return c
+        }
+        val filed: String = field(column)
+        return notIn(true, filed, consumer)
     }
 
     // endregion

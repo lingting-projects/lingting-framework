@@ -5,13 +5,13 @@ import live.lingting.framework.aws.properties.S3Properties
 import live.lingting.framework.aws.s3.AwsS3Meta
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
 import live.lingting.framework.aws.s3.AwsS3Request
+import live.lingting.framework.aws.s3.impl.S3Meta
 import live.lingting.framework.aws.s3.interfaces.AwsS3ObjectInterface
 import live.lingting.framework.aws.s3.request.AwsS3MultipartMergeRequest
 import live.lingting.framework.aws.s3.request.AwsS3ObjectPutRequest
 import live.lingting.framework.aws.s3.request.AwsS3SimpleRequest
 import live.lingting.framework.data.DataSize
 import live.lingting.framework.http.HttpMethod
-import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.jackson.xml.JacksonXmlUtils
 import live.lingting.framework.multipart.Multipart
 import live.lingting.framework.multipart.Part
@@ -61,7 +61,7 @@ class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Cli
         call(request)
     }
 
-    override fun multipartInit(acl: Acl?, meta: HttpHeaders?): String {
+    override fun multipartInit(acl: Acl?, meta: S3Meta?): String {
         val request = AwsS3SimpleRequest(HttpMethod.POST)
         request.acl = acl
         request.params.add("uploads")
@@ -106,10 +106,10 @@ class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Cli
      * 合并分片
      * @param map key: part. value: etag
      */
-    override fun multipartMerge(uploadId: String, map: Map<Part, String>) {
+    override fun multipartMerge(uploadId: String, map: Map<Long, String>) {
         val request = AwsS3MultipartMergeRequest()
         request.uploadId = uploadId
-        request.map = map
+        request.eTagMap = map
         call(request)
     }
 

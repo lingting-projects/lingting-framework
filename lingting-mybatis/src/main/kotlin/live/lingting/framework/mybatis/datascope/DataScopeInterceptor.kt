@@ -17,7 +17,13 @@ import kotlin.reflect.KClass
 /**
  * 数据范围拦截器
  */
-@Intercepts(Signature(type = StatementHandler::class, method = "prepare", args = [Connection::class, Int::class]))
+@Intercepts(
+    Signature(
+        type = StatementHandler::class,
+        method = "prepare",
+        args = [Connection::class, Integer::class]
+    )
+)
 class DataScopeInterceptor(
     val factory: JSqlDataScopeParserFactory,
     val scopes: List<JSqlDataScope>,

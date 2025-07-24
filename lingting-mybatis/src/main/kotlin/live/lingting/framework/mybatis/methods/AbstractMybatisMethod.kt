@@ -37,25 +37,35 @@ abstract class AbstractMybatisMethod(name: String) : AbstractMethod(name) {
             }
         }
 
-        fun resolveByReflection(dataSource: DataSource): String? {
-            var source = dataSource
+        fun resolveDatabaseTypeByReflection(source: DataSource): String? {
             // spring 的 DelegatingDataSource 识别
             var cf = ClassUtils.classField(source.javaClass, "targetDataSource")
-            if (cf != null && cf.canGet(source)) {
-                val any = cf.get(source)
-                if (any is DataSource) {
-                    source = any
+            if (cf != null) {
+                try {
+                    val any = cf.visibleGet().get(source)
+                    if (any is DataSource) {
+                        return resolveDatabaseTypeByReflection(source)
+                    }
+                } catch (_: Exception) {
+                    return null
                 }
             }
 
             // 提供了url返回的识别
             cf = ClassUtils.classField(source.javaClass, "url")
             if (cf == null) {
+                cf = ClassUtils.classField(source.javaClass, "jdbcUrl")
+            }
+            if (cf == null) {
                 return null
             }
             try {
                 if (cf.visibleGet().canGet(source)) {
-                    return cf.get(source)?.toString()
+                    val url = cf.get(source)?.toString()
+                    if (url.isNullOrBlank()) {
+                        return null
+                    }
+                    return resolveDatabaseTypeByUrl(url)
                 }
                 return null
             } catch (_: Exception) {
@@ -63,7 +73,7 @@ abstract class AbstractMybatisMethod(name: String) : AbstractMethod(name) {
             }
         }
 
-        fun resolveByConnection(dataSource: DataSource): String? {
+        fun resolveDatabaseTypeByConnection(dataSource: DataSource): String? {
             var connection: Connection? = null
             try {
                 connection = dataSource.connection
@@ -77,7 +87,7 @@ abstract class AbstractMybatisMethod(name: String) : AbstractMethod(name) {
                 if (type != null) {
                     return type
                 }
-                throw UnsupportedOperationException("Unknown db type!")
+                return null
             } catch (_: Exception) {
                 return null
             } finally {
@@ -87,10 +97,10 @@ abstract class AbstractMybatisMethod(name: String) : AbstractMethod(name) {
     }
 
     fun dbType() = DB_TYPE_CACHE.computeIfAbsent(configuration.environment.dataSource) { dataSource ->
-        var type = resolveByReflection(dataSource)
+        var type = resolveDatabaseTypeByReflection(dataSource)
 
         if (type == null) {
-            type = resolveByConnection(dataSource)
+            type = resolveDatabaseTypeByConnection(dataSource)
         }
 
         if (type == null) {

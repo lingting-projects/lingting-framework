@@ -28,12 +28,23 @@ data class DataSize @JvmOverloads constructor(
         private val pattern = Regex("""(\d+(?:\.\d+)?)\s*([A-Za-z]+)""")
 
         @JvmStatic
-        fun of(source: String?): DataSize? {
+        fun of(any: Any?): DataSize? {
+            val source = any?.toString()
             if (source.isNullOrBlank()) {
                 return null
             }
-            val matchResult = pattern.find(source.trim()) ?: return null
-            val (valueStr, unitStr) = matchResult.destructured
+
+            val find = pattern.find(source.trim())
+
+            if (find?.destructured == null) {
+                val l = source.toLongOrNull()
+                if (l == null) {
+                    return null
+                }
+                return ofBytes(l)
+            }
+
+            val (valueStr, unitStr) = find.destructured
 
             val value = valueStr.toBigDecimalOrNull() ?: return null
             val unit = DataSizeUnit.entries.firstOrNull {

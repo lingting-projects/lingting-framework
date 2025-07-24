@@ -1,8 +1,8 @@
 package live.lingting.framework.id
 
+import live.lingting.framework.time.DateTime
 import java.util.concurrent.locks.LockSupport
 import kotlin.math.max
-import live.lingting.framework.time.DateTime
 
 /**
  * @author lingting 2024-04-18 20:23
@@ -11,61 +11,51 @@ open class Snowflake(params: SnowflakeParams, workerId: Long, datacenterId: Long
     /**
      * 雪花算法的开始时间戳（自定义）
      */
-    // 雪花算法的开始时间戳（自定义）
     protected val startTimestamp: Long = params.startTimestamp
 
     /**
      * 机器ID所占位数
      */
-    // 机器ID所占位数
     protected val workerIdBits: Long = params.workerIdBits
 
     /**
      * 数据中心ID所占位数
      */
-    // 数据中心ID所占位数
     protected val datacenterIdBits: Long = params.datacenterIdBits
 
     /**
      * 支持的最大机器ID数量
      */
-    // 支持的最大机器ID数量
     protected val maxWorkerId: Long = params.maxWorkerId
 
     /**
      * 支持的最大数据中心ID数量
      */
-    // 支持的最大数据中心ID数量
     protected val maxDatacenterId: Long = params.maxDatacenterId
 
     /**
      * 序列号所占位数
      */
-    // 序列号所占位数
     protected val sequenceBits: Long = params.sequenceBits
 
     /**
      * 机器ID左移位数
      */
-    // 机器ID左移位数
     protected val workerIdShift: Long = params.workerIdShift
 
     /**
      * 数据中心ID左移位数
      */
-    // 数据中心ID左移位数
     protected val datacenterIdShift: Long = params.datacenterIdShift
 
     /**
      * 时间戳左移位数
      */
-    // 时间戳左移位数
     protected val timestampLeftShift: Long = params.timestampLeftShift
 
     /**
      * 生成序列号的掩码
      */
-    // 生成序列号的掩码
     protected val sequenceMask: Long = params.sequenceMask
 
     /**

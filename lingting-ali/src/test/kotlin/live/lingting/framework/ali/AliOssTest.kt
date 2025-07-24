@@ -6,11 +6,12 @@ import live.lingting.framework.aws.AwsUtils
 import live.lingting.framework.aws.policy.Acl
 import live.lingting.framework.aws.s3.AwsS3Meta
 import live.lingting.framework.aws.s3.AwsS3MultipartTask
+import live.lingting.framework.aws.s3.impl.S3Meta
 import live.lingting.framework.concurrent.Await
 import live.lingting.framework.http.HttpClient
 import live.lingting.framework.http.HttpRequest
+import live.lingting.framework.http.api.ApiClient
 import live.lingting.framework.http.download.HttpDownload
-import live.lingting.framework.http.header.HttpHeaders
 import live.lingting.framework.id.Snowflake
 import live.lingting.framework.thread.Async
 import live.lingting.framework.time.DateTime
@@ -30,7 +31,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty
 import java.io.ByteArrayInputStream
+import java.net.InetSocketAddress
+import java.net.ProxySelector
 import java.nio.file.Files
+import java.time.Duration
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
 
@@ -50,8 +54,24 @@ class AliOssTest {
 
     var useSts = true
 
+    var useProxy: Boolean = false
+
+    var client = HttpClient.default().disableSsl().build()
+
     @BeforeEach
     fun before() {
+        if (useProxy) {
+            val selector = ProxySelector.of(InetSocketAddress("127.0.0.1", 9999))
+            client = HttpClient.okhttp()
+                .disableSsl()
+                .callTimeout(Duration.ofSeconds(10))
+                .connectTimeout(Duration.ofSeconds(15))
+                .readTimeout(Duration.ofSeconds(30))
+                .proxySelector(selector)
+                .build()
+            ApiClient.defaultClient = client
+        }
+
         sts = AliBasic.sts()
         properties = if (useSts) AliBasic.ossStsProperties() else AliBasic.ossProperties()
     }
@@ -84,14 +104,14 @@ class AliOssTest {
         async.submit {
             try {
                 put()
-            } catch (_: Exception) {
+            } catch (_: Throwable) {
                 atomic.incrementAndGet()
             }
         }
         async.submit {
             try {
                 multipart()
-            } catch (_: Exception) {
+            } catch (_: Throwable) {
                 atomic.incrementAndGet()
             }
         }
@@ -100,7 +120,7 @@ class AliOssTest {
             async.submit {
                 try {
                     pre()
-                } catch (_: Exception) {
+                } catch (_: Throwable) {
                     atomic.incrementAndGet()
                 }
             }
@@ -108,17 +128,17 @@ class AliOssTest {
         async.submit {
             try {
                 listAndMeta()
-            } catch (_: Exception) {
+            } catch (_: Throwable) {
                 atomic.incrementAndGet()
             }
         }
 
-        assertEquals(0, atomic.get())
         async.await()
+        assertEquals(0, atomic.get())
     }
 
     fun put() {
-        val key = "test/s_" + snowflake.nextId()
+        val key = "test/p_" + snowflake.nextId()
         log.info("put key: {}", key)
         val obj = buildObj(key)
         assertThrows(AliException::class.java) { obj.head() }
@@ -142,7 +162,7 @@ class AliOssTest {
 
     fun multipart() {
         val ossBucket = buildBucket()
-        val bo = ossBucket.use("test/b_t")
+        val bo = ossBucket.use("test/m_b_" + snowflake.nextId())
         val uploadId = bo.multipartInit()
         val bm = ossBucket.multipartList {
             val params = it.params
@@ -197,7 +217,7 @@ class AliOssTest {
 
     fun listAndMeta() {
         val ossBucket = buildBucket()
-        val key = "test/b_t_l_m"
+        val key = "test/l_" + snowflake.nextId()
         val bo = ossBucket.use(key)
         val source = "hello world"
         val bytes = source.toByteArray()
@@ -229,7 +249,6 @@ class AliOssTest {
     }
 
     fun pre() {
-        val client = HttpClient.default().disableSsl().build()
         val key = "test/pre_" + snowflake.nextId()
         log.info("pre key: {}", key)
         val obj = buildObj(key)
@@ -244,7 +263,7 @@ class AliOssTest {
             log.info("token: {}", obj.token)
 
             log.info("=================put=================")
-            val prePutR = obj.prePut(Acl.PRIVATE, HttpHeaders.empty().also {
+            val prePutR = obj.prePut(Acl.PRIVATE, S3Meta.empty().also {
                 it.put("pre", "true")
             })
 

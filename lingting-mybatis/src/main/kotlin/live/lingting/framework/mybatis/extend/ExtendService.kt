@@ -1,16 +1,19 @@
 package live.lingting.framework.mybatis.extend
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page
+import live.lingting.framework.api.ApiResultCode
+import live.lingting.framework.api.PaginationParams
+import live.lingting.framework.exception.BizException
+import live.lingting.framework.function.ThrowingConsumer
+import live.lingting.framework.function.ThrowingFunction
+import live.lingting.framework.value.CursorValue
+import org.apache.ibatis.session.ExecutorType
+import org.apache.ibatis.session.SqlSession
+import org.apache.ibatis.session.TransactionIsolationLevel
 import java.io.Serializable
 import java.util.function.BooleanSupplier
 import java.util.function.Function
 import java.util.function.Predicate
-import live.lingting.framework.api.ApiResultCode
-import live.lingting.framework.api.PaginationParams
-import live.lingting.framework.exception.BizException
-import live.lingting.framework.function.ThrowingRunnable
-import live.lingting.framework.function.ThrowingSupplier
-import live.lingting.framework.value.CursorValue
 
 /**
  * 以前继承 com.baomidou.mybatisplus.extension.service.IService 的实现类，现在继承当前类
@@ -28,6 +31,9 @@ interface ExtendService<T> {
          * 默认一次批量插入的数量
          */
         const val DEFAULT_INSERT_BATCH_SIZE: Int = 5000
+
+        var defaultTransactionLevel = TransactionIsolationLevel.REPEATABLE_READ
+
     }
 
     fun toIpage(params: PaginationParams): Page<T>
@@ -43,7 +49,7 @@ interface ExtendService<T> {
      * @param entityList 实体对象集合
      */
     fun saveBatch(entityList: Collection<T>): Boolean {
-        return useTransactional<Boolean>(ThrowingSupplier { saveBatch(entityList, DEFAULT_INSERT_BATCH_SIZE) })
+        return saveBatch(entityList, DEFAULT_INSERT_BATCH_SIZE)
     }
 
     /**
@@ -82,7 +88,7 @@ interface ExtendService<T> {
      * @param entityList 实体对象集合
      */
     fun updateBatchById(entityList: Collection<T>): Boolean {
-        return useTransactional(ThrowingSupplier { updateBatchById(entityList, DEFAULT_BATCH_SIZE) })
+        return updateBatchById(entityList, DEFAULT_BATCH_SIZE)
     }
 
     /**
@@ -121,24 +127,52 @@ interface ExtendService<T> {
     val entityClass: Class<T>
 
     // ^^^^^^ Copy From com.baomidou.mybatisplus.extension.service.IService end ^^^^^^
-    fun <R> useTransactional(supplier: ThrowingSupplier<R>): R {
-        return useTransactional(supplier) { true }
+    fun <R> useTransactional(function: ThrowingFunction<SqlSession, R>): R {
+        return useTransactional(function) { true }
     }
 
-    fun useTransactional(runnable: ThrowingRunnable) {
-        return useTransactional(runnable) { true }
+    fun useTransactional(consumer: ThrowingConsumer<SqlSession>) {
+        return useTransactional(consumer) { true }
     }
 
     /**
      * 开启事务. 如果执行异常, 不论是否回滚. 异常均会抛出
-     * @param runnable 在事务中运行
+     * @param consumer 在事务中运行
      * @param predicate 消费异常, 返回true表示回滚事务
      */
-    fun useTransactional(runnable: ThrowingRunnable, predicate: Predicate<Throwable>) {
-        useTransactional(ThrowingSupplier { runnable.run() }, predicate)
+    fun useTransactional(consumer: ThrowingConsumer<SqlSession>, predicate: Predicate<Throwable>) {
+        useTransactional(ThrowingFunction { consumer.accept(it) }, predicate)
     }
 
-    fun <R> useTransactional(supplier: ThrowingSupplier<R>, predicate: Predicate<Throwable>): R
+    fun <R> useTransactional(function: ThrowingFunction<SqlSession, R>, predicate: Predicate<Throwable>): R {
+        return useTransactional(ExecutorType.SIMPLE, function, predicate)
+    }
+
+    fun <R> useTransactional(
+        type: ExecutorType,
+        function: ThrowingFunction<SqlSession, R>,
+    ): R {
+        return useTransactional(type, function) { true }
+    }
+
+    fun <R> useTransactional(
+        type: ExecutorType,
+        function: ThrowingFunction<SqlSession, R>,
+        predicate: Predicate<Throwable>
+    ): R
+
+    fun <R> useTransactional(
+        type: ExecutorType,
+        level: TransactionIsolationLevel,
+        function: ThrowingFunction<SqlSession, R>,
+        predicate: Predicate<Throwable>
+    ): R
+
+    fun <R> useTransactional(
+        session: SqlSession,
+        function: ThrowingFunction<SqlSession, R>,
+        predicate: Predicate<Throwable>
+    ): R
 
     fun fallback(runnable: Runnable, fallback: Function<Exception?, RuntimeException?>) {
         fallback(BooleanSupplier {

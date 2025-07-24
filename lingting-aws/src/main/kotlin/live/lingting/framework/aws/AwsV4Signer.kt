@@ -1,5 +1,6 @@
 package live.lingting.framework.aws
 
+import live.lingting.framework.aws.AwsUtils.HEADER_MD5
 import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.QueryBuilder
@@ -59,7 +60,7 @@ open class AwsV4Signer(
     /**
      * 除指定前缀开头的请求外, 其他参与签名的头
      */
-    open val headerInclude = arrayOf("host", "content-md5", "range")
+    open val headerInclude = arrayOf("host", HEADER_MD5, "range")
 
     open val headerDate by lazy { "$headerPrefix-date" }
 

@@ -6,6 +6,7 @@ import java.util.function.BiConsumer
  * @author lingting 2024-09-05 21:17
  */
 interface MultiValue<K, V, C : Collection<V>> {
+
     // region fill
     /**
      * 为指定key创建一个槽位(如果不存在)
@@ -33,6 +34,7 @@ interface MultiValue<K, V, C : Collection<V>> {
     fun replace(oldKey: K, newKey: K)
 
     // endregion
+
     // region get
 
     val isEmpty: Boolean
@@ -65,6 +67,7 @@ interface MultiValue<K, V, C : Collection<V>> {
     fun unmodifiable(): MultiValue<K, V, out Collection<V>>
 
     // endregion
+
     // region remove
     fun clear()
 

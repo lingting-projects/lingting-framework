@@ -30,11 +30,7 @@ class DataSizeModule : SimpleModule() {
     class DataSizeDeserializer : JsonDeserializer<DataSize?>() {
 
         override fun deserialize(p: JsonParser, ctxt: DeserializationContext): DataSize? {
-            val bytes = p.text.toLongOrNull()
-            if (bytes == null || bytes < 0) {
-                return null
-            }
-            return DataSize.ofBytes(bytes)
+            return DataSize.of(p.text)
         }
     }
 

@@ -1,5 +1,6 @@
 package live.lingting.framework.ali
 
+import live.lingting.framework.aws.AwsUtils.HEADER_MD5
 import live.lingting.framework.aws.AwsV4Signer
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.QueryBuilder
@@ -34,7 +35,7 @@ class AliV4Signer(
 
     override val headerPrefix: String = AliUtils.HEADER_PREFIX
 
-    override val headerInclude: Array<String> = arrayOf("content-type", "content-md5")
+    override val headerInclude: Array<String> = arrayOf("content-type", HEADER_MD5)
 
     override fun toParamName(key: String): String {
         return key.lowercase()

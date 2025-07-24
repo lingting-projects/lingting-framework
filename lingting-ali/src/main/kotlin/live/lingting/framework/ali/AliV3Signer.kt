@@ -2,6 +2,7 @@ package live.lingting.framework.ali
 
 import live.lingting.framework.aws.AwsSigner
 import live.lingting.framework.aws.AwsUtils
+import live.lingting.framework.aws.AwsUtils.HEADER_MD5
 import live.lingting.framework.crypto.mac.Mac
 import live.lingting.framework.http.HttpMethod
 import live.lingting.framework.http.HttpUrlBuilder
@@ -38,7 +39,7 @@ class AliV3Signer(
         val HEADER_PREFIX: String = "x-acs"
 
         @JvmField
-        val HEADER_INCLUDE = arrayOf("host", "content-type", "content-md5")
+        val HEADER_INCLUDE = arrayOf("host", "content-type", HEADER_MD5)
 
     }
 

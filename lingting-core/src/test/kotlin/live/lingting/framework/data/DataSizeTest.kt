@@ -39,7 +39,7 @@ class DataSizeTest {
         testValid("84.31GB", 84, GB, 90527173181L)
         testValid("123.45 MB", 123, MB, 129446707L)
         testValid("1.5TB", 1, TB, 1649267441664L)
-
+        testValid("100", 100, BYTES, 100L)
         testValid("1 Bytes", 1, BYTES, 1L)
         testValid("1024KB", 1, MB, 1048576L)
         testValid("123.45GB extra", 123, GB, 132553428172L)
@@ -48,7 +48,6 @@ class DataSizeTest {
         testInvalid("123.45XB")
         testInvalid("")
         testInvalid("GB")
-        testInvalid("123.45")
     }
 
     fun testValid(source: String, expectedValue: Long, expectedUnit: DataSizeUnit, expectedBytes: Long) {

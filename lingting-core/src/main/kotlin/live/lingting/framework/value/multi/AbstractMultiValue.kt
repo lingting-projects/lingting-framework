@@ -129,6 +129,10 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
         }))
     }
 
+    // endregion
+
+    // region get
+
     override val isEmpty: Boolean
         get() = map.isEmpty()
 
@@ -157,7 +161,7 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
     }
 
     override fun first(key: K): V? {
-        val collection: Collection<V> = get(key)
+        val collection = get(key)
         if (collection.isEmpty()) {
             return null
         }
@@ -191,6 +195,7 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
     }
 
     // endregion
+
     // region remove
     override fun clear() {
         if (!allowModify) {

@@ -3,7 +3,11 @@ package live.lingting.framework.aws
 import live.lingting.framework.data.DataSize
 import live.lingting.framework.time.DatePattern
 import live.lingting.framework.time.DateTime
+import live.lingting.framework.util.DigestUtils
+import live.lingting.framework.util.StringUtils.base64
 import live.lingting.framework.util.StringUtils.firstUpper
+import live.lingting.framework.util.StringUtils.hex
+import java.io.InputStream
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -51,6 +55,8 @@ object AwsUtils {
 
     const val HEADER_ACL: String = "$HEADER_PREFIX-acl"
 
+    const val HEADER_MD5: String = "content-md5"
+
     const val HEADER_PREFIX_META: String = "$HEADER_PREFIX-meta-"
 
     @JvmStatic
@@ -92,6 +98,33 @@ object AwsUtils {
     fun toParamsKey(key: String): String {
         val split = key.split("-")
         return split.joinToString("-") { it.firstUpper() }
+    }
+
+    /**
+     * 计算内容在请求头上的 contentMd5 值
+     */
+    @JvmStatic
+    fun contentMd5(stream: InputStream): String {
+        val hex = DigestUtils.md5Hex(stream)
+        return contentMd5FromMd5(hex)
+    }
+
+    /**
+     * 计算内容在请求头上的 contentMd5 值
+     */
+    @JvmStatic
+    fun contentMd5(bytes: ByteArray): String {
+        val hex = DigestUtils.md5Hex(bytes)
+        return contentMd5FromMd5(hex)
+    }
+
+    /**
+     * 从原始的md5 生成请求头上的 contentMd5 值
+     */
+    @JvmStatic
+    fun contentMd5FromMd5(md5: String): String {
+        val bytes = md5.hex()
+        return bytes.base64()
     }
 
 }

@@ -10,14 +10,20 @@ import java.util.function.BiConsumer
 import java.util.function.Predicate
 import javax.annotation.Resource
 import live.lingting.framework.api.PaginationParams
-import live.lingting.framework.function.ThrowingSupplier
+import live.lingting.framework.function.ThrowingFunction
 import live.lingting.framework.value.CursorValue
 import live.lingting.framework.value.WaitValue
 import org.apache.ibatis.binding.MapperMethod.ParamMap
 import org.apache.ibatis.logging.Log
 import org.apache.ibatis.logging.LogFactory
+import org.apache.ibatis.session.ExecutorType
 import org.apache.ibatis.session.SqlSession
 import org.apache.ibatis.session.SqlSessionFactory
+import org.apache.ibatis.session.TransactionIsolationLevel
+import java.io.Serializable
+import java.util.function.BiConsumer
+import java.util.function.Predicate
+import kotlin.math.min
 
 /**
  * 以前继承 com.baomidou.mybatisplus.extension.service.impl.ServiceImpl 的实现类，现在继承本类
@@ -45,6 +51,8 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
         set(value) {
             sessionFactoryValue.update(value)
         }
+
+    protected var defaultTransactionLevel = ExtendService.defaultTransactionLevel
 
     override var entityClass: Class<T> = currentModelClass()
         protected set
@@ -148,15 +156,50 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
      * @since 3.3.1
     </E> */
     fun <E> executeBatch(list: Collection<E>, batchSize: Int, consumer: BiConsumer<SqlSession, E>): Boolean {
-        return useTransactional<Boolean>(ThrowingSupplier {
-            SqlHelper.executeBatch(sessionFactory, this.log, list, batchSize, consumer)
-        })
+        if (list.isEmpty()) {
+            return false
+        }
+        return useTransactional<Boolean>(ExecutorType.BATCH) {
+            val limit = min(list.size, batchSize)
+            var i = 0
+            for (e in list) {
+                consumer.accept(it, e)
+                i += 1
+
+                if (i >= limit) {
+                    i = 0
+                    it.flushStatements()
+                }
+            }
+            true
+        }
     }
 
-    override fun <R> useTransactional(supplier: ThrowingSupplier<R>, predicate: Predicate<Throwable>): R {
-        val session = sessionFactory.openSession(false)
+    override fun <R> useTransactional(
+        type: ExecutorType,
+        function: ThrowingFunction<SqlSession, R>,
+        predicate: Predicate<Throwable>
+    ): R {
+        return useTransactional(type, defaultTransactionLevel, function, predicate)
+    }
+
+    override fun <R> useTransactional(
+        type: ExecutorType,
+        level: TransactionIsolationLevel,
+        function: ThrowingFunction<SqlSession, R>,
+        predicate: Predicate<Throwable>
+    ): R {
+        val session = sessionFactory.openSession(type, level)
+        return useTransactional(session, function, predicate)
+    }
+
+    override fun <R> useTransactional(
+        session: SqlSession,
+        function: ThrowingFunction<SqlSession, R>,
+        predicate: Predicate<Throwable>
+    ): R {
         try {
-            val r = supplier.get()
+            val r = function.apply(session)
             session.commit()
             return r
         } catch (e: Exception) {
@@ -167,6 +210,7 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
             throw e
         } finally {
             session.close()
+
         }
     }
 
