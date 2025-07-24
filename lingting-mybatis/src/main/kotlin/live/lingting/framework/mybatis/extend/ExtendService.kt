@@ -49,7 +49,7 @@ interface ExtendService<T> {
      * @param entityList 实体对象集合
      */
     fun saveBatch(entityList: Collection<T>): Boolean {
-        return useTransactional<Boolean> { saveBatch(entityList, DEFAULT_INSERT_BATCH_SIZE) }
+        return saveBatch(entityList, DEFAULT_INSERT_BATCH_SIZE)
     }
 
     /**
@@ -146,6 +146,13 @@ interface ExtendService<T> {
 
     fun <R> useTransactional(function: ThrowingFunction<SqlSession, R>, predicate: Predicate<Throwable>): R {
         return useTransactional(ExecutorType.SIMPLE, function, predicate)
+    }
+
+    fun <R> useTransactional(
+        type: ExecutorType,
+        function: ThrowingFunction<SqlSession, R>,
+    ): R {
+        return useTransactional(type, function) { true }
     }
 
     fun <R> useTransactional(

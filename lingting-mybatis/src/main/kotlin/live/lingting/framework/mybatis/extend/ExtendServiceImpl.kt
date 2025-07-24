@@ -156,8 +156,7 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
         if (list.isEmpty()) {
             return false
         }
-        return useTransactional<Boolean> {
-            SqlHelper.executeBatch(sessionFactory, this.log, list, batchSize, consumer)
+        return useTransactional<Boolean>(ExecutorType.BATCH) {
             val limit = min(list.size, batchSize)
             var i = 0
             for (e in list) {
@@ -168,9 +167,7 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
                     i = 0
                     it.flushStatements()
                 }
-
             }
-
             true
         }
     }
