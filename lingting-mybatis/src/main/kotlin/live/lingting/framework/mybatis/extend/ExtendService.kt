@@ -7,6 +7,9 @@ import live.lingting.framework.exception.BizException
 import live.lingting.framework.function.ThrowingRunnable
 import live.lingting.framework.function.ThrowingSupplier
 import live.lingting.framework.value.CursorValue
+import org.apache.ibatis.session.ExecutorType
+import org.apache.ibatis.session.SqlSession
+import org.apache.ibatis.session.TransactionIsolationLevel
 import java.io.Serializable
 import java.util.function.BooleanSupplier
 import java.util.function.Function
@@ -28,6 +31,9 @@ interface ExtendService<T> {
          * 默认一次批量插入的数量
          */
         const val DEFAULT_INSERT_BATCH_SIZE: Int = 5000
+
+        var defaultTransactionLevel = TransactionIsolationLevel.REPEATABLE_READ
+
     }
 
     fun toIpage(params: PaginationParams): Page<T>
@@ -138,7 +144,20 @@ interface ExtendService<T> {
         useTransactional(ThrowingSupplier { runnable.run() }, predicate)
     }
 
-    fun <R> useTransactional(supplier: ThrowingSupplier<R>, predicate: Predicate<Throwable>): R
+    fun <R> useTransactional(supplier: ThrowingSupplier<R>, predicate: Predicate<Throwable>): R {
+        return useTransactional(ExecutorType.SIMPLE, supplier, predicate)
+    }
+
+    fun <R> useTransactional(type: ExecutorType, supplier: ThrowingSupplier<R>, predicate: Predicate<Throwable>): R
+
+    fun <R> useTransactional(
+        type: ExecutorType,
+        level: TransactionIsolationLevel,
+        supplier: ThrowingSupplier<R>,
+        predicate: Predicate<Throwable>
+    ): R
+
+    fun <R> useTransactional(session: SqlSession, supplier: ThrowingSupplier<R>, predicate: Predicate<Throwable>): R
 
     fun fallback(runnable: Runnable, fallback: Function<Exception?, RuntimeException?>) {
         fallback(BooleanSupplier {

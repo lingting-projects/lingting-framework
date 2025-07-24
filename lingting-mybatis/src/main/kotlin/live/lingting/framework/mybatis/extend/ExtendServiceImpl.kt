@@ -13,8 +13,10 @@ import live.lingting.framework.value.WaitValue
 import org.apache.ibatis.binding.MapperMethod.ParamMap
 import org.apache.ibatis.logging.Log
 import org.apache.ibatis.logging.LogFactory
+import org.apache.ibatis.session.ExecutorType
 import org.apache.ibatis.session.SqlSession
 import org.apache.ibatis.session.SqlSessionFactory
+import org.apache.ibatis.session.TransactionIsolationLevel
 import java.io.Serializable
 import java.util.function.BiConsumer
 import java.util.function.Predicate
@@ -45,6 +47,8 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
         set(value) {
             sessionFactoryValue.update(value)
         }
+
+    protected var defaultTransactionLevel = ExtendService.defaultTransactionLevel
 
     override var entityClass: Class<T> = currentModelClass()
         protected set
@@ -153,8 +157,29 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
         }
     }
 
-    override fun <R> useTransactional(supplier: ThrowingSupplier<R>, predicate: Predicate<Throwable>): R {
-        val session = sessionFactory.openSession(false)
+    override fun <R> useTransactional(
+        type: ExecutorType,
+        supplier: ThrowingSupplier<R>,
+        predicate: Predicate<Throwable>
+    ): R {
+        return useTransactional(type, defaultTransactionLevel, supplier, predicate)
+    }
+
+    override fun <R> useTransactional(
+        type: ExecutorType,
+        level: TransactionIsolationLevel,
+        supplier: ThrowingSupplier<R>,
+        predicate: Predicate<Throwable>
+    ): R {
+        val session = sessionFactory.openSession(type, level)
+        return useTransactional(session, supplier, predicate)
+    }
+
+    override fun <R> useTransactional(
+        session: SqlSession,
+        supplier: ThrowingSupplier<R>,
+        predicate: Predicate<Throwable>
+    ): R {
         try {
             val r = supplier.get()
             session.commit()
