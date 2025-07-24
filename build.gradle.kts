@@ -3,7 +3,7 @@ import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 
 val projectGroup = "live.lingting.framework"
-val projectVersion = "2025.05.23-Beta-7"
+val projectVersion = "2025.05.23-Beta-8"
 
 // 用于子模块获取包管理信息
 val catalogLibs = libs
