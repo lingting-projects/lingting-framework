@@ -221,7 +221,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
         val c = instance()
         c.paramId = paramId
         consumer.accept(c)
-        return appendCondition<C>(true, keyword, c)
+        return appendCondition(true, keyword, c)
     }
 
     fun <O : AbstractWrapper<*, *>> appendCondition(condition: Boolean, keyword: SqlKeyword?, o: O): C {
@@ -702,7 +702,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
     }
 
     override fun orderBy(condition: Boolean, isAsc: Boolean, column: String): C {
-        return orderBy(condition, isAsc, mutableListOf<String>(column))
+        return orderBy(condition, isAsc, mutableListOf(column))
     }
 
     override fun orderBy(condition: Boolean, isAsc: Boolean, columns: MutableList<String>): C {
@@ -764,11 +764,20 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
     // region func extended
 
     fun <E : Any> `in`(field: String, consumer: Consumer<QueryWrapper<E>>): C {
-        return `in`<E>(true, field, consumer)
+        return `in`(true, field, consumer)
     }
 
     fun <E : Any> `in`(condition: Boolean, field: String, consumer: Consumer<QueryWrapper<E>>): C {
-        return appendSql<E>(condition, field, SqlKeyword.IN, consumer)
+        return appendSql(condition, field, SqlKeyword.IN, consumer)
+
+    }
+
+    fun <E : Any> notIn(field: String, consumer: Consumer<QueryWrapper<E>>): C {
+        return notIn(true, field, consumer)
+    }
+
+    fun <E : Any> notIn(condition: Boolean, field: String, consumer: Consumer<QueryWrapper<E>>): C {
+        return appendSql(condition, field, SqlKeyword.NOT_IN, consumer)
 
     }
 
