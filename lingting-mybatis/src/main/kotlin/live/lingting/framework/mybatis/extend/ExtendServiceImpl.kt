@@ -5,10 +5,7 @@ import com.baomidou.mybatisplus.core.toolkit.Constants
 import com.baomidou.mybatisplus.core.toolkit.ReflectionKit
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper
-import java.io.Serializable
-import java.util.function.BiConsumer
-import java.util.function.Predicate
-import javax.annotation.Resource
+import jakarta.annotation.Resource
 import live.lingting.framework.api.PaginationParams
 import live.lingting.framework.function.ThrowingFunction
 import live.lingting.framework.value.CursorValue
