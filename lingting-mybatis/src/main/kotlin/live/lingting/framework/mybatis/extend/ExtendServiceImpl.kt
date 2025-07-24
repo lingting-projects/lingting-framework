@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper
 import jakarta.annotation.Resource
 import live.lingting.framework.api.PaginationParams
-import live.lingting.framework.function.ThrowingSupplier
+import live.lingting.framework.function.ThrowingFunction
 import live.lingting.framework.value.CursorValue
 import live.lingting.framework.value.WaitValue
 import org.apache.ibatis.binding.MapperMethod.ParamMap
@@ -20,6 +20,7 @@ import org.apache.ibatis.session.TransactionIsolationLevel
 import java.io.Serializable
 import java.util.function.BiConsumer
 import java.util.function.Predicate
+import kotlin.math.min
 
 /**
  * 以前继承 com.baomidou.mybatisplus.extension.service.impl.ServiceImpl 的实现类，现在继承本类
@@ -152,36 +153,53 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
      * @since 3.3.1
     </E> */
     fun <E> executeBatch(list: Collection<E>, batchSize: Int, consumer: BiConsumer<SqlSession, E>): Boolean {
+        if (list.isEmpty()) {
+            return false
+        }
         return useTransactional<Boolean> {
             SqlHelper.executeBatch(sessionFactory, this.log, list, batchSize, consumer)
+            val limit = min(list.size, batchSize)
+            var i = 0
+            for (e in list) {
+                consumer.accept(it, e)
+                i += 1
+
+                if (i >= limit) {
+                    i = 0
+                    it.flushStatements()
+                }
+
+            }
+
+            true
         }
     }
 
     override fun <R> useTransactional(
         type: ExecutorType,
-        supplier: ThrowingSupplier<R>,
+        function: ThrowingFunction<SqlSession, R>,
         predicate: Predicate<Throwable>
     ): R {
-        return useTransactional(type, defaultTransactionLevel, supplier, predicate)
+        return useTransactional(type, defaultTransactionLevel, function, predicate)
     }
 
     override fun <R> useTransactional(
         type: ExecutorType,
         level: TransactionIsolationLevel,
-        supplier: ThrowingSupplier<R>,
+        function: ThrowingFunction<SqlSession, R>,
         predicate: Predicate<Throwable>
     ): R {
         val session = sessionFactory.openSession(type, level)
-        return useTransactional(session, supplier, predicate)
+        return useTransactional(session, function, predicate)
     }
 
     override fun <R> useTransactional(
         session: SqlSession,
-        supplier: ThrowingSupplier<R>,
+        function: ThrowingFunction<SqlSession, R>,
         predicate: Predicate<Throwable>
     ): R {
         try {
-            val r = supplier.get()
+            val r = function.apply(session)
             session.commit()
             return r
         } catch (e: Exception) {
@@ -192,6 +210,7 @@ abstract class ExtendServiceImpl<M : ExtendMapper<T>, T> : ExtendService<T> {
             throw e
         } finally {
             session.close()
+
         }
     }
 

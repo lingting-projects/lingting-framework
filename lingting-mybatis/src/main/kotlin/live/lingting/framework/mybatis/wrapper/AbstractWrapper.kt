@@ -769,7 +769,6 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
 
     fun <E : Any> `in`(condition: Boolean, field: String, consumer: Consumer<QueryWrapper<E>>): C {
         return appendSql(condition, field, SqlKeyword.IN, consumer)
-
     }
 
     fun <E : Any> notIn(field: String, consumer: Consumer<QueryWrapper<E>>): C {
