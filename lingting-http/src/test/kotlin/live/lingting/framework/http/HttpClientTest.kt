@@ -1,16 +1,14 @@
 package live.lingting.framework.http
 
+import live.lingting.framework.util.ProxySelectorUtils
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.io.IOException
 import java.net.InetSocketAddress
-import java.net.Proxy
 import java.net.ProxySelector
-import java.net.SocketAddress
 import java.net.URI
 
 /**
@@ -27,19 +25,7 @@ class HttpClientTest {
     @BeforeEach
     fun before() {
         client = OkHttpClient.Builder().build()
-        selector = if (!useProxy) null else InetSocketAddress("127.0.0.1", 8888).let {
-            val proxy = Proxy(Proxy.Type.HTTP, it)
-            object : ProxySelector() {
-                override fun select(uri: URI?): List<Proxy?>? {
-                    return listOf(proxy)
-                }
-
-                override fun connectFailed(uri: URI?, sa: SocketAddress?, ioe: IOException?) {
-                    //
-                }
-
-            }
-        }
+        selector = if (!useProxy) null else ProxySelectorUtils.create(InetSocketAddress("127.0.0.1", 8888))
     }
 
     @Test

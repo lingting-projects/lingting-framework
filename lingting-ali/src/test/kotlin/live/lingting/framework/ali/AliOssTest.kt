@@ -18,6 +18,7 @@ import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.DataSizeUtils.bytes
 import live.lingting.framework.util.DigestUtils
 import live.lingting.framework.util.DurationUtils.millis
+import live.lingting.framework.util.ProxySelectorUtils
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StreamUtils
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
@@ -32,7 +33,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty
 import java.io.ByteArrayInputStream
 import java.net.InetSocketAddress
-import java.net.ProxySelector
 import java.nio.file.Files
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicLong
@@ -61,7 +61,7 @@ class AliOssTest {
     @BeforeEach
     fun before() {
         if (useProxy) {
-            val selector = ProxySelector.of(InetSocketAddress("127.0.0.1", 9999))
+            val selector = ProxySelectorUtils.create(InetSocketAddress("127.0.0.1", 8888))
             client = HttpClient.okhttp()
                 .disableSsl()
                 .callTimeout(Duration.ofSeconds(10))
