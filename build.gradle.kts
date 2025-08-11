@@ -130,6 +130,10 @@ configure(javaProjects + dependencyProjects) {
         plugin(catalogLibs.plugins.publish.get().pluginId)
     }
 
+    tasks.withType<GenerateModuleMetadata> {
+        enabled = false
+    }
+
     class Dependency(val group: String, val module: String, val v: String?) {
 
         // 从上下文中解析出具体的依赖版本
