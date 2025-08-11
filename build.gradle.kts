@@ -1,4 +1,7 @@
 import com.vanniktech.maven.publish.SonatypeHost
+import groovy.namespace.QName
+import groovy.util.Node
+import groovy.util.NodeList
 import org.gradle.plugins.ide.idea.model.IdeaLanguageLevel
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 
@@ -127,6 +130,37 @@ configure(javaProjects + dependencyProjects) {
         plugin(catalogLibs.plugins.publish.get().pluginId)
     }
 
+    class Dependency(val group: String, val module: String, val v: String?) {
+
+        // 从上下文中解析出具体的依赖版本
+        fun resolveVersion(project: Project): String? {
+            val resolvedDeps = project.configurations.getByName("compileClasspath")
+                .resolvedConfiguration.firstLevelModuleDependencies
+
+            val match = resolvedDeps.firstOrNull { it.moduleGroup == group && it.moduleName == module }
+            return match?.moduleVersion
+        }
+
+    }
+
+    fun toDependency(node: Node): Dependency {
+        val nodes = node.value() as NodeList
+        var group: String? = null
+        var module: String? = null
+        var version: String? = null
+
+        nodes.mapNotNull { it as? Node }.forEach {
+            val name = it.name() as QName
+            when (name.localPart) {
+                "groupId" -> group = it.value() as String
+                "artifactId" -> module = it.value() as String
+                "version" -> version = it.value() as String
+            }
+        }
+
+        return Dependency(group!!, module!!, version)
+    }
+
     mavenPublishing {
         val projectRepository = "lingting-projects/lingting-framework"
         val projectUrl = "https://github.com/$projectRepository"
@@ -166,6 +200,32 @@ configure(javaProjects + dependencyProjects) {
                 url = projectUrl
                 tag = "HEAD"
             }
+
+            withXml {
+                val node = asNode()
+                val nodes = node.get("dependencies") as NodeList
+                if (nodes.isNotEmpty()) {
+                    val managements = node.get("dependencyManagement") as NodeList
+                    if (managements.isNotEmpty()) {
+                        node.remove(managements[0] as Node)
+                    }
+                }
+                nodes.mapNotNull { it as? Node }.forEach { dns ->
+                    val dependencies = dns.value() as NodeList
+                    dependencies.mapNotNull { it as? Node }.forEach { dn ->
+                        val dependency = toDependency(dn)
+                        if (dependency.v.isNullOrBlank()) {
+                            val version = dependency.resolveVersion(project)
+                            if (version.isNullOrBlank()) {
+                                println("无法解析具体版本号: ${dependency.group}:${dependency.module}")
+                            } else {
+                                dn.appendNode("version", version)
+                            }
+                        }
+                    }
+                }
+            }
+
         }
 
     }
