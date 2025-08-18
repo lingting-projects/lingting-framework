@@ -94,10 +94,8 @@ open class Context<T> {
 
     open fun remove() {
         val id = id()
-        val remove = first.remove(id)
-        if (remove == true) {
-            local.remove()
-        }
+        first.remove(id)
+        local.remove()
     }
 
 }
