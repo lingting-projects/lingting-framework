@@ -56,7 +56,7 @@ open class Context<T> {
     }
 
     open fun get(): T? {
-        var t = local.get()
+        val t = local.get()
 
         if (t != null) {
             return t
@@ -69,7 +69,7 @@ open class Context<T> {
         val id = id()
 
         val isFirst = first.compute(id) { _, v ->
-            return@compute v == null || v == false
+            return@compute v == null || !v
         }
         if (isFirst != true) {
             return null
@@ -94,8 +94,10 @@ open class Context<T> {
 
     open fun remove() {
         val id = id()
-        first[id] = false
-        local.remove()
+        val remove = first.remove(id)
+        if (remove == true) {
+            local.remove()
+        }
     }
 
 }
