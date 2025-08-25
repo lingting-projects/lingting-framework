@@ -9,7 +9,7 @@ import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
-import java.util.*
+import java.util.Objects
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.BiConsumer
 import java.util.function.BiFunction
@@ -89,9 +89,10 @@ object ClassUtils {
     fun classLoaders(vararg loaders: ClassLoader?): Set<ClassLoader> {
         val set = HashSet<ClassLoader>()
         set.addAll(loaders.filterNotNull())
+        set.add(Thread.currentThread().contextClassLoader)
         set.add(ClassUtils::class.java.classLoader)
         set.add(ClassLoader.getSystemClassLoader())
-        set.add(Thread.currentThread().contextClassLoader)
+        set.add(ClassLoader.getPlatformClassLoader())
         return set
     }
 
@@ -182,7 +183,7 @@ object ClassUtils {
     @JvmStatic
     @JvmOverloads
     fun <T : Any> scan(basePack: String, cls: Class<*>? = null): Set<Class<T>> {
-        return scan<T>(basePack, Predicate { cls == null || cls.isAssignableFrom(it) }, classLoaders(cls?.classLoader))
+        return scan(basePack, Predicate { cls == null || cls.isAssignableFrom(it) }, classLoaders(cls?.classLoader))
     }
 
     fun <T : Any> scan(basePack: String, cls: KClass<T>?) = scan<T>(basePack, cls?.java)
@@ -228,7 +229,7 @@ object ClassUtils {
     }
 
     fun <T : Any> scan(basePack: String, filter: Predicate<KClass<T>>, error: BiConsumer<String, Throwable>) = {
-        scan<T>(basePack, Predicate<Class<T>> { filter.test(it.kotlin) }, error = error)
+        scan(basePack, Predicate<Class<T>> { filter.test(it.kotlin) }, error = error)
     }
 
     /**
@@ -255,7 +256,7 @@ object ClassUtils {
         toVal: BiFunction<Field, Any?, T>
     ): Map<String, T> {
         if (o == null) {
-            return emptyMap<String, T>()
+            return emptyMap()
         }
         val map = HashMap<String, T>()
         for (field in fields(o.javaClass)) {
@@ -264,7 +265,7 @@ object ClassUtils {
 
                 try {
                     value = field[o]
-                } catch (e: IllegalAccessException) {
+                } catch (_: IllegalAccessException) {
                     //
                 }
 
@@ -374,7 +375,7 @@ object ClassUtils {
 
                     // 尝试获取set方法
                     val setMethodName = "set$upper"
-                    var findSet = methods.find { it.name == setMethodName && it.parameterCount == 1 }
+                    val findSet = methods.find { it.name == setMethodName && it.parameterCount == 1 }
 
                     fields.add(ClassField(field, findGet, findSet))
                 }

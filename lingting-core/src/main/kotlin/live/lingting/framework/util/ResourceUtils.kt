@@ -16,29 +16,27 @@ import java.util.function.Predicate
 object ResourceUtils {
 
     @JvmStatic
-    fun currentClassLoader(): ClassLoader {
-        val loader = Thread.currentThread().contextClassLoader
-        return loader ?: ClassLoader.getSystemClassLoader()
-    }
-
-    @JvmStatic
-    fun get(name: String): Resource? {
-        val loader = currentClassLoader()
-        return get(loader, name)
-    }
-
-    @JvmStatic
-    fun get(loader: ClassLoader, name: String): Resource? {
-        val url = loader.getResource(name) ?: return null
-        val resources = resolver(url).filter {
-            // 普通文件
-            it.name == name
-                    // jar中的文件
-                    || it.link.endsWith(name)
-                    // jar中的文件
-                    || it.link.endsWith("$name/")
+    @JvmOverloads
+    fun get(name: String, loaders: Collection<ClassLoader> = ClassUtils.classLoaders()): Resource? {
+        for (loader in loaders) {
+            val url = loader.getResource(name)
+            if (url == null) {
+                continue
+            }
+            val r = resolver(url).firstOrNull {
+                // 普通文件
+                it.name == name
+                        // jar中的文件
+                        || it.link.endsWith(name)
+                        // jar中的文件
+                        || it.link.endsWith("$name/")
+            }
+            if (r != null) {
+                return r
+            }
         }
-        return resources.firstOrNull()
+
+        return null
     }
 
     /**
@@ -49,20 +47,27 @@ object ResourceUtils {
      */
     @JvmStatic
     @JvmOverloads
-    fun scan(name: String, predicate: Predicate<Resource> = Predicate { true }): List<Resource> {
-        val loader = currentClassLoader()
-        return scan(loader, name, predicate)
-    }
-
-    @JvmStatic
-    fun scan(loader: ClassLoader, name: String, predicate: Predicate<Resource>): List<Resource> {
-        val resources = loader.getResources(name)
+    fun scan(
+        name: String,
+        loaders: Collection<ClassLoader> = ClassUtils.classLoaders(),
+        predicate: Predicate<Resource> = Predicate { true }
+    ): List<Resource> {
         val result = LinkedHashSet<Resource>()
-        while (resources.hasMoreElements()) {
-            val url = resources.nextElement()
-            val resolver = resolver(url, predicate)
-            result.addAll(resolver)
+
+        loaders.forEach { loader ->
+            val resources = loader.getResources(name)
+            if (resources == null) {
+                return@forEach
+            }
+
+            while (resources.hasMoreElements()) {
+                val url = resources.nextElement()
+                val resolver = resolver(url, predicate)
+                result.addAll(resolver)
+            }
+
         }
+
         return result.toList()
     }
 
@@ -216,6 +221,15 @@ class Resource(
     @JvmOverloads
     fun string(charset: Charset = StandardCharsets.UTF_8): String {
         return StreamUtils.toString(stream(), charset)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is Resource) return false
+        return link == other.link;
+    }
+
+    override fun hashCode(): Int {
+        return link.hashCode()
     }
 
     override fun toString(): String {
