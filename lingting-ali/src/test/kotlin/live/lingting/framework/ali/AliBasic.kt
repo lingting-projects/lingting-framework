@@ -28,7 +28,7 @@ internal object AliBasic {
         val properties = AliOssProperties()
         properties.region = System.getenv("REGION")
         properties.bucket = System.getenv("BUCKET")
-        properties.acl = Acl.PUBLIC_READ
+        properties.acl = Acl.PRIVATE
         assertNotNull(properties.region)
         assertNotNull(properties.bucket)
         return properties
@@ -40,7 +40,7 @@ internal object AliBasic {
         properties.sk = System.getenv("SK")
         properties.region = System.getenv("REGION")
         properties.bucket = System.getenv("BUCKET")
-        properties.acl = Acl.PUBLIC_READ
+        properties.acl = Acl.PRIVATE
         assertNotNull(properties.region)
         assertNotNull(properties.bucket)
         return properties
