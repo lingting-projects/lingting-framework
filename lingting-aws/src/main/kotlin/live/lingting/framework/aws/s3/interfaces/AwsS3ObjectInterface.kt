@@ -80,24 +80,38 @@ interface AwsS3ObjectInterface {
     // region multipart
     fun multipartInit() = multipartInit(null)
 
-    fun multipartInit(acl: Acl?) = multipartInit(acl, null)
-
-    fun multipartInit(acl: Acl?, meta: S3Meta?): String
+    fun multipartInit(meta: S3Meta?): String
 
     fun multipart(source: InputStream) = multipart(source, Async(20))
 
     fun multipart(source: InputStream, async: Async) = multipart(source, AwsUtils.MULTIPART_DEFAULT_PART_SIZE, async)
 
-    fun multipart(source: InputStream, parSize: DataSize, async: Async): AwsS3MultipartTask
+    fun multipart(source: InputStream, parSize: DataSize, async: Async): AwsS3MultipartTask {
+        return multipart(source, parSize, async, null)
+    }
+
+    fun multipart(source: InputStream, parSize: DataSize, async: Async, acl: Acl?): AwsS3MultipartTask {
+        return multipart(source, parSize, async, acl, null)
+    }
+
+    fun multipart(source: InputStream, parSize: DataSize, async: Async, acl: Acl?, meta: S3Meta?): AwsS3MultipartTask
 
     fun multipartUpload(uploadId: String, part: Part, input: InputStream): String
 
     fun multipartMergeByPart(uploadId: String, map: Map<Part, String>) {
-        val converted = map.mapKeys { it.key.index }
-        multipartMerge(uploadId, converted)
+        multipartMergeByPart(uploadId, map, null)
     }
 
-    fun multipartMerge(uploadId: String, map: Map<Long, String>)
+    fun multipartMergeByPart(uploadId: String, map: Map<Part, String>, acl: Acl?) {
+        val converted = map.mapKeys { it.key.index }
+        multipartMerge(uploadId, converted, acl)
+    }
+
+    fun multipartMerge(uploadId: String, map: Map<Long, String>) {
+        multipartMerge(uploadId, map, null)
+    }
+
+    fun multipartMerge(uploadId: String, map: Map<Long, String>, acl: Acl?)
 
     fun multipartCancel(uploadId: String)
 
@@ -134,21 +148,14 @@ interface AwsS3ObjectInterface {
     }
 
     fun preMultipart(multipart: Multipart): AwsS3PreSignedMultipart =
-        preMultipart(multipart, null, null)
-
-
-    fun preMultipart(multipart: Multipart, acl: Acl?): AwsS3PreSignedMultipart =
-        preMultipart(multipart, acl, null)
+        preMultipart(multipart, null)
 
 
     fun preMultipart(multipart: Multipart, meta: S3Meta?): AwsS3PreSignedMultipart =
-        preMultipart(multipart, null, meta)
+        preMultipart(DEFAULT_EXPIRE_PRE, multipart, meta)
 
-    fun preMultipart(multipart: Multipart, acl: Acl?, meta: S3Meta?): AwsS3PreSignedMultipart =
-        preMultipart(DEFAULT_EXPIRE_PRE, multipart, acl, meta)
-
-    fun preMultipart(expire: Duration, multipart: Multipart, acl: Acl?, meta: S3Meta?): AwsS3PreSignedMultipart {
-        val uploadId = multipartInit(acl, meta)
+    fun preMultipart(expire: Duration, multipart: Multipart, meta: S3Meta?): AwsS3PreSignedMultipart {
+        val uploadId = multipartInit(meta)
         val items = CopyOnWriteArrayList<AwsS3PreSignedMultipart.Item>()
         val async = Async()
         multipart.parts.forEach { part ->

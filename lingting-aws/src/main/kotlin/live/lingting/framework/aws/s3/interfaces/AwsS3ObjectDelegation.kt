@@ -38,20 +38,26 @@ interface AwsS3ObjectDelegation : AwsS3ObjectInterface, AwsS3Delegation<AwsS3Obj
         delegation().delete()
     }
 
-    override fun multipartInit(acl: Acl?, meta: S3Meta?): String {
-        return delegation().multipartInit(acl, meta)
+    override fun multipartInit(meta: S3Meta?): String {
+        return delegation().multipartInit(meta)
     }
 
-    override fun multipart(source: InputStream, parSize: DataSize, async: Async): AwsS3MultipartTask {
-        return delegation().multipart(source, parSize, async)
+    override fun multipart(
+        source: InputStream,
+        parSize: DataSize,
+        async: Async,
+        acl: Acl?,
+        meta: S3Meta?
+    ): AwsS3MultipartTask {
+        return delegation().multipart(source, parSize, async, acl, meta)
     }
 
     override fun multipartUpload(uploadId: String, part: Part, input: InputStream): String {
         return delegation().multipartUpload(uploadId, part, input)
     }
 
-    override fun multipartMerge(uploadId: String, map: Map<Long, String>) {
-        delegation().multipartMerge(uploadId, map)
+    override fun multipartMerge(uploadId: String, map: Map<Long, String>, acl: Acl?) {
+        delegation().multipartMerge(uploadId, map, acl)
     }
 
     override fun multipartCancel(uploadId: String) {
