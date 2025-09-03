@@ -35,7 +35,7 @@ class HttpUrlBuilderTest {
             "https://www.google.com:80/search/a/b/c?q1=q1&q2=q2&q3=q31&q3=q32&q4=s+p+a+c+e",
             uri.toString()
         )
-        val from = HttpUrlBuilder.from(uri)
+        val from = HttpUrlBuilder.from(uri, true)
         assertEquals(
             "https://www.google.com:80/search/a/b/c?q1=q1&q2=q2&q3=q31&q3=q32&q4=s+p+a+c+e",
             from.build()
@@ -60,8 +60,9 @@ class HttpUrlBuilderTest {
 
     @Test
     fun testSpecial() {
+        assertEquals("i=a%2Bb", HttpUrlBuilder.from("http://127.0.0.1:202/a?i=a%2Bb").buildQuery())
         assertEquals("i=a+b", HttpUrlBuilder.from("http://127.0.0.1:202/a?i=a b").buildQuery())
-        assertEquals("i=a+b", HttpUrlBuilder.from("http://127.0.0.1:202/a?i=a+b").buildQuery())
+        assertEquals("i=a+b", HttpUrlBuilder.from("http://127.0.0.1:202/a?i=a+b", true).buildQuery())
         assertEquals("i=a+b", HttpUrlBuilder.from("http://127.0.0.1:202/a?i=a%20b").buildQuery())
         var from = HttpUrlBuilder.from("http://127.0.0.1:202/#hash/a?i=a b")
         assertEquals("i=a+b", from.buildQuery())

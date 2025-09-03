@@ -56,11 +56,11 @@ open class HttpUrlBuilder {
 
         @JvmStatic
         @JvmOverloads
-        fun from(url: String, charset: Charset = StandardCharsets.UTF_8): HttpUrlBuilder {
+        fun from(url: String, decode: Boolean = false, charset: Charset = StandardCharsets.UTF_8): HttpUrlBuilder {
             // 尝试直接创建.
             return try {
                 val u = URI.create(url)
-                from(u)
+                from(u, decode, charset)
             } catch (_: IllegalArgumentException) {
                 // url参数未编码 且 存在特殊字符.  直接解析
                 val matcher = URL_PATTERN.matcher(url)
@@ -77,7 +77,7 @@ open class HttpUrlBuilder {
                 }
                 if (count > 5) {
                     val query = matcher.group(6)
-                    builder.addParamsByQuery(query)
+                    builder.addParamsByQuery(query, decode, charset)
                 }
 
                 builder
@@ -86,7 +86,7 @@ open class HttpUrlBuilder {
 
         @JvmStatic
         @JvmOverloads
-        fun from(u: URI, charset: Charset = StandardCharsets.UTF_8): HttpUrlBuilder {
+        fun from(u: URI, decode: Boolean = false, charset: Charset = StandardCharsets.UTF_8): HttpUrlBuilder {
             val builder = builder().scheme(u.scheme).host(u.host).port(u.port).path(u.path)
             var query = u.query
             var fragment = u.fragment
@@ -104,7 +104,7 @@ open class HttpUrlBuilder {
                     query = fragment
                 }
             }
-            return builder.addParamsByQuery(query, true, charset)
+            return builder.addParamsByQuery(query, decode, charset)
         }
 
         @JvmStatic
