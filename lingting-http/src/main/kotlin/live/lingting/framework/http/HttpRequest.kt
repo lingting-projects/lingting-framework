@@ -64,7 +64,9 @@ open class HttpRequest private constructor(
         }
 
         fun method(method: String): Builder {
-            return method(HttpMethod.valueOf(method))
+            val from = HttpMethod.from(method)
+            requireNotNull(from) { "invalid http method: $method" }
+            return method(from)
         }
 
         fun get(): Builder {
