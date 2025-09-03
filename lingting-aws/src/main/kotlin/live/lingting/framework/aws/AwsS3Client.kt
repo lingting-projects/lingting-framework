@@ -83,7 +83,8 @@ abstract class AwsS3Client protected constructor(val properties: S3Properties) :
             return call(r, request)
         }
 
-        val url = urlBuilder.build()
+        // 不对url进行编码
+        val url = urlBuilder.build(false)
         val value = AwsS3PreSignedResponse(url, signed.headers.map().mapValues { (_, v) -> v.toList() })
         val json = JacksonUtils.toJson(value)
         val bytes = json.toByteArray(charset)

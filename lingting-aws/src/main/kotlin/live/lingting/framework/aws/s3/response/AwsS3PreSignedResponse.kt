@@ -6,6 +6,9 @@ import com.fasterxml.jackson.annotation.JsonProperty
  * @author lingting 2025/5/22 16:17
  */
 class AwsS3PreSignedResponse(
+    /**
+     * 值必须为未进行 encode 的原始url
+     */
     @JsonProperty("url")
     val url: String,
     @JsonProperty("headers")
