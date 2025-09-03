@@ -35,6 +35,7 @@ import live.lingting.framework.security.grpc.interceptor.SecurityGrpcResourceSer
 import live.lingting.framework.security.grpc.properties.SecurityGrpcProperties
 import live.lingting.framework.security.resolver.SecurityTokenDefaultResolver
 import live.lingting.framework.security.resolver.SecurityTokenResolver
+import live.lingting.framework.security.resolver.SecurityTokenResolverRegistry
 import live.lingting.framework.security.resource.SecurityDefaultResourceServiceImpl
 import live.lingting.framework.security.store.SecurityMemoryStore
 import org.junit.jupiter.api.AfterEach
@@ -63,10 +64,13 @@ class SecurityGrpcTest {
         val authorizationService = AuthorizationServiceImpl(store)
         val password = Password()
         convert = SecurityGrpcExpandConvert()
+        val resolvers: MutableList<SecurityTokenResolver> = ArrayList()
+        resolvers.add(SecurityTokenDefaultResolver(store))
+        val registry = SecurityTokenResolverRegistry(resolvers)
 
         val service = SecurityEndpointService(
             authorizationService, store,
-            password, convert!!
+            password, convert!!, registry
         )
 
         val clientCustomizers = mutableListOf<ClientCustomizer>()
@@ -86,8 +90,6 @@ class SecurityGrpcTest {
         clientProperties.useGzip = true
 
         val properties = SecurityGrpcProperties()
-        val resolvers: MutableList<SecurityTokenResolver> = ArrayList()
-        resolvers.add(SecurityTokenDefaultResolver(store))
         val resourceService = SecurityDefaultResourceServiceImpl(resolvers)
         val authorize = SecurityAuthorize(0)
         val securityGrpcExceptionInstance = SecurityGrpcExceptionInstance()
