@@ -20,7 +20,7 @@ class HttpUrlBuilderTest {
         builder.http().host("https://www.google.com")
         assertEquals("https://www.google.com/search?q1=q1&q2=q2", builder.build())
         builder.port(80).http()
-        assertEquals("http://www.google.com:80/search?q1=q1&q2=q2", builder.build())
+        assertEquals("http://www.google.com/search?q1=q1&q2=q2", builder.build())
         val copy = builder.copy().https()
         assertEquals("https://www.google.com:80/search?q1=q1&q2=q2", copy.build())
 
@@ -37,7 +37,7 @@ class HttpUrlBuilderTest {
         )
         val from = HttpUrlBuilder.from(uri)
         assertEquals(
-            "https://www.google.com:80/search/a/b/c?q1=q1&q2=q2&q3=q31&q3=q32&q4=s%2Bp%2Ba%2Bc%2Be",
+            "https://www.google.com:80/search/a/b/c?q1=q1&q2=q2&q3=q31&q3=q32&q4=s+p+a+c+e",
             from.build()
         )
         val repeat = HttpUrlBuilder.builder().host("https://www.baidu.com/").pathSegment("/a/").pathSegment("/b/")
@@ -56,6 +56,26 @@ class HttpUrlBuilderTest {
         assertEquals("https://192.168.1.1:90/", builder.buildUri().toString())
         assertEquals("https://192.168.1.1:90/", builder.buildUrl().toString())
         assertEquals("192.168.1.1:90", builder.headerHost())
+    }
+
+    @Test
+    fun testSpecial() {
+        assertEquals("i=a+b", HttpUrlBuilder.from("http://127.0.0.1:202/a?i=a b").buildQuery())
+        assertEquals("i=a+b", HttpUrlBuilder.from("http://127.0.0.1:202/a?i=a+b").buildQuery())
+        assertEquals("i=a+b", HttpUrlBuilder.from("http://127.0.0.1:202/a?i=a%20b").buildQuery())
+        var from = HttpUrlBuilder.from("http://127.0.0.1:202/#hash/a?i=a b")
+        assertEquals("i=a+b", from.buildQuery())
+        assertEquals("/#hash/a", from.buildPath())
+        from = HttpUrlBuilder.from("http://127.0.0.1:202#/hash/a?i=a b")
+        assertEquals("i=a+b", from.buildQuery())
+        assertEquals("/#/hash/a", from.buildPath())
+        from = HttpUrlBuilder.from("http://127.0.0.1:202#hash/a?i=a b")
+        assertEquals("i=a+b", from.buildQuery())
+        assertEquals("/#hash/a", from.buildPath())
+        from = HttpUrlBuilder.from("http://127.0.0.1:202#hash/a")
+        assertEquals("/#hash/a", from.buildPath())
+        from = HttpUrlBuilder.from("http://127.0.0.1:202?i=a b")
+        assertEquals("i=a+b", from.buildQuery())
     }
 
 }
