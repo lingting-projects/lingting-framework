@@ -17,7 +17,9 @@ object HttpHeaderKeys {
 
     const val RANGE = "Range"
 
-    const val ORIGIN: String = "Origin"
+    const val ORIGIN = "Origin"
+
+    const val REFERER = "referer"
 
     const val USER_AGENT = "User-Agent"
 
@@ -53,14 +55,56 @@ object HttpHeaderKeys {
 
     const val PROXY_CONNECTION = "Proxy-Connection"
 
-    const val REFERER = "Referer"
-
     const val TE = "TE"
 
     const val UPGRADE = "Upgrade"
 
     const val VIA = "Via"
 
+    /**
+     * 常用 但是非标准 传递客户端真实 IP 及代理 IP 链
+     */
     const val X_FORWARDED_FOR = "X-Forwarded-For"
 
+    /**
+     * 常用 但是非标准 传递原始通信协议（http/https）
+     */
+    const val X_FORWARDED_PROTO = "X-Forwarded-Proto"
+
+    /**
+     * 常用 但是非标准 传递原始访问端口
+     */
+    const val X_FORWARDED_PORT = "X-Forwarded-Port"
+
+    /**
+     * 常用 但是非标准 传递原始访问域名
+     */
+    const val X_FORWARDED_HOST = "X-Forwarded-Host"
+
+    /**
+     * 常用 但是非标准 传递转发代理的 IP / 主机名
+     */
+    const val X_FORWARDED_SERVER = "X-Forwarded-Server"
+
+    /**
+     * 不常用 但是标准 传递客户端真实 IP 及代理 IP 链
+     */
+    const val FORWARDED_FOR = "FORWARDED-FOR"
+
+    /**
+     * 不常用 但是标准 传递原始通信协议（http/https）
+     */
+    const val FORWARDED_PROTO = "FORWARDED-PROTO"
+
+    /**
+     * 不常用 但是标准 传递原始访问域名
+     */
+    const val FORWARDED_HOST = "FORWARDED-HOST"
+
+    /**
+     * 不常用 但是标准 传递转发代理的 IP / 主机名
+     */
+    const val FORWARDED_BY = "FORWARDED-BY"
+
 }
+

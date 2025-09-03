@@ -1,9 +1,9 @@
 package live.lingting.framework.util
 
 import jakarta.servlet.http.HttpServletRequest
+import live.lingting.framework.http.header.HttpHeaders
 import java.net.InetAddress
 import java.util.function.Predicate
-import live.lingting.framework.http.header.HttpHeaders
 
 /**
  * @author psh 2022-04-21 16:55
@@ -23,9 +23,10 @@ object IpUtils {
     const val IPV4_LENGTH_MAX: Int = 16
 
     @JvmField
-    val HEADERS: MutableList<String> = ArrayList(16)
+    val HEADERS = ArrayList<String>(16)
 
     init {
+        HEADERS.add("Forwarded-For")
         HEADERS.add("X-Forwarded-For")
         HEADERS.add("Node-Forwarded-IP")
         HEADERS.add("X-Real-Ip")
@@ -37,7 +38,7 @@ object IpUtils {
 
     @JvmStatic
     fun getFirstIp(request: HttpServletRequest): String {
-        var ip: String = getFirstIp { request.getHeader(it) }
+        val ip = getFirstIp { request.getHeader(it) }
         if (StringUtils.hasText(ip)) {
             return ip
         }
@@ -126,7 +127,7 @@ object IpUtils {
             }
             // 执行附加判断
             return predicate.test(address)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             return false
         }
     }

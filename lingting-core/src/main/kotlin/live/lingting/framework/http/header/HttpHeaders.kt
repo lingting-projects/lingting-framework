@@ -1,14 +1,25 @@
 package live.lingting.framework.http.header
 
+import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.header.HttpHeaderKeys.ACCEPT_LANGUAGE
 import live.lingting.framework.http.header.HttpHeaderKeys.AUTHORIZATION
 import live.lingting.framework.http.header.HttpHeaderKeys.CONTENT_LENGTH
 import live.lingting.framework.http.header.HttpHeaderKeys.CONTENT_TYPE
 import live.lingting.framework.http.header.HttpHeaderKeys.ETAG
+import live.lingting.framework.http.header.HttpHeaderKeys.FORWARDED_BY
+import live.lingting.framework.http.header.HttpHeaderKeys.FORWARDED_FOR
+import live.lingting.framework.http.header.HttpHeaderKeys.FORWARDED_HOST
+import live.lingting.framework.http.header.HttpHeaderKeys.FORWARDED_PROTO
 import live.lingting.framework.http.header.HttpHeaderKeys.HOST
 import live.lingting.framework.http.header.HttpHeaderKeys.ORIGIN
 import live.lingting.framework.http.header.HttpHeaderKeys.RANGE
+import live.lingting.framework.http.header.HttpHeaderKeys.REFERER
 import live.lingting.framework.http.header.HttpHeaderKeys.USER_AGENT
+import live.lingting.framework.http.header.HttpHeaderKeys.X_FORWARDED_FOR
+import live.lingting.framework.http.header.HttpHeaderKeys.X_FORWARDED_HOST
+import live.lingting.framework.http.header.HttpHeaderKeys.X_FORWARDED_PORT
+import live.lingting.framework.http.header.HttpHeaderKeys.X_FORWARDED_PROTO
+import live.lingting.framework.http.header.HttpHeaderKeys.X_FORWARDED_SERVER
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.value.MultiValue
 
@@ -42,38 +53,23 @@ interface HttpHeaders : MultiValue<String, String, MutableCollection<String>> {
     override fun unmodifiable(): UnmodifiableHttpHeaders
 
     // region get
-    fun host(): String? {
-        return first(HOST)
-    }
+    fun host(): String? = first(HOST)
 
-    fun origin(): String? {
-        return first(ORIGIN)
-    }
+    fun origin(): String? = first(ORIGIN)
 
-    fun language(): String? {
-        return first(ACCEPT_LANGUAGE)
-    }
+    fun referer(): String? = first(REFERER)
 
-    fun ua(): String? {
-        return first(USER_AGENT)
-    }
+    fun language(): String? = first(ACCEPT_LANGUAGE)
 
-    fun authorization(): String? {
-        return first(AUTHORIZATION)
-    }
+    fun ua(): String? = first(USER_AGENT)
 
-    fun contentType(): String? {
-        return first(CONTENT_TYPE)
-    }
+    fun authorization(): String? = first(AUTHORIZATION)
 
-    fun contentLength(): Long {
-        val first = first(CONTENT_LENGTH, "0")
-        return first.toLong()
-    }
+    fun contentType(): String? = first(CONTENT_TYPE)
 
-    fun etag(): String? {
-        return first(ETAG)
-    }
+    fun contentLength(): Long = first(CONTENT_LENGTH, "0").toLong()
+
+    fun etag(): String? = first(ETAG)
 
     fun charset(): String? {
         return contentType()?.lowercase()?.let {
@@ -85,6 +81,17 @@ interface HttpHeaders : MultiValue<String, String, MutableCollection<String>> {
             }
         }
     }
+
+    fun xForwardedFor(): String? = first(X_FORWARDED_FOR)
+    fun xForwardedProto(): String? = first(X_FORWARDED_PROTO)
+    fun xForwardedPort(): String? = first(X_FORWARDED_PORT)
+    fun xForwardedHost(): String? = first(X_FORWARDED_HOST)
+    fun xForwardedServer(): String? = first(X_FORWARDED_SERVER)
+
+    fun forwardedFor(): String? = first(FORWARDED_FOR)
+    fun forwardedProto(): String? = first(FORWARDED_PROTO)
+    fun forwardedHost(): String? = first(FORWARDED_HOST)
+    fun forwardedBy(): String? = first(FORWARDED_BY)
 
     // endregion
 
@@ -121,6 +128,71 @@ interface HttpHeaders : MultiValue<String, String, MutableCollection<String>> {
     fun range(start: Long, end: Long): HttpHeaders {
         put(RANGE, String.format("bytes=%d-%d", start, end))
         return this
+    }
+
+    // endregion
+
+    // region 计算行为
+
+    fun originByForwarded(): String? {
+        val proto = forwardedProto()
+        if (proto.isNullOrBlank()) {
+            return null
+        }
+        val host = forwardedHost()
+        if (host.isNullOrBlank()) {
+            return null
+        }
+        return "$proto://$host"
+    }
+
+    fun originByXForwarded(): String? {
+        val proto = xForwardedProto()
+        if (proto.isNullOrBlank()) {
+            return null
+        }
+        val host = xForwardedHost()
+        if (host.isNullOrBlank()) {
+            return null
+        }
+        return "$proto://$host"
+    }
+
+    fun originByReferer(): String? {
+        val referer = referer()
+        if (referer.isNullOrBlank()) {
+            return null
+        }
+        val builder = HttpUrlBuilder.from(referer)
+        return "${builder.scheme()}://${builder.headerHost()}"
+    }
+
+    /**
+     * 尝试获取真实的源
+     */
+    fun originReal(): String? {
+        val forwarded = originByForwarded()
+        if (!forwarded.isNullOrBlank()) {
+            return forwarded
+        }
+        val xForwarded = originByXForwarded()
+        if (!xForwarded.isNullOrBlank()) {
+            return xForwarded
+        }
+        val referer = originByReferer()
+        return referer ?: origin()
+    }
+
+    fun hostReal(): String? {
+        val forwarded = forwardedHost()
+        if (!forwarded.isNullOrBlank()) {
+            return forwarded
+        }
+        val xForwarded = xForwardedHost()
+        if (!xForwarded.isNullOrBlank()) {
+            return xForwarded
+        }
+        return host()
     }
 
     // endregion
