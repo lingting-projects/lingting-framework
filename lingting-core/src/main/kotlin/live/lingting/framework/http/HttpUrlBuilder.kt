@@ -54,11 +54,14 @@ open class HttpUrlBuilder {
         @JvmField
         val URL_PATTERN: Pattern = Pattern.compile(URL_PATTERN_REGEX)!!
 
+        /**
+         * @param decode 1: 传入参数可正常转为 URI 时(编码后的url 或者 未编码但是不携带特殊符号的url). 是否对转换后的值进行二次解码. 2: 传入参数不可正常转为URI时, 手动解析后是否进行解码
+         */
         @JvmStatic
         @JvmOverloads
         fun from(url: String, decode: Boolean = false, charset: Charset = StandardCharsets.UTF_8): HttpUrlBuilder {
-            // 尝试直接创建.
             return try {
+                // 默认 url 可直接转换.
                 val u = URI.create(url)
                 from(u, decode, charset)
             } catch (_: IllegalArgumentException) {

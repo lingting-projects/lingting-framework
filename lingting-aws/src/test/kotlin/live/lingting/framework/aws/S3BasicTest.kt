@@ -10,6 +10,7 @@ import live.lingting.framework.aws.s3.interfaces.AwsS3ObjectDelegation
 import live.lingting.framework.concurrent.Await
 import live.lingting.framework.http.HttpClient
 import live.lingting.framework.http.HttpRequest
+import live.lingting.framework.http.HttpUrlBuilder
 import live.lingting.framework.http.download.HttpDownload
 import live.lingting.framework.id.Snowflake
 import live.lingting.framework.thread.Async
@@ -248,7 +249,7 @@ abstract class S3BasicTest {
                 HttpRequest.builder()
                     .put()
                     .body(source)
-                    .url(prePutR.url)
+                    .url(HttpUrlBuilder.from(prePutR.url))
                     .headers(prePutR.headers)
                     .build()
             ).use { putR ->
@@ -269,7 +270,7 @@ abstract class S3BasicTest {
             client.request(
                 HttpRequest.builder()
                     .get()
-                    .url(preGet.url)
+                    .url(HttpUrlBuilder.from(preGet.url))
                     .build()
             ).use { getR ->
                 val string = getR.string()

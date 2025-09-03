@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
  */
 class AwsS3PreSignedResponse(
     /**
-     * 值必须为未进行 encode 的原始url
+     * 值必须为编码后的url
      */
     @JsonProperty("url")
     val url: String,
