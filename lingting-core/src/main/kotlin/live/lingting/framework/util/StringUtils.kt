@@ -2,6 +2,8 @@ package live.lingting.framework.util
 
 import java.io.CharArrayWriter
 import java.util.Base64
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.math.max
 
 /**
@@ -24,7 +26,12 @@ object StringUtils {
      * @return boolean
      */
     @JvmStatic
+    @OptIn(ExperimentalContracts::class)
     fun hasText(str: CharSequence?): Boolean {
+        contract {
+            returns(true) implies (str != null)
+        }
+
         if (str.isNullOrBlank()) {
             return false
         }
