@@ -1,6 +1,8 @@
 package live.lingting.framework.util
 
+import live.lingting.framework.domain.Resource
 import live.lingting.framework.reflect.ClassField
+import live.lingting.framework.util.ClassUtils.classLoaders
 import live.lingting.framework.util.StringUtils.firstLower
 import live.lingting.framework.util.StringUtils.firstUpper
 import java.lang.reflect.Constructor
@@ -87,24 +89,13 @@ object ClassUtils {
 
     @JvmStatic
     fun classLoaders(vararg loaders: ClassLoader?): Set<ClassLoader> {
-        val set = HashSet<ClassLoader>()
+        val set = LinkedHashSet<ClassLoader>()
         set.addAll(loaders.filterNotNull())
         set.add(Thread.currentThread().contextClassLoader)
         set.add(ClassUtils::class.java.classLoader)
         set.add(ClassLoader.getSystemClassLoader())
         set.add(ClassLoader.getPlatformClassLoader())
         return set
-    }
-
-    /**
-     * 判断class是否可以被加载, 使用系统类加载器和当前工具类加载器
-     * @param className 类名
-     * @return true
-     */
-    @JvmStatic
-    fun exists(className: String): Boolean {
-        val loaders = classLoaders(className::class.java.classLoader)
-        return exists(className, loaders)
     }
 
     /**
@@ -117,16 +108,20 @@ object ClassUtils {
         return exists(className, classLoaders(*classLoaders))
     }
 
+    /**
+     * 确定class是否可以被加载
+     * @param className    完整类名
+     * @param classLoaders 类加载
+     */
     @JvmStatic
-    fun exists(className: String, loaders: Set<ClassLoader>): Boolean {
+    @JvmOverloads
+    fun exists(name: String, loaders: Set<ClassLoader> = classLoaders()): Boolean {
         return try {
-            loadClass(className, loaders)
+            loadClass(name, loaders)
             true
         } catch (_: Exception) {
-            //
             false
         }
-
     }
 
     @JvmStatic
@@ -149,7 +144,7 @@ object ClassUtils {
         var ex: Exception? = null
         for (loader in loaders) {
             try {
-                return Class.forName(className, false, loader)
+                return loader.loadClass(className)
             } catch (e: Exception) {
                 ex = e
             }
