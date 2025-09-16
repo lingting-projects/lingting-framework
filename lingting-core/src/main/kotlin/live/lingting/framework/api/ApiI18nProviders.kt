@@ -1,10 +1,10 @@
 package live.lingting.framework.api
 
+import live.lingting.framework.domain.Resource
 import live.lingting.framework.i18n.I18nProvider
 import live.lingting.framework.i18n.I18nSource
 import live.lingting.framework.i18n.MapI18nSource
 import live.lingting.framework.util.LocaleUtils.parseLocale
-import live.lingting.framework.util.Resource
 import live.lingting.framework.util.ResourceUtils
 import live.lingting.framework.util.StreamUtils
 import java.util.Locale
