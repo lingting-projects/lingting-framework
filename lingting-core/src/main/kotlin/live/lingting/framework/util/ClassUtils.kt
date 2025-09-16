@@ -91,8 +91,8 @@ object ClassUtils {
     fun classLoaders(vararg loaders: ClassLoader?): Set<ClassLoader> {
         val set = LinkedHashSet<ClassLoader>()
         set.addAll(loaders.filterNotNull())
-        set.add(Thread.currentThread().contextClassLoader)
         set.add(ClassUtils::class.java.classLoader)
+        set.add(Thread.currentThread().contextClassLoader)
         set.add(ClassLoader.getSystemClassLoader())
         set.add(ClassLoader.getPlatformClassLoader())
         return set
