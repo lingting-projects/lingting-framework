@@ -1,11 +1,13 @@
 package live.lingting.framework.reflect
 
+import live.lingting.framework.util.AnnotationUtils.findAnnotation
+import live.lingting.framework.util.ClassUtils
+import live.lingting.framework.util.ClassUtils.toFiledName
+import live.lingting.framework.util.FieldUtils.isFinal
+import live.lingting.framework.util.StringUtils.firstUpper
 import java.lang.reflect.AccessibleObject
 import java.lang.reflect.Field
 import java.lang.reflect.Method
-import java.lang.reflect.Modifier
-import live.lingting.framework.util.AnnotationUtils.findAnnotation
-import live.lingting.framework.util.ClassUtils.toFiledName
 
 /**
  * 用于获取指定字段的值
@@ -15,19 +17,51 @@ import live.lingting.framework.util.ClassUtils.toFiledName
  * @author lingting 2022/12/6 13:04
  */
 
-data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: Method?) {
+class ClassField(
+    val name: String, val cls: Class<*>,
+    f: Field? = null, g: Method? = null, s: Method? = null
+) {
 
-    val name: String = field?.name ?: when {
-        methodGet != null -> toFiledName(methodGet.name)
-        methodSet != null -> toFiledName(methodSet.name)
-        else -> ""
+    companion object {
+
+        @JvmStatic
+        fun findName(m: Method?): String? {
+            val name = m?.name
+            if (name.isNullOrBlank()) {
+                return null
+            }
+            return toFiledName(name)
+        }
+
+        @JvmStatic
+        fun findName(f: Field? = null, g: Method? = null, s: Method? = null): String {
+            return f?.name ?: findName(g) ?: findName(s) ?: ""
+        }
+
+        @JvmStatic
+        fun findClass(f: Field? = null, g: Method? = null, s: Method? = null): Class<*> {
+            return f?.type ?: g?.returnType ?: s!!.parameterTypes[0]
+        }
     }
 
-    val valueType: Class<*> = field?.type ?: (methodGet?.returnType ?: methodSet!!.parameterTypes[0])
+    constructor(f: Field? = null, g: Method? = null, s: Method? = null) : this(
+        findName(f, g, s), findClass(f, g, s),
+        f, g, s
+    )
 
-    val hasField = field != null
+    val field: Field? by lazy { f ?: ClassUtils.field(cls, name) }
+    val methodGet: Method? by lazy {
+        g ?: ClassUtils.method(cls, "get${name.firstUpper()}") ?: ClassUtils.method(cls, "is${name.firstUpper()}")
+    }
+    val methodSet: Method? by lazy {
+        s ?: ClassUtils.method(cls, "set${name.firstUpper()}")
+    }
 
-    val isFinalField = field != null && Modifier.isFinal(field.modifiers)
+    val valueType: Class<*> by lazy { field?.type ?: (methodGet?.returnType ?: methodSet!!.parameterTypes[0]) }
+
+    val hasField by lazy { field != null }
+
+    val isFinalField by lazy { field?.isFinal == true }
 
     /**
      * 是否拥有指定注解, 会同时对 字段 和 方法进行判断
@@ -64,8 +98,9 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
      * @return java.lang.Object 对象指定字段值
      */
     fun get(obj: Any): Any? {
-        if (methodGet != null) {
-            return methodGet.invoke(obj)
+        val get = methodGet
+        if (get != null) {
+            return get.invoke(obj)
         }
         return field!![obj]
     }
@@ -76,8 +111,9 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
      * @param args set方法参数, 如果无set方法, 则第一个参数会被作为值通过字段设置
      */
     fun set(obj: Any?, vararg args: Any?) {
-        if (methodSet != null) {
-            methodSet.invoke(obj, *args)
+        val set = methodSet
+        if (set != null) {
+            set.invoke(obj, *args)
             return
         }
         field!![obj] = args[0]
@@ -89,11 +125,13 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
      * 是否能够获取值
      */
     fun canGet(o: Any): Boolean {
-        if (methodGet != null) {
-            return methodGet.canAccess(o)
+        val get = methodGet
+        if (get != null) {
+            return get.canAccess(o)
         }
-        if (field != null) {
-            return field.canAccess(o)
+        val f = field
+        if (f != null) {
+            return f.canAccess(o)
         }
         return false
     }
@@ -102,10 +140,15 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
      * 是否能够设置值
      */
     fun canSet(o: Any): Boolean {
-        if (methodSet == null) {
+        val set = methodSet
+        if (set == null) {
             return false
         }
-        return methodSet.canAccess(o)
+        val f = field
+        if (f != null) {
+            return f.canAccess(o) && !f.isFinal
+        }
+        return set.canAccess(o)
     }
 
     /**
@@ -117,21 +160,25 @@ data class ClassField(val field: Field?, val methodGet: Method?, val methodSet: 
     }
 
     fun visibleGet(): ClassField {
-        if (field != null && !field.trySetAccessible()) {
-            field.isAccessible = true
+        val f = field
+        if (f != null && !f.trySetAccessible()) {
+            f.isAccessible = true
         }
-        if (methodGet != null && !methodGet.trySetAccessible()) {
-            methodGet.isAccessible = true
+        val get = methodGet
+        if (get != null && !get.trySetAccessible()) {
+            get.isAccessible = true
         }
         return this
     }
 
     fun visibleSet(): ClassField {
-        if (field != null && !field.trySetAccessible()) {
-            field.isAccessible = true
+        val f = field
+        if (f != null && !f.trySetAccessible()) {
+            f.isAccessible = true
         }
-        if (methodSet != null && !methodSet.trySetAccessible()) {
-            methodSet.isAccessible = true
+        val set = methodSet
+        if (set != null && !set.trySetAccessible()) {
+            set.isAccessible = true
         }
         return this
     }

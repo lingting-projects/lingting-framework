@@ -4,7 +4,6 @@ import live.lingting.framework.domain.Resource
 import live.lingting.framework.reflect.ClassField
 import live.lingting.framework.util.ClassUtils.classLoaders
 import live.lingting.framework.util.StringUtils.firstLower
-import live.lingting.framework.util.StringUtils.firstUpper
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -352,27 +351,10 @@ object ClassUtils {
     fun classFields(cls: Class<*>): Array<ClassField> {
         return CACHE_CLASS_FIELDS.computeIfAbsent(cls) {
             var k: Class<*>? = cls
-            val methods = methods(cls)
-
             val fields: MutableList<ClassField> = ArrayList()
             while (k != null && !k.isAssignableFrom(Any::class.java)) {
                 for (field in k.declaredFields) {
-                    val upper: String = field.name.firstUpper()
-                    // 尝试获取get方法
-                    val getMethodName = "get$upper"
-
-                    var findGet = methods.find { it.name == getMethodName && it.parameterCount == 0 }
-                    // get 不存在则尝试获取 is 方法
-                    if (findGet == null) {
-                        val isMethodName = "is$upper"
-                        findGet = methods.find { it.name == isMethodName && it.parameterCount == 0 }
-                    }
-
-                    // 尝试获取set方法
-                    val setMethodName = "set$upper"
-                    val findSet = methods.find { it.name == setMethodName && it.parameterCount == 1 }
-
-                    fields.add(ClassField(field, findGet, findSet))
+                    fields.add(ClassField(field.name, k))
                 }
                 k = k.superclass
             }
