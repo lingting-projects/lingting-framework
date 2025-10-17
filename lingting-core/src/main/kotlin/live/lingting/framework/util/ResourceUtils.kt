@@ -1,10 +1,7 @@
 package live.lingting.framework.util
 
-import live.lingting.framework.domain.Resource
-import java.io.File
-import java.net.JarURLConnection
-import java.net.URL
-import java.nio.file.Files
+import live.lingting.framework.resource.Resource
+import live.lingting.framework.resource.ResourceResolverProvider
 import java.util.function.Predicate
 
 /**
@@ -20,7 +17,8 @@ object ResourceUtils {
             if (url == null) {
                 continue
             }
-            val r = resolver(url).firstOrNull {
+            val resources = ResourceResolverProvider.resolve(url)
+            val r = resources.firstOrNull {
                 // 普通文件
                 it.name == name
                         // jar中的文件
@@ -59,77 +57,13 @@ object ResourceUtils {
 
             while (resources.hasMoreElements()) {
                 val url = resources.nextElement()
-                val resolver = resolver(url, predicate)
-                result.addAll(resolver)
+                val resources = ResourceResolverProvider.resolve(url, predicate)
+                result.addAll(resources)
             }
 
         }
 
         return result.toList()
-    }
-
-    @JvmStatic
-    @JvmOverloads
-    fun resolver(url: URL, predicate: Predicate<Resource> = Predicate { true }): List<Resource> {
-        val root = url.toString()
-        val protocol = StringUtils.substringBefore(root, Resource.DELIMITER_PROTOCOL)
-        val result = ArrayList<Resource>()
-        if (protocol.startsWith(Resource.PROTOCOL_FILE)) {
-            fillByFile(url, protocol, predicate, result)
-        } else if (protocol.startsWith(Resource.PROTOCOL_JAR)) {
-            fillByJar(url, root, protocol, predicate, result)
-        }
-        return result
-    }
-
-    private fun fillByJar(
-        url: URL,
-        root: String,
-        protocol: String,
-        predicate: Predicate<Resource>,
-        result: ArrayList<Resource>
-    ) {
-        val connection = url.openConnection()
-        if (connection is JarURLConnection) {
-            val jarPaths = root.split(Resource.DELIMITER_JAR).dropLastWhile { it.isEmpty() }.dropLast(1)
-            val jarPath = if (jarPaths.isEmpty()) "" else {
-                jarPaths.joinToString(Resource.DELIMITER_JAR)
-                    .substring(protocol.length + Resource.DELIMITER_PROTOCOL.length)
-                    .let { it + Resource.DELIMITER_JAR }
-            }
-            val jarFile = connection.jarFile
-            val entries = jarFile.entries()
-            while (entries.hasMoreElements()) {
-                val entry = entries.nextElement()
-                val name = entry.name.split("/").dropLastWhile { it.isEmpty() }.last()
-                val of = Resource(protocol, entry.name, name, jarPath, entry.isDirectory)
-                if (predicate.test(of)) {
-                    result.add(of)
-                }
-            }
-        }
-    }
-
-    private fun fillByFile(url: URL, protocol: String, predicate: Predicate<Resource>, result: ArrayList<Resource>) {
-        val uri = url.toURI()
-        val source = File(uri)
-        val root = source.absolutePath
-        val files = if (source.isDirectory) {
-            ArrayList<File>().apply {
-                Files.walk(source.toPath()).use {
-                    it.forEach { p -> add(p.toFile()) }
-                }
-            }
-        } else {
-            listOf(source)
-        }
-
-        files.forEach {
-            val of = Resource(protocol, it, root)
-            if (predicate.test(of)) {
-                result.add(of)
-            }
-        }
     }
 
 }

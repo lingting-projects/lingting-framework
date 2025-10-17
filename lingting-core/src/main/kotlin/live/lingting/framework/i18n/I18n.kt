@@ -29,7 +29,7 @@ object I18n {
             it.add(ApiI18nProviders)
 
             try {
-                val loaders = ServiceLoader.load<I18nProvider>(I18nProvider::class.java)
+                val loaders = ServiceLoader.load(I18nProvider::class.java)
 
                 for (provider in loaders) {
                     if (provider != null) {

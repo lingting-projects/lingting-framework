@@ -1,5 +1,6 @@
-package live.lingting.framework.domain
+package live.lingting.framework.resource
 
+import live.lingting.framework.resource.ResourceResolverProvider.DELIMITER
 import live.lingting.framework.util.StreamUtils
 import java.io.File
 import java.io.InputStream
@@ -28,34 +29,21 @@ class Resource(
     val isDirectory: Boolean
 ) {
 
-    companion object {
-
-        const val DELIMITER_PROTOCOL = ":/"
-
-        const val DELIMITER_JAR: String = "!/"
-
-        const val DELIMITER_FILE: String = "/"
-
-        const val PROTOCOL_JAR: String = "jar"
-
-        const val PROTOCOL_FILE: String = "file"
-
-        @JvmStatic
-        fun replace(source: String): String {
-            return source.replace("\\", DELIMITER_FILE)
-        }
-
-    }
-
     constructor(protocol: String, file: File, root: String) : this(
         protocol, file.absolutePath.substring(root.length), file.name, root, file.isDirectory
     )
 
     constructor(protocol: String, file: File) : this(protocol, file, file.parentFile.absolutePath)
 
-    val path = replace(p)
+    /**
+     * 统一用 /
+     */
+    val path = p.replace("\\", "/")
 
-    val root = replace(r)
+    /**
+     * 统一用 /
+     */
+    val root = r.replace("\\", "/")
 
     /**
      * 资源本身是文件
@@ -63,19 +51,9 @@ class Resource(
     val isFile = !isDirectory
 
     /**
-     * 资源来源是jar包
-     */
-    val fromJar: Boolean = protocol.startsWith(PROTOCOL_JAR)
-
-    /**
-     * 资源来源是文件
-     */
-    val fromFile: Boolean = protocol.startsWith(PROTOCOL_FILE)
-
-    /**
      * 资源链接 - 包含协议和路径
      */
-    val link = protocol + DELIMITER_PROTOCOL + root + path
+    val link = protocol + DELIMITER + root + path
 
     val uri: URI by lazy { URI.create(link) }
 

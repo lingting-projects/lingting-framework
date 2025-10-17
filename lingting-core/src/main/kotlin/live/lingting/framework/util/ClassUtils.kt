@@ -1,6 +1,5 @@
 package live.lingting.framework.util
 
-import live.lingting.framework.domain.Resource
 import live.lingting.framework.reflect.ClassField
 import live.lingting.framework.util.ClassUtils.classLoaders
 import live.lingting.framework.util.StringUtils.firstLower
@@ -196,7 +195,7 @@ object ClassUtils {
         loaders: Set<ClassLoader> = classLoaders(),
         error: BiConsumer<String, Throwable> = BiConsumer { _, _ -> },
     ): Set<Class<T>> {
-        val path = Resource.replace(basePack).replace(".", "/")
+        val path = basePack.replace("\\", "/").replace(".", "/")
 
         val collection = ResourceUtils.scan(path) {
             !it.isDirectory && it.name.endsWith(".class")
