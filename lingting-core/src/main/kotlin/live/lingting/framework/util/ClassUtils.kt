@@ -205,17 +205,24 @@ object ClassUtils {
 
         val classes: MutableSet<Class<T>> = HashSet()
         for (resource in collection) {
-            val last = resource.path
-            val link = path + last
-            val name = convertClassName(link)
+            val nameByJar = convertClassName(resource.path)
+            val nameByFile = convertClassName(path + resource.path)
+            var cls: Class<T>? = try {
+                loadClass(nameByJar, loaders) as Class<T>
+            } catch (_: Throwable) {
+                null
+            }
 
-            try {
-                val aClass = loadClass(name, loaders) as Class<T>
-                if (filter.test(aClass)) {
-                    classes.add(aClass)
+            if (cls == null) {
+                cls = try {
+                    loadClass(nameByFile, loaders) as Class<T>
+                } catch (e: Throwable) {
+                    error.accept(nameByFile, e)
+                    null
                 }
-            } catch (e: Throwable) {
-                error.accept(name, e)
+            }
+            if (cls != null && filter.test(cls)) {
+                classes.add(cls)
             }
         }
         return classes

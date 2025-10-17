@@ -55,8 +55,7 @@ object ResourceUtils {
                 return@forEach
             }
 
-            while (resources.hasMoreElements()) {
-                val url = resources.nextElement()
+            resources.asSequence().forEach { url ->
                 val resources = ResourceResolverProvider.resolve(url, predicate)
                 result.addAll(resources)
             }
