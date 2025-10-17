@@ -2,6 +2,7 @@ package live.lingting.framework.util
 
 import live.lingting.framework.reflect.ClassField
 import live.lingting.framework.util.ClassUtils.classLoaders
+import live.lingting.framework.util.FieldUtils.isFinal
 import live.lingting.framework.util.StringUtils.firstLower
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
@@ -176,7 +177,7 @@ object ClassUtils {
     @JvmStatic
     @JvmOverloads
     fun <T : Any> scan(basePack: String, cls: Class<*>? = null): Set<Class<T>> {
-        return scan(basePack, Predicate { cls == null || cls.isAssignableFrom(it) }, classLoaders(cls?.classLoader))
+        return scan(basePack, Predicate { cls == null || isSuper(it, cls) }, classLoaders(cls?.classLoader))
     }
 
     fun <T : Any> scan(basePack: String, cls: KClass<T>?) = scan<T>(basePack, cls?.java)
@@ -436,7 +437,10 @@ object ClassUtils {
         if (cls == Any::class.java) {
             return false
         }
-        return superClass.isAssignableFrom(cls)
+        if (superClass.isAssignableFrom(cls)) {
+            return true
+        }
+        return isSuper(cls, superClass.name)
     }
 
     fun isSuper(cls: KClass<*>, superClass: KClass<*>) = isSuper(cls.java, superClass.java)
@@ -447,6 +451,56 @@ object ClassUtils {
     }
 
     fun <T : Any> constructors(cls: KClass<T>) = constructors(cls.java)
+
+    @JvmField
+    val AUTOWIRE_ANNOTATIONS = listOf(
+        "org.springframework.beans.factory.annotation.Autowired",
+        "jakarta.annotation.Resource",
+        "javax.annotation.Resource"
+    )
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T> newInstance(constructor: Constructor<T>, autowired: Boolean = true, getArg: Function<Class<*>, Any?>): T {
+        val types = constructor.parameterTypes
+        val arguments = mutableListOf<Any?>()
+
+        for (cls in types) {
+            val argument = getArg.apply(cls)
+            arguments.add(argument)
+        }
+
+        val t = constructor.newInstance(*arguments.toTypedArray())
+        if (!autowired) {
+            return t
+        }
+        val clazz = t::class.java
+        // 自动注入 - 字段
+        val fields = fields(clazz).filter { !it.isFinal }
+        // 自动注入 - 方法
+        val methods = methods(clazz).filter { it.parameterCount == 1 }
+
+        val list = fields + methods
+
+        list.forEach {
+            val isAutowired =
+                it.annotations.any { a -> AUTOWIRE_ANNOTATIONS.contains(a.annotationClass.qualifiedName) }
+            if (!isAutowired) {
+                return@forEach
+            }
+            val cls = if (it is Method) it.parameterTypes[0] else (it as Field).type
+            val arg = getArg.apply(cls)
+            val cf = if (it is Method) {
+                ClassField(null, null, it)
+            } else {
+                ClassField(it as Field, null, null)
+            }
+
+            cf.visibleSet().set(t, arg)
+        }
+
+        return t
+    }
 
     @JvmStatic
     inline val Class<*>.isPublic: Boolean get() = Modifier.isPublic(modifiers)
