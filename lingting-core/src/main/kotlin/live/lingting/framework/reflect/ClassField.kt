@@ -17,7 +17,7 @@ import java.lang.reflect.Method
  * @author lingting 2022/12/6 13:04
  */
 
-class ClassField(
+class ClassField @JvmOverloads constructor(
     val name: String, val cls: Class<*>,
     f: Field? = null, g: Method? = null, s: Method? = null
 ) {
