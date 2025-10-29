@@ -1,10 +1,11 @@
 package live.lingting.framework.value
 
+import live.lingting.framework.util.Slf4jUtils.logger
+import java.util.LinkedList
 import java.util.Spliterator
 import java.util.Spliterators
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
-import live.lingting.framework.util.Slf4jUtils.logger
 
 /**
  * @author lingting 2023-12-29 11:30
@@ -13,7 +14,7 @@ abstract class CursorValue<T> : Iterator<T> {
 
     protected val log = logger()
 
-    protected val current: MutableList<T> = ArrayList()
+    protected val current = LinkedList<T>()
 
     /**
      * 是否已经无数据了, 如果为true, 则不会继续调用 [.nextBatchData]方法, 且
@@ -52,7 +53,7 @@ abstract class CursorValue<T> : Iterator<T> {
             throw NoSuchElementException()
         }
         count++
-        return current.removeAt(0)
+        return current.removeFirst()
     }
 
     /**
