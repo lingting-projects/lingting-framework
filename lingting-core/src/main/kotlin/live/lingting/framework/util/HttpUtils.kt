@@ -1,9 +1,6 @@
 package live.lingting.framework.util
 
 import java.util.regex.Pattern
-import javax.servlet.http.HttpServletRequest
-import live.lingting.framework.http.header.HttpHeaders
-import live.lingting.framework.util.EnumerationUtils.forEach
 
 /**
  * @author lingting 2022/10/28 17:54
@@ -14,19 +11,6 @@ object HttpUtils {
 
     @JvmField
     val PATTERN: Pattern = Pattern.compile(PATTERN_REGEX)!!
-
-    @JvmStatic
-    fun headers(request: HttpServletRequest): HttpHeaders {
-        return HttpHeaders.empty().let {
-            request.headerNames.forEach { name ->
-                val values = request.getHeaders(name)
-                values.forEach { value ->
-                    it.add(name, value)
-                }
-            }
-            it.unmodifiable()
-        }
-    }
 
     @JvmStatic
     fun isHttpUrl(string: String?): Boolean {

@@ -11,6 +11,7 @@ import live.lingting.framework.security.domain.SecurityToken
 import live.lingting.framework.security.password.SecurityPassword
 import live.lingting.framework.security.po.EndpointPasswordPO
 import live.lingting.framework.security.po.EndpointTokenPO
+import live.lingting.framework.security.resolver.SecurityTokenResolverRegistry
 import live.lingting.framework.security.resource.SecurityHolder.authorization
 import live.lingting.framework.security.resource.SecurityHolder.scope
 import live.lingting.framework.security.store.SecurityStore
@@ -23,6 +24,7 @@ open class SecurityEndpointService(
     val store: SecurityStore,
     val securityPassword: SecurityPassword,
     val convert: SecurityConvert,
+    val registry: SecurityTokenResolverRegistry,
 ) {
 
     open fun logout(): AuthorizationVO {
@@ -68,7 +70,7 @@ open class SecurityEndpointService(
 
     open fun resolve(po: EndpointTokenPO): AuthorizationVO {
         val token = token(po)
-        val scope = store.get(token)
+        val scope = registry.resolver(token)
         if (scope == null || !scope.isLogin || !scope.enabled()) {
             throw A_TOKEN_INVALID.toException()
         }

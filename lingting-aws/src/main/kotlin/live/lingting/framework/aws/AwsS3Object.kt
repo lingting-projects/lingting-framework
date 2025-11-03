@@ -61,9 +61,8 @@ class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Cli
         call(request)
     }
 
-    override fun multipartInit(acl: Acl?, meta: S3Meta?): String {
+    override fun multipartInit(meta: S3Meta?): String {
         val request = AwsS3SimpleRequest(HttpMethod.POST)
-        request.acl = acl
         request.params.add("uploads")
         meta?.run { request.meta.addAll(this) }
         val response = call(request)
@@ -72,8 +71,14 @@ class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Cli
         return node["UploadId"].asText()
     }
 
-    override fun multipart(source: InputStream, parSize: DataSize, async: Async): AwsS3MultipartTask {
-        val uploadId = multipartInit()
+    override fun multipart(
+        source: InputStream,
+        parSize: DataSize,
+        async: Async,
+        acl: Acl?,
+        meta: S3Meta?
+    ): AwsS3MultipartTask {
+        val uploadId = multipartInit(meta)
 
         val multipart = Multipart.builder()
             .id(uploadId)
@@ -84,7 +89,7 @@ class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Cli
             .minPartSize(AwsUtils.MULTIPART_MIN_PART_SIZE)
             .build()
 
-        val task = AwsS3MultipartTask(multipart, async, this)
+        val task = AwsS3MultipartTask(multipart, async, acl, this)
         task.start()
         return task
     }
@@ -106,10 +111,11 @@ class AwsS3Object(properties: S3Properties, override val key: String) : AwsS3Cli
      * 合并分片
      * @param map key: part. value: etag
      */
-    override fun multipartMerge(uploadId: String, map: Map<Long, String>) {
+    override fun multipartMerge(uploadId: String, map: Map<Long, String>, acl: Acl?) {
         val request = AwsS3MultipartMergeRequest()
         request.uploadId = uploadId
         request.eTagMap = map
+        request.acl = acl
         call(request)
     }
 

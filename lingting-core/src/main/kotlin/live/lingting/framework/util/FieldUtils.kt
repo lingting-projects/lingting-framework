@@ -9,21 +9,21 @@ import java.lang.reflect.Modifier
 object FieldUtils {
 
     @JvmStatic
-    inline val Field.isPublic: Boolean get() = Modifier.isPublic(modifiers)
+    inline val Field?.isPublic: Boolean get() = if (this == null) false else Modifier.isPublic(modifiers)
 
     @JvmStatic
-    inline val Field.isProtected: Boolean get() = Modifier.isProtected(modifiers)
+    inline val Field?.isProtected: Boolean get() = if (this == null) false else Modifier.isProtected(modifiers)
 
     @JvmStatic
-    inline val Field.isPrivate: Boolean get() = Modifier.isPrivate(modifiers)
+    inline val Field?.isPrivate: Boolean get() = if (this == null) false else Modifier.isPrivate(modifiers)
 
     @JvmStatic
-    inline val Field.isStatic: Boolean get() = Modifier.isStatic(modifiers)
+    inline val Field?.isStatic: Boolean get() = if (this == null) false else Modifier.isStatic(modifiers)
 
     @JvmStatic
-    inline val Field.isFinal: Boolean get() = Modifier.isFinal(modifiers)
+    inline val Field?.isFinal: Boolean get() = if (this == null) false else Modifier.isFinal(modifiers)
 
     @JvmStatic
-    inline val Field.isVolatile: Boolean get() = Modifier.isVolatile(modifiers)
+    inline val Field?.isVolatile: Boolean get() = if (this == null) false else Modifier.isVolatile(modifiers)
 
 }

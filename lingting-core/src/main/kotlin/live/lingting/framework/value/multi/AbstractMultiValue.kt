@@ -169,7 +169,7 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
     }
 
     override fun keys(): Set<K> {
-        return map.keys
+        return map.keys.map { convert(it) }.toSet()
     }
 
     override fun values(): Collection<C> {
@@ -178,7 +178,8 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
 
     override fun map(): Map<K, C> {
         val hashMap: MutableMap<K, C> = HashMap()
-        map.forEach { (k: K, vs: C) ->
+        map.forEach { (_k, vs) ->
+            val k = convert(_k)
             val c = supplier.get()
             c.addAll(vs)
             hashMap.put(k, c)
@@ -187,7 +188,7 @@ abstract class AbstractMultiValue<K, V, C : MutableCollection<V>> protected cons
     }
 
     override fun entries(): List<MultiValue.Entry<K, V, C>> {
-        return map.entries.map { MultiValue.Entry(it.key, it.value) }
+        return map.entries.map { MultiValue.Entry(convert(it.key), it.value) }
     }
 
     override fun unmodifiable(): MultiValue<K, V, out Collection<V>> {

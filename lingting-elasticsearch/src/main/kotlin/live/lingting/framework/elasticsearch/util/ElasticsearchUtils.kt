@@ -25,7 +25,7 @@ object ElasticsearchUtils {
 
     @JvmStatic
     fun <T, R> resolve(function: EFunction<T, R>): LambdaMeta? {
-        return LambdaMeta.Companion.of(function)
+        return LambdaMeta.of(function)
     }
 
     @JvmStatic

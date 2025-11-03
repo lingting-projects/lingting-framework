@@ -32,7 +32,7 @@ class ClassUtilsTest {
         loaders.add(ClassUtils::class.java.classLoader)
         loaders.add(ClassUtilsTest::class.java.classLoader)
 
-        val scan: Set<Class<Any>> = assertDoesNotThrow(ThrowingSupplier { ClassUtils.scan<Any>("live.lingting.framework") })
+        val scan: Set<Class<Any>> = assertDoesNotThrow(ThrowingSupplier { ClassUtils.scan("live.lingting.framework") })
         assertFalse(scan.isEmpty())
         val typesN = ClassUtils.typeArguments(N::class)
         assertTrue(typesN.isEmpty())

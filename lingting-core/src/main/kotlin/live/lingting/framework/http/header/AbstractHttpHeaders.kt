@@ -23,7 +23,8 @@ abstract class AbstractHttpHeaders : StringMultiValue, HttpHeaders {
     }
 
     override fun hasKey(key: String): Boolean {
-        return map[key]?.isEmpty() == false
+        val k = convert(key)
+        return map[k]?.isEmpty() == false
     }
 
     override fun keys(): Set<String> {

@@ -252,6 +252,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
     }
 
     // endregion
+
     // region compare ifPresent
     fun <V : Any> eqIfPresent(column: SFunction<T, V?>, value: V?): C {
         return eq(isPresent(value), column, value)
@@ -310,8 +311,10 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
     }
 
     // endregion
+
     // region compare extended
     // endregion
+
     // region func
     fun isNull(column: SFunction<T, *>): C {
         return isNull(true, column)
@@ -573,6 +576,7 @@ abstract class LambdaWrapper<T : Any, C : LambdaWrapper<T, C>> : AbstractWrapper
     }
 
     // endregion
+
     // region func ifPresent
     fun <V : Any> inIfPresent(column: SFunction<T, V?>, coll: Collection<V>?): C {
         return `in`(isPresent(coll), column, coll ?: emptyList())

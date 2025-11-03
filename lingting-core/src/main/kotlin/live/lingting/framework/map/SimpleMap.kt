@@ -1,9 +1,11 @@
 package live.lingting.framework.map
 
+import live.lingting.framework.util.BooleanUtils.isFalse
+import live.lingting.framework.util.BooleanUtils.isTrue
+import live.lingting.framework.util.OptionalUtils.optional
 import java.util.Optional
 import java.util.function.Function
 import java.util.function.Predicate
-import live.lingting.framework.util.OptionalUtils.optional
 
 /**
  * @author lingting 2024-04-20 16:17
@@ -34,5 +36,25 @@ interface SimpleMap<K, V> : MutableMap<K, V> {
         }
         return func.apply(v)
     }
+
+    // region bool
+
+    fun getBool(key: K): Boolean? {
+        val v = find(key)
+        if (v.isTrue()) {
+            return true
+        }
+        if (v.isFalse()) {
+            return false
+        }
+        return null
+    }
+
+    fun getBool(key: K, default: Boolean) = getBool(key) ?: default
+
+    fun isTrue(key: K) = getBool(key, false)
+    fun isFalse(key: K) = !getBool(key, true)
+
+    // endregion
 
 }

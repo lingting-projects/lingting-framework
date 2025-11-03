@@ -90,6 +90,21 @@ class MultipartBuilder {
             partSize(partSize + (partSize / 2))
             return parts()
         }
+        // 限制了分片最大大小, 超时后需要缩减
+        if (maxPartSize.bytes > 0 && partSize > maxPartSize) {
+            if (size < minPartSize) {
+                partSize(minPartSize)
+            } else if (maxPartCount > 0) {
+                partSize((partSize / maxPartCount).bytes)
+                // 如果依旧超出, 则表示无法满足要求
+                if (partSize > maxPartSize) {
+                    throw IllegalArgumentException("无法计算分片. 原始大小: $size, 最大分片数: $maxPartCount, 单分片最小大小: $minPartSize, 单分票最大大小: $maxPartSize")
+                }
+            } else {
+                partSize(partSize - (partSize / 2))
+            }
+            return parts()
+        }
         return Multipart.split(size, partSize)
     }
 

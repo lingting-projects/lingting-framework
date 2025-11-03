@@ -176,7 +176,7 @@ interface ElasticsearchApi<T> {
             scrollClear(nextScrollId)
         }
 
-        return ScrollResult.Companion.of<T, String>(collect, nextScrollId)
+        return ScrollResult.of(collect, nextScrollId)
     }
 
     fun scroll(scrollId: String?, operator: UnaryOperator<ScrollRequest.Builder>): ScrollResult<T, String>

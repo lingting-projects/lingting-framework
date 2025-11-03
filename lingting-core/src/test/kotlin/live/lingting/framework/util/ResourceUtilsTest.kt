@@ -1,5 +1,8 @@
 package live.lingting.framework.util
 
+import live.lingting.framework.resource.FileResourceResolver
+import live.lingting.framework.resource.JarResourceResolver
+import live.lingting.framework.resource.Resource
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -37,7 +40,7 @@ class ResourceUtilsTest {
 
         val s3 = ResourceUtils.scan(".") { it.isDirectory }
         for (r in s3) {
-            if (r.fromFile) {
+            if (r.protocol.startsWith(FileResourceResolver.PROTOCOL)) {
                 val file = r.file()
                 assertTrue(file.isDirectory)
                 assertTrue(file.exists())
@@ -52,15 +55,16 @@ class ResourceUtilsTest {
         val s6 = ResourceUtils.scan("jakarta/annotation")
         assertNotNull(s6)
         s6.forEach {
-            assertTrue(it.fromJar)
+            assertTrue(it.protocol.startsWith(JarResourceResolver.PROTOCOL))
             assertFalse(it.name.contains("/"))
         }
+        assertTrue(s6.any { it.name.endsWith(".class") })
     }
 
     @Test
     fun instance() {
         val f1 = SystemUtils.homeDir()
-        val r1 = Resource(Resource.PROTOCOL_FILE, f1)
+        val r1 = Resource(FileResourceResolver.PROTOCOL, f1)
         assertDoesNotThrow { r1.url }
         val r2 = Resource(r1.protocol, "/.andoird", ".android", f1.absolutePath, true)
         assertDoesNotThrow { r2.url }

@@ -1,15 +1,16 @@
 package live.lingting.framework.util
 
 import live.lingting.framework.reflect.ClassField
+import live.lingting.framework.util.ClassUtils.classLoaders
+import live.lingting.framework.util.FieldUtils.isFinal
 import live.lingting.framework.util.StringUtils.firstLower
-import live.lingting.framework.util.StringUtils.firstUpper
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
-import java.util.*
+import java.util.Objects
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.BiConsumer
 import java.util.function.BiFunction
@@ -87,23 +88,13 @@ object ClassUtils {
 
     @JvmStatic
     fun classLoaders(vararg loaders: ClassLoader?): Set<ClassLoader> {
-        val set = HashSet<ClassLoader>()
+        val set = LinkedHashSet<ClassLoader>()
         set.addAll(loaders.filterNotNull())
         set.add(ClassUtils::class.java.classLoader)
-        set.add(ClassLoader.getSystemClassLoader())
         set.add(Thread.currentThread().contextClassLoader)
+        set.add(ClassLoader.getSystemClassLoader())
+        set.add(ClassLoader.getPlatformClassLoader())
         return set
-    }
-
-    /**
-     * 判断class是否可以被加载, 使用系统类加载器和当前工具类加载器
-     * @param className 类名
-     * @return true
-     */
-    @JvmStatic
-    fun exists(className: String): Boolean {
-        val loaders = classLoaders(className::class.java.classLoader)
-        return exists(className, loaders)
     }
 
     /**
@@ -116,16 +107,20 @@ object ClassUtils {
         return exists(className, classLoaders(*classLoaders))
     }
 
+    /**
+     * 确定class是否可以被加载
+     * @param className    完整类名
+     * @param classLoaders 类加载
+     */
     @JvmStatic
-    fun exists(className: String, loaders: Set<ClassLoader>): Boolean {
+    @JvmOverloads
+    fun exists(name: String, loaders: Set<ClassLoader> = classLoaders()): Boolean {
         return try {
-            loadClass(className, loaders)
+            loadClass(name, loaders)
             true
         } catch (_: Exception) {
-            //
             false
         }
-
     }
 
     @JvmStatic
@@ -148,7 +143,7 @@ object ClassUtils {
         var ex: Exception? = null
         for (loader in loaders) {
             try {
-                return Class.forName(className, false, loader)
+                return loader.loadClass(className)
             } catch (e: Exception) {
                 ex = e
             }
@@ -182,7 +177,7 @@ object ClassUtils {
     @JvmStatic
     @JvmOverloads
     fun <T : Any> scan(basePack: String, cls: Class<*>? = null): Set<Class<T>> {
-        return scan<T>(basePack, Predicate { cls == null || cls.isAssignableFrom(it) }, classLoaders(cls?.classLoader))
+        return scan(basePack, Predicate { cls == null || isSuper(it, cls) }, classLoaders(cls?.classLoader))
     }
 
     fun <T : Any> scan(basePack: String, cls: KClass<T>?) = scan<T>(basePack, cls?.java)
@@ -201,7 +196,7 @@ object ClassUtils {
         loaders: Set<ClassLoader> = classLoaders(),
         error: BiConsumer<String, Throwable> = BiConsumer { _, _ -> },
     ): Set<Class<T>> {
-        val path = Resource.replace(basePack).replace(".", "/")
+        val path = basePack.replace("\\", "/").replace(".", "/")
 
         val collection = ResourceUtils.scan(path) {
             !it.isDirectory && it.name.endsWith(".class")
@@ -211,24 +206,31 @@ object ClassUtils {
 
         val classes: MutableSet<Class<T>> = HashSet()
         for (resource in collection) {
-            val last = resource.path
-            val link = path + last
-            val name = convertClassName(link)
+            val nameByJar = convertClassName(resource.path)
+            val nameByFile = convertClassName(path + resource.path)
+            var cls: Class<T>? = try {
+                loadClass(nameByJar, loaders) as Class<T>
+            } catch (_: Throwable) {
+                null
+            }
 
-            try {
-                val aClass = loadClass(name, loaders) as Class<T>
-                if (filter.test(aClass)) {
-                    classes.add(aClass)
+            if (cls == null) {
+                cls = try {
+                    loadClass(nameByFile, loaders) as Class<T>
+                } catch (e: Throwable) {
+                    error.accept(nameByFile, e)
+                    null
                 }
-            } catch (e: Throwable) {
-                error.accept(name, e)
+            }
+            if (cls != null && filter.test(cls)) {
+                classes.add(cls)
             }
         }
         return classes
     }
 
     fun <T : Any> scan(basePack: String, filter: Predicate<KClass<T>>, error: BiConsumer<String, Throwable>) = {
-        scan<T>(basePack, Predicate<Class<T>> { filter.test(it.kotlin) }, error = error)
+        scan(basePack, Predicate<Class<T>> { filter.test(it.kotlin) }, error = error)
     }
 
     /**
@@ -255,7 +257,7 @@ object ClassUtils {
         toVal: BiFunction<Field, Any?, T>
     ): Map<String, T> {
         if (o == null) {
-            return emptyMap<String, T>()
+            return emptyMap()
         }
         val map = HashMap<String, T>()
         for (field in fields(o.javaClass)) {
@@ -264,7 +266,7 @@ object ClassUtils {
 
                 try {
                     value = field[o]
-                } catch (e: IllegalAccessException) {
+                } catch (_: IllegalAccessException) {
                     //
                 }
 
@@ -356,27 +358,10 @@ object ClassUtils {
     fun classFields(cls: Class<*>): Array<ClassField> {
         return CACHE_CLASS_FIELDS.computeIfAbsent(cls) {
             var k: Class<*>? = cls
-            val methods = methods(cls)
-
             val fields: MutableList<ClassField> = ArrayList()
             while (k != null && !k.isAssignableFrom(Any::class.java)) {
                 for (field in k.declaredFields) {
-                    val upper: String = field.name.firstUpper()
-                    // 尝试获取get方法
-                    val getMethodName = "get$upper"
-
-                    var findGet = methods.find { it.name == getMethodName && it.parameterCount == 0 }
-                    // get 不存在则尝试获取 is 方法
-                    if (findGet == null) {
-                        val isMethodName = "is$upper"
-                        findGet = methods.find { it.name == isMethodName && it.parameterCount == 0 }
-                    }
-
-                    // 尝试获取set方法
-                    val setMethodName = "set$upper"
-                    var findSet = methods.find { it.name == setMethodName && it.parameterCount == 1 }
-
-                    fields.add(ClassField(field, findGet, findSet))
+                    fields.add(ClassField(field.name, k))
                 }
                 k = k.superclass
             }
@@ -452,7 +437,10 @@ object ClassUtils {
         if (cls == Any::class.java) {
             return false
         }
-        return superClass.isAssignableFrom(cls)
+        if (superClass.isAssignableFrom(cls)) {
+            return true
+        }
+        return isSuper(cls, superClass.name)
     }
 
     fun isSuper(cls: KClass<*>, superClass: KClass<*>) = isSuper(cls.java, superClass.java)
@@ -463,6 +451,56 @@ object ClassUtils {
     }
 
     fun <T : Any> constructors(cls: KClass<T>) = constructors(cls.java)
+
+    @JvmField
+    val AUTOWIRE_ANNOTATIONS = listOf(
+        "org.springframework.beans.factory.annotation.Autowired",
+        "jakarta.annotation.Resource",
+        "javax.annotation.Resource"
+    )
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T> newInstance(constructor: Constructor<T>, autowired: Boolean = true, getArg: Function<Class<*>, Any?>): T {
+        val types = constructor.parameterTypes
+        val arguments = mutableListOf<Any?>()
+
+        for (cls in types) {
+            val argument = getArg.apply(cls)
+            arguments.add(argument)
+        }
+
+        val t = constructor.newInstance(*arguments.toTypedArray())
+        if (!autowired) {
+            return t
+        }
+        val clazz = t::class.java
+        // 自动注入 - 字段
+        val fields = fields(clazz).filter { !it.isFinal }
+        // 自动注入 - 方法
+        val methods = methods(clazz).filter { it.parameterCount == 1 }
+
+        val list = fields + methods
+
+        list.forEach {
+            val isAutowired =
+                it.annotations.any { a -> AUTOWIRE_ANNOTATIONS.contains(a.annotationClass.qualifiedName) }
+            if (!isAutowired) {
+                return@forEach
+            }
+            val cls = if (it is Method) it.parameterTypes[0] else (it as Field).type
+            val arg = getArg.apply(cls)
+            val cf = if (it is Method) {
+                ClassField(null, null, it)
+            } else {
+                ClassField(it as Field, null, null)
+            }
+
+            cf.visibleSet().set(t, arg)
+        }
+
+        return t
+    }
 
     @JvmStatic
     inline val Class<*>.isPublic: Boolean get() = Modifier.isPublic(modifiers)

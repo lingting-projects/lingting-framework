@@ -1,10 +1,10 @@
 package live.lingting.framework.sensitive
 
-import java.util.ServiceConfigurationError
-import java.util.ServiceLoader
 import live.lingting.framework.Sequence
 import live.lingting.framework.sensitive.serializer.SensitiveDefaultProvider
 import live.lingting.framework.util.StringUtils
+import java.util.ServiceConfigurationError
+import java.util.ServiceLoader
 
 /**
  * @author lingting 2023-04-27 15:42
@@ -90,7 +90,7 @@ object SensitiveUtils {
         providers.add(SensitiveDefaultProvider)
 
         try {
-            val loader = ServiceLoader.load<SensitiveProvider>(SensitiveProvider::class.java)
+            val loader = ServiceLoader.load(SensitiveProvider::class.java)
 
             loader.forEach {
                 if (it == null) {
