@@ -1,10 +1,9 @@
 package live.lingting.framework.util
 
-import jakarta.servlet.http.HttpServletRequest
 import live.lingting.framework.http.header.HttpHeaders
-import live.lingting.framework.util.IpUtils.getFirstIp
 import java.net.InetAddress
 import java.util.function.Predicate
+import javax.servlet.http.HttpServletRequest
 
 /**
  * @author psh 2022-04-21 16:55

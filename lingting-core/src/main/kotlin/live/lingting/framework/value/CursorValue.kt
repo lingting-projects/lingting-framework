@@ -6,6 +6,7 @@ import java.util.Spliterator
 import java.util.Spliterators
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
+import kotlin.streams.toList
 
 /**
  * @author lingting 2023-12-29 11:30

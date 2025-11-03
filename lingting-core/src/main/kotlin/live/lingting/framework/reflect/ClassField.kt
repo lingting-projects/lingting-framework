@@ -146,7 +146,7 @@ class ClassField @JvmOverloads constructor(
         }
         val f = field
         if (f != null) {
-            return f.canAccess(o) && !f.isFinal
+            return !f.isFinal
         }
         return set.isAccessible
     }
