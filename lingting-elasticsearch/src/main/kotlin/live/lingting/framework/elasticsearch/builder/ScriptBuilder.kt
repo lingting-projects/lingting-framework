@@ -11,9 +11,12 @@ open class ScriptBuilder<T> :
     live.lingting.framework.elasticsearch.builder.Script<T, ScriptBuilder<T>> {
 
     companion object {
+
         const val PREFIX_SOURCE: String = "ctx._source"
 
         const val PREFIX_PARAMS: String = "params"
+
+        const val PREFIX_DOT_NAME: String = "___"
 
         @JvmStatic
         fun <T> builder(): ScriptBuilder<T> {
@@ -86,7 +89,9 @@ open class ScriptBuilder<T> :
     protected var lang = "painless"
 
     override fun param(name: String, value: Any?): ScriptBuilder<T> {
-        params[name] = JsonData.of(value)
+        val key = if (!name.contains(".")) name
+        else "$PREFIX_DOT_NAME${name.replace('.', '_')}"
+        params[key] = JsonData.of(value)
         return this
     }
 

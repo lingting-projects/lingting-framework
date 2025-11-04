@@ -36,7 +36,7 @@ interface Script<T, B : Script<T, B>> {
     // region set
 
     fun <R> set(func: EFunction<T, R>, value: R?): B {
-        val field: String = ElasticsearchUtils.fieldName(func)
+        val field = ElasticsearchUtils.fieldName(func)
         return set(field, value)
     }
 
