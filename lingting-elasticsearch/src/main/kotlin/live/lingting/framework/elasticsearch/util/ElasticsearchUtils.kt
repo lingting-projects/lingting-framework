@@ -50,7 +50,7 @@ object ElasticsearchUtils {
         }
 
         // type为版本冲突
-        return phrase.lowercase().contains("version_conflict_engine_exception")
+        return phrase.lowercase().contains("conflict")
     }
 
     @JvmStatic

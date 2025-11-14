@@ -19,8 +19,12 @@ class ElasticsearchRetry<T>(
     override fun allowRetry(ex: Throwable): Boolean {
         // 版本控制异常
         if (ElasticsearchUtils.isVersionConflictException(ex)) {
-            // 非无限重试时,已重试次数大于等于设置重试次数
-            return !(versionConflictMax > 0 && count >= versionConflictMax)
+            // 无限重试
+            if (versionConflictMax < 0) {
+                return true
+            }
+            // 已重试次数 小于 设置重试次数
+            return count < versionConflictMax
         }
 
         // 已重试次数大于等于设置重试次数
@@ -32,7 +36,11 @@ class ElasticsearchRetry<T>(
     }
 
     override fun delay(ex: Throwable) {
-        val delay = if (ElasticsearchUtils.isVersionConflictException(ex)) properties.versionConflictDelay else properties.delay
+        val delay = if (ElasticsearchUtils.isVersionConflictException(ex)) {
+            properties.versionConflictDelay
+        } else {
+            properties.delay
+        }
         Thread.sleep(delay.toMillis())
     }
 

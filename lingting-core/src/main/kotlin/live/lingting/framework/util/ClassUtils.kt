@@ -427,7 +427,7 @@ object ClassUtils {
     }
 
     /**
-     * cls 是否是 superClass 的子类
+     * cls 是否是 superClass 或是其子类
      */
     @JvmStatic
     fun isSuper(cls: Class<*>, superClass: Class<*>): Boolean {
@@ -458,6 +458,81 @@ object ClassUtils {
         "jakarta.annotation.Resource",
         "javax.annotation.Resource"
     )
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T : Any> newInstance(cls: KClass<T>, autowired: Boolean = true, vararg args: Any??): T {
+        return newInstance(cls.java, autowired, args)
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T : Any> newInstance(
+        cls: KClass<T>,
+        autowired: Boolean = true,
+        args: Collection<Any?>?,
+        getArg: Function<Class<*>, Any?>? = null
+    ): T {
+        return newInstance(cls.java, autowired, args, getArg)
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T : Any> newInstance(cls: KClass<T>, autowired: Boolean = true, getArg: Function<Class<*>, Any?>): T {
+        return newInstance(cls.java, autowired, getArg)
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T> newInstance(cls: Class<T>, autowired: Boolean = true, vararg args: Any??): T {
+        return newInstance(constructors(cls)[0], autowired, args)
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T> newInstance(
+        cls: Class<T>,
+        autowired: Boolean = true,
+        args: Collection<Any?>?,
+        getArg: Function<Class<*>, Any?>? = null
+    ): T {
+        return newInstance(constructors(cls)[0], autowired, args, getArg)
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T> newInstance(cls: Class<T>, autowired: Boolean = true, getArg: Function<Class<*>, Any?>): T {
+        return newInstance(constructors(cls)[0], autowired, getArg)
+    }
+
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T> newInstance(constructor: Constructor<T>, autowired: Boolean = true, vararg args: Any?): T {
+        return newInstance(constructor, autowired, args.toList())
+    }
+
+    @JvmStatic
+    @JvmOverloads
+    fun <T> newInstance(
+        constructor: Constructor<T>,
+        autowired: Boolean = true,
+        args: Collection<Any?>?,
+        getArg: Function<Class<*>, Any?>? = null
+    ): T {
+        return newInstance(constructor, autowired) {
+            if (args != null) {
+                val f = args.firstOrNull { arg -> arg != null && isSuper(arg.javaClass, it) }
+                if (f != null) {
+                    return@newInstance f
+                }
+            }
+            if (getArg != null) {
+                return@newInstance getArg.apply(it)
+            }
+            return@newInstance null
+        }
+    }
 
     @JvmStatic
     @JvmOverloads
