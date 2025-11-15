@@ -140,11 +140,11 @@ object ClassUtils {
         }
         require(loaders.isNotEmpty()) { "ClassLoaders can not be empty!" }
 
-        var ex: Exception? = null
+        var ex: Throwable? = null
         for (loader in loaders) {
             try {
                 return loader.loadClass(className)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 ex = e
             }
         }
