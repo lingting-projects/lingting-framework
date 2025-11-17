@@ -26,7 +26,7 @@ internal class JacksonUtilsTest {
         assertEquals("f2", obj.f2)
 
         val cs = 500
-        val cst = JacksonUtils.convert(cs, String::class)
+        val cst = JacksonUtils.convert(cs, String::class.java)
         assertTrue(cst is String)
         assertEquals(cs.toString(), cst)
     }

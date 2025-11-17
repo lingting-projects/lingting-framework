@@ -9,8 +9,9 @@ import live.lingting.framework.util.ClassUtils
  * @author lingting 2024-01-29 10:39
  */
 class SensitiveSpiProvider : SensitiveProvider {
+
     override fun find(sensitive: Sensitive): SensitiveSerializer? {
-        if (ClassUtils.isSuper(sensitive.value, SensitiveSpiSerializer::class)) {
+        if (ClassUtils.isSuper(sensitive.value.java, SensitiveSpiSerializer::class.java)) {
             return SensitiveSpiSerializer()
         }
         return null

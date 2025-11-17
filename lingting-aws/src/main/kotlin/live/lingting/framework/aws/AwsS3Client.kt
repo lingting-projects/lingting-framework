@@ -99,7 +99,7 @@ abstract class AwsS3Client protected constructor(val properties: S3Properties) :
         check(expire.isPositive) { "pre sign expire must be not positive!" }
         val response = call(request)
         val json = response.string()
-        return JacksonUtils.toObj(json, AwsS3PreSignedResponse::class)
+        return JacksonUtils.toObj(json, AwsS3PreSignedResponse::class.java)
     }
 
 }

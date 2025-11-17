@@ -54,7 +54,7 @@ data class IndexInfo(
         @JvmStatic
         fun create(properties: ElasticsearchProperties, cls: Class<*>, polymerizeFactory: PolymerizeFactory): IndexInfo {
             val a = findAnnotation(cls, Index::class.java) ?: Index()
-            val polymerize = polymerizeFactory.get(a.polymerize)
+            val polymerize = polymerizeFactory.get(a.polymerize.java)
             val polymerizeFields = if (polymerize is NonPolymerize) emptyList() else Polymerize.fields(cls)
             val polymerizeLimit = a.polymerizeLimit
             val polymerizeSplit = a.polymerizeSplit
