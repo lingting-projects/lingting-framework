@@ -171,7 +171,7 @@ object ClassUtils {
 
     @JvmStatic
     @JvmOverloads
-    fun <T : Any> scan(basePack: String, cls: Class<*>? = null): Set<Class<T>> {
+    fun <T> scan(basePack: String, cls: Class<T>? = null): Set<Class<T>> {
         return scan(basePack, Predicate { cls == null || isSuper(it, cls) }, classLoaders(cls?.classLoader))
     }
 
@@ -185,7 +185,7 @@ object ClassUtils {
     @JvmStatic
     @JvmOverloads
     fun <T> scan(
-        basePack: String, filter: Predicate<Class<T>>,
+        basePack: String, filter: Predicate<Class<*>>,
         loaders: Set<ClassLoader> = classLoaders(),
         error: BiConsumer<String, Throwable> = BiConsumer { _, _ -> },
     ): Set<Class<T>> {
