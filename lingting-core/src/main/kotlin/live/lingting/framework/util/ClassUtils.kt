@@ -462,7 +462,7 @@ object ClassUtils {
     @JvmStatic
     @JvmOverloads
     fun <T : Any> newInstance(cls: KClass<T>, autowired: Boolean = true, vararg args: Any??): T {
-        return newInstance(cls.java, autowired, args)
+        return newInstance(cls.java, autowired, args.toList())
     }
 
     @JvmStatic
@@ -485,7 +485,7 @@ object ClassUtils {
     @JvmStatic
     @JvmOverloads
     fun <T> newInstance(cls: Class<T>, autowired: Boolean = true, vararg args: Any??): T {
-        return newInstance(constructors(cls)[0], autowired, args)
+        return newInstance(constructors(cls)[0], autowired, args.toList())
     }
 
     @JvmStatic
