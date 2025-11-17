@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.lang.reflect.Type
 import java.util.function.Consumer
-import kotlin.reflect.KClass
 
 /**
  * @author lingting 2024/12/17 16:23
@@ -30,8 +29,6 @@ class JacksonWrapper<T : ObjectMapper>(var mapper: T) {
         val bytes = mapper.writeValueAsBytes(value)
         return mapper.readValue(bytes, type)
     }
-
-    fun <T : Any> convert(value: Any?, r: KClass<out T>): T? = convert(value, r.java)
 
     fun <T> convert(value: Any?, r: Class<T>): T? {
         return convert(value, mapper.constructType(r))
@@ -67,8 +64,6 @@ class JacksonWrapper<T : ObjectMapper>(var mapper: T) {
         return mapper.readValue(string, type)
     }
 
-    fun <T : Any> toObj(string: String, r: KClass<out T>): T = toObj(string, r.java)
-
     fun <T> toObj(string: String, r: Class<T>): T {
         return toObj(string, mapper.constructType(r))
     }
@@ -88,8 +83,6 @@ class JacksonWrapper<T : ObjectMapper>(var mapper: T) {
             defaultVal
         }
     }
-
-    fun <T : Any> toObj(node: JsonNode, r: KClass<out T>): T = toObj(node, r.java)
 
     fun <T> toObj(node: JsonNode, r: Class<T>): T {
         return mapper.treeToValue(node, r)

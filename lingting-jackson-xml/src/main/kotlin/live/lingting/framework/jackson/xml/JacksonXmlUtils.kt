@@ -8,7 +8,6 @@ import live.lingting.framework.jackson.JacksonUtils
 import live.lingting.framework.jackson.wrapper.JacksonWrapper
 import java.lang.reflect.Type
 import java.util.function.Consumer
-import kotlin.reflect.KClass
 
 /**
  * @author lingting 2021/6/9 14:28
@@ -33,8 +32,6 @@ object JacksonXmlUtils {
 
     @JvmStatic
     fun <T> toObj(xml: String, type: JavaType): T = wrapper.toObj(xml, type)
-
-    fun <T : Any> toObj(xml: String, r: KClass<out T>): T = wrapper.toObj(xml, r)
 
     @JvmStatic
     fun <T> toObj(xml: String, r: Class<T>): T = wrapper.toObj(xml, r)

@@ -1,6 +1,5 @@
 package live.lingting.framework.util
 
-import kotlin.reflect.KClass
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -20,11 +19,6 @@ object Slf4jUtils {
     }
 
     @JvmStatic
-    fun <T : Any> T.logger(cls: KClass<*>): Logger {
-        return LoggerFactory.getLogger(cls.java)
-    }
-
-    @JvmStatic
     fun <T : Any> T.logger(name: String): Logger {
         return LoggerFactory.getLogger(name)
     }
@@ -32,4 +26,5 @@ object Slf4jUtils {
     inline val InlineLogger.log get() = logger()
 
     interface InlineLogger
+
 }

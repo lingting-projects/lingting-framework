@@ -17,7 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 import java.util.function.Supplier
 import java.util.regex.Pattern
-import kotlin.reflect.KClass
 
 @Suppress("UNCHECKED_CAST", "SYNTHETIC_PROPERTY_WITHOUT_JAVA_ORIGIN")
 abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
@@ -77,8 +76,6 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
         this.entityClass = cls
         return c
     }
-
-    fun cls(cls: KClass<T>?) = cls(cls?.java)
 
     abstract fun instance(): C
 

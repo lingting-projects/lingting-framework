@@ -18,7 +18,6 @@ import live.lingting.framework.jackson.sensitive.SensitiveModule
 import live.lingting.framework.jackson.wrapper.JacksonWrapper
 import java.lang.reflect.Type
 import java.util.function.Consumer
-import kotlin.reflect.KClass
 
 /**
  * @author lingting 2021/6/9 14:28
@@ -76,8 +75,6 @@ object JacksonUtils {
     @JvmStatic
     fun <T> convert(value: Any?, type: JavaType): T? = jsonWrapper.convert(value, type)
 
-    fun <T : Any> convert(value: Any?, r: KClass<out T>): T? = jsonWrapper.convert(value, r)
-
     @JvmStatic
     fun <T> convert(value: Any?, r: Class<T>): T? = jsonWrapper.convert(value, r)
 
@@ -99,8 +96,6 @@ object JacksonUtils {
     @JvmStatic
     fun <T> toObj(json: String, type: JavaType): T = jsonWrapper.toObj(json, type)
 
-    fun <T : Any> toObj(json: String, r: KClass<out T>): T = jsonWrapper.toObj(json, r)
-
     @JvmStatic
     fun <T> toObj(json: String, r: Class<T>): T = jsonWrapper.toObj(json, r)
 
@@ -112,8 +107,6 @@ object JacksonUtils {
 
     @JvmStatic
     fun <T> toObj(json: String, t: TypeReference<T>, defaultVal: T): T = jsonWrapper.toObj(json, t, defaultVal)
-
-    fun <T : Any> toObj(node: JsonNode, r: KClass<out T>): T = jsonWrapper.toObj(node, r)
 
     @JvmStatic
     fun <T> toObj(node: JsonNode, r: Class<T>): T = jsonWrapper.toObj(node, r)

@@ -12,7 +12,6 @@ import org.apache.ibatis.plugin.Signature
 import java.sql.Connection
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArraySet
-import kotlin.reflect.KClass
 
 /**
  * 数据范围拦截器
@@ -34,15 +33,15 @@ class DataScopeInterceptor(
          * <p>k: 数据范围类型</p>
          * <p>v: mybatis 的 mappedStatementId</p>
          */
-        private val IGNORE_CACHE = ConcurrentHashMap<KClass<out JSqlDataScope>, CopyOnWriteArraySet<String>>()
+        private val IGNORE_CACHE = ConcurrentHashMap<Class<out JSqlDataScope>, CopyOnWriteArraySet<String>>()
 
         @JvmStatic
-        fun ignoreAdd(clazz: KClass<out JSqlDataScope>, mappedStatementId: String) {
+        fun ignoreAdd(clazz: Class<out JSqlDataScope>, mappedStatementId: String) {
             IGNORE_CACHE.computeIfAbsent(clazz) { CopyOnWriteArraySet() }.add(mappedStatementId)
         }
 
         @JvmStatic
-        fun ignoreContains(clazz: KClass<out JSqlDataScope>, mappedStatementId: String) =
+        fun ignoreContains(clazz: Class<out JSqlDataScope>, mappedStatementId: String) =
             IGNORE_CACHE[clazz]?.contains(mappedStatementId) == true
 
     }
@@ -86,7 +85,7 @@ class DataScopeInterceptor(
                 return@filter false
             }
             // 没有数据范围匹配当前方法
-            if (ignoreContains(it::class, mappedStatementId)) {
+            if (ignoreContains(it::class.java, mappedStatementId)) {
                 return@filter false
             }
             true
@@ -109,7 +108,7 @@ class DataScopeInterceptor(
 
         // 如果sql没有任何数据范围匹配, 则下一次直接跳过
         if (result == null || result.matchNumber < 1) {
-            filter.forEach { ignoreAdd(it::class, mappedStatementId) }
+            filter.forEach { ignoreAdd(it::class.java, mappedStatementId) }
         } else {
             mpBs.sql(result.sql)
         }

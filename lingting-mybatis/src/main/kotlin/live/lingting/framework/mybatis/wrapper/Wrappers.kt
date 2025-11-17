@@ -4,11 +4,10 @@ import com.baomidou.mybatisplus.core.toolkit.Constants
 import com.baomidou.mybatisplus.core.toolkit.LambdaUtils
 import com.baomidou.mybatisplus.core.toolkit.support.ColumnCache
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction
-import java.util.Objects
-import java.util.concurrent.ConcurrentHashMap
-import kotlin.reflect.KClass
 import live.lingting.framework.reflect.LambdaMeta
 import live.lingting.framework.util.StringUtils
+import java.util.Objects
+import java.util.concurrent.ConcurrentHashMap
 
 @Suppress("UNCHECKED_CAST")
 object Wrappers {
@@ -69,8 +68,6 @@ object Wrappers {
         return QueryWrapper<T>().cls(cls)
     }
 
-    fun <T : Any> query(cls: KClass<T>) = query(cls.java)
-
     @JvmStatic
     fun <T : Any> query(t: T?): QueryWrapper<T> {
         return QueryWrapper<T>().also {
@@ -90,8 +87,6 @@ object Wrappers {
     fun <T : Any> update(cls: Class<T>): UpdateWrapper<T> {
         return UpdateWrapper<T>().cls(cls)
     }
-
-    fun <T : Any> update(cls: KClass<T>) = update(cls.java)
 
     @JvmStatic
     fun <T : Any> update(t: T?): UpdateWrapper<T> {

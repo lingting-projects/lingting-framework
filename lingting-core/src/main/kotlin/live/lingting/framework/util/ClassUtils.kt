@@ -16,7 +16,6 @@ import java.util.function.BiConsumer
 import java.util.function.BiFunction
 import java.util.function.Function
 import java.util.function.Predicate
-import kotlin.reflect.KClass
 
 /**
  * @author lingting 2021/2/25 21:17
@@ -68,8 +67,6 @@ object ClassUtils {
         }
     }
 
-    fun typeArguments(cls: KClass<*>) = typeArguments(cls.java)
-
     @JvmStatic
     fun classArguments(cls: Class<*>): List<Class<*>> {
         val types = typeArguments(cls)
@@ -83,8 +80,6 @@ object ClassUtils {
 
         return list
     }
-
-    fun classArguments(cls: KClass<*>) = classArguments(cls.java)
 
     @JvmStatic
     fun classLoaders(vararg loaders: ClassLoader?): Set<ClassLoader> {
@@ -180,8 +175,6 @@ object ClassUtils {
         return scan(basePack, Predicate { cls == null || isSuper(it, cls) }, classLoaders(cls?.classLoader))
     }
 
-    fun <T : Any> scan(basePack: String, cls: KClass<T>?) = scan<T>(basePack, cls?.java)
-
     /**
      * 扫描指定包下, 所有继承指定类的class
      * @param basePack 指定包 eg: live.lingting.framework.item
@@ -227,10 +220,6 @@ object ClassUtils {
             }
         }
         return classes
-    }
-
-    fun <T : Any> scan(basePack: String, filter: Predicate<KClass<T>>, error: BiConsumer<String, Throwable>) = {
-        scan(basePack, Predicate<Class<T>> { filter.test(it.kotlin) }, error = error)
     }
 
     /**
@@ -294,14 +283,10 @@ object ClassUtils {
         }
     }
 
-    fun fields(cls: KClass<*>) = fields(cls.java)
-
     @JvmStatic
     fun field(cls: Class<*>, name: String): Field? {
         return fields(cls).find { it.name == name }
     }
-
-    fun field(cls: KClass<*>, name: String) = field(cls.java, name)
 
     @JvmStatic
     fun methods(cls: Class<*>): Array<Method> {
@@ -315,15 +300,6 @@ object ClassUtils {
             methods.toTypedArray<Method>()
         }
     }
-
-    fun methods(cls: KClass<*>) = methods(cls.java)
-
-    @JvmStatic
-    fun method(cls: Class<*>, name: String): Method? {
-        return method(cls, name, *emptyArray())
-    }
-
-    fun method(cls: KClass<*>, name: String) = method(cls.java, name)
 
     @JvmStatic
     fun method(cls: Class<*>, name: String, vararg types: Class<*>): Method? {
@@ -344,8 +320,6 @@ object ClassUtils {
             types.contentEquals(it.parameterTypes)
         }
     }
-
-    fun method(cls: KClass<*>, name: String, vararg types: Class<*>) = method(cls.java, name, *types)
 
     /**
      * 扫描所有字段以及对应字段的值
@@ -369,8 +343,6 @@ object ClassUtils {
         }
     }
 
-    fun classFields(cls: KClass<*>) = classFields(cls.java)
-
     /**
      * 获取指定类中的指定字段名的字段
      * @param name 字段名
@@ -381,8 +353,6 @@ object ClassUtils {
     fun classField(cls: Class<*>, name: String): ClassField? {
         return classFields(cls).find { it.name == name }
     }
-
-    fun classField(cls: KClass<*>, name: String) = classField(cls.java, name)
 
     /**
      * 方法名转字段名
@@ -443,14 +413,10 @@ object ClassUtils {
         return isSuper(cls, superClass.name)
     }
 
-    fun isSuper(cls: KClass<*>, superClass: KClass<*>) = isSuper(cls.java, superClass.java)
-
     @JvmStatic
     fun <T> constructors(cls: Class<T>): Array<Constructor<T>> {
         return CACHE_CONSTRUCTOR.computeIfAbsent(cls) { it.constructors } as Array<Constructor<T>>
     }
-
-    fun <T : Any> constructors(cls: KClass<T>) = constructors(cls.java)
 
     @JvmField
     val AUTOWIRE_ANNOTATIONS = listOf(
@@ -458,29 +424,6 @@ object ClassUtils {
         "jakarta.annotation.Resource",
         "javax.annotation.Resource"
     )
-
-    @JvmStatic
-    @JvmOverloads
-    fun <T : Any> newInstance(cls: KClass<T>, autowired: Boolean = true, vararg args: Any??): T {
-        return newInstance(cls.java, autowired, args.toList())
-    }
-
-    @JvmStatic
-    @JvmOverloads
-    fun <T : Any> newInstance(
-        cls: KClass<T>,
-        autowired: Boolean = true,
-        args: Collection<Any?>?,
-        getArg: Function<Class<*>, Any?>? = null
-    ): T {
-        return newInstance(cls.java, autowired, args, getArg)
-    }
-
-    @JvmStatic
-    @JvmOverloads
-    fun <T : Any> newInstance(cls: KClass<T>, autowired: Boolean = true, getArg: Function<Class<*>, Any?>): T {
-        return newInstance(cls.java, autowired, getArg)
-    }
 
     @JvmStatic
     @JvmOverloads
