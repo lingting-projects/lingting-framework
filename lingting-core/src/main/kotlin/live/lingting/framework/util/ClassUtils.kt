@@ -16,6 +16,8 @@ import java.util.function.BiConsumer
 import java.util.function.BiFunction
 import java.util.function.Function
 import java.util.function.Predicate
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 /**
  * @author lingting 2021/2/25 21:17
@@ -371,7 +373,23 @@ object ClassUtils {
     }
 
     @JvmStatic
+    @OptIn(ExperimentalContracts::class)
+    fun isSuper(o: Any?, superClassName: String): Boolean {
+        contract {
+            returns(true) implies (o != null)
+        }
+        if (o == null) {
+            return false
+        }
+        return isSuper(o.javaClass, superClassName)
+    }
+
+    @JvmStatic
+    @OptIn(ExperimentalContracts::class)
     fun isSuper(cls: Class<*>?, superClassName: String): Boolean {
+        contract {
+            returns(true) implies (cls != null)
+        }
         if (cls == null) {
             return false
         }
@@ -396,19 +414,31 @@ object ClassUtils {
         return cls.interfaces.any { isSuper(it, superClassName) }
     }
 
+    @JvmStatic
+    @OptIn(ExperimentalContracts::class)
+    fun isSuper(o: Any?, superClass: Class<*>): Boolean {
+        contract {
+            returns(true) implies (o != null)
+        }
+        if (o == null) {
+            return false
+        }
+        return isSuper(o.javaClass, superClass)
+    }
+
     /**
      * cls 是否是 superClass 或是其子类
      */
     @JvmStatic
     fun isSuper(cls: Class<*>, superClass: Class<*>): Boolean {
+        if (superClass.isAssignableFrom(cls)) {
+            return true
+        }
         if (superClass == Any::class.java) {
             return true
         }
         if (cls == Any::class.java) {
             return false
-        }
-        if (superClass.isAssignableFrom(cls)) {
-            return true
         }
         return isSuper(cls, superClass.name)
     }
