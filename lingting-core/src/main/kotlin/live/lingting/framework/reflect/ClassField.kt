@@ -50,9 +50,11 @@ class ClassField @JvmOverloads constructor(
     )
 
     val field: Field? by lazy { f ?: ClassUtils.field(cls, name) }
+
     val methodGet: Method? by lazy {
         g ?: ClassUtils.method(cls, "get${name.firstUpper()}") ?: ClassUtils.method(cls, "is${name.firstUpper()}")
     }
+
     val methodSet: Method? by lazy {
         s ?: ClassUtils.method(cls, "set${name.firstUpper()}")
     }
@@ -103,6 +105,17 @@ class ClassField @JvmOverloads constructor(
             return get.invoke(obj)
         }
         return field!![obj]
+    }
+
+    /**
+     * 获取设置值时需要的参数类型
+     */
+    fun getSetArgTypes(): Array<Class<*>> {
+        val f = methodSet
+        if (f != null) {
+            return f.parameterTypes
+        }
+        return arrayOf(field!!.type)
     }
 
     /**

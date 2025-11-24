@@ -357,6 +357,31 @@ object ClassUtils {
     }
 
     /**
+     * 获取需要自动注入的字段(包括set 等其他需要参数的标识自动注入 方法)
+     */
+    @JvmStatic
+    fun autowiredClassField(clazz: Class<*>): List<ClassField> {
+        // 自动注入 - 字段
+        val fields = fields(clazz).filter { !it.isFinal }
+        // 自动注入 - 方法
+        val methods = methods(clazz).filter { it.parameterCount > 0 }
+        return (fields + methods).mapNotNull {
+            val isAutowired =
+                it.annotations.any { a -> AUTOWIRE_ANNOTATIONS.contains(a.annotationClass.qualifiedName) }
+            if (!isAutowired) {
+                return@mapNotNull null
+            }
+            val cf = if (it is Method) {
+                ClassField(null, null, it)
+            } else {
+                ClassField(it as Field, null, null)
+            }
+
+            cf.visibleSet()
+        }
+    }
+
+    /**
      * 方法名转字段名
      * @param methodName 方法名
      * @return java.lang.String 字段名
@@ -523,28 +548,12 @@ object ClassUtils {
             return t
         }
         val clazz = t::class.java
-        // 自动注入 - 字段
-        val fields = fields(clazz).filter { !it.isFinal }
-        // 自动注入 - 方法
-        val methods = methods(clazz).filter { it.parameterCount == 1 }
+        val cfs = autowiredClassField(clazz)
 
-        val list = fields + methods
-
-        list.forEach {
-            val isAutowired =
-                it.annotations.any { a -> AUTOWIRE_ANNOTATIONS.contains(a.annotationClass.qualifiedName) }
-            if (!isAutowired) {
-                return@forEach
-            }
-            val cls = if (it is Method) it.parameterTypes[0] else (it as Field).type
-            val arg = getArg.apply(cls)
-            val cf = if (it is Method) {
-                ClassField(null, null, it)
-            } else {
-                ClassField(it as Field, null, null)
-            }
-
-            cf.visibleSet().set(t, arg)
+        cfs.forEach { cf ->
+            val classes = cf.getSetArgTypes()
+            val args = classes.map { getArg.apply(it) }
+            cf.set(t, *args.toTypedArray())
         }
 
         return t
