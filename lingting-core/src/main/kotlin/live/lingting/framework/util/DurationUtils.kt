@@ -13,8 +13,26 @@ import java.time.temporal.TemporalUnit
 
 object DurationUtils {
 
+    /**
+     * 浮点数使用 double 运行, 会丢失一定精度
+     */
     @JvmStatic
-    fun Number.duration(unit: TemporalUnit): Duration = Duration.of(this.toLong(), unit)
+    fun Number.duration(source: TemporalUnit): Duration {
+        val (i, unit) = when (source) {
+            WEEKS -> 7 to DAYS
+            MONTHS -> 30 to DAYS
+            YEARS -> 365 to DAYS
+            else -> 1 to source
+        }
+        if (this is Float || this is Double) {
+            val double = toDouble()
+            val nanos = unit.duration.toNanos()
+            val value = double * nanos * i
+            return Duration.ofNanos(value.toLong())
+        }
+
+        return Duration.of(toLong() * i, unit)
+    }
 
     inline val Number.millis: Duration get() = this.duration(MILLIS)
 
@@ -26,10 +44,19 @@ object DurationUtils {
 
     inline val Number.days: Duration get() = this.duration(DAYS)
 
+    /**
+     * 等价于7天
+     */
     inline val Number.weeks: Duration get() = this.duration(WEEKS)
 
+    /**
+     * 等价于30天
+     */
     inline val Number.months: Duration get() = this.duration(MONTHS)
 
+    /**
+     * 等价于365天
+     */
     inline val Number.years: Duration get() = this.duration(YEARS)
 
 }
