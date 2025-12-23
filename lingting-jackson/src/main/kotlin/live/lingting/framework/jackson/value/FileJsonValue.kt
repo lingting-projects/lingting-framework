@@ -3,18 +3,29 @@ package live.lingting.framework.jackson.value
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
-import java.io.File
-import java.util.Optional
-import java.util.function.Supplier
 import live.lingting.framework.function.ThrowingFunction
 import live.lingting.framework.jackson.JacksonUtils
 import live.lingting.framework.util.StringUtils
 import live.lingting.framework.value.AbstractFileValue
+import java.io.File
+import java.util.Optional
+import java.util.function.Supplier
 
 /**
  * @author lingting 2023-06-05 09:46
  */
-class FileJsonValue<T> : AbstractFileValue<T> {
+open class FileJsonValue<T> : AbstractFileValue<T> {
+
+    companion object {
+        const val SUFFIX: String = ".json"
+
+        val mapper: ObjectMapper = JacksonUtils.mapper.copy()
+
+        init {
+            mapper.enable(SerializationFeature.INDENT_OUTPUT)
+        }
+    }
+
     constructor(dir: File, filename: Any) : super(dir, filename)
 
     constructor(file: File) : super(file)
@@ -33,8 +44,8 @@ class FileJsonValue<T> : AbstractFileValue<T> {
         return null
     }
 
-    override fun ofClass(json: String, cls: Class<T>): T? {
-        return of(json, ThrowingFunction<String, T> { s -> mapper.readValue(s, cls) })
+    override fun ofClass(str: String, cls: Class<T>): T? {
+        return of(str) { s -> mapper.readValue(s, cls) }
     }
 
     override fun toString(t: T): String {
@@ -42,20 +53,11 @@ class FileJsonValue<T> : AbstractFileValue<T> {
     }
 
     fun optional(reference: TypeReference<T>): Optional<T> {
-        return optional(ThrowingFunction<String, T> { json -> of(json, ThrowingFunction<String, T> { s -> mapper.readValue(s, reference) }) })
+        return optional { of(it) { json -> mapper.readValue(json, reference) } }
     }
 
     fun orElseGet(supplier: Supplier<T>, reference: TypeReference<T>): T {
         return orElseGet(supplier) { optional(reference) }
     }
 
-    companion object {
-        const val SUFFIX: String = ".json"
-
-        val mapper: ObjectMapper = JacksonUtils.mapper.copy()
-
-        init {
-            mapper.enable(SerializationFeature.INDENT_OUTPUT)
-        }
-    }
 }

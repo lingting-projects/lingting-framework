@@ -1,12 +1,11 @@
-package live.lingting.framework.function;
+package live.lingting.framework.function
 
 /**
  * @author lingting 2023/1/21 22:56
  */
-@FunctionalInterface
-@SuppressWarnings("java:S112")
-public interface ThrowableSupplier<T> {
+fun interface ThrowableSupplier<T> {
 
-	T get() throws Throwable;
+    @Throws(Throwable::class)
+    fun get(): T
 
 }

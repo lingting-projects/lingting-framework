@@ -1,20 +1,24 @@
-package live.lingting.framework.function;
+package live.lingting.framework.function
 
-import java.time.Duration;
+import java.time.Duration
 
 /**
  * @author lingting 2024-01-26 15:34
  */
-@FunctionalInterface
-public interface InterruptedRunnable extends ThrowingRunnable {
+fun interface InterruptedRunnable : ThrowingRunnable {
 
-	InterruptedRunnable THREAD_SLEEP = () -> Thread.sleep(50);
+    companion object {
 
-	static InterruptedRunnable threadSleep(Duration duration) {
-		return () -> Thread.sleep(duration.toMillis());
-	}
+        @JvmStatic
+        fun threadSleep(duration: Duration): InterruptedRunnable {
+            return InterruptedRunnable { Thread.sleep(duration.toMillis()) }
+        }
 
-	@Override
-	void run() throws InterruptedException;
+        @JvmField
+        val THREAD_SLEEP: InterruptedRunnable = InterruptedRunnable { Thread.sleep(50) }
 
+    }
+
+    @Throws(InterruptedException::class)
+    override fun run()
 }

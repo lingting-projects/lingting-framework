@@ -1,13 +1,11 @@
-package live.lingting.framework.function;
+package live.lingting.framework.function
 
 /**
  * @author lingting 2023/1/16 17:46
  */
-@FunctionalInterface
-@SuppressWarnings("java:S112")
-public interface ThrowingRunnable extends ThrowableRunnable {
+fun interface ThrowingRunnable : ThrowableRunnable {
 
-	@Override
-	void run() throws Exception;
+    @Throws(Exception::class)
+    override fun run()
 
 }

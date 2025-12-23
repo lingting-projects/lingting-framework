@@ -1,21 +1,22 @@
 package live.lingting.framework.value
 
-import java.io.File
-import java.nio.charset.StandardCharsets
-import java.nio.file.Files
-import java.util.Optional
-import java.util.function.Supplier
 import live.lingting.framework.function.ThrowingFunction
 import live.lingting.framework.util.FileUtils
 import live.lingting.framework.util.Slf4jUtils.logger
 import live.lingting.framework.util.StreamUtils
 import live.lingting.framework.util.StringUtils
+import java.io.File
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.util.Optional
+import java.util.function.Supplier
 
 /**
  * @author lingting 2023-05-23 09:12
  */
 @Suppress("UNCHECKED_CAST")
 abstract class AbstractFileValue<T> {
+
     protected val log = logger()
 
     protected val file: File
@@ -41,7 +42,7 @@ abstract class AbstractFileValue<T> {
 
     protected abstract fun toString(t: T): String
 
-    fun optional(function: ThrowingFunction<String, T>): Optional<T> {
+    fun optional(function: ThrowingFunction<String, T?>): Optional<T> {
         if (!file.exists()) {
             return Optional.empty<T>() as Optional<T>
         }
@@ -65,7 +66,7 @@ abstract class AbstractFileValue<T> {
     }
 
     fun optional(cls: Class<T>): Optional<T> {
-        return optional(ThrowingFunction { str -> ofClass(str, cls) })
+        return optional { ofClass(it, cls) }
     }
 
     fun set(t: T) {
