@@ -34,29 +34,37 @@ object DurationUtils {
         return Duration.of(toLong() * i, unit)
     }
 
+    @JvmStatic
     inline val Number.millis: Duration get() = this.duration(MILLIS)
 
+    @JvmStatic
     inline val Number.seconds: Duration get() = this.duration(SECONDS)
 
+    @JvmStatic
     inline val Number.minutes: Duration get() = this.duration(MINUTES)
 
+    @JvmStatic
     inline val Number.hours: Duration get() = this.duration(HOURS)
 
+    @JvmStatic
     inline val Number.days: Duration get() = this.duration(DAYS)
 
     /**
      * 等价于7天
      */
+    @JvmStatic
     inline val Number.weeks: Duration get() = this.duration(WEEKS)
 
     /**
      * 等价于30天
      */
+    @JvmStatic
     inline val Number.months: Duration get() = this.duration(MONTHS)
 
     /**
      * 等价于365天
      */
+    @JvmStatic
     inline val Number.years: Duration get() = this.duration(YEARS)
 
 }
