@@ -22,11 +22,11 @@ class ResourceUtilsTest {
     @Test
     fun scan() {
         val s1 = ResourceUtils.scan(".") { r -> !r.isDirectory && r.name.startsWith("s") }
-        assertEquals(3, s1.size)
+        assertEquals(5, s1.size)
         s1.forEach(Consumer { assertTrue(it.name.startsWith("s")) })
 
         val s2 = ResourceUtils.scan(".") { r -> !r.isDirectory && r.name.endsWith(".sh") }
-        assertEquals(2, s2.size)
+        assertEquals(4, s2.size)
         s2.forEach { assertTrue(it.name.endsWith(".sh")) }
         for (r in s2) {
             assertDoesNotThrow<InputStream> {
@@ -50,6 +50,7 @@ class ResourceUtilsTest {
         val s4 = ResourceUtils.get("scripts/ss1.sh")
         assertNotNull(s4)
         assertEquals("ss1.sh", StreamUtils.toString(s4!!.stream()).trim())
+        assertFalse(s4.link.endsWith("scripts/scripts/ss1.sh"))
         val s5 = ResourceUtils.get("scripts/ss9.sh")
         assertNull(s5)
         val s6 = ResourceUtils.scan("jakarta/annotation")
@@ -59,6 +60,10 @@ class ResourceUtilsTest {
             assertFalse(it.name.contains("/"))
         }
         assertTrue(s6.any { it.name.endsWith(".class") })
+        val s7 = ResourceUtils.get("jakarta/annotation/Resource.class")
+        assertNotNull(s7)
+        val s8 = ResourceUtils.get("files/file.txt")
+        assertNotNull(s8)
     }
 
     @Test

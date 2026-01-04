@@ -2,6 +2,7 @@ package live.lingting.framework.util
 
 import live.lingting.framework.resource.Resource
 import live.lingting.framework.resource.ResourceResolverProvider
+import live.lingting.framework.util.EnumerationUtils.forEach
 import java.util.function.Predicate
 
 /**
@@ -9,23 +10,30 @@ import java.util.function.Predicate
  */
 object ResourceUtils {
 
+    /**
+     */
     @JvmStatic
     @JvmOverloads
     fun get(name: String, loaders: Collection<ClassLoader> = ClassUtils.classLoaders()): Resource? {
         for (loader in loaders) {
-            val url = loader.getResource(name)
-            if (url == null) {
-                continue
+            val url = loader.getResource(name) ?: continue
+            val resources = ResourceResolverProvider.resolve(url, 1) {
+                // 普通文件夹/文件
+                if (it.name == name) {
+                    true
+                }
+                // jar内部文件
+                else if (it.link.endsWith("/$name")) {
+                    true
+                }
+                // jar 内部文件夹/文件
+                else if (it.link.endsWith("/$name/")) {
+                    true
+                } else {
+                    false
+                }
             }
-            val resources = ResourceResolverProvider.resolve(url)
-            val r = resources.firstOrNull {
-                // 普通文件
-                it.name == name
-                        // jar中的文件
-                        || it.link.endsWith(name)
-                        // jar中的文件
-                        || it.link.endsWith("$name/")
-            }
+            val r = resources.firstOrNull()
             if (r != null) {
                 return r
             }
@@ -50,13 +58,10 @@ object ResourceUtils {
         val result = LinkedHashSet<Resource>()
 
         loaders.forEach { loader ->
-            val resources = loader.getResources(name)
-            if (resources == null) {
-                return@forEach
-            }
+            val resources = loader.getResources(name) ?: return@forEach
 
-            resources.asSequence().forEach { url ->
-                val resources = ResourceResolverProvider.resolve(url, predicate)
+            resources.forEach { url ->
+                val resources = ResourceResolverProvider.resolve(url, predicate = predicate)
                 result.addAll(resources)
             }
 
