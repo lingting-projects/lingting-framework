@@ -52,7 +52,7 @@ object ResourceResolverProvider {
 
     @JvmStatic
     fun register(resolver: ResourceResolver) {
-        source.put(resolver, true)
+        source[resolver] = true
         reorder()
     }
 
@@ -62,15 +62,23 @@ object ResourceResolverProvider {
         reorder()
     }
 
+    /**
+     * 解析资源
+     * @param count 最多分析多少个资源就结束, null 或小于0则无限 0 为空
+     */
     @JvmStatic
-    fun resolve(u: URL, predicate: Predicate<Resource> = Predicate { true }): List<Resource> {
+    @JvmOverloads
+    fun resolve(u: URL, count: Int? = null, predicate: Predicate<Resource> = Predicate { true }): List<Resource> {
+        if (count == 0) {
+            return emptyList()
+        }
         val url = u.toString()
         val protocol = StringUtils.substringBefore(url, DELIMITER)
         val resolver = list.firstOrNull { it.isSupport(u, protocol) }
         if (resolver == null) {
             return listOf()
         }
-        return resolver.resolve(u, protocol).filter { predicate.test(it) }
+        return resolver.resolve(u, protocol, count, predicate)
     }
 
 }

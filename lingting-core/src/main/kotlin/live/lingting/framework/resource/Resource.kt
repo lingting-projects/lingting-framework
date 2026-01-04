@@ -84,4 +84,5 @@ class Resource(
     override fun toString(): String {
         return link
     }
+
 }

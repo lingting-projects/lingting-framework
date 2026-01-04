@@ -2,6 +2,7 @@ package live.lingting.framework.resource
 
 import java.net.JarURLConnection
 import java.net.URL
+import java.util.function.Predicate
 import java.util.jar.JarEntry
 
 /**
@@ -21,7 +22,10 @@ object JarResourceResolver : ResourceResolver {
         return connection is JarURLConnection
     }
 
-    override fun resolve(u: URL, protocol: String): List<Resource> {
+    override fun resolve(u: URL, protocol: String, count: Int?, predicate: Predicate<Resource>): List<Resource> {
+        if (count == 0) {
+            return emptyList()
+        }
         val paths = u.toString().split(DELIMITER).dropLastWhile { it.isEmpty() }
         val jarPaths = if (paths.size == 1) paths else paths.dropLast(1)
         val jarPath = jarPaths.joinToString(DELIMITER)
@@ -30,16 +34,25 @@ object JarResourceResolver : ResourceResolver {
         val connection = u.openConnection() as JarURLConnection
         val entry = connection.jarEntry
         // 如果连接指向单个文件, 那么只加载这一个, 不扫描其他的. 只有指向jar才扫描全部
-        return if (entry != null) {
-            // 文件夹下的所有文件, 包括所有层级的子文件夹内的文件
+        val resources: Sequence<Resource> = if (entry != null) {
             if (entry.isDirectory) {
                 fromJar(connection, protocol, jarPath, entry)
             } else {
-                listOf(fromEntry(entry, protocol, jarPath))
+                sequenceOf(fromEntry(entry, protocol, jarPath))
             }
         } else {
             fromJar(connection, protocol, jarPath)
         }
+        return resources
+            .filter { predicate.test(it) }
+            .let {
+                if (count == null || count < 1) {
+                    it
+                } else {
+                    it.take(count)
+                }
+            }
+            .toList()
     }
 
     fun fromJar(
@@ -47,16 +60,11 @@ object JarResourceResolver : ResourceResolver {
         protocol: String,
         jarPath: String,
         dir: JarEntry? = null
-    ): List<Resource> {
-        val list = mutableListOf<Resource>()
+    ): Sequence<Resource> {
         val jarFile = connection.jarFile
-        jarFile.entries().asSequence().forEach { entry ->
-            if (dir == null || entry.name.startsWith(dir.name)) {
-                val of = fromEntry(entry, protocol, jarPath)
-                list.add(of)
-            }
-        }
-        return list
+        return jarFile.entries().asSequence()
+            .filter { dir == null || it.name.startsWith(dir.name) }
+            .map { fromEntry(it, protocol, jarPath) }
     }
 
     fun fromEntry(entry: JarEntry, protocol: String, jarPath: String): Resource {
