@@ -6,13 +6,13 @@ import live.lingting.framework.thread.virtual.VirtualThread
 import live.lingting.framework.util.MdcUtils
 import live.lingting.framework.util.ThreadUtils
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
-import kotlin.test.assertNotEquals
 
 /**
  * @author lingting 2024-04-23 11:50

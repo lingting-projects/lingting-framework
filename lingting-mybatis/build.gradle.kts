@@ -1,3 +1,7 @@
+plugins {
+    id("lingting_jvm")
+}
+
 dependencies {
     api(libs.bundles.mybatis)
 

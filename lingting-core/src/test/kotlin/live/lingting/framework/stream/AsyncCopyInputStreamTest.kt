@@ -5,9 +5,9 @@ import live.lingting.framework.time.DateTime
 import live.lingting.framework.util.DataSizeUtils.bytes
 import live.lingting.framework.util.LocalDateTimeUtils.format
 import live.lingting.framework.util.StreamUtils
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicLong
-import kotlin.test.assertEquals
 
 /**
  * @author lingting 2025/4/11 1:22

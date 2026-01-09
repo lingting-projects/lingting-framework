@@ -11,11 +11,11 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 internal object HuaweiBasic {
     fun iam(): HuaweiIam {
         val properties = HuaweiIamProperties()
-        val name = System.getenv("HUAWEI_IAM_DOMAIN_NAME")
+        val name = System.getenv("IAM_DOMAIN_NAME")
         assertNotNull(name)
         properties.domain = mapOf("name" to name)
-        properties.username = System.getenv("HUAWEI_IAM_USERNAME")
-        properties.password = System.getenv("HUAWEI_IAM_PASSWORD")
+        properties.username = System.getenv("IAM_USERNAME")
+        properties.password = System.getenv("IAM_PASSWORD")
         assertNotNull(properties.username)
         assertNotNull(properties.password)
         val iam = HuaweiIam(properties)
@@ -25,8 +25,8 @@ internal object HuaweiBasic {
 
     fun obsProperties(): HuaweiObsProperties {
         val properties = HuaweiObsProperties()
-        properties.region = System.getenv("HUAWEI_OBS_REGION")
-        properties.bucket = System.getenv("HUAWEI_OBS_BUCKET")
+        properties.region = System.getenv("REGION")
+        properties.bucket = System.getenv("BUCKET")
         properties.acl = Acl.PUBLIC_READ
         assertNotNull(properties.region)
         assertNotNull(properties.bucket)

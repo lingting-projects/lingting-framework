@@ -1,3 +1,7 @@
+plugins {
+    id("java-platform")
+}
+
 val bomList = mutableListOf<Provider<MinimalExternalModuleDependency>>()
 val apiList = mutableListOf<Provider<MinimalExternalModuleDependency>>()
 

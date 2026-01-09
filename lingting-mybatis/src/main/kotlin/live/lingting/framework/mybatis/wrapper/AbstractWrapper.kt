@@ -296,7 +296,7 @@ abstract class AbstractWrapper<T : Any, C : AbstractWrapper<T, C>> :
     }
 
     override fun getSqlSelect(): String? {
-        if (fields.isEmpty) {
+        if (fields.isEmpty()) {
             return null
         }
         return fields.joinToString(", ")

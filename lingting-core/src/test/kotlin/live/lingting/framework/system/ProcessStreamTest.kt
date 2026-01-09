@@ -4,10 +4,10 @@ import live.lingting.framework.util.DurationUtils.seconds
 import live.lingting.framework.util.StreamUtils
 import live.lingting.framework.util.SystemUtils
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.ThrowingSupplier
-import kotlin.test.assertEquals
 
 /**
  * @author lingting 2024-01-26 16:41

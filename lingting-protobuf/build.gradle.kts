@@ -1,6 +1,8 @@
 plugins {
+    id("lingting_jvm")
     alias(libs.plugins.grpc)
 }
+
 
 dependencies {
     api("io.grpc:grpc-stub")

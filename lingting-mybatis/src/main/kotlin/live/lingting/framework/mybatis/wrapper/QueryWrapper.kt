@@ -19,7 +19,7 @@ class QueryWrapper<T : Any> : LambdaWrapper<T, QueryWrapper<T>>() {
 
         builder.append("SELECT ")
 
-        if (fields.isEmpty) {
+        if (fields.isEmpty()) {
             builder.append("*")
         } else {
             builder.append(fields.joinToString(", "))

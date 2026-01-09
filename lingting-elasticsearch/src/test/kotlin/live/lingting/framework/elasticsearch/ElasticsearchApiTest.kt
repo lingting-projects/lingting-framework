@@ -20,10 +20,12 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty
 
 /**
  * @author lingting 2024-03-08 10:17
  */
+@EnabledIfSystemProperty(named = "framework.elasticsearch.test", matches = "true")
 internal class ElasticsearchApiTest {
     val host: String = "http://192.168.91.129:9200"
 
@@ -56,7 +58,14 @@ internal class ElasticsearchApiTest {
         val scopes = listOf(scope)
         val interceptors = listOf(DataScopeInterceptor(scopes))
 
-        api = ElasticsearchApiImpl(Entity::class.java, PolymerizeFactory(), { it.id!! }, ElasticsearchProperties(), interceptors, client!!)
+        api = ElasticsearchApiImpl(
+            Entity::class.java,
+            PolymerizeFactory(),
+            { it.id!! },
+            ElasticsearchProperties(),
+            interceptors,
+            client!!
+        )
     }
 
     @Test

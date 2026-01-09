@@ -3,10 +3,10 @@ package live.lingting.framework.concurrent
 import live.lingting.framework.util.DurationUtils.millis
 import live.lingting.framework.value.WaitValue
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import java.util.concurrent.TimeoutException
-import kotlin.test.assertEquals
 
 /**
  * @author lingting 2025/1/22 18:54

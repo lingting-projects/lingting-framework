@@ -1,3 +1,7 @@
+plugins {
+    id("lingting_jvm")
+}
+
 dependencies {
     api(libs.bundles.elasticsearch) {
         exclude("commons-logging", "commons-logging")
