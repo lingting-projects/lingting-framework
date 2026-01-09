@@ -36,6 +36,9 @@ open class Context<T> {
 
     protected open fun id(): Long = Thread.currentThread().threadId()
 
+    /**
+     * 必须有值的统一操作行为. 当local中不存在内容时, 进行初始化
+     */
     @JvmOverloads
     open fun <E> operateRequire(message: String = "value must be not null", operate: Function<T, E?>): E? {
         val v = get()
@@ -43,7 +46,13 @@ open class Context<T> {
         return operate.apply(v)
     }
 
+    /**
+     * 统一操作行为. 当local中不存在内容时, 直接返回null, 避免初始化
+     */
     open fun <E> operate(operate: Function<T, E?>): E? {
+        if (local.get() == null) {
+            return null
+        }
         val v = get()
         if (isNull(v)) {
             return null

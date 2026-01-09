@@ -36,10 +36,7 @@ object DataScopeRuleHolder {
      */
     @JvmStatic
     fun poll() {
-        val deque = CONTEXT.get()
-        if (deque == null) {
-            return
-        }
+        val deque = CONTEXT.get() ?: return
         deque.poll()
         // 当没有元素时，清空 ThreadLocal
         if (deque.isEmpty()) {
