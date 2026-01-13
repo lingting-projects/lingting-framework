@@ -25,7 +25,7 @@ class StackContext<T> : Context<Stack<T>> {
     }
 
     fun peek(): T? {
-        return operate { it.peek() }
+        return operateIfNotNull { it.peek() }
     }
 
     fun push(t: T) {
@@ -33,7 +33,7 @@ class StackContext<T> : Context<Stack<T>> {
     }
 
     fun pop(): T? {
-        return operate { it.pop() }
+        return operateIfNotNull { it.pop() }
     }
 
 }

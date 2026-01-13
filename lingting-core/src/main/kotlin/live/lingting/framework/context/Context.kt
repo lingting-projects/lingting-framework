@@ -42,15 +42,15 @@ open class Context<T> {
     @JvmOverloads
     open fun <E> operateRequire(message: String = "value must be not null", operate: Function<T, E?>): E? {
         val v = get()
-        requireNotNull(v) { message }
-        return operate.apply(v)
+        require(!isNull(v)) { message }
+        return operate.apply(v!!)
     }
 
     /**
      * 统一操作行为. 当local中不存在内容时, 直接返回null, 避免初始化
      */
-    open fun <E> operate(operate: Function<T, E?>): E? {
-        if (local.get() == null) {
+    open fun <E> operateIfNotNull(operate: Function<T, E?>): E? {
+        if (isNull(local.get())) {
             return null
         }
         val v = get()

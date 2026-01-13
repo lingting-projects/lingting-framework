@@ -29,7 +29,7 @@ class DequeContext<T> : Context<Deque<T>> {
      * 获取第一个元素
      */
     fun peek(): T? {
-        return operate { it.peek() }
+        return operateIfNotNull { it.peek() }
     }
 
     /**
@@ -43,14 +43,14 @@ class DequeContext<T> : Context<Deque<T>> {
      * 弹出第一个元素
      */
     fun pop(): T? {
-        return operate { it.pop() }
+        return operateIfNotNull { it.pop() }
     }
 
     /**
      * 获取最后一个元素
      */
     fun peekLast(): T? {
-        return operate { it.peekLast() }
+        return operateIfNotNull { it.peekLast() }
     }
 
     /**
@@ -64,7 +64,7 @@ class DequeContext<T> : Context<Deque<T>> {
      * 弹出最后一个元素
      */
     fun pollLast(): T? {
-        return operate { it.pollLast() }
+        return operateIfNotNull { it.pollLast() }
     }
 
 }
