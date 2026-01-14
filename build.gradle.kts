@@ -7,6 +7,7 @@ val projectGroup = "live.lingting.framework"
 val projectVersion = "2025.05.23-Beta-12"
 
 val catalogLibs = libs
+val dependencyProjects = subprojects.filter { it.name.endsWith("dependencies") }
 val allProjects = subprojects.filter { it.name != "buildSrc" }
 // 使用的java版本
 val javaVersion = JavaVersion.VERSION_21
@@ -44,6 +45,8 @@ allprojects {
 }
 
 configure(allProjects) {
+
+    val isDependencyProject = dependencyProjects.contains(this)
 
     fun configureKotlin() {
         tasks.withType<KotlinCompile> {
@@ -96,16 +99,18 @@ configure(allProjects) {
             options.encoding(targetEncoding)
         }
 
-        dependencies {
-            catalogLibs.bundles.dependencies.get().forEach {
-                add("implementation", platform(it))
-            }
-            add("implementation", catalogLibs.bundles.implementation)
+        if (!isDependencyProject) {
+            dependencies {
+                catalogLibs.bundles.dependencies.get().forEach {
+                    add("implementation", platform(it))
+                }
+                add("implementation", catalogLibs.bundles.implementation)
 
-            add("annotationProcessor", catalogLibs.bundles.annotation)
-            add("ksp", catalogLibs.bundles.ksp)
-            add("compileOnly", catalogLibs.bundles.compile)
-            add("testImplementation", catalogLibs.bundles.test)
+                add("annotationProcessor", catalogLibs.bundles.annotation)
+                add("ksp", catalogLibs.bundles.ksp)
+                add("compileOnly", catalogLibs.bundles.compile)
+                add("testImplementation", catalogLibs.bundles.test)
+            }
         }
 
     }

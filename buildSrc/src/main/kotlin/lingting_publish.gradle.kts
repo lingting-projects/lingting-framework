@@ -48,6 +48,23 @@ tasks.withType<GenerateModuleMetadata> {
         }
 
         val versions = versionsProvider.orNull
+
+        fun handleVersion(dep: MutableMap<String, Any>){
+            val group = dep["group"] as? String ?: ""
+            val module = dep["module"] as? String ?: ""
+            val versionObj = dep["version"] as? MutableMap<String, Any>
+
+            // 如果没有 version 节点或 version 内容为空
+            if (versionObj == null || versionObj.isEmpty()) {
+                val version = versions?.get("$group:$module")
+                if (!version.isNullOrBlank()) {
+                    dep["version"] = mutableMapOf("requires" to version)
+                } else {
+                    println("Warning: [Metadata] 无法解析依赖版本: $group:$module")
+                }
+            }
+        }
+
         val json = JsonSlurper().parse(file) as MutableMap<String, Any>
         val variants = json["variants"] as? List<MutableMap<String, Any>> ?: emptyList()
         for (variant in variants) {
@@ -60,19 +77,12 @@ tasks.withType<GenerateModuleMetadata> {
 
             // 补全剩余依赖的版本号
             dependencies?.forEach { dep ->
-                val group = dep["group"] as? String ?: ""
-                val module = dep["module"] as? String ?: ""
-                val versionObj = dep["version"] as? MutableMap<String, Any>
+                handleVersion(dep)
+            }
 
-                // 如果没有 version 节点或 version 内容为空
-                if (versionObj == null || versionObj.isEmpty()) {
-                    val version = versions?.get("$group:$module")
-                    if (!version.isNullOrBlank()) {
-                        dep["version"] = mutableMapOf("requires" to version)
-                    } else {
-                        println("Warning: [Metadata] 无法解析依赖版本: $group:$module")
-                    }
-                }
+            val dependencyConstraints = variant["dependencyConstraints"] as? MutableList<MutableMap<String, Any>>
+            dependencyConstraints?.forEach { dep ->
+                handleVersion(dep)
             }
         }
 
@@ -155,7 +165,7 @@ mavenPublishing {
                     if (version.isNullOrBlank()) {
                         val version = versions?.get("$group:$module")
                         if (version.isNullOrBlank()) {
-                            println("Warning: [POM] 无法解析具体版本号: ${group}:${module}")
+                            println("Warning: [POM] 无法解析依赖版本: ${group}:${module}")
                         } else {
                             dn.appendNode("version", version)
                         }
