@@ -1,6 +1,7 @@
 package live.lingting.framework.context
 
 import java.util.Stack
+import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Supplier
 
 /**
@@ -17,15 +18,13 @@ class StackContext<T> : Context<Stack<T>> {
 
     constructor(
         init: Supplier<out Stack<T>>? = defaultInit as Supplier<Stack<T>>,
-        local: ThreadLocal<Stack<T>> = creator.apply(init) as ThreadLocal<Stack<T>>,
-    ) : super(init, local)
-
-    override fun isNull(t: Stack<T>?): Boolean {
-        return t.isNullOrEmpty()
-    }
+        from: ConcurrentHashMap<ContextSource, Stack<T>?> = ConcurrentHashMap(),
+    ) : super(init, from)
 
     fun peek(): T? {
-        return operateIfNotNull { it.peek() }
+        return operateIfNotNull {
+            if (it.isEmpty()) null else it.peek()
+        }
     }
 
     fun push(t: T) {
@@ -33,7 +32,9 @@ class StackContext<T> : Context<Stack<T>> {
     }
 
     fun pop(): T? {
-        return operateIfNotNull { it.pop() }
+        return operateIfNotNull {
+            if (it.isEmpty()) null else it.pop()
+        }
     }
 
 }

@@ -12,99 +12,73 @@ import java.util.function.Supplier
 @Suppress("UNCHECKED_CAST")
 open class Context<T> {
 
-    companion object {
-
-        @JvmStatic
-        var creator = Function<Supplier<*>?, ThreadLocal<*>> { ThreadLocal<Any>() }
-
-    }
-
     @JvmOverloads
     constructor(
         init: Supplier<out T>? = null,
-        local: ThreadLocal<T> = creator.apply(init) as ThreadLocal<T>,
+        from: ConcurrentHashMap<ContextSource, T?> = ConcurrentHashMap(),
     ) {
-        this.local = local
+        this.map = from
         this.init = init
     }
 
-    protected val local: ThreadLocal<T>
+    protected val map: ConcurrentHashMap<ContextSource, T?>
 
     protected val init: Supplier<out T>?
 
-    protected val first = ConcurrentHashMap<Long, Boolean>()
+    protected val first = ConcurrentHashMap<ContextSource, Boolean>()
 
-    protected open fun id(): Long = Thread.currentThread().threadId()
+    protected open fun source(): ContextSource = ThreadContextSource(Thread.currentThread())
 
-    /**
-     * 必须有值的统一操作行为. 当local中不存在内容时, 进行初始化
-     */
     @JvmOverloads
     open fun <E> operateRequire(message: String = "value must be not null", operate: Function<T, E?>): E? {
         val v = get()
-        require(!isNull(v)) { message }
-        return operate.apply(v!!)
+        requireNotNull(v) { message }
+        return operate.apply(v)
     }
 
-    /**
-     * 统一操作行为. 当local中不存在内容时, 直接返回null, 避免初始化
-     */
     open fun <E> operateIfNotNull(operate: Function<T, E?>): E? {
-        if (isNull(local.get())) {
-            return null
-        }
-        val v = get()
-        if (isNull(v)) {
-            return null
-        }
-        return operate.apply(v!!)
-    }
-
-    protected open fun isNull(t: T?): Boolean {
-        return t == null
+        val v = get() ?: return null
+        return operate.apply(v)
     }
 
     open fun get(): T? {
-        val t = local.get()
-
-        if (t != null) {
-            return t
+        val source = source()
+        val absent = map.computeIfAbsent(source) {
+            val isFirst = first.compute(source) { _, v ->
+                v == null || !v
+            }
+            if (isFirst == true && init != null) {
+                init.get()
+            } else {
+                null
+            }
         }
 
-        if (init == null) {
-            return null
-        }
-
-        val id = id()
-
-        val isFirst = first.compute(id) { _, v ->
-            return@compute v == null || !v
-        }
-        if (isFirst != true) {
-            return null
-        }
-        val v = init.get()
-        local.set(v)
-        return v
+        return absent
     }
 
     open fun get(defaultValue: T): T {
         val v = get()
-        if (isNull(v)) {
+        if (v == null) {
             set(defaultValue)
             return defaultValue
         }
-        return v!!
+        return v
     }
 
     open fun set(t: T?) {
-        local.set(t)
+        map[source()] = t
     }
 
     open fun remove() {
-        val id = id()
-        first.remove(id)
-        local.remove()
+        val source = source()
+        remove(source)
+    }
+
+    open fun remove(source: ContextSource) {
+        first.remove(source)
+        map.remove(source)
+
     }
 
 }

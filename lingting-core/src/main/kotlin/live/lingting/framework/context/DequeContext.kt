@@ -2,6 +2,7 @@ package live.lingting.framework.context
 
 import java.util.ArrayDeque
 import java.util.Deque
+import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Supplier
 
 /**
@@ -18,18 +19,16 @@ class DequeContext<T> : Context<Deque<T>> {
 
     constructor(
         init: Supplier<out Deque<T>>? = defaultInit as Supplier<Deque<T>>,
-        local: ThreadLocal<Deque<T>> = creator.apply(init) as ThreadLocal<Deque<T>>,
-    ) : super(init, local)
-
-    override fun isNull(t: Deque<T>?): Boolean {
-        return t.isNullOrEmpty()
-    }
+        from: ConcurrentHashMap<ContextSource, Deque<T>?> = ConcurrentHashMap(),
+    ) : super(init, from)
 
     /**
      * 获取第一个元素
      */
     fun peek(): T? {
-        return operateIfNotNull { it.peek() }
+        return operateIfNotNull {
+            if (it.isEmpty()) null else it.peek()
+        }
     }
 
     /**
@@ -43,14 +42,18 @@ class DequeContext<T> : Context<Deque<T>> {
      * 弹出第一个元素
      */
     fun pop(): T? {
-        return operateIfNotNull { it.pop() }
+        return operateIfNotNull {
+            if (it.isEmpty()) null else it.pop()
+        }
     }
 
     /**
      * 获取最后一个元素
      */
     fun peekLast(): T? {
-        return operateIfNotNull { it.peekLast() }
+        return operateIfNotNull {
+            if (it.isEmpty()) null else it.peekLast()
+        }
     }
 
     /**
@@ -64,7 +67,9 @@ class DequeContext<T> : Context<Deque<T>> {
      * 弹出最后一个元素
      */
     fun pollLast(): T? {
-        return operateIfNotNull { it.pollLast() }
+        return operateIfNotNull {
+            if (it.isEmpty()) null else it.pollLast()
+        }
     }
 
 }

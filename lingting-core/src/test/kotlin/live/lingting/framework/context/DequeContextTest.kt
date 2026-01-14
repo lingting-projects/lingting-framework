@@ -1,12 +1,16 @@
 package live.lingting.framework.context
 
-import java.util.ArrayDeque
-import java.util.Deque
-import java.util.function.Supplier
+import live.lingting.framework.context.StackContextTest.Companion.log
 import live.lingting.framework.thread.Async
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
+import java.util.ArrayDeque
+import java.util.Deque
+import java.util.function.Supplier
+import kotlin.concurrent.atomics.AtomicLong
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlin.concurrent.atomics.incrementAndFetch
 
 /**
  * @author lingting 2024-03-29 13:38
@@ -21,24 +25,33 @@ class DequeContextTest {
         })
     }
 
+    @OptIn(ExperimentalAtomicApi::class)
     @Test
     fun test() {
         val max = 1000
         val async = Async(200)
+        val err = AtomicLong(0L)
         for (i in 0 until max) {
             async.submit("stack-$i") {
                 try {
-                    assertContext()
-                } finally {
-                    local.remove()
-                }
-                try {
-                    assertContext()
-                } finally {
-                    local.remove()
-                }
-                try {
-                    assertContext()
+                    try {
+                        assertContext()
+                    } finally {
+                        local.remove()
+                    }
+                    try {
+                        assertContext()
+                    } finally {
+                        local.remove()
+                    }
+                    try {
+                        assertContext()
+                    } finally {
+                        local.remove()
+                    }
+                } catch (e: Throwable) {
+                    log.error("异常: ", e)
+                    err.incrementAndFetch()
                 } finally {
                     local.remove()
                 }
@@ -46,6 +59,7 @@ class DequeContextTest {
         }
 
         async.await()
+        assertEquals(0, err.load())
         assertEquals(max.toLong(), async.allCount())
     }
 
