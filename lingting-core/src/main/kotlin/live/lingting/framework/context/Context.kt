@@ -21,13 +21,21 @@ open class Context<T> {
         this.init = init
     }
 
+    init {
+        ContextClear.start(this)
+    }
+
     protected val map: ConcurrentHashMap<ContextSource, T?>
 
     protected val init: Supplier<out T>?
 
     protected val first = ConcurrentHashMap<ContextSource, Boolean>()
 
-    protected open fun source(): ContextSource = ThreadContextSource(Thread.currentThread())
+    open fun source(): ContextSource = ThreadContextSource(Thread.currentThread())
+
+    open fun size(): Int {
+        return map.size
+    }
 
     @JvmOverloads
     open fun <E> operateRequire(message: String = "value must be not null", operate: Function<T, E?>): E? {
@@ -79,6 +87,26 @@ open class Context<T> {
         first.remove(source)
         map.remove(source)
 
+    }
+
+    /**
+     * 清除已经失效线程的数据
+     */
+    open fun clear() {
+        val set = mutableSetOf<ContextSource>()
+        map.keys.forEach {
+            if (!it.isAlive()) {
+                set.add(it)
+            }
+        }
+        first.keys.forEach {
+            if (!it.isAlive()) {
+                set.add(it)
+            }
+        }
+        set.forEach {
+            remove(it)
+        }
     }
 
 }
