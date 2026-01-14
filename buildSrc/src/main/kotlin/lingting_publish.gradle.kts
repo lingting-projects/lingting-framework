@@ -39,6 +39,7 @@ val versionsProvider = provider {
 tasks.withType<GenerateModuleMetadata> {
     // 在运行时获取引用
     val versionsProvider = versionsProvider
+    val dependenciesProject = project.name.endsWith("-dependencies")
 
     doLast {
         val file = outputFile.get().asFile
@@ -49,7 +50,7 @@ tasks.withType<GenerateModuleMetadata> {
 
         val versions = versionsProvider.orNull
 
-        fun handleVersion(dep: MutableMap<String, Any>){
+        fun handleVersion(dep: MutableMap<String, Any>) {
             val group = dep["group"] as? String ?: ""
             val module = dep["module"] as? String ?: ""
             val versionObj = dep["version"] as? MutableMap<String, Any>
@@ -69,10 +70,13 @@ tasks.withType<GenerateModuleMetadata> {
         val variants = json["variants"] as? List<MutableMap<String, Any>> ?: emptyList()
         for (variant in variants) {
             val dependencies = variant["dependencies"] as? MutableList<MutableMap<String, Any>>
-            // 过滤掉所有 category 为 platform 的依赖 (BOM)
-            dependencies?.removeIf { dep ->
-                val attributes = dep["attributes"] as? Map<*, *>
-                attributes?.get("org.gradle.category") == "platform"
+
+            if (!dependenciesProject) {
+                // 过滤掉所有 category 为 platform 的依赖 (BOM)
+                dependencies?.removeIf { dep ->
+                    val attributes = dep["attributes"] as? Map<*, *>
+                    attributes?.get("org.gradle.category") == "platform"
+                }
             }
 
             // 补全剩余依赖的版本号
