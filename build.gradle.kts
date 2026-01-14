@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val projectGroup = "live.lingting.framework"
-val projectVersion = "2025.05.23-Beta-12"
+val projectVersion = "2025.05.23-Beta-13"
 
 val catalogLibs = libs
 val allProjects = subprojects.filter { it.name != "buildSrc" }
